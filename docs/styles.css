@@ -1,0 +1,136 @@
+:root {
+    text-align: center;
+    background-color: #f2f2f2;
+    font-family: monospace, Arial, sans-serif;
+}
+
+h1 {
+    background-color: #f2f2f2;
+}
+
+h1: hover {
+    background-color: #e6e6e6;
+}
+
+table {
+    background-color: #fff;
+    border-collapse: collapse;
+    margin: 0 auto;
+    width: 80%;
+}
+
+tr {
+    border: 5px solid #ddd;
+    padding: 10px;
+    margin: 5px;
+}
+
+img {
+    width: 90px;
+    height: auto;
+    margin: 10px;
+}
+
+item {
+    width: 100%;
+    max-width: 100px;
+    text-align: center;
+    margin: 0px;
+    padding: 0px;
+    height: 110px;
+}
+
+img:hover {
+    background-color: #e6e6e6;
+}
+.item.main {
+    background-color: #eee;
+}
+
+h2, p.desc {
+    text-align: left;
+    margin: 10px;
+    padding: 0px;
+    background-color: #fff;
+}
+
+drop {
+    display: inline-block;
+    background-color: #fff;
+    border: 2px dashed #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px;
+    width: 100%;
+    text-align: center;
+    cursor: pointer;
+}
+
+td:not(:first-child).rec {
+    min-width: 200px;
+    text-align: left;
+    display: inline-block;
+}
+
+td:first-child.rec {
+    width: 200px;
+}
+
+tr {
+    overflow: auto;
+}
+
+.header-class {
+    background-color: #f2f2f2;
+    height: 50px;
+}
+
+.header-class:hover {
+    background-color: #e6e6e6;
+}
+
+.header {
+    position: sticky;
+    top: 0;
+}
+
+.materials {
+    overflow: auto;
+    max-width: 80%;
+}
+
+tr {
+    overflow: auto;
+    max-width: calc(max(100svw, 100vw));
+}
+
+input, button {
+    box-sizing: border-box;
+    padding: 10px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    background-color: #f2f2f2;
+    color: #333;
+    font-size: 16px;
+    font-family: monospace, Arial, sans-serif;
+}
+
+input:hover, button:hover {
+    background-color: #e6e6e6;
+}
+
+.filter-container {
+    border: 2px solid #ccc;
+    background-color: #f2f2f2;
+}
+
+a:visited, a:link {
+    color: #333;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #000;
+    text-decoration: underline;
+}
