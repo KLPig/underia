@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="VcsDirectoryMappings">
-    <mapping directory="" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/app/dist/Underia.app/Contents/Frameworks/assets" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/app/dist/Underia.app/Contents/Resources/assets" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/app/dist/Underia/_internal/assets" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/docs/assets" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/src/assets" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
   </component>
 </project>

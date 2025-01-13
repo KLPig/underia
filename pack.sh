@@ -1,0 +1,1 @@
+pyinstaller -D -p . -i icon.icns --specpath app/ -n Underia --osx-bundle-identifier "com.klpig.underia" --workpath app/build/ --distpath app/dist/ --clean --add-data "../src/assets:assets" --windowed -y src/main.py

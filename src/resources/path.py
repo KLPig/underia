@@ -1,10 +1,12 @@
 import os
 from tkinter import messagebox
-
-DEBUG = True
+from src.constants import DEBUG, OS
 
 if not DEBUG:
-    pt = '/Library/Underia'
+    if OS == 'Windows':
+        pt = os.path.join(os.environ['APPDATA'], 'Underia')
+    else:
+        pt = '/Library/Underia'
 else:
     pt = '.'
 
