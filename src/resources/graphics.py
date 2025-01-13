@@ -1,5 +1,10 @@
 import pygame as pg
+
 from src.resources import path as pth
+from src.resources import strings
+
+noticed = []
+
 
 class Graphics:
     def __init__(self):
@@ -9,7 +14,18 @@ class Graphics:
         self.graphics[index] = pg.image.load(pth.get_path(path)).convert_alpha()
 
     def get_graphics(self, index: str) -> pg.Surface:
-        return self.graphics[index]
+        global noticed
+        try:
+            return self.graphics[index]
+        except KeyError:
+            if index not in noticed:
+                noticed.append(index)
+                mean_str = 'no matched graphics found'
+                for key in self.graphics.keys():
+                    if strings.similarity(key, index) >= strings.similarity(mean_str, index):
+                        mean_str = key
+                print(f"Graphics with index {index} is not loaded, do you mean {mean_str}?")
+            return self.graphics['items_invalid']
 
     def is_loaded(self, index: str) -> bool:
         return index in self.graphics.keys()

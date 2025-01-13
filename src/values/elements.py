@@ -1,5 +1,6 @@
 from src import constants
 
+
 class ElementTypes:
     NONE: int = 0
 
@@ -17,6 +18,7 @@ class ElementTypes:
 
     ACID: int = 0
     COLD: int = 0
+
 
 dirs = [d if d[0] != '_' else None for d in dir(ElementTypes)]
 while None in dirs:

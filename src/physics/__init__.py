@@ -1,2 +1,2 @@
-from .mover import *
-from .vector import *
+from src.physics.mover import *
+from src.physics.vector import *

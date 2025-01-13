@@ -1,5 +1,6 @@
-from src.values import elements
 from src import constants
+from src.values import elements
+
 
 class DamageTypes:
     PHYSICAL: int = 0
@@ -7,6 +8,8 @@ class DamageTypes:
     TRUE: int = 0
     PIERCING: int = 0
     ARCANE: int = 0
+    TOUCHING: int = 0
+
 
 for element in dir(elements.ElementTypes):
     if not element.startswith('__'):

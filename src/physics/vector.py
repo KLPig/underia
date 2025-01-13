@@ -1,10 +1,17 @@
 import math
 
+
 def rotation_coordinate(rotation):
     return math.sin(math.radians(rotation)), -math.cos(math.radians(rotation))
 
+
 def coordinate_rotation(x, y):
     return math.degrees(math.atan2(x, -y))
+
+
+def distance(x, y):
+    return math.sqrt(x ** 2 + y ** 2)
+
 
 class Vector:
     def __init__(self, rotation, value):
@@ -14,6 +21,7 @@ class Vector:
     def __call__(self):
         x, y = rotation_coordinate(self.rotation)
         return x * self.value, y * self.value
+
 
 class Vectors:
     def __init__(self):

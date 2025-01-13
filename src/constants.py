@@ -3,9 +3,20 @@ import time
 
 random.seed(time.time())
 
-ELEMENT_TYPE_CONSTANT = int(random.random() * 1000)
-DAMAGE_TYPE_CONSTANT = int(random.random() * 1000)
+ELEMENT_TYPE_CONSTANT = 49034
+DAMAGE_TYPE_CONSTANT = 13829
 
 INFINITY = 2 ** 31 - 1
 
-FPS = 60
+FPS = 40
+
+SIMULATE_DISTANCE = 6000
+LIGHTING = False
+
+MOVER_POS = 10 ** 7
+
+ULTIMATE_AMMO_BONUS = 10000
+
+DISPLAY_STYLE = 0
+
+DEBUG_SETTINGS = False

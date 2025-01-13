@@ -1,5 +1,6 @@
 from src.values import damages
 
+
 class Resistances:
     def __init__(self, overall: float = 1.0):
         self.resistances: dict[int, float] = {}
@@ -23,6 +24,7 @@ class Resistances:
 
     def __iter__(self):
         return iter(self.resistances.items())
+
 
 class Defenses:
     def __init__(self, overall: float = 0.0):
