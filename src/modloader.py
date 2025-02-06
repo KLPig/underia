@@ -2,6 +2,8 @@ import copy
 import os
 import appscript
 import pygame as pg
+from src import constants
+
 from src.resources import path
 from src.mods import UnderiaModData
 import pickle
@@ -32,17 +34,11 @@ if not os.path.exists(mod_dir):
 
 def load_mod():
     global anchor, cmds, cb, mod_datas, icos, scr, ds
-    pg.init()
     clk = pg.time.Clock()
-    pg.display.set_caption("Underia")
-    screen = pg.display.set_mode((1600, 900), pg.RESIZABLE | pg.HWSURFACE | pg.DOUBLEBUF | pg.FULLSCREEN | pg.SCALED)
-    font = pg.font.SysFont('dtm-mono', 24)
-    mod_text = font.render("Open Mod Folder", True, (255, 255, 255), (0, 0, 0))
-    mod_text_focus = font.render("Open Mod Folder", True, (255, 255, 0), (0, 0, 0))
-    reload_text = font.render("Reload Mods", True, (255, 255, 255), (0, 0, 0))
-    reload_text_focus = font.render("Reload Mods", True, (255, 255, 0), (0, 0, 0))
-    done_text = font.render("Done", True, (255, 255, 255), (0, 0, 0))
-    done_text_focus = font.render("Done", True, (255, 255, 0), (0, 0, 0))
+    screen = pg.display.get_surface()
+    font = pg.font.SysFont('dtm-mono', 32)
+    btn_t = ['Open Mod Folder', 'Reload Mods', 'Done']
+    btn_r = [pg.Rect(300, 50, 320, 80), pg.Rect(640, 50, 320, 80), pg.Rect(980, 50, 320, 80)]
 
     tick = 0
     while True:
@@ -53,58 +49,85 @@ def load_mod():
             elif event.type == pg.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     pos = pg.mouse.get_pos()
-                    if mod_text.get_rect(topleft=(10, 10)).collidepoint(pos):
+                    if btn_r[0].collidepoint(pos):
                         appscript.app('Finder').reveal(appscript.mactypes.Alias(mod_dir).alias)
                         appscript.app('Finder').activate()
-                    elif reload_text.get_rect(topleft=(10, 40)).collidepoint(pos):
+                    elif btn_r[1].collidepoint(pos):
                         mod_datas = [pickle.load(open(os.path.join(mod_dir, d, 'data.umod'), 'rb')) for d in os.listdir(mod_dir)]
                         icos = [pg.image.load(os.path.join(mod_dir, d, 'assets/assets/icon.png')) for d in os.listdir(mod_dir)]
                         ds = os.listdir(mod_dir)
-                    elif done_text.get_rect(topleft=(10, 70)).collidepoint(pos):
-                        pg.quit()
+                    elif btn_r[2].collidepoint(pos):
+                        cv = pg.Surface(screen.get_size(), pg.SRCALPHA)
+                        cv.blit(screen, (0, 0))
+                        if constants.USE_ALPHA:
+                            for i in range(255):
+                                pg.event.get()
+                                screen.fill((0, 0, 0))
+                                cv.set_alpha(255 - i)
+                                screen.blit(cv, (0, 0))
+                                pg.display.update()
                         return cmds, load_mods
+            elif event.type == pg.KEYDOWN:
+                if event.key == pg.K_UP:
+                    scr = max(0, min(scr + 240, 240 * len(mod_datas) - 760))
+                elif event.key == pg.K_DOWN:
+                    scr = max(0, min(scr - 240, 240 * len(mod_datas) - 760))
+                elif event.key == pg.K_F4:
+                    constants.FULLSCREEN = not constants.FULLSCREEN
+                    pg.display.set_mode(pg.display.get_window_size(), (pg.FULLSCREEN if constants.FULLSCREEN else 0) | constants.FLAGS)
+                elif event.key == pg.K_ESCAPE:
+                    pg.quit()
+                    return cmds, None
+                elif event.key in [pg.K_f, pg.K_c]:
+                    appscript.app('Finder').reveal(appscript.mactypes.Alias(mod_dir).alias)
+                    appscript.app('Finder').activate()
+                elif event.key in [pg.K_r, pg.K_x]:
+                    mod_datas = [pickle.load(open(os.path.join(mod_dir, d, 'data.umod'), 'rb')) for d in os.listdir(mod_dir)]
+                    icos = [pg.image.load(os.path.join(mod_dir, d, 'assets/assets/icon.png')) for d in os.listdir(mod_dir)]
+                    ds = os.listdir(mod_dir)
+                elif event.key in [pg.K_RETURN, pg.K_z]:
+                    cv = pg.Surface(screen.get_size(), pg.SRCALPHA)
+                    cv.blit(screen, (0, 0))
+                    if constants.USE_ALPHA:
+                        for i in range(255):
+                            pg.event.get()
+                            screen.fill((0, 0, 0))
+                            cv.set_alpha(255 - i)
+                            screen.blit(cv, (0, 0))
+                            pg.display.update()
+                    return cmds, load_mods
             elif event.type == pg.MOUSEWHEEL:
                 scr += event.y * 5
-                scr = max(0, min(scr, 240 * len(mod_datas) - 840))
+                scr = max(0, min(scr, 240 * len(mod_datas) - screen.get_height() + 300))
         screen.fill((0, 0, 0))
         cs = bios[cb]
         ncx = bios[(cb + 1) % 7]
         if tick > 300:
-            ncx = copy.copy(ncx)
-            ncx.set_alpha((tick - 300) * 255 // 200)
+            if constants.USE_ALPHA:
+                ncx = copy.copy(ncx)
+                ncx.set_alpha((tick - 300) * 255 // 200)
         for x in range(-100, screen.get_width() + 100, 100):
             for y in range(-100, screen.get_height() + 100, 100):
                 screen.blit(cs, (x + tick % 100, y))
                 if tick > 300:
                     screen.blit(ncx, (x + tick % 100, y))
-        if not mod_text.get_rect(topleft=(10, 10)).collidepoint(pg.mouse.get_pos()):
-            screen.blit(mod_text, (10, 10))
-        else:
-            screen.blit(mod_text_focus, (10, 10))
-        if not reload_text.get_rect(topleft=(10, 40)).collidepoint(pg.mouse.get_pos()):
-            screen.blit(reload_text, (10, 40))
-        else:
-            screen.blit(reload_text_focus, (10, 40))
-        if not done_text.get_rect(topleft=(10, 70)).collidepoint(pg.mouse.get_pos()):
-            screen.blit(done_text, (10, 70))
-        else:
-            screen.blit(done_text_focus, (10, 70))
         for i in range(len(mod_datas)):
-            r = (300, 100 + 240 * i - scr, 1000, 200)
-            pg.draw.rect(screen, (0, 0, 0), (300, 100 + 240 * i - scr, 1000, 200))
+            r = (300, 180 + 240 * i - scr, 1000, 200)
+            pg.draw.rect(screen, (0, 0, 0), (300, 180 + 240 * i - scr,
+                                             screen.get_width() - 600, 200), border_radius=20)
             pg.draw.rect(screen, (255, 255, 255) if not pg.Rect(r).collidepoint(pg.mouse.get_pos()) else (255, 255, 0),
-                         (300, 100 + 240 * i - scr, 1000, 200), 5)
+                         (300, 180 + 240 * i - scr, screen.get_width() - 600, 200), 5, border_radius=20)
             ico = icos[i]
             ico = pg.transform.scale(ico, (150, 150))
-            screen.blit(ico, (325, 100 + 240 * i - scr + 25))
+            screen.blit(ico, (325, 180 + 240 * i - scr + 25))
             data = mod_datas[i]
             name = font.render(data.name + ('(Loaded)' if ds[i] in load_mods else ''), True, (255, 255, 255), (0, 0, 0))
-            screen.blit(name, (525, 100 + 240 * i - scr + 25))
+            screen.blit(name, (525, 180 + 240 * i - scr + 25))
             info = font.render(f'by {data.author} v{data.version[0]}.{data.version[1]}.{data.version[2]}',
                                True, (100, 100, 100), (0, 0, 0))
-            screen.blit(info, (525, 100 + 240 * i - scr + 25 + 50))
+            screen.blit(info, (525, 180 + 240 * i - scr + 25 + 50))
             desc = font.render(data.desc, True, (100, 100, 100), (0, 0, 0))
-            screen.blit(desc, (525, 100 + 240 * i - scr + 25 + 100))
+            screen.blit(desc, (525, 180 + 240 * i - scr + 25 + 100))
             if pg.Rect(r).collidepoint(pg.mouse.get_pos()) and pg.mouse.get_pressed()[0]:
                 if ds[i] in load_mods:
                     load_mods.remove(ds[i])
@@ -113,6 +136,19 @@ def load_mod():
                 while pg.mouse.get_pressed()[0]:
                     pg.event.get()
                     pass
+        w, h = screen.get_size()
+        for i in range(len(btn_t)):
+            btn_r[i].centerx = (i + 1) * w // 4
+            btn_r[i].centery = h - 100
+        for i in range(len(btn_t)):
+            if pg.Rect(btn_r[i]).collidepoint(pg.mouse.get_pos()):
+                btn = font.render(btn_t[i], True, (255, 255, 0))
+            else:
+                btn = font.render(btn_t[i], True, (255, 255, 255))
+            pg.draw.rect(screen, (0, 0, 0), btn_r[i], border_radius=10)
+            pg.draw.rect(screen, (255, 255, 255), btn_r[i], 5, border_radius=10)
+            br = btn.get_rect(center=btn_r[i].center)
+            screen.blit(btn, br)
         if tick >= 500:
             tick = 0
             cb = (cb + 1) % 7

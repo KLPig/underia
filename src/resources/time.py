@@ -25,10 +25,11 @@ class Clock:
         self.clock = tm.Clock()
         self.tick = 0
         self.time = 0
+        self.last_tick = 1
 
     def update(self):
         fps = constants.FPS
         spf = 1 / fps
         self.tick += 1
         self.time = self.tick * spf
-        self.clock.tick(fps)
+        self.last_tick = self.clock.tick(fps)

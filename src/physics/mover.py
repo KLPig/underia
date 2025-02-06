@@ -16,6 +16,11 @@ class Mover:
         self.velocity = vector.Vectors()
         self.force = vector.Vectors()
 
+    def __del__(self):
+        del self.pos
+        del self.velocity
+        del self.force
+
     def apply_force(self, force):
         self.force.add(force)
 
@@ -26,11 +31,11 @@ class Mover:
         self.on_update()
         self.velocity.add(self.force.get_net_vector(1 / self.MASS))
         self.force.clear()
-        self.velocity.reset(self.FRICTION)
         vx, vy = self.velocity.get_net_coordinates()
         self.pos = (self.pos[0] + vx, self.pos[1] + vy)
         self.pos = (max(-constants.MOVER_POS, min(constants.MOVER_POS, self.pos[0])),
                     max(-constants.MOVER_POS, min(constants.MOVER_POS, self.pos[1])))
+        self.velocity.reset(self.FRICTION)
         self.on_update()
 
     def momentum(self, rot):

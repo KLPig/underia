@@ -1,6 +1,8 @@
+import math
+import random
 import pygame as pg
-import time
-from . import game
+from . import dialog, game, weapons
+from src import constants
 
 class PlayerProfile:
     def __init__(self):
@@ -12,6 +14,8 @@ class PlayerProfile:
         self.point_ranged = 0
         self.point_magic = 0
         self.stage = 0
+        self.dialogger = dialog.Dialogger(88, pg.Rect(0, 0, 1600, 300), target_surface=pg.Surface((1, 1)))
+        self.font: pg.font.Font | None = None
 
     def get_color(self, w = 0, s = 0, a = 0, ml = 0, rg = 0, mg = 0):
         r, g, b = 255, 255, 255
@@ -21,9 +25,14 @@ class PlayerProfile:
         self.point_melee += ml
         self.point_ranged += rg
         self.point_magic += mg
-        r -= (self.point_wisdom + self.point_agility + self.point_magic // 2) * 2
-        g -= (self.point_wisdom + self.point_strength + self.point_melee // 2) * 2
-        b -= (self.point_strength + self.point_agility + self.point_ranged // 2) * 2
+        mx = max(self.point_wisdom + self.point_agility + self.point_magic // 2,
+                 self.point_wisdom + self.point_strength + self.point_melee // 2,
+                 self.point_strength + self.point_agility + self.point_ranged // 2) * 2
+        if mx < 255:
+            mx = 255
+        r -= (self.point_wisdom + self.point_agility + self.point_magic // 2) * 2 * 255 // mx
+        g -= (self.point_wisdom + self.point_strength + self.point_melee // 2) * 2 * 255 // mx
+        b -= (self.point_strength + self.point_agility + self.point_ranged // 2) * 2 * 255 // mx
         self.point_wisdom -= w
         self.point_strength -= s
         self.point_agility -= a
@@ -36,6 +45,7 @@ class PlayerProfile:
         return r, g, b
 
     def get_surface(self, r = 255, g = 255, b = 255):
+        self.font = pg.font.SysFont('dtm-mono', 88)
         sl = [
             [0, 1, 1, 0, 0, 1, 1, 0],
             [1, 1, 1, 1, 1, 1, 1, 1],
@@ -52,20 +62,84 @@ class PlayerProfile:
                 surface.set_at((i, j), (r, g, b, 255 * sl[j][i]))
         return surface
 
+    def chapter_select(self):
+        window = pg.display.get_surface()
+        width, height = window.get_size()
+        title = self.font.render('Chapters', True, (255, 255, 255))
+        title_rect = title.get_rect(center=(width // 2, 100))
+        chapter_names = ['The Soul', 'The Mottled Land', 'The Adventure',
+                         'The Ancient', 'The Darkness', 'The Previous Me']
+        avail_chapter = game.get_game().chapter
+        image = [game.get_game().graphics['legend_route_' + str(i + 1) + '_locked'] if i < avail_chapter
+                 else game.get_game().graphics['legend_route_' + str(i + 1)] if i == avail_chapter
+                 else game.get_game().graphics['legend_route_locked'] for i in range(6)]
+        image = [pg.transform.scale(i, (1050, 1400)) for i in image]
+        select = avail_chapter - 1
+        if select < 0:
+            return
+        chapter_txt = [self.font.render(name, True, (255, 255, 255)) for name in chapter_names]
+        chapter_select = [self.font.render(name, True, (255, 255, 0)) for name in chapter_names]
+        tk = 0
+        while True:
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    pg.quit()
+                    exit()
+                elif event.type == pg.KEYDOWN:
+                    if event.key == pg.K_ESCAPE:
+                        pg.quit()
+                        exit()
+                    elif event.key == pg.K_F4:
+                        constants.FULLSCREEN = not constants.FULLSCREENpg.display.set_mode(pg.display.get_window_size(), (pg.FULLSCREEN if constants.FULLSCREEN else 0) | constants.FLAGS)
+            window.fill((0, 0, 0))
+            window.blit(title, title_rect)
+            if select:
+                imr = image[select - 1].get_rect(center=(width // 4, height // 2))
+                window.blit(image[select - 1], imr)
+                tr = chapter_txt[select - 1].get_rect(midtop=(width // 4, height * 3 // 4 + 400))
+                window.blit(chapter_txt[select - 1], tr)
+            if select < 5:
+                imr = image[select + 1].get_rect(center=(width * 3 // 4, height // 2))
+                window.blit(image[select + 1], imr)
+                tr = chapter_txt[select + 1].get_rect(midtop=(width * 3 // 4, height * 3 // 4 + 400))
+                window.blit(chapter_txt[select + 1], tr)
+            imr = image[select].get_rect(center=(width // 2, height // 2))
+            window.blit(image[select], imr)
+            tr = chapter_select[select].get_rect(midtop=(width // 2, height * 3 // 4 + 400))
+            window.blit(chapter_select[select], tr)
+            pg.display.update()
+            tk += 1
+            if tk == 200:
+                select += 1
+            elif tk == 400:
+                return
+
     def add_point(self, t = 0):
+        self.font = pg.font.SysFont('dtm-mono', 88)
+        self.dialogger = dialog.Dialogger(88, pg.Rect(0, 0, 1600, 300), target_surface=pg.Surface((1, 1)))
+        self.dialogger.target_surface = pg.display.get_surface()
         if t != self.stage:
             return
         self.stage = t + 1
-        font = pg.font.SysFont('dtm-mono', 32)
         self.avail_points += 20
         dialogues = [
-            ['So, it\'s you.', '...', 'This, is your soul.(Use arrows)', 'Your essence of your whole life, is here.',
-             'It\'s now white.', 'Depends on your choice, it will change it\'s color.', '(Swap: Z)',
-             '...Make your choice...', '..And, when you\'re ready, press enter...'],
-            ['You again.', 'You defeat the thing watching at you, so you get here.', '...',
-             'Make your choice.'],
-            ['Again', 'Looks like you collect those souls.', '...', 'Make your choice.'],
-            ['...'],
+            ['[PRESS Z TO CONTINUE]',
+             'Are you, here?', 'Are we connected?', '...', 'Nice.', 'Let\'s move on.', '...',
+             'This is your soul.', 'Your essence of humanity.', 'Now, you should give this soul some \'GIFT\'',
+             'Let\'s do it.'],
+            ['Are you here again?', 'Why are you here?', '...', 'Well, let\'s don\'t talk about it first.',
+             'Again, you will get some \'AWARD\'.', 'Let\'s do it.'],
+            ['Hello, again, SOUL COLLECTOR.', 'You may find some tips before, ..', '.. but you won\'t find any now.',
+             'You know why?', '.. as you are SPECIAL.', 'Nobody will process your path like YOU do.', '...',
+             'However, \'CHOOSE\' for your soul.'],
+            ['Heya.', 'I know your name, CHARA, right?', 'You probably killed that deformed flower.',
+             'Let\'s give you a hint.', 'Original chaos leads you for another world.', '...', 'Anyway.'],
+            ['Finally.', 'You\'ve been finding souls.', 'And you finally find yours.', '...',
+             'Think, where are you from?', 'How did it begin?', 'How will it end?', '...', 'Make your \'CHOICE\'.'],
+            ['[AFTER YOU\'VE RESET THE TIMELINE, \nEVERYTHING WILL BE GONE.]', '[PLEASE STOP AND THINK BEFORE IT ALL ENDS.]',
+             '[...]', 'This expression...', 'Are you here, again?', 'Alright.', 'Lets move on.'],
+            ['...', 'It\'s you.', 'Let\'s move on.', '..?', 'Wait,', 'I\'ve observed that the world is changing.',
+             'The holy and the evil are coming.', '...', 'You must save this world.']
         ]
         if not t:
             self.point_wisdom = 0
@@ -74,146 +148,134 @@ class PlayerProfile:
             self.point_melee = 0
             self.point_ranged = 0
             self.point_magic = 0
+        if t in [0, 5]:
+            if t:
+                game.get_game().chapter += 1
+            self.chapter_select()
+            game.get_game().player.hp_sys.shields.clear()
+            game.get_game().player.hp_sys.max_hp = 200
+            game.get_game().player.hp_sys.hp = 200
+            game.get_game().player.max_mana = 30
+            game.get_game().player.max_talent = 0
+            game.get_game().player.inventory.items = {}
+            game.get_game().player.accessories = 6 * ['null']
+            game.get_game().player.weapons = 4 * [weapons.WEAPONS['null']]
+            game.get_game().seed = random.randint(0, 1000000)
+            game.get_game().decors.clear()
+            game.get_game().entities.clear()
+            game.get_game().projectiles.clear()
+            game.get_game().map_ns.clear()
         dialogue = dialogues[t]
-        cur_dialogue_flow = 0
-        cur_dialogue_index = 0
+        self.dialogger.dialog(*dialogue)
         window = pg.display.get_surface()
-        timer = 0
-        sf = pg.transform.scale(self.get_surface(), (80, 80))
-        sfr = sf.get_rect(center=window.get_rect().center)
+        tick = 0
+        soul_x = window.get_width() // 2
+        target_soul_x = window.get_width() // 2
+        stage = 0
+        selected_point = 0
+        points = [0, 0, 0]
+
         while True:
-            cd = dialogue[cur_dialogue_index]
+            tick += 1
+            keys = []
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     pg.quit()
-                    quit()
+                    exit()
                 elif event.type == pg.KEYDOWN:
-                    if event.key == pg.K_SPACE and cur_dialogue_flow >= len(cd) and timer:
-                        cur_dialogue_index += 1
-                        cur_dialogue_flow = 0
-                        timer = 0
-                    elif event.key == pg.K_RETURN:
-                        cur_dialogue_index = len(dialogue)
-                        cur_dialogue_flow = 0
-            if cur_dialogue_index >= len(dialogue):
-                break
-            cd = dialogue[cur_dialogue_index]
-            if timer:
-                timer -= 1
-                time.sleep(0.01)
-            else:
-                cur_dialogue_flow = min(cur_dialogue_flow + 1, len(cd))
-                if cd[cur_dialogue_flow - 1] == ',':
-                    timer = 60
-                elif cd[cur_dialogue_flow - 1] == '.':
-                    timer = 100
-                else:
-                    timer = 20
-                window.fill((0, 0, 0))
-                t = font.render(cd[:cur_dialogue_flow], True, (255, 255, 255))
-                window.blit(t, (100, 100))
-                if cur_dialogue_index > 1:
-                    window.blit(sf, sfr)
-                pg.display.update()
-        rp, lp = 20, 10
-        sel_p = 0
-        done = False
-        while True:
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    pg.quit()
-                    quit()
-                elif event.type == pg.KEYDOWN:
-                    if event.key == pg.K_z:
-                        sel_p = not sel_p
-                    elif event.key == pg.K_RIGHT:
-                        hl = 30 if not sel_p else rp
-                        if not sel_p:
-                            rp = min(rp + 1, hl)
-                        else:
-                            lp = min(lp + 1, hl)
-                    elif event.key == pg.K_LEFT:
-                        hl = lp if not sel_p else 0
-                        if not sel_p:
-                            rp = max(rp - 1, hl)
-                        else:
-                            lp = max(lp - 1, hl)
-                    elif event.key == pg.K_RETURN:
-                        self.point_wisdom += lp
-                        self.point_strength += rp - lp
-                        self.point_agility += 30 - rp
-                        done = True
-            if done:
-                break
-            sf = self.get_surface(*self.get_color(lp, rp - lp, 30 - rp))
-            sf = pg.transform.scale(sf, (80, 80))
+                    keys.append(event.key)
+                    if event.key == pg.K_F4:
+                        constants.FULLSCREEN = not constants.FULLSCREEN
+                        pg.display.set_mode(pg.display.get_window_size(), (pg.FULLSCREEN if constants.FULLSCREEN else 0) | constants.FLAGS)
+                    elif event.key == pg.K_ESCAPE:
+                        pg.quit()
+                        exit()
+            if pg.K_UP in keys:
+                selected_point = (selected_point + 2) % 3
+            if pg.K_DOWN in keys:
+                selected_point = (selected_point + 1) % 3
+            if pg.K_LEFT in keys or pg.K_MINUS in keys:
+                points[selected_point] = max(0, points[selected_point] - 1)
+            if pg.K_RIGHT in keys or pg.K_EQUALS in keys:
+                points[selected_point] += min(30 - sum(points), 1)
             window.fill((0, 0, 0))
-            t = font.render(f'Wisdom: {self.point_wisdom} +{lp} (+{int(lp ** 1.5) // 3}% mana regen)', True, (255, 255, 255))
-            window.blit(t, (100, 100))
-            t = font.render(f'Strength: {self.point_strength} +{rp - lp} (+{int((rp - lp) ** 1.5) // 3}% damage)', True, (255, 255, 255))
-            window.blit(t, (100, 150))
-            t = font.render(f'Agility: {self.point_agility} +{30 - rp} (+{int((30 - rp) ** 1.5) // 3}% speed)', True, (255, 255, 255))
-            window.blit(t, (100, 200))
-            pg.draw.rect(window, (0, 0, 255), (100, 300, 10 * lp, 30))
-            pg.draw.rect(window, (255, 0, 0), (100 + 10 * lp, 300, 10 * (rp - lp), 30))
-            pg.draw.rect(window, (0, 255, 0), (100 + 10 * rp, 300, 10 * (30 - rp), 30))
-            if sel_p:
-                pg.draw.rect(window, (255, 255, 0), (100 + 10 * lp - 5, 300, 10, 30))
-            else:
-                pg.draw.rect(window, (255, 255, 0), (100 + 10 * rp - 5, 300, 10, 30))
-            window.blit(sf, sfr)
-            pg.display.update()
-        done = False
-        lp, rp = 10, 20
-        sel_p = 0
-        while True:
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    pg.quit()
-                    quit()
-                elif event.type == pg.KEYDOWN:
-                    if event.key == pg.K_z:
-                        sel_p = not sel_p
-                    elif event.key == pg.K_RIGHT:
-                        hl = 30 if not sel_p else rp
-                        if not sel_p:
-                            rp = min(rp + 1, hl)
-                        else:
-                            lp = min(lp + 1, hl)
-                    elif event.key == pg.K_LEFT:
-                        hl = lp if not sel_p else 0
-                        if not sel_p:
-                            rp = max(rp - 1, hl)
-                        else:
-                            lp = max(lp - 1, hl)
-                    elif event.key == pg.K_RETURN:
-                        self.point_melee += lp - 10
-                        self.point_ranged += rp - lp - 10
-                        self.point_magic += 30 - rp - 10
-                        done = True
-            if done:
+            self.dialogger.update(keys)
+            if stage == 0 and self.dialogger.curr_text == '':
+                stage = 1
+                target_soul_x = window.get_width() // 4
+                self.dialogger.push_dialog('Give this soul some traits.')
+            if stage == 1:
+                texts = ['%d free points', '- wisdom   + %d +%.1f%c mana reg.', '- strength + %d +%.1f%c damage   ',
+                         '- agility  + %d +%.1f%c speed    ']
+                if sum(points) == 30:
+                    texts.append('[PRESS Z TO CONTINUE]')
+                texts[0] = texts[0] % (30 - sum(points))
+                for i in range(3):
+                    texts[i + 1] =  (texts[i + 1] %
+                                     (points[i], round((points[i] + [self.point_wisdom,
+                                                                    self.point_strength,
+                                                                    self.point_agility][i]) ** 1.1 / 4, 1), '%'))
+                for i, t in enumerate(texts):
+                    if i == selected_point + 1:
+                        color = (255, 255, 0)
+                    else:
+                        color = (255, 255, 255)
+                    text = self.font.render(t, True, color)
+                    text_rect = text.get_rect(center=(soul_x + window.get_width() // 2,
+                                                      window.get_height() // 2 - 200 + i * 100))
+                    window.blit(text, text_rect)
+            if stage == 1 and pg.K_z in keys and sum(points) == 30:
+                stage = 2
+                target_soul_x = window.get_width() * 3 // 4
+                self.dialogger.dialog('If he/she must FIGHT, how will he/she DO that?')
+                self.point_wisdom += points[0]
+                self.point_strength += points[1]
+                self.point_agility += points[2]
+                points = [0, 0, 0]
+            if stage == 2:
+                texts = ['%d free points', '- melee  + %d %.0f%c damage', '- ranged + %d %.0f%c damage',
+                         '- magic  + %d %.0f%c damage']
+                if sum(points) == 30:
+                    texts.append('[PRESS Z TO CONTINUE]')
+                texts[0] = texts[0] % (30 - sum(points))
+                for i in range(3):
+                    pt = [self.point_melee, self.point_ranged, self.point_magic][i] + points[i] - 10
+                    texts[i + 1] =  (texts[i + 1] %
+                                     (points[i], round((1 - 0.91 ** (-pt)) * -100 if pt < 0 else pt ** 1.1 / 4, 1),
+                                      '%'))
+                for i, t in enumerate(texts):
+                    if i == selected_point + 1:
+                        color = (255, 255, 0)
+                    else:
+                        color = (255, 255, 255)
+                    text = self.font.render(t, True, color)
+                    text_rect = text.get_rect(center=(soul_x - window.get_width() // 2,
+                                                      window.get_height() // 2 - 200 + i * 100))
+                    window.blit(text, text_rect)
+            if stage == 2 and pg.K_z in keys and sum(points) == 30:
+                stage = 3
+                target_soul_x = window.get_width() * 3 // 4
+                self.dialogger.dialog('Alright, alright.',
+                                      ('Start' if t == 0 else 'Continue') + ' your journey, traveller.')
+                self.dialogger.update([])
+                self.point_melee += points[0]
+                self.point_ranged += points[1]
+                self.point_magic += points[2]
+                points = [0, 0, 0]
+            if stage == 3 and self.dialogger.curr_text == '':
                 break
-            sf = self.get_surface(*self.get_color(self.point_wisdom, self.point_strength, self.point_agility,
-                                                  lp, rp - lp, 30 - rp))
-            sf = pg.transform.scale(sf, (80, 80))
-            window.fill((0, 0, 0))
-            t = font.render(f'Melee: {self.point_melee} {lp - 10}', True, (255, 255, 255))
-            window.blit(t, (100, 100))
-            t = font.render(f'Ranged: {self.point_ranged} {rp - lp - 10}', True, (255, 255, 255))
-            window.blit(t, (100, 150))
-            t = font.render(f'Magic: {self.point_magic} {30 - rp - 10}', True, (255, 255, 255))
-            window.blit(t, (100, 200))
-            pg.draw.rect(window, (255, 0, 255), (100, 300, 10 * lp, 30))
-            pg.draw.rect(window, (255, 255, 0), (100 + 10 * lp, 300, 10 * (rp - lp), 30))
-            pg.draw.rect(window, (0, 255, 255), (100 + 10 * rp, 300, 10 * (30 - rp), 30))
-            if sel_p:
-                pg.draw.rect(window, (255, 255, 0), (100 + 10 * lp - 5, 300, 10, 30))
+            if stage == 0:
+                col = self.get_color()
+            elif stage == 1:
+                col = self.get_color(w=points[0], s=points[1], a=points[2])
             else:
-                pg.draw.rect(window, (255, 255, 0), (100 + 10 * rp - 5, 300, 10, 30))
-            window.blit(sf, sfr)
+                col = self.get_color(ml=points[0], rg=points[1], mg=points[2])
+            soul = self.get_surface(*col)
+            soul = pg.transform.scale(soul, (400, 400))
+            soul_rect = soul.get_rect(center=pg.display.get_surface().get_rect().center)
+            soul_rect.centerx = soul_x
+            soul_rect.centery += math.sin(tick / 50) * 50
+            window.blit(soul, soul_rect)
+            soul_x = (target_soul_x + soul_x) // 2
             pg.display.update()
-        try:
-            game.get_game().pressed_keys = []
-            game.get_game().pressed_mouse = []
-        except ValueError:
-            pass
+

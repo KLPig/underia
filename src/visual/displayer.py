@@ -23,11 +23,12 @@ class Displayer:
         self.alpha_masks: list[tuple[int, int, int, int]] = []
         self.shake_x, self.shake_y = 0, 0
         self.effects: list[effects.Effect] = []
-        font = 'dtm-sans'#'Hiragino Sans GB'
+        font = 'dtm-sans'
         self.font = pg.font.SysFont(font, 32)
         self.font_s = pg.font.SysFont(font, 20)
         self.night_darkness_color = (127, 127, 0)
         self.lsw, self.lsh = 1600, 900
+        self.blit_pos = (0, 0)
 
     def update(self):
         window = pg.display.get_surface()
@@ -38,16 +39,16 @@ class Displayer:
         for alpha_mask in self.alpha_masks:
             self.canvas.fill(alpha_mask)
         self.alpha_masks.clear()
-        blit_surface = pg.transform.scale(copy.copy(self.canvas),
+        blit_surface = pg.transform.scale(self.canvas,
                                           (int(self.SCREEN_WIDTH * scale), int(self.SCREEN_HEIGHT * scale)))
         rect = blit_surface.get_rect(center=(window.get_width() // 2, window.get_height() // 2))
+        self.blit_pos = rect.topleft
         rect.x += self.shake_x
         rect.y += self.shake_y
         self.shake_x, self.shake_y = 0, 0
         window.fill((0, 0, 0))
         window.blit(blit_surface, rect)
-        self.canvas.fill((255, 255, 255, 255))
-        self.canvas.set_alpha(255)
+        self.canvas.fill((255, 255, 255))
         # self.SCREEN_WIDTH = int(1600 * game.get_game().player.get_screen_scale())
         # self.SCREEN_HEIGHT = int(900 * game.get_game().player.get_screen_scale())
         if self.lsw != self.SCREEN_WIDTH or self.lsh != self.SCREEN_HEIGHT:
@@ -56,11 +57,11 @@ class Displayer:
 
     def reflect(self, window_x: float, window_y: float) -> tuple[int, int]:
         window = pg.display.get_surface()
-        scale_x = self.SCREEN_WIDTH / window.get_width()
-        scale_y = self.SCREEN_HEIGHT / window.get_height()
 
-        canvas_x = int(window_x * scale_x)
-        canvas_y = int(window_y * scale_y)
+        scale = min(window.get_width() / self.SCREEN_WIDTH, window.get_height() / self.SCREEN_HEIGHT)
+
+        canvas_x = int((window_x - self.blit_pos[0]) / scale)
+        canvas_y = int((window_y - self.blit_pos[1]) / scale)
 
         return canvas_x, canvas_y
 

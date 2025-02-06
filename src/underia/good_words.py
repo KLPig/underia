@@ -1,0 +1,21 @@
+WORDS = [
+    'KL-issue-pig',
+    '这树怎么会动？',
+    '胡成这样！',
+    'no s**, bad!',
+    'you know what can I say',
+    '还以为your game has new 版本了呢',
+    '差点说 no sex bad 了',
+    '有？',
+    'byd kid 说中文，太怪了',
+    'jian zhi bu shi ren',
+    '你的游戏不能联机',
+    'Boss斜视',
+    '怪物攻击范围好小,让传奇马王苟了那么久',
+    '游戏名：狗溜狗',
+    '好吧 企鹅会在北极给北极熊写信',
+    '開局三選一',
+    'Program Mechanic Electronic',
+    '一定要選wong 天 she',
+    '所以開局一定選熊貓'
+]

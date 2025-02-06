@@ -11,7 +11,11 @@ class Resistances:
         self.resistances[damage_id] = resistance
 
     def get_resistance(self, damage_id: int) -> float:
-        return self.resistances[damage_id]
+        try:
+            return self.resistances[damage_id]
+        except KeyError:
+            self.resistances[damage_id] = 1.0
+            return 1.0
 
     def get_resistances(self) -> dict[int, float]:
         return self.resistances
@@ -42,7 +46,11 @@ class Defenses:
         return self.defences
 
     def __getitem__(self, damage_id: int) -> float:
-        return self.get_defense(damage_id)
+        try:
+            return self.get_defense(damage_id)
+        except KeyError:
+            self.defences[damage_id] = 0.0
+            return 0.0
 
     def __setitem__(self, damage_id: int, defense: float):
         self.set_defense(damage_id, defense)

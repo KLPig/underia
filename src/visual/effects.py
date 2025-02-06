@@ -2,6 +2,7 @@ import pygame as pg
 
 from src.resources import position
 from src.underia import game
+from src import constants
 
 
 class Effect:
@@ -29,5 +30,6 @@ def pointed_curve(colour: tuple[int, int, int], pts: list[tuple[int, int]], widt
             for aay in range(-width // 2, width // 2 + 1, 1):
                 pg.draw.aaline(s, current_colour, (aax + sx + width // 2 - ax, aay + sy + width // 2 - ay),
                                (aax + ex + width // 2 - ax, aay + ey + width // 2 - ay))
-        s.set_alpha(alpha)
+        if constants.USE_ALPHA:
+            s.set_alpha(alpha)
         displayer.canvas.blit(s, (min(sx, ex), min(sy, ey)))

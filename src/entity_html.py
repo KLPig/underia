@@ -25,12 +25,16 @@ img_str = ("<td><div class='item %s drop' id='%s-%s' onclick='location.href=\"./
 entity_str = "<div class='entity' id='%s'><img src='assets/graphics/entity/%s.png'/> <p class='amount'>%s</p></div>"
 
 ets = [
-    'Tree', 'Cactus', 'ConiferousTree', 'HugeTree', 'TreeMonster', 'ClosedBloodflower', 'Eye', 'Bloodflower', 'RedWatcher', 'Star',
+    'Tree', 'Cactus', 'ConiferousTree', 'HugeTree', 'TreeMonster', 'ClosedBloodflower', 'FluffBall', 'HeavenGuard',
+    'Eye', 'Bloodflower', 'RedWatcher', 'Star',
     'SwordInTheStone',
     'TrueEye', 'MagmaCube', 'MagmaKing', 'RuneRock', 'SandStorm', 'AbyssEye', 'EvilMark', 'SoulFlower',
     'MechanicEye', 'Cells', 'IceCap', 'SnowDrake', 'Leaf',
     'FaithlessEye', 'TruthlessEye', 'Destroyer', 'TheCPU', 'Greed', 'EyeOfTime', 'DevilPython',
-    'Jevil', 'JevilKnife'
+    'Jevil', 'JevilKnife', 'Plantera', 'GhostFace', 'SadFace', 'AngryFace', 'Spark', 'Holyfire',
+    'TimeTrap', 'TimeFlower', 'Molecules', 'TitaniumIngot',
+    'CLOCK', 'MATTER', 'SunEye', 'MoonEye', 'ScarlettPillar', 'HolyPillar',
+    'ReincarnationTheWorldsTree', 'Faith', 'OmegaFlowery'
 ]
 
 # ets = dir(underia.Entities)
@@ -44,11 +48,13 @@ for entity in ets:
         continue
     try:
         f += "<tr><td>%s</td>\n" % (entity_str % (entity, e.NAME.lower().replace(' ', '_'),
-                                                  e.NAME + '<br>' + str(e.hp_sys.max_hp) + ' HP<br>' +
+                                                  e.NAME + '<br>' + str(int(e.hp_sys.max_hp)) + ' HP<br>' +
                                                   (f'{e.obj.TOUCHING_DAMAGE} AT ' if e.obj.TOUCHING_DAMAGE else ' ') +
                                                   f'{int(e.hp_sys.defenses[values.DamageTypes.PHYSICAL] +
                                                          e.hp_sys.defenses[values.DamageTypes.PIERCING] +
-                                                         e.hp_sys.defenses[values.DamageTypes.MAGICAL]) // 3} DF<br>' +
+                                                         e.hp_sys.defenses[values.DamageTypes.MAGICAL] + 
+                                                         e.hp_sys.defenses[values.DamageTypes.ARCANE] * 2 +
+                                                         e.hp_sys.defenses[values.DamageTypes.THINKING] * 4) // 9} DF<br>' +
                                                   'AI: ' + type(e.obj).__name__))
         for item in e.LOOT_TABLE.get_all_items():
             t = underia.text(underia.ITEMS[item].name)

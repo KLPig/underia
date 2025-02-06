@@ -44,7 +44,7 @@ def underia_mod_setup():
         pxl_arr[1::2, 1::2] = (255 - r, 255 - g, 255 - b, 255)
         surface = pxl_arr.make_surface()
         pg.image.save(surface, os.path.join(dir_name, 'assets', 'icon.png'))
-    if not os.path.exists(os.path.join(dir_name, 'assets')):
+    if not os.path.exists(os.path.join(dir_name, 'assets', 'graphics')):
         os.mkdir(os.path.join(dir_name, 'assets', 'graphics'))
         os.mkdir(os.path.join(dir_name, 'assets', 'graphics', 'items'))
         os.system('cp -r \'%s\' \'%s\'' % (resources.get_path('assets/graphics/items/convert_weapon.py'),

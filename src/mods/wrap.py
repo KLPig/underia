@@ -65,6 +65,6 @@ def wrap():
     os.rename(os.path.join(path,'mod.pkl'), os.path.join(path, name, 'mod.umod'))
     if not os.path.exists(os.path.join(path, name, 'assets')):
         os.mkdir(os.path.join(path, name, 'assets'))
-    os.system('cp -r \'%s\' \'%s\'' % (os.path.join(path, '..', 'assets'), os.path.join(path, name, 'assets')))
+    os.system('cp -r "%s" "%s" ' % (os.path.join(path, '..', 'assets'), os.path.join(path, name, 'assets')))
 
     print('Module wrapped successfully.')

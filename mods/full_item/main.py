@@ -34,12 +34,9 @@ ENTITIES: dict[str, ENTITY_TYPE] = {
 # SETUP_FUNC
 # Code here (import allowed)
 from src import underia
-print('Full Item Maker Setup')
-underia.RECIPES.clear()
-for item in underia.ITEMS.values():
-    underia.RECIPES.append(underia.Recipe({}, item.id))
+for item in underia.RECIPES:
+    item.material.clear()
 # SETUP_FUNC
-print(underia.RECIPES)
 # UPDATE_FUNC
 # Code here (import allowed)
 # UPDATE_FUNC

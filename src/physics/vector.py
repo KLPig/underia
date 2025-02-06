@@ -18,6 +18,9 @@ class Vector:
         self.rotation = rotation
         self.value = value
 
+    def __del__(self):
+        pass
+
     def __call__(self):
         x, y = rotation_coordinate(self.rotation)
         return x * self.value, y * self.value

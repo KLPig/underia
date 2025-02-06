@@ -1,27 +1,43 @@
-import copy
-
 import pygame as pg
 
 from src.underia import game, inventory, word_dict
 from src.values import hp_system
+from src import constants
 
 
 def hp_bar(hp: hp_system.HPSystem, midtop: tuple, size: float):
     displayer = game.get_game().displayer
-    width = int(size * 0.8)
-    height = int(size * 0.1)
-    rect = pg.Rect(midtop[0] - width // 2, midtop[1] - height - size // 3, width, height)
+    p = bool(hp.pacify)
+    width = 120 / game.get_game().player.get_screen_scale()
+    height = (25 + p * 10) / game.get_game().player.get_screen_scale()
+    size = size / game.get_game().player.get_screen_scale()
+    rect = pg.Rect(midtop[0] - width // 2, midtop[1] - height - size // 5, width, height)
     hp_rate = hp.hp / hp.max_hp
     hp_dis_rate = hp.displayed_hp / hp.max_hp
     hp_rate = max(0.0, min(1.0, hp_rate))
-    if hp_dis_rate >= 1.0:
+    pacify_rate = hp.pacify / hp.max_hp
+    if hp.hp >= hp.max_hp * 999999 / 1000000 and not p:
         return
     hp_dis_rate = max(0.0, min(1.0, hp_dis_rate))
     color = (255 - hp_rate * 255, hp_rate * 255, 0)
     color_dis = (255 - hp_dis_rate * 255, hp_dis_rate * 255, 0)
-    pg.draw.rect(displayer.canvas, color_dis, (rect.left, rect.top, int(width * hp_dis_rate), height))
-    pg.draw.rect(displayer.canvas, color, (rect.left, rect.top, int(width * hp_rate), height))
-    pg.draw.rect(displayer.canvas, (0, 0, 0), rect, 2)
+    if constants.USE_ALPHA:
+        surf = pg.Surface((width, height), pg.SRCALPHA)
+        pg.draw.rect(surf, color_dis, (0, 0, int(width * hp_dis_rate), height), border_radius=5)
+        pg.draw.rect(surf, color, (0, 0, int(width * hp_rate), height), border_radius=5)
+        if p:
+            pg.draw.rect(surf, (0, 127, 255), (0, 25 / game.get_game().player.get_screen_scale(),
+                                               int(width * pacify_rate), 10 / game.get_game().player.get_screen_scale()), border_radius=5)
+        pg.draw.rect(surf, (255, 255, 255), (0, 0, width, height), 2, border_radius=5)
+        surf.set_alpha(80)
+        displayer.canvas.blit(surf, (rect.left, rect.top))
+    else:
+        pg.draw.rect(displayer.canvas, color_dis, (rect.left, rect.top, int(width * hp_dis_rate), height), border_radius=5)
+        pg.draw.rect(displayer.canvas, color, (rect.left, rect.top, int(width * hp_rate), height), border_radius=5)
+        if p:
+            pg.draw.rect(displayer.canvas, (0, 255, 255), (rect.left, rect.top + 25 / game.get_game().player.get_screen_scale(),
+                                                           int(width * pacify_rate), 10 / game.get_game().player.get_screen_scale()), border_radius=5)
+        pg.draw.rect(displayer.canvas, (255, 255, 255), rect, 2, border_radius=5)
 
 
 LANG = 'en'
@@ -86,6 +102,34 @@ def item_mouse(x, y, name, no, amount, scale, anchor='left', _window=None, mp=No
             p_y = 0
         else:
             p_y = 36 * l - mps[1] + 36
+
+        mw = t.get_width()
+        mh = 36 * l
+        ts = []
+
+        for j in range(l - 1):
+            ft = game.get_game().displayer.font.render(text(desc_split[j]), True,
+                                                      (255, 255, 255), (0, 0, 0))
+            ts.append(ft)
+            mw = max(mw, ft.get_width())
+
+        mr = pg.Rect(0, 0, mw + 50, mh + 50)
+        if anchor == 'left':
+            mr.bottomleft = (mps[0] - 25, mps[1] - 36 + p_y + 25)
+        else:
+            mr.bottomright = (mps[0] - 80 * scale + 25, mps[1] - 36 + p_y + 25)
+        pg.draw.rect(window, (0, 0, 0), mr, border_radius=8)
+        rc = inventory.Inventory.Rarity_Colors[inventory.ITEMS[name].rarity]
+        pg.draw.rect(window, rc, mr, 5, 8)
+
+        for j in range(l - 1):
+            ft = ts[j]
+            if anchor == 'left':
+                tr = ft.get_rect(bottomleft=(mps[0], mps[1] - 36 * (l - j - 1) + p_y))
+            else:
+                tr = ft.get_rect(bottomright=(mps[0] - 80 * scale, mps[1] - 36 * (l - j - 1) + p_y))
+            window.blit(ft, tr)
+
         if anchor == 'left':
             tr = t.get_rect(bottomleft=(mps[0],
                                         mps[1] - 36 * l + p_y))
@@ -94,17 +138,8 @@ def item_mouse(x, y, name, no, amount, scale, anchor='left', _window=None, mp=No
                                          mps[1] - 36 * l + p_y))
         window.blit(t, tr)
 
-        for j in range(l - 1):
-            t = game.get_game().displayer.font.render(text(desc_split[j]), True,
-                                                      (255, 255, 255), (0, 0, 0))
-            if anchor == 'left':
-                tr = t.get_rect(bottomleft=(mps[0], mps[1] - 36 * (l - j - 1) + p_y))
-            else:
-                tr = t.get_rect(bottomright=(mps[0] - 80 * scale, mps[1] - 36 * (l - j - 1) + p_y))
-            window.blit(t, tr)
 
-
-def item_display(x, y, name, no, amount, scale, selected=False, _window=None, mp=None):
+def item_display(x, y, name, no, amount, scale, selected=False, _window=None, mp=None, red=False):
     if _window is None:
         window = game.get_game().displayer.canvas
     else:
@@ -114,13 +149,18 @@ def item_display(x, y, name, no, amount, scale, selected=False, _window=None, mp
         mps = mp
     else:
         mps = game.get_game().displayer.reflect(*pg.mouse.get_pos())
+    rc = inventory.Inventory.Rarity_Colors[inventory.ITEMS[name].rarity]
+    if red:
+        rc = (255, 0, 0)
     if pg.Rect(r).collidepoint(mps):
-        pg.draw.rect(window, (160, 160, 160), r)
+        pg.draw.rect(window, (rc[0] * 2 // 3, rc[1] * 2 // 3, rc[2] * 2 // 3), r, border_radius=5)
+    elif red:
+        pg.draw.rect(window, (255, 200, 200), r, border_radius=5)
     else:
-        pg.draw.rect(window, (127, 127, 127), r)
-    pg.draw.rect(window, (0, 0, 0), r, 3)
+        pg.draw.rect(window, (200, 200, 200), r, border_radius=5)
+    pg.draw.rect(window, (0, 0, 0), r, 3, 5)
     im = game.get_game().graphics['items_' + inventory.ITEMS[name].img]
-    im = copy.copy(pg.transform.scale(im, (64 * scale, 64 * scale)))
+    im = pg.transform.scale(im, (64 * scale, 64 * scale))
     imr = im.get_rect(center=(x + 40 * scale, y + 40 * scale))
     window.blit(im, imr)
     if amount not in ['1', '']:
@@ -131,4 +171,4 @@ def item_display(x, y, name, no, amount, scale, selected=False, _window=None, mp
     tr = t.get_rect(topright=(x + 80 * scale - 10, y + 5))
     window.blit(t, tr)
     if selected:
-        pg.draw.rect(window, (255, 255, 0), (x, y, 80 * scale, 80 * scale), 6)
+        pg.draw.rect(window, (255, 255, 0), (x, y, 80 * scale, 80 * scale), 6, 5)

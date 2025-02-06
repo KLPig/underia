@@ -9,7 +9,11 @@ class DamageTypes:
     PIERCING: int = 0
     ARCANE: int = 0
     TOUCHING: int = 0
-
+    THINKING: int = 0
+    MINE_POWER: int = 0
+    OCTAVE: int = 0
+    HALLOW: int = 0
+    PACIFY: int = 0
 
 for element in dir(elements.ElementTypes):
     if not element.startswith('__'):
@@ -26,4 +30,4 @@ for i in range(len(dirs)):
 NAMES = {}
 
 for i in range(len(dirs)):
-    NAMES[getattr(DamageTypes, dirs[i])] = dirs[i].lower()
+    NAMES[getattr(DamageTypes, dirs[i])] = dirs[i].lower().replace('_', '')
