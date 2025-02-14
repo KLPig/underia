@@ -100,6 +100,20 @@ try:
             game.seed
         except AttributeError:
             game.seed = random.randint(0, 1000000)
+        try:
+            game.player.ui_tasks
+        except AttributeError:
+            game.player.ui_tasks = False
+            game.player.ui_attributes = False
+        try:
+            game.player.ui_recipes
+        except AttributeError:
+            game.player.ui_recipes = False
+            game.player.ui_recipe_overlook = False
+        try:
+            game.hallow_points
+        except AttributeError:
+            game.hallow_points = []
         game.player.t_ntc_timer = 200
     else:
         game = underia.Game()
@@ -132,11 +146,23 @@ game.player.hp_sys.shields = []
 for s in setups:
     exec(s)
 
+game.hallow_points = []
+
 @game.update_function
 def update():
     for u in updates:
         exec(u)
     bm = 'blood moon' in game.world_events
+    if game.stage > 6:
+        f = 0
+        for pp, r in game.hallow_points:
+            if physics.distance(pp[0] - game.player.obj.pos[0], pp[1] - game.player.obj.pos[1]) < r * 7.5:
+                f = 1
+        if not f:
+            td = (2.25 + random.random() * 0.5) * 2500
+            ax, ay = physics.rotation_coordinate(random.randint(0, 360))
+            game.hallow_points.append(((game.player.obj.pos[0] + ax * td,
+                                        game.player.obj.pos[1] + ay * td), random.randint( 1600, 2000)))
     for entity in game.entities:
         d = physics.distance(entity.obj.pos[0] - game.player.obj.pos[0], entity.obj.pos[1] - game.player.obj.pos[1])
         if d > 8000 + entity.IS_MENACE * 8000 or (d > 1200 + (entity.IS_MENACE or entity.VITAL) * 1200 and

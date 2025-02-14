@@ -12,6 +12,8 @@ note_files = {
     'piano': 'assets/sounds/piano_c5.wav',
     'flute': 'assets/sounds/flute_c5.wav',
     'trumpet': 'assets/sounds/trumpet_c5.wav',
+    'snare': 'assets/sounds/snare_c5.wav',
+    'bell': 'assets/sounds/bell_c5.wav'
 }
 
 datas: dict[str, tuple[int, np.ndarray]] = {

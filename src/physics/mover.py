@@ -29,6 +29,8 @@ class Mover:
 
     def update(self):
         self.on_update()
+        if not self.MASS:
+            self.MASS = 1.0
         self.velocity.add(self.force.get_net_vector(1 / self.MASS))
         self.force.clear()
         vx, vy = self.velocity.get_net_coordinates()

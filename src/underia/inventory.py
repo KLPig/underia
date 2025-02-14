@@ -99,6 +99,8 @@ class Inventory:
                             self.accessory_data['max_mana'] = int(desc.removesuffix('additionalmaximummana'))
                         elif desc.endswith('additionalmaximuminspiration'):
                             self.accessory_data['max_ins'] = int(desc.removesuffix('additionalmaximuminspiration'))
+                        elif desc.endswith('grenadescattering'):
+                            self.accessory_data['grenade_scat'] = 1
                         elif desc[0] in ['+', '-']:
                             print(f"Unknown accessory data: {desc}")
                     except ValueError:
@@ -608,6 +610,13 @@ items_dict: dict[str, Inventory.Item] = {
     'time_flies': Inventory.Item('Time Flies', 'Hours and hours are flying by.', 'time_flies', 9,
                                   [TAGS['item'], TAGS['weapon'], TAGS['knife']]),
 
+    'shuriken': Inventory.Item('Shuriken', '', 'shuriken', 0, [TAGS['item'], TAGS['weapon'], TAGS['knife']]),
+
+    'grenade': Inventory.Item('Grenade', '', 'grenade', 2, [TAGS['item'], TAGS['weapon'], TAGS['knife']]),
+    'jade_grenade': Inventory.Item('Jade Grenade', '', 'jade_grenade', 4, [TAGS['item'], TAGS['weapon'], TAGS['knife']]),
+    'grenade_kings_jade_mask': Inventory.Item('Grenade King\'s Jade Mask', 'The jade-masked grenade king.\nHalf the damage range of grenades\nEnable grenade scattering', 'grenade_kings_jade_mask', 4,
+                                               [TAGS['item'], TAGS['accessory']]),
+
     'arrow': Inventory.Item('Arrow', '', 'arrow', 0, [TAGS['item'], TAGS['ammo'], TAGS['ammo_arrow']]),
     'coniferous_leaf': Inventory.Item('Coniferous Leaf', '', 'coniferous_leaf', 0,
                                       [TAGS['item'], TAGS['ammo'], TAGS['ammo_arrow']]),
@@ -889,6 +898,14 @@ items_dict: dict[str, Inventory.Item] = {
                                     [TAGS['item'], TAGS['weapon'], TAGS['poet_weapon']]),
     'storm_harp': Inventory.Item('Storm Harp', 'Continuously shoot sound waves, dealing continuous damage.', 'storm_harp', 5,
                                   [TAGS['item'], TAGS['weapon'], TAGS['poet_weapon']]),
+    'snare': Inventory.Item('Snare', 'Deal strong damage to enemy nearby.', 'snare', 5,
+                            [TAGS['item'], TAGS['weapon'], TAGS['poet_weapon']]),
+    'watcher_bell': Inventory.Item('Watcher Bell', 'Summon ball following the enemy.', 'watcher_bell', 5,
+                                    [TAGS['item'], TAGS['weapon'], TAGS['poet_weapon']]),
+    'apple_smells_good': Inventory.Item('Apple Smells Good', 'Rapidly shoot sound waves.', 'apple_smells_good', 5,
+                                          [TAGS['item'], TAGS['weapon'], TAGS['poet_weapon']]),
+    'holy_stormer': Inventory.Item('Holy Stormer', 'Summon a storm of sound waves.', 'holy_stormer', 5,
+                                    [TAGS['item'], TAGS['weapon'], TAGS['poet_weapon']]),
 
     'bible': Inventory.Item('Bible', 'The god says...', 'bible', 4,
                             [TAGS['item'], TAGS['workstation']]),
@@ -904,6 +921,12 @@ items_dict: dict[str, Inventory.Item] = {
     'great_heal': Inventory.Item('Great Heal', 'Heal continuously.', 'great_heal', 5,
                                   [TAGS['item'], TAGS['weapon'], TAGS['priest_healer'], TAGS['magic_element_hallow'],
                                    TAGS['magic_lv_4']]),
+    'the_prayer': Inventory.Item('The Prayer', 'Heals ally.', 'the_prayer', 5,
+                                  [TAGS['item'], TAGS['weapon'], TAGS['priest_healer'], TAGS['magic_element_hallow'],
+                                   TAGS['magic_lv_2']]),
+    'the_true_gods_penalty': Inventory.Item('The True God\'s Penalty', 'Summon a continous holy lightning bolt.', 'the_true_gods_penalty', 5,
+                                             [TAGS['item'], TAGS['weapon'], TAGS['priest_weapon'], TAGS['magic_element_hallow'],
+                                              TAGS['magic_lv_4']]),
 
     'z': Inventory.Item('\'Z\'', 'Z..z..Z..\nThey always say it as they fall asleep.', 'z', 4,
                         [TAGS['item'], TAGS['workstation']]),
@@ -1146,22 +1169,26 @@ items_dict: dict[str, Inventory.Item] = {
                                    'cross_amulet', 3, [TAGS['item'], TAGS['accessory']]),
     'grey_hood': Inventory.Item('Grey Hood', '12kg\n-30% karma reduce\n+12% hallow damage\n+40% speed\n'
                                                     '+20/sec mana regeneration\n+20/sec regeneration\n+8% critical\n'
-                                             '+8 touching defense\n+26 magic defense', 'grey_hood',
+                                             '+48 touching defense\n+26 magic defense', 'grey_hood',
                                 5, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
     'windstorm_churchs_mark': Inventory.Item('Windstorm Church\'s Mark', '15kg\n-12% karma reduce\n+20% hallow damage\n+30% speed\n'
-                                                              '+12/sec mana regeneration\n+24 touching defense\n+38 magic defense\n'
+                                                              '+12/sec mana regeneration\n+54 touching defense\n+38 magic defense\n'
                                                                          'Y: Increase karma by 120.', 'windstorm_churchs_mark',
                                                5, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
 
     'eye_of_sleep': Inventory.Item('Eye of Sleep', '+15% pacify time', 'eye_of_sleep', 4,
                                    [TAGS['item'], TAGS['accessory']]),
     'hypnotists_tie': Inventory.Item('Hypnotist\'s Tie', '+18% pacify time\n+10% speed\n+10/sec regeneration\n+10/sec mana regeneration\n'
-                                                         '+12 touching defense\n+18 magic defense', 'hypnotists_tie', 3,
+                                                         '+42 touching defense\n+18 magic defense', 'hypnotists_tie', 3,
                                       [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
     'windstorm_pacifiers_mark': Inventory.Item('Windstorm Pacifier\'s Mark', '10kg\n+8% pacify time\n+18% pacify damage\n+20% speed\n'
                                                               '+10/sec mana regeneration\n+10/sec regeneration\n+12% critical\n'
                                                                          '+36 touching defense\n+36 magic defense\nY: Increase enemies\' pacify time by 10s.\n400 mana cost', 'windstorm_pacifiers_mark',
                                                5, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
+
+    'sight_ingot': Inventory.Item('Sight Ingot', 'Essence of a watcher.', 'sight_ingot', 5, [TAGS['item']]),
+    'strength_ingot': Inventory.Item('Strength Ingot', 'Essence of a warrior.', 'strength_ingot', 5, [TAGS['item']]),
+    'phantom_ingot': Inventory.Item('Phantom Ingot', 'Essence of a lie.', 'phantom_ingot', 5, [TAGS['item']]),
 
     'nice_cream': Inventory.Item('Nice Cream', 'Increase your speed.\nDuration: 36s', 'nice_cream', 4, [TAGS['item']]),
     'iron_donut': Inventory.Item('Iron Donut', 'Increase your defense by 32.\nDuration: 54s', 'iron_donut', 4, [TAGS['item']]),
@@ -1206,6 +1233,7 @@ items_dict: dict[str, Inventory.Item] = {
     'wind': Inventory.Item('Wind', 'Summon the sandstorm', 'wind', 0, [TAGS['item']]),
     'blood_substance': Inventory.Item('Blood Substance', 'Summon the Abyss Eye', 'blood_substance', 0, [TAGS['item']]),
     'sky_painting': Inventory.Item('Sky Painting', 'Summon the sky tri-kubes', 'sky_painting', 0, [TAGS['item']]),
+    'green_thing': Inventory.Item('Green Thing', 'Summon the heaven goblins.', 'green_thing', 0, [TAGS['item']]),
     'mechanic_eye': Inventory.Item('Mechanic Eye', 'Summon the twin eyes', 'mechanic_eye', 0, [TAGS['item']]),
     'mechanic_worm': Inventory.Item('Mechanic Worm', 'Summon the destroyer', 'mechanic_worm', 0, [TAGS['item']]),
     'electric_unit': Inventory.Item('Electric Unit', 'Summon the CPU', 'electric_unit', 0, [TAGS['item']]),
@@ -1305,6 +1333,7 @@ RECIPES = [
     Recipe({'iron_ingot': 15, 'anvil': 1}, 'iron_wand'),
     Recipe({'iron_ingot': 20, 'anvil': 1}, 'iron_bow'),
     Recipe({'iron_ingot': 12, 'steel_ingot': 10, 'anvil': 1}, 'dagger'),
+    Recipe({'iron_ingot': 6, 'steel_ingot': 6, 'anvil': 1}, 'shuriken'),
     Recipe({'iron_ingot': 25, 'steel_ingot': 2, 'anvil': 1}, 'pistol'),
     Recipe({'iron_ingot': 5, 'steel_ingot': 20, 'anvil': 1}, 'rifle'),
     Recipe({'steel_ingot': 24, 'iron_ingot': 6, 'anvil': 1}, 'steel_bow'),
@@ -1359,6 +1388,7 @@ RECIPES = [
     Recipe({'firy_plant': 1, 'firite_ingot': 24, 'anvil': 1}, 'fire_eye'),
     Recipe({'blood_ingot': 5, 'firite_ingot': 30, 'anvil': 1}, 'magma_assaulter'),
     Recipe({'firite_ingot': 25, 'platinum': 20, 'anvil': 1}, 'volcano'),
+    Recipe({'firite_ingot': 18, 'platinum': 28, 'anvil': 1}, 'grenade'),
     Recipe({'firite_ingot': 64, 'platinum_ingot': 16, 'anvil': 1}, 'firite_helmet'),
     Recipe({'firite_ingot': 64, 'platinum_ingot': 16, 'anvil': 1}, 'firite_cloak'),
     Recipe({'firite_ingot': 64, 'platinum_ingot': 16, 'anvil': 1}, 'firite_pluvial'),
@@ -1375,6 +1405,8 @@ RECIPES = [
     Recipe({'platinum_ingot': 30, 'mysterious_ingot': 5, 'anvil': 1}, 'winds_necklace'),
     Recipe({'mysterious_ingot': 12, 'anvil': 1}, 'recurve_bow'),
     Recipe({'mysterious_ingot': 10, 'blood_ingot': 8, 'anvil': 1}, 'sand_sword'),
+    Recipe({'mysterious_ingot': 18, 'platinum': 28, 'anvil': 1, 'grenade': 1}, 'jade_grenade'),
+    Recipe({'mysterious_ingot': 32, 'platinum': 16, 'anvil': 1}, 'grenade_kings_jade_mask'),
     Recipe({'mysterious_ingot': 1, 'blood_ingot': 2, 'anvil': 1}, 'rock_bullet', 200),
     Recipe({'mysterious_ingot': 11, 'blood_ingot': 20, 'mana_crystal': 2}, 'rock_wand'),
     Recipe({'platinum_sword': 1, 'magic_sword': 1, 'bloody_sword': 1, 'volcano': 1, 'sand_sword': 1, 'storm_core': 1},
@@ -1594,6 +1626,10 @@ RECIPES = [
     Recipe({'mysterious_substance': 30, 'note': 1}, 'note_sheet'),
     Recipe({'firite_ingot': 40, 'firy_plant': 18, 'note': 1}, 'red_formal_hat'),
     Recipe({'storm_core': 4, 'note': 1}, 'windstorm_musicians_mark'),
+    Recipe({'strength_ingot': 18, 'note': 1}, 'snare'),
+    Recipe({'sight_ingot': 18, 'note': 1}, 'watcher_bell'),
+    Recipe({'phantom_ingot': 17, 'apple_knife': 1, 'note': 1}, 'apple_smells_good'),
+    Recipe({'phantom_ingot': 24, 'strength_ingot': 24, 'sight_ingot': 24, 'storm_core': 12, 'note': 1}, 'holy_stormer'),
 
     Recipe({'blood_ingot': 44, 'bible': 1}, 'saint_healer'),
     Recipe({'mysterious_substance': 12, 'torch': 1, 'bible': 1}, 'holy_shine'),
@@ -1602,6 +1638,8 @@ RECIPES = [
     Recipe({'mysterious_ingot': 32, 'bible': 1, 'mana_crystal': 2, 'seed_amulet': 1}, 'cross_amulet'),
     Recipe({'iron_ingot': 32, 'steel_ingot': 32, 'bible': 1}, 'grey_hood'),
     Recipe({'storm_core': 4, 'bible': 1}, 'windstorm_churchs_mark'),
+    Recipe({'sight_ingot': 18, 'bible': 1}, 'the_prayer'),
+    Recipe({'strength_ingot': 18, 'bible': 1}, 'the_true_gods_penalty'),
 
     Recipe({'z': 1, 'mysterious_ingot': 12, 'platinum_ingot': 48}, 'mystery_watch'),
     Recipe({'z': 1, 'blood_ingot': 32, 'rune_eye': 1}, 'eye_of_sleep'),
@@ -1621,6 +1659,8 @@ RECIPES = [
     Recipe({'cell_organization': 10, 'mysterious_substance': 20}, 'wind'),
     Recipe({'cell_organization': 20, 'storm_core': 3}, 'blood_substance'),
     Recipe({'palladium_ingot': 5, 'mithrill_ingot': 5, 'titanium_ingot': 5, 'soul_of_flying': 5}, 'sky_painting'),
+    Recipe({'palladium_ingot': 5, 'mithrill_ingot': 5, 'titanium_ingot': 5, 'soul_of_flying': 5}, 'green_thing'),
+    Recipe({'palladium_ingot': 5, 'mithrill_ingot': 5, 'titanium_ingot': 5, 'bible': 1}, 'green_thing'),
     Recipe({'palladium_ingot': 5, 'mithrill_ingot': 5, 'titanium_ingot': 5, 'soul': 10}, 'mechanic_eye'),
     Recipe({'mithrill_ingot': 5, 'titanium_ingot': 5, 'palladium_ingot': 5, 'soul': 10}, 'mechanic_worm'),
     Recipe({'titanium_ingot': 5, 'palladium_ingot': 5, 'mithrill_ingot': 5, 'soul': 10}, 'electric_unit'),

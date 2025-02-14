@@ -152,13 +152,16 @@ def item_display(x, y, name, no, amount, scale, selected=False, _window=None, mp
     rc = inventory.Inventory.Rarity_Colors[inventory.ITEMS[name].rarity]
     if red:
         rc = (255, 0, 0)
+    sf = pg.Surface(pg.Rect(r).size, pg.SRCALPHA)
     if pg.Rect(r).collidepoint(mps):
-        pg.draw.rect(window, (rc[0] * 2 // 3, rc[1] * 2 // 3, rc[2] * 2 // 3), r, border_radius=5)
+        pg.draw.rect(sf, (rc[0] * 2 // 3, rc[1] * 2 // 3, rc[2] * 2 // 3), ((0, 0), (sf.get_size())), border_radius=5)
     elif red:
-        pg.draw.rect(window, (255, 200, 200), r, border_radius=5)
+        pg.draw.rect(sf, (255, 200, 200), ((0, 0), (sf.get_size())), border_radius=5)
     else:
-        pg.draw.rect(window, (200, 200, 200), r, border_radius=5)
-    pg.draw.rect(window, (0, 0, 0), r, 3, 5)
+        pg.draw.rect(sf, (200, 200, 200), ((0, 0), (sf.get_size())), border_radius=5)
+    # pg.draw.rect(sf, (0, 0, 0), r, 3, 5)
+    sf.set_alpha(128 + (name != 'null') * 64)
+    window.blit(sf, r)
     im = game.get_game().graphics['items_' + inventory.ITEMS[name].img]
     im = pg.transform.scale(im, (64 * scale, 64 * scale))
     imr = im.get_rect(center=(x + 40 * scale, y + 40 * scale))

@@ -525,7 +525,7 @@ class Projectiles:
                         continue
                     if len(weapons.WEAPONS[self.DAMAGE_AS].gains):
                         gain = random.choice(weapons.WEAPONS[self.DAMAGE_AS].gains)
-                        game.get_game().player.hp_sys.effect(gain(3, 3))
+                        game.get_game().player.hp_sys.effect(gain(3 + game.get_game().player.calculate_data('gain_duration', rate_data=False), 3))
                     game.get_game().player.inspiration += int(weapons.WEAPONS[self.DAMAGE_AS].back_rate *
                                                            weapons.WEAPONS[self.DAMAGE_AS].inspiration_cost)
 
@@ -542,6 +542,125 @@ class Projectiles:
         ELLIPSE_SIZE = (40, 100)
         ELLIPSE_COLOUR = (255, 220, 200)
         SPEED = 1200
+
+    class AppleSmellsGood(GoldFine):
+        DAMAGE_AS = 'apple_smells_good'
+        IMG = 'projectiles_apple_smells_good'
+        ELLIPSE_SIZE = (40, 160)
+        ELLIPSE_COLOUR = (255, 150, 150)
+        SPEED = 1500
+
+    class HolyStormer(GoldFine):
+        DAMAGE_AS = 'holy_stormer'
+        IMG = 'projectiles_holy_stormer'
+        ELLIPSE_SIZE = (80, 600)
+        ELLIPSE_COLOUR = (0, 255, 255)
+        SPEED = 1000
+        ENABLE_IMMUNE = False
+
+        def __init__(self, pos, _):
+            px, py = pos
+            super().__init__((px, py + 1000), vector.coordinate_rotation(0, -1))
+
+    class Snare(GoldFine):
+        DAMAGE_AS = 'snare'
+        IMG = 'projectiles_snare'
+        RANGE = 1200
+
+        def __init__(self, pos, rotation):
+            super().__init__(pos, rotation)
+            self.obj.apply_force(vector.Vector(rotation, self.SPEED))
+            self.set_rotation(rotation)
+            self.tick = 0
+            self.hit = False
+            game.get_game().displayer.effect(fade_circle.p_fade_circle(*position.displayed_position(pos), col=(200, 200, 200),
+                                                                       sp=self.RANGE / 10, t=10, follow_map=True))
+
+        def update(self):
+            self.tick += 1
+            if self.tick > 5:
+                self.dead = True
+            self.damage()
+
+        def damage(self):
+            for entity in game.get_game().entities:
+                if (vector.distance(entity.obj.pos[0] - self.obj.pos[0], entity.obj.pos[1] - self.obj.pos[1]) <
+                        self.RANGE + (entity.d_img.get_width() + self.d_img.get_height()) / 4):
+                    if entity.hp_sys.is_immune and self.ENABLE_IMMUNE:
+                        continue
+                    entity.hp_sys.damage(weapons.WEAPONS[self.DAMAGE_AS].damages[
+                                             damages.DamageTypes.OCTAVE] * game.get_game().player.attack *
+                                         game.get_game().player.attacks[3], damages.DamageTypes.OCTAVE,
+                                         )
+                    if self.ENABLE_IMMUNE:
+                        entity.hp_sys.enable_immume()
+                    if not self.hit:
+                        self.hit = True
+                    else:
+                        continue
+                    if len(weapons.WEAPONS[self.DAMAGE_AS].gains):
+                        gain = random.choice(weapons.WEAPONS[self.DAMAGE_AS].gains)
+                        game.get_game().player.hp_sys.effect(gain(3 + game.get_game().player.calculate_data('gain_duration', rate_data=False), 3))
+                    game.get_game().player.inspiration += int(weapons.WEAPONS[self.DAMAGE_AS].back_rate *
+                                                           weapons.WEAPONS[self.DAMAGE_AS].inspiration_cost)
+
+    class WatcherBell(Projectile):
+        DAMAGE_AS = 'watcher_bell'
+        ENABLE_IMMUNE = True
+
+        def __init__(self, pos, rotation):
+            super().__init__(pos, rotation, motion=mover.Mover)
+            self.rot = rotation
+            self.dead = False
+            self.tick = 0
+            self.obj.FRICTION = 0.95
+            self.obj.MASS = 500
+            self.ax, self.ay = vector.rotation_coordinate(random.randint(0, 359))
+            self.hit = False
+
+        def update(self):
+            if self.tick < 6:
+                self.obj.pos = (self.obj.pos[0] + 80 * self.ax / (self.tick + 1),
+                                self.obj.pos[1] + 80 * self.ay / (self.tick + 1))
+            else:
+                tar, _ = self.get_closest_entity()
+                if tar:
+                    self.obj.apply_force(vector.Vector(vector.coordinate_rotation(tar.obj.pos[0] - self.obj.pos[0],
+                                                                                   tar.obj.pos[1] - self.obj.pos[1]),
+                                                       1200))
+            self.obj.update()
+            pg.draw.circle(game.get_game().displayer.canvas, (255, 255, 255),
+                           position.displayed_position(self.obj.pos), int(20 / game.get_game().player.get_screen_scale()))
+            pg.draw.circle(game.get_game().displayer.canvas, (200, 255, 0),
+                           position.displayed_position(self.obj.pos), int(20 / game.get_game().player.get_screen_scale()),
+                           int(5 / game.get_game().player.get_screen_scale()))
+            self.tick += 1
+            self.damage()
+            if self.tick > 35:
+                self.dead = True
+
+        def damage(self):
+            for entity in game.get_game().entities:
+                if (vector.distance(entity.obj.pos[0] - self.obj.pos[0], entity.obj.pos[1] - self.obj.pos[1]) <
+                        120 + (entity.d_img.get_width() + entity.d_img.get_height()) / 4):
+                    if entity.hp_sys.is_immune and self.ENABLE_IMMUNE:
+                        continue
+                    entity.hp_sys.damage(weapons.WEAPONS[self.DAMAGE_AS].damages[
+                                             damages.DamageTypes.OCTAVE] * game.get_game().player.attack *
+                                         game.get_game().player.attacks[3], damages.DamageTypes.OCTAVE,
+                                         )
+                    if self.ENABLE_IMMUNE:
+                        entity.hp_sys.enable_immume()
+                    if not self.hit:
+                        self.hit = True
+                    else:
+                        continue
+                    self.dead = True
+                    if len(weapons.WEAPONS[self.DAMAGE_AS].gains):
+                        gain = random.choice(weapons.WEAPONS[self.DAMAGE_AS].gains)
+                        game.get_game().player.hp_sys.effect(gain(3 + game.get_game().player.calculate_data('gain_duration', rate_data=False), 3))
+                    game.get_game().player.inspiration += int(weapons.WEAPONS[self.DAMAGE_AS].back_rate *
+                                                              weapons.WEAPONS[self.DAMAGE_AS].inspiration_cost)
 
     class MagicCircle(Projectile):
         DAMAGE_AS = 'magic_circle'
@@ -1534,10 +1653,10 @@ class Projectiles:
             super().update()
             self.tick += 1
             self.damage()
-            if self.tick > 10:
-                self.dead = True
 
         def damage(self):
+            if self.tick > 10:
+                self.dead = True
             for e in game.get_game().entities:
                 if vector.distance(self.obj.pos[0] - e.obj.pos[0], self.obj.pos[1] - e.obj.pos[1]) < 200:
                     karma = game.get_game().player.good_karma
@@ -1550,6 +1669,40 @@ class Projectiles:
                     e.hp_sys.damage(weapons.WEAPONS['the_gods_penalty'].damages[damages.DamageTypes.HALLOW] *\
                                      game.get_game().player.attack * game.get_game().player.attacks[4] * rate,
                                     damages.DamageTypes.HALLOW)
+
+    class TheTrueGodsPenalty(TheGodsPenalty):
+        def update(self):
+            self.set_rotation(90)
+            pg.draw.circle(game.get_game().displayer.canvas, (255, 255, 0),
+                           position.displayed_position(self.obj.pos),
+                           int(200 / game.get_game().player.get_screen_scale()),
+                           int(5 / game.get_game().player.get_screen_scale()))
+            if self.tick < 10:
+                pass
+            elif self.tick < 50 and self.tick % 8 < 3:
+                super(Projectiles.TheGodsPenalty, self).update()
+                self.damage()
+                if self.tick % 8 == 1:
+                    self.obj.pos = position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+            elif self.tick >= 50:
+                self.dead = True
+            self.tick += 1
+
+        def damage(self):
+            for e in game.get_game().entities:
+                if vector.distance(self.obj.pos[0] - e.obj.pos[0], self.obj.pos[1] - e.obj.pos[1]) < 200 \
+                        and not e.hp_sys.is_immune:
+                    karma = game.get_game().player.good_karma
+                    mult = weapons.WEAPONS['the_true_gods_penalty'].max_mult
+                    step = 80
+                    if not karma:
+                        rate = 1
+                    else:
+                        rate = (1 + step / karma) ** (karma / step * math.log(mult, math.e))
+                    e.hp_sys.damage(weapons.WEAPONS['the_true_gods_penalty'].damages[damages.DamageTypes.HALLOW] *\
+                                     game.get_game().player.attack * game.get_game().player.attacks[4] * rate,
+                                    damages.DamageTypes.HALLOW)
+                    e.hp_sys.enable_immume()
 
     class Bones(Projectile):
         pass
@@ -1887,6 +2040,10 @@ class Projectiles:
         DAMAGE_AS = 'bloody_shortknife'
         IMG = 'items_weapons_bloody_shortknife'
 
+    class Shuriken(ThiefWeapon):
+        DAMAGE_AS = 'shuriken'
+        IMG = 'items_weapons_shuriken'
+
     class DaedalusTwinknife(Projectile):
         def __init__(self, pos, rotation, power):
             super().__init__(pos, rotation, motion=mover.Mover)
@@ -1904,6 +2061,50 @@ class Projectiles:
                 pj.DAMAGE_AS = 'daedalus_twinknife'
                 game.get_game().projectiles.append(pj)
 
+    class Grenade(ThiefWeapon):
+        DAMAGE_AS = 'grenade'
+        IMG = 'items_weapons_grenade'
+        DMG_RANGE = 500
+        DEAD_DELETE = False
+        COL = (255, 0, 0)
+        K = 5
+
+        def __init__(self, pos, rotation, power, k=-1):
+            if k == -1 and game.get_game().player.calculate_data('grenade_scat', rate_data=False):
+                for _ in range(self.K + random.randint(-2, 2)):
+                    game.get_game().projectiles.append(type(self)(pos, rotation + random.randint(-16, 16),
+                                                                  power * (.5 + random.random()) / 2, k=0))
+            super().__init__(pos, rotation, power)
+            self.img = game.get_game().graphics['items_weapons_grenade']
+            self.d_img = self.img
+            self.t = power // 80
+            if game.get_game().player.calculate_data('grenade_scat', rate_data=False):
+                self.DMG_RANGE //= 2
+
+        def damage(self):
+            if self.t:
+                self.t -= 1
+            for e in game.get_game().entities:
+                if vector.distance(self.obj.pos[0] - e.obj.pos[0], self.obj.pos[1] - e.obj.pos[1]) < 120 or not self.t:
+                    game.get_game().displayer.effect(fade_circle.p_fade_circle(*position.displayed_position(self.obj.pos),
+                                                                               self.COL, t=10,
+                                                                               sp=self.DMG_RANGE / game.get_game().player.get_screen_scale()))
+                    for ee in game.get_game().entities:
+                        if vector.distance(ee.obj.pos[0] - self.obj.pos[0], ee.obj.pos[1] - self.obj.pos[1]) < \
+                            self.DMG_RANGE + (ee.d_img.get_width() + self.d_img.get_width()) / 4:
+                            ee.hp_sys.damage(
+                                weapons.WEAPONS[self.DAMAGE_AS].damages[damages.DamageTypes.PIERCING] * game.get_game().player.attack *
+                                game.get_game().player.attacks[1], damages.DamageTypes.PHYSICAL)
+                    self.dead = True
+                    return
+
+    class JadeGrenade(Grenade):
+        DAMAGE_AS = 'grenade'
+        IMG = 'items_weapons_grenade'
+        DMG_RANGE = 800
+        DEAD_DELETE = False
+        COL = (255, 200, 100)
+        K = 10
 
     class TrueTwinblade(ThiefWeapon):
         DAMAGE_AS = 'true_twinblade'
@@ -2169,4 +2370,7 @@ THIEF_WEAPONS = {
     'chaos_chaos': Projectiles.ChaosChaos,
     'storm_stabber': Projectiles.StormStabber,
     'time_flies': Projectiles.TimeFlies,
+    'grenade': Projectiles.Grenade,
+    'jade_grenade': Projectiles.JadeGrenade,
+    'shuriken': Projectiles.Shuriken,
 }

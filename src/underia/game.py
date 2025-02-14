@@ -7,15 +7,14 @@ import pygame as pg
 from src import resources, visual, constants, physics
 from src.underia import player, entity, projectiles, weapons, inventory, dialog
 import perlin_noise
-import datetime
 
 MUSICS = {
     'lantern': ['snowland1', 'snowland0', 'heaven1', 'heaven0', 'forest0', 'rainforest0', 'desert0'],
     'wild_east': ['desert1', 'desert0'],
     'waterfall': ['forest0', 'rainforest0', 'desert0', 'snowland0', 'heaven0', 'heaven1', 'inner0'],
     'fields': ['forest1', 'rainforest1', 'snowland1', 'forest0'],
-    'empty': ['hell0', 'hell1', 'forest1', 'rainforest1', 'battle'],
-    'snow': ['snowland0', 'snowland1'],
+    'empty': ['hell0', 'hell1', 'forest1', 'rainforest1', 'battle', 'hallow0', 'hallow1'],
+    'snow': ['snowland0', 'snowland1', 'hallow0', 'hallow1'],
     #'here_we_are': ['inner0', 'inner1'],
     'amalgam': ['inner0', 'inner1', 'none0', 'none1'],
     'null': [],
@@ -67,10 +66,15 @@ class Game:
         self.gcnt = 0
         self.map_open = False
         self.dialog: dialog.Dialogger | None = None
-        self.decors: list[tuple[str, int, int]] = []
+        self.decors: list[tuple[str, int, int, float]] = []
         self.chapter = 0
         self.seed = random.randint(0, 1000000)
         self.noise = perlin_noise.PerlinNoise(1.2, self.seed)
+        self.weather_noise = perlin_noise.PerlinNoise(1.2, self.seed + 1)
+        self.wm_min = 0
+        self.wm_max = 0
+        self.w_ns = {}
+        self.hallow_points: list[tuple[tuple[int, int], int]] = []
 
     def get_night_color(self, time_days: float):
         if len([1 for e in self.entities if type(e) is entity.Entities.AbyssEye]):
@@ -146,13 +150,17 @@ class Game:
         self.sounds = {}
         self.map_open = False
         self.map_ns = {}
+        self.w_ns = {}
         self.m_min = 0
         self.m_max = 0
+        self.wm_min = 0
+        self.wm_max = 0
         self.gcnt = 0
         self.decors = []
         self.dialog = dialog.Dialogger(144, pg.Rect(0, 1980, 4800, 720), with_border=True, speed=.5,
                                        target_surface=pg.display.get_surface())
-        self.noise = perlin_noise.PerlinNoise(1.2, datetime.datetime.now().microsecond)
+        self.noise = perlin_noise.PerlinNoise(1.2, self.seed)
+        self.weather_noise = perlin_noise.PerlinNoise(1.2, self.seed + 1)
         window = pg.display.get_surface()
         pg.draw.rect(window, (0, 0, 0), (window.get_width() // 2 - 500, window.get_height() // 2 - 150, 1000, 300))
         self.musics = {}
@@ -212,24 +220,57 @@ class Game:
             pos = self.chunk_pos
         if pos[0] ** 2 + pos[1] ** 2 < 1000:
             return 'forest'
-        lvs = ['hell', 'desert', 'forest', 'rainforest', 'snowland', 'heaven']
-        if pos in self.map_ns.keys():
-            return lvs[int(self.map_ns[pos] * len(lvs))]
-        val = self.noise([pos[0] / 100.0, pos[1] / 100.0])
-        if val < self.m_min or val > self.m_max:
-            self.map_ns = {}
-        self.m_min = min(self.m_min, val)
-        self.m_max = max(self.m_max, val)
-        val = (val - self.m_min) / (self.m_max - self.m_min + 0.01)
-        self.map_ns[pos] = val
-        biome = lvs[int(self.map_ns[pos] * len(lvs))]
-        no_of_decor = [0, 3, 4, 6, 2, 0][int(self.map_ns[pos] * len(lvs))]
-        if no_of_decor:
-            for i in range(no_of_decor):
-                if random.random() < 0.009:
-                    self.decors.append((f'background_decor_{biome}{i + 1}',
-                                        (pos[0] - 120) * self.CHUNK_SIZE + random.randint(-self.CHUNK_SIZE // 2, self.CHUNK_SIZE // 2),
-                                         (pos[1] - 120) * self.CHUNK_SIZE + random.randint(-self.CHUNK_SIZE // 2, self.CHUNK_SIZE // 2)))
+        lvs = ['hell', 'desert', 'rainforest', 'forest', 'snowland', 'heaven', 'hallow']
+        b = 0
+        if pos not in self.map_ns.keys():
+            val = self.noise([pos[0] / 400.0, pos[1] / 400.0])
+            if val < self.m_min or val > self.m_max:
+                self.map_ns = {}
+            self.m_min = min(self.m_min, val)
+            self.m_max = max(self.m_max, val)
+            val = (val - self.m_min) / (self.m_max - self.m_min + 0.01)
+            self.map_ns[pos] = val
+            b = 1
+        idx = int(self.map_ns[pos] * len(lvs))
+        if pos in self.w_ns.keys():
+            w = self.w_ns[pos]
+        else:
+            w = self.weather_noise([pos[0] / 400.0, pos[1] / 400.0])
+            self.wm_min = min(self.m_min, w)
+            self.wm_max = max(self.m_max, w)
+        w = (w - self.wm_min) / (self.wm_max - self.wm_min + 0.01)
+        if 5 > idx > 0:
+            if w < 0.2:
+                if idx == 4:
+                    idx = 3
+                else:
+                    idx = 1
+            elif w < 0.4:
+                idx = max(1, idx - 1)
+            elif w < 0.6:
+                pass
+            elif w < 0.8:
+                idx = min(4, idx + 1)
+            else:
+                if idx == 1:
+                    idx = 2
+                else:
+                    idx = 5
+            if w < 0.5 and idx == 2:
+                idx = 3
+        for pp, r in self.hallow_points:
+            if physics.distance(pp[0] - (pos[0] - 120) * self.CHUNK_SIZE, pp[1] - (pos[1] - 120) * self.CHUNK_SIZE) < r:
+                idx = 6
+        biome = lvs[idx]
+        if b:
+            no_of_decor = [4, 7, 10, 8, 4, 3, 0][idx]
+            if no_of_decor:
+                for i in range(no_of_decor):
+                    if random.random() < 0.007 - [0.003, 0.004, -0.002, -0.001, 0.003, 0.003][idx]:
+                        self.decors.append((f'background_decor_{biome}{i + 1}',
+                                            (pos[0] - 120) * self.CHUNK_SIZE + random.randint(-self.CHUNK_SIZE // 2, self.CHUNK_SIZE // 2),
+                                             (pos[1] - 120) * self.CHUNK_SIZE + random.randint(-self.CHUNK_SIZE // 2, self.CHUNK_SIZE // 2),
+                                            random.choices(list(range(1, 1000)), weights=list(range(1, 1000)), k=1)[0] / 100.0))
         return biome
 
     def get_player_objects(self) -> list[physics.Mover]:
@@ -317,12 +358,17 @@ class Game:
         bg_ax = int(self.player.ax / self.player.get_screen_scale()) % bg_size
         bg_ay = int(self.player.ay / self.player.get_screen_scale()) % bg_size
         cols = {'hell': (255, 0, 0), 'desert': (255, 191, 63), 'forest': (0, 255, 0), 'rainforest': (127, 255, 0),
-                'snowland': (255, 255, 255), 'heaven': (127, 127, 255), 'inner': (0, 0, 0), 'none': (0, 0, 0)}
+                'snowland': (255, 255, 255), 'heaven': (127, 127, 255), 'inner': (0, 0, 0), 'none': (0, 0, 0),
+                'hallow': (0, 255, 255)}
         if not self.graphics.is_loaded('nbackground_hell') or self.graphics['nbackground_hell'].get_width() != bg_size:
             for k in cols.keys():
                 self.graphics['nbackground_' + k] = pg.transform.scale(self.graphics['background_' + k], (bg_size, bg_size))
         if pg.K_TAB in self.pressed_keys:
             self.map_open = not self.map_open
+        if self.get_biome() != self.last_biome[0]:
+            self.last_biome = (self.last_biome[0], self.last_biome[1] + 1)
+            if self.last_biome[1] >= 20:
+                self.last_biome = (self.get_biome(), 0)
         if constants.EASY_BACKGROUND:
             g = pg.Surface((bg_size, bg_size))
             g.fill(cols[self.get_biome()])
@@ -334,11 +380,9 @@ class Game:
                 lg.fill(cols[self.last_biome[0]])
             else:
                 lg = self.graphics.get_graphics('nbackground_' + self.last_biome[0])
+        else:
+            lg = pg.Surface((bg_size, bg_size))
         slg, _ = self.last_biome
-        if self.get_biome() != self.last_biome[0]:
-            self.last_biome = (self.last_biome[0], self.last_biome[1] + 1)
-            if self.last_biome[1] >= 20:
-                self.last_biome = (self.get_biome(), 0)
         for i in range(-bg_size, self.displayer.SCREEN_WIDTH + bg_size, bg_size):
             for j in range(-bg_size, self.displayer.SCREEN_HEIGHT + bg_size, bg_size):
                 if constants.DISPLAY_STYLE:
@@ -349,22 +393,33 @@ class Game:
                     cx, cy = resources.real_position((i - bg_ax + bg_size // 2, j - bg_ay + bg_size // 2))
                     cx = int(cx // self.CHUNK_SIZE) + 120
                     cy = int(cy // self.CHUNK_SIZE) + 120
+                    if not self.last_biome[1]:
+                        ap = 100
+                        bi = self.get_biome()
+                    elif self.last_biome[1] > 10:
+                        ap = self.last_biome[1] * 2 - 100
+                        bi = self.get_biome()
+                    else:
+                        ap = (10 - self.last_biome[1]) ** 2
+                        bi = self.last_biome[0]
                     bo = self.get_biome(pos=(cx, cy))
-                    if constants.USE_ALPHA:
-                        g.set_alpha(155 + self.last_biome[1] * 5 if self.last_biome[1] else 255)
-                    ap = 255 - self.last_biome[1] * 5 if self.last_biome[1] else 155
                     if constants.EASY_BACKGROUND:
                         bg = pg.Surface((bg_size, bg_size))
                         bg.fill(cols[bo])
                     else:
                         bg = copy.copy(self.graphics.get_graphics('nbackground_' + bo))
                     self.displayer.canvas.blit(bg, (i - bg_ax, j - bg_ay))
-                    if self.get_biome() != self.last_biome[0]:
+                    if bi != bo and False:
+                        if constants.EASY_BACKGROUND:
+                            s = pg.Surface((bg_size, bg_size))
+                            s.fill(cols[bi])
+                        else:
+                            s = copy.copy(self.graphics.get_graphics('nbackground_' + bi))
                         if g.get_alpha() != ap:
                             g.set_alpha(ap)
-                        self.displayer.canvas.blit(g, (i - bg_ax, j - bg_ay))
-        for img, x, y in self.decors:
-            if self.displayer.canvas.get_rect().collidepoint(*resources.displayed_position((x, y))):
+                        self.displayer.canvas.blit(s, (i - bg_ax, j - bg_ay))
+        for img, x, y, scale_req in self.decors:
+            if self.displayer.canvas.get_rect().collidepoint(*resources.displayed_position((x, y))) and scale_req >= self.player.get_screen_scale():
                 self.displayer.canvas.blit(pg.transform.scale_by(self.graphics.get_graphics(img),
                                                                      1 / self.player.get_screen_scale()),
                                            resources.displayed_position((x, y)))

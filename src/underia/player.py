@@ -122,6 +122,11 @@ class Player:
         self.max_inspiration = 0
         self.inspiration = 0
         self.good_karma = 0
+        self.ui_tasks = False
+        self.ui_attributes = False
+        self.ui_recipes = False
+        self.ui_recipe_overlook = False
+        self.mouse: tuple[str, int] = ('null', 0)
 
     def calculate_regeneration(self):
         ACCESSORY_REGEN = {}
@@ -576,6 +581,53 @@ class Player:
                             if not e.obj.IS_OBJECT:
                                 e.hp_sys.hp = 0
         if self.hp_sys.hp <= 1 + self.REGENERATION:
+            sz = int(40 / self.get_screen_scale())
+            game.get_game().dialog.with_border = False
+            tck = 0
+            px, py = displayer.SCREEN_WIDTH // 2, displayer.SCREEN_HEIGHT // 2
+            game.get_game().dialog.dialog(
+                'Looks like you\'ve reached the end.',
+                'Would you like to continue?',
+                '...',
+                'I see.',
+                'Then, the future is in your hands.'
+            )
+            shards = []
+            if game.get_game().cur_music:
+                m = game.get_game().musics[game.get_game().cur_music]
+                if m:
+                    m.stop()
+            while tck < 300 or game.get_game().dialog.curr_text != "":
+                sz = (160 + sz * 15) / 16
+                r, g, b = self.profile.get_color()
+                if tck > 140:
+                    r, g, b = (255, 255, 255)
+                elif tck > 40:
+                    r = (r + (250 - r) * (tck - 40) / 100)
+                    g = (g + (250 - g) * (tck - 40) / 100)
+                    b = (b + (250 - b) * (tck - 40) / 100)
+                tck += 1
+                sf = self.profile.get_surface(r, g, b)
+                sf = pg.transform.scale(sf, (sz, sz))
+                displayer.canvas.fill((0, 0, 0))
+                if tck < 200:
+                    displayer.canvas.blit(sf, (px - sz // 2, py - sz // 2))
+                elif tck == 200:
+                    shards = [mover.Mover((px, py)) for _ in range(20)]
+                    for s in shards:
+                        s.apply_force(vector.Vector(random.randint(0, 360), random.randint(80, 120)))
+                else:
+                    for s in shards:
+                        s.update()
+                        s.apply_force(vector.Vector(vector.coordinate_rotation(0, 1), 10))
+                        im = pg.transform.rotate(game.get_game().graphics['background_shard'], random.randint(0, 360))
+                        displayer.canvas.blit(im, im.get_rect(center=s.pos))
+                game.get_game().handle_events()
+                game.get_game().dialog.update(game.get_game().pressed_keys)
+                game.get_game().clock.update()
+                displayer.update()
+                pg.display.update()
+            game.get_game().dialog.with_border = True
             self.hp_sys.hp = self.hp_sys.max_hp
             self.mana = self.max_mana
             self.talent = self.max_talent
@@ -589,6 +641,7 @@ class Player:
     def ui(self):
         self.in_ui = False
         self.touched_item = ''
+        mouse_text = False
         displayer = game.get_game().displayer
         displayer.SCREEN_WIDTH = displayer.canvas.get_width()
         displayer.SCREEN_HEIGHT = displayer.canvas.get_height()
@@ -723,10 +776,27 @@ class Player:
             imr = img.get_rect(
                 topright=(game.get_game().displayer.SCREEN_WIDTH - 10 - 80 * len(self.hp_sys.effects) + 80 * i, 10))
             if imr.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
+                self.in_ui = True
+                mouse_text = True
                 f = displayer.font.render(f"{self.hp_sys.effects[i].NAME} ({self.hp_sys.effects[i].timer}s)", True,
                                           (255, 255, 255))
-                fr = f.get_rect(topright=game.get_game().displayer.reflect(*pg.mouse.get_pos()))
-                displayer.canvas.blit(f, fr)
+                fb = displayer.font.render(f"{self.hp_sys.effects[i].NAME} ({self.hp_sys.effects[i].timer}s)", True,
+                                               (0, 0, 0))
+                ffr = f.get_rect(topright=game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+                ffr.y += 3
+                displayer.canvas.blit(fb, ffr)
+                ffr.x -= 3
+                ffr.y -= 3
+                displayer.canvas.blit(f, ffr)
+                for j, d in enumerate(self.hp_sys.effects[i].DESC.split('\n')):
+                    f = displayer.font.render(d, True, (255, 255, 255))
+                    fb = displayer.font.render(d, True, (0, 0, 0))
+                    ffr = f.get_rect(topright=game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+                    ffr.y += 3 + 30 * j + 30
+                    displayer.canvas.blit(fb, ffr)
+                    ffr.x -= 3
+                    ffr.y -= 3
+                    displayer.canvas.blit(f, ffr)
         for _entity in game.get_game().entities:
             _entity.obj.touched_player = False
             _entity.obj.object_collision(self.obj, (_entity.img.get_width() + _entity.img.get_height()) // 4 + 50)
@@ -738,20 +808,92 @@ class Player:
                     self.hp_sys.enable_immume()
             self.obj.object_gravitational(_entity.obj)
             _entity.obj.object_gravitational(self.obj)
+        nx = 10 + len(self.weapons) * 60 + 30 + 10
+        tsk_rect = pg.Rect(nx - 30, 105 - 30, 60, 60)
+        im = game.get_game().graphics['background_ui_tasks']
+        if not tsk_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
+            im = pg.transform.scale(im, (54, 54))
+        imr = im.get_rect(center=(nx, 105))
+        displayer.canvas.blit(im, imr)
+        nx = 10 + len(self.weapons) * 60 + 30 + 10 + 60
+        att_rect = pg.Rect(nx - 30, 105 - 30, 60, 60)
+        im = game.get_game().graphics['background_ui_attributes']
+        if not att_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
+            im = pg.transform.scale(im, (54, 54))
+        imr = im.get_rect(center=(nx, 105))
+        displayer.canvas.blit(im, imr)
+        nx = 10 + len(self.weapons) * 60 + 30 + 10 + 60 * 2
+        inv_rect = pg.Rect(nx - 30, 105 - 30, 60, 60)
+        im = game.get_game().graphics['background_ui_inventory']
+        if not inv_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
+            im = pg.transform.scale(im, (54, 54))
+        imr = im.get_rect(center=(nx, 105))
+        displayer.canvas.blit(im, imr)
+        if tsk_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
+            self.in_ui = True
+            mouse_text = True
+            if 1 in game.get_game().get_mouse_press():
+                self.ui_tasks = not self.ui_tasks
+            f = displayer.font.render(f"Task & Event", True, (255, 255, 255))
+            fb = displayer.font.render(f"Task & Event", True, (0, 0, 0))
+            mx, my = game.get_game().displayer.reflect(*pg.mouse.get_pos())
+            game.get_game().displayer.canvas.blit(fb, (mx + 3, my + 3))
+            game.get_game().displayer.canvas.blit(f, (mx, my))
+        if att_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
+            if 1 in game.get_game().get_mouse_press():
+                self.ui_attributes = not self.ui_attributes
+            f = displayer.font.render(f"Player Attributes", True, (255, 255, 255))
+            fb = displayer.font.render(f"Player Attributes", True, (0, 0, 0))
+            mx, my = game.get_game().displayer.reflect(*pg.mouse.get_pos())
+            game.get_game().displayer.canvas.blit(fb, (mx + 3, my + 3))
+            game.get_game().displayer.canvas.blit(f, (mx, my))
+            self.in_ui = True
+            mouse_text = True
+        if inv_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
+            if 1 in game.get_game().get_mouse_press():
+                self.open_inventory = not self.open_inventory
+            f = displayer.font.render(f"Inventory", True, (255, 255, 255))
+            fb = displayer.font.render(f"Inventory", True, (0, 0, 0))
+            mx, my = game.get_game().displayer.reflect(*pg.mouse.get_pos())
+            game.get_game().displayer.canvas.blit(fb, (mx + 3, my + 3))
+            game.get_game().displayer.canvas.blit(f, (mx, my))
+            self.in_ui = True
+            mouse_text = True
+
         if rc.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
+            self.in_ui = True
+            mouse_text = True
             f = displayer.font.render(
                 f"HP: {int(self.hp_sys.hp) + int(sum([v for n, v in game.get_game().player.hp_sys.shields]))}/{self.hp_sys.max_hp} MP: {int(self.mana)}/{self.max_mana}"
                 f" {'TP' if not mt else 'MTP'}: {int(self.talent)}/{int(self.max_talent)}",
                 True, (255, 255, 255))
-            displayer.canvas.blit(f, game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+            fb = displayer.font.render(
+                f"HP: {int(self.hp_sys.hp) + int(sum([v for n, v in game.get_game().player.hp_sys.shields]))}/{self.hp_sys.max_hp} MP: {int(self.mana)}/{self.max_mana}"
+                f" {'TP' if not mt else 'MTP'}: {int(self.talent)}/{int(self.max_talent)}",
+                True, (0, 0, 0))
+            mx, my = game.get_game().displayer.reflect(*pg.mouse.get_pos())
+            displayer.canvas.blit(fb, (mx + 3, my + 3))
+            displayer.canvas.blit(f, (mx, my))
         if ic.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
+            self.in_ui = True
+            mouse_text = True
             f = displayer.font.render(f"IP: {int(self.inspiration)}/{int(self.max_inspiration)}", True,
                                       (255, 255, 255))
-            displayer.canvas.blit(f, game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+            fb = displayer.font.render(f"IP: {int(self.inspiration)}/{int(self.max_inspiration)}", True, (0, 0, 0))
+            ffr = f.get_rect(topright=game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+            ffr.y += 3
+            displayer.canvas.blit(fb, ffr)
+            ffr.x -= 3
+            ffr.y -= 3
+            displayer.canvas.blit(f, ffr)
         for i in range(len(self.weapons)):
+            try:
+                am = f'{self.weapons[i].amount}/{self.weapons[i].stack_size}'
+            except AttributeError:
+                am = '1'
             styles.item_display(10 + i * 60, 80,
                                 self.weapons[i].name.replace(' ', '_'), str(i + 1),
-                                '1', 0.75, selected=i == self.sel_weapon)
+                                am, 0.75, selected=i == self.sel_weapon)
             if self.weapons[i].sk_mcd:
                 pg.draw.rect(displayer.canvas, (255, 0, 0), (10 + i * 60, 140, 60, 10))
                 pg.draw.rect(displayer.canvas, (255, 255, 0), (10 + i * 60, 140,
@@ -942,6 +1084,15 @@ class Player:
                                 entity.entity_spawn(entity.Entities.SkyCubeFighter, 2000, 2000, 0, 1145, 100000)
                                 entity.entity_spawn(entity.Entities.SkyCubeRanger, 2000, 2000, 0, 1145, 100000)
                                 entity.entity_spawn(entity.Entities.SkyCubeBlocker, 2000, 2000, 0, 1145, 100000)
+                        elif item.id == 'green_thing':
+                            if not len([1 for e in game.get_game().player.hp_sys.effects if
+                                        type(e) in [effects.MetalAltar, effects.ScarlettAltar]]):
+                                game.get_game().dialog.dialog('Unable to summon the Heaven Goblins.',
+                                                              'There is no Metal Altar nearby.')
+                            elif game.get_game().chapter:
+                                entity.entity_spawn(entity.Entities.GoblinWaveEP2, 2000, 2000, 0, 1145, 100000)
+                            else:
+                                entity.entity_spawn(entity.Entities.GoblinWave, 2000, 2000, 0, 1145, 100000)
                         elif item.id == 'mechanic_eye':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.MetalAltar]):
@@ -1153,8 +1304,48 @@ class Player:
                         *pg.mouse.get_pos())) and 1 in game.get_game().get_mouse_press():
                     self.sel_accessory = i
 
+            nx = displayer.canvas.get_width() - 180
+            ny = displayer.canvas.get_height() / 2
+            rec_rect = pg.Rect(nx - 30, ny - 30, 60, 60)
+            im = game.get_game().graphics['background_ui_recipes']
+            if not rec_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
+                im = pg.transform.scale(im, (54, 54))
+            imr = im.get_rect(center=(nx, ny))
+            displayer.canvas.blit(im, imr)
+            ny += 60
+            rco_rect = pg.Rect(nx - 30, ny - 30, 60, 60)
+            im = game.get_game().graphics['background_ui_recipe_overlook']
+            if not rco_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
+                im = pg.transform.scale(im, (54, 54))
+            imr = im.get_rect(center=(nx, ny))
+            if self.ui_recipes:
+                displayer.canvas.blit(im, imr)
+            if rec_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
+                self.in_ui = True
+                mouse_text = True
+                if 1 in game.get_game().get_mouse_press():
+                    self.ui_recipes = not self.ui_recipes
+                    if not self.ui_recipes:
+                        self.ui_recipe_overlook = False
+                f = displayer.font.render(f"Crafting", True, (255, 255, 255))
+                fb = displayer.font.render(f"Crafting", True, (0, 0, 0))
+                mx, my = game.get_game().displayer.reflect(*pg.mouse.get_pos())
+                mx -= f.get_width()
+                game.get_game().displayer.canvas.blit(fb, (mx + 3, my + 3))
+                game.get_game().displayer.canvas.blit(f, (mx, my))
+            if self.ui_recipes and rco_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
+                self.in_ui = True
+                mouse_text = True
+                if 1 in game.get_game().get_mouse_press():
+                    self.ui_recipe_overlook = not self.ui_recipe_overlook
+                f = displayer.font.render(f"Recipes", True, (255, 255, 255))
+                fb = displayer.font.render(f"Recipes", True, (0, 0, 0))
+                mx, my = game.get_game().displayer.reflect(*pg.mouse.get_pos())
+                mx -= f.get_width()
+                game.get_game().displayer.canvas.blit(fb, (mx + 3, my + 3))
+                game.get_game().displayer.canvas.blit(f, (mx, my))
             self.recipes = [r for r in inventory.RECIPES if r.is_valid(self.inventory)]
-            if len(self.recipes):
+            if len(self.recipes) and self.ui_recipes:
                 self.sel_recipe %= len(self.recipes)
                 if pg.K_UP in game.get_game().get_keys():
                     self.sel_recipe = (self.sel_recipe - 1) % len(self.recipes)
@@ -1184,8 +1375,9 @@ class Player:
                     for i in range(-10, 10):
                         s = (self.sel_recipe + i + len(self.recipes)) % len(self.recipes)
                         cur_recipe = self.recipes[s]
-                        styles.item_display(displayer.SCREEN_WIDTH - 90, displayer.SCREEN_HEIGHT // 2 + i * 80 - 40,
-                                            cur_recipe.result, str(s + 1), str(cur_recipe.crafted_amount), 1)
+                        sz = 0.97 ** abs(i) * (1 if i else 1.2)
+                        styles.item_display(displayer.SCREEN_WIDTH - 10 - int(sz * 80), displayer.SCREEN_HEIGHT // 2 + i * 90 - int(sz * 40),
+                                            cur_recipe.result, str(s + 1), str(cur_recipe.crafted_amount), sz)
                         i += 1
                 cur_recipe = self.recipes[self.sel_recipe]
                 styles.item_mouse(game.get_game().displayer.SCREEN_WIDTH - 260,
@@ -1207,6 +1399,29 @@ class Player:
                     if r.collidepoint(game.get_game().displayer.reflect(
                             *pg.mouse.get_pos())) and 1 in game.get_game().get_mouse_press():
                         self.sel_recipe = s
+            if len(self.recipes) and self.ui_recipe_overlook:
+                ts = (len(self.recipes) + 255) // 256
+                if pg.K_LEFT in game.get_game().get_keys():
+                    self.ui_recipe_overlook = (self.ui_recipe_overlook + ts - 2) % ts + 1
+                if pg.K_RIGHT in game.get_game().get_keys():
+                    self.ui_recipe_overlook = self.ui_recipe_overlook % ts + 1
+                self.ui_recipe_overlook = max(1, min(ts, self.ui_recipe_overlook))
+                self.recipes = self.recipes[self.ui_recipe_overlook * 256 - 256:self.ui_recipe_overlook * 256]
+                w = 16
+                l = len(self.recipes) // w + (1 if len(self.recipes) % w else 0)
+                for i, r in enumerate(self.recipes):
+                    x = i % w * 80 - w * 80 / 2 + displayer.SCREEN_WIDTH // 2
+                    y = i // w * 80 - l * 80 / 2 + displayer.SCREEN_HEIGHT // 2
+                    styles.item_display(x, y, r.result, str(i + 1), str(r.crafted_amount), 1)
+                for i, r in enumerate(self.recipes):
+                    x = i % w * 80 - w * 80 / 2 + displayer.SCREEN_WIDTH // 2
+                    y = i // w * 80 - l * 80 / 2 + displayer.SCREEN_HEIGHT // 2
+                    styles.item_mouse(x, y, r.result, str(i + 1), str(r.crafted_amount), 1, anchor='right')
+                    r = pg.Rect(x, y, 80, 80)
+                    if r.collidepoint(game.get_game().displayer.reflect(
+                            *pg.mouse.get_pos())) and 1 in game.get_game().get_mouse_press():
+                        self.sel_recipe = i + (self.ui_recipe_overlook - 1) * 256
+                        self.ui_recipe_overlook = False
             if pg.K_i in game.get_game().get_pressed_keys():
                 ammo, amount = self.ammo
                 styles.item_display(10, 10, ammo, '', str(amount), 2)
@@ -1220,13 +1435,20 @@ class Player:
                 self.ntcs.append(f"Event: {e}")
             self.ntcs.append(f"{self.obj.pos[0] / 1000:.1f}, {self.obj.pos[1] / 1000:.1f}")
             self.ntcs.append(f"{int(t // 60)}:{'0' if int(t % 60) < 10 else ''}{int(t % 60)}")
-            for i in range(len(self.ntcs)):
-                t = game.get_game().displayer.font.render(self.ntcs[-i - 1], True, (255, 255, 255), (0, 0, 0))
-                game.get_game().displayer.canvas.blit(t, (10, game.get_game().displayer.SCREEN_HEIGHT - 50 - i * 30))
-            for i in range(len(self.p_data)):
-                t = game.get_game().displayer.font.render(self.p_data[i], True, (255, 255, 255), (0, 0, 0))
-                game.get_game().displayer.canvas.blit(t, (game.get_game().displayer.SCREEN_WIDTH - 10 - t.get_width(),
-                                                          game.get_game().displayer.SCREEN_HEIGHT - 50 - i * 30))
+            if self.ui_tasks:
+                for i in range(len(self.ntcs)):
+                    t = game.get_game().displayer.font.render(self.ntcs[-i - 1], True, (255, 255, 255))
+                    tb = game.get_game().displayer.font.render(self.ntcs[-i - 1], True, (0, 0, 0))
+                    game.get_game().displayer.canvas.blit(tb, (13, game.get_game().displayer.SCREEN_HEIGHT - 50 - i * 30))
+                    game.get_game().displayer.canvas.blit(t, (10, game.get_game().displayer.SCREEN_HEIGHT - 53 - i * 30))
+            if self.ui_attributes:
+                for i in range(len(self.p_data)):
+                    t = game.get_game().displayer.font.render(self.p_data[i], True, (255, 255, 255))
+                    tb = game.get_game().displayer.font.render(self.p_data[i], True, (0, 0, 0))
+                    game.get_game().displayer.canvas.blit(tb, (game.get_game().displayer.SCREEN_WIDTH - 7 - tb.get_width(),
+                                                               game.get_game().displayer.SCREEN_HEIGHT - 50 - i * 30))
+                    game.get_game().displayer.canvas.blit(t, (game.get_game().displayer.SCREEN_WIDTH - 10 - t.get_width(),
+                                                              game.get_game().displayer.SCREEN_HEIGHT - 53 - i * 30))
         if len(self.top_notice) and self.t_ntc_timer > 0:
             nt = game.get_game().displayer.font.render(self.top_notice, True, (255, 255, 0))
             nt = pg.transform.scale(nt, (game.get_game().displayer.SCREEN_WIDTH // 2,
@@ -1302,7 +1524,9 @@ class Player:
             self.sel_weapon = 3
         if self.in_ui:
             pg.mouse.set_cursor(cursors.arrow_cursor_cursor)
+            pg.mouse.set_visible(not mouse_text)
         else:
+            pg.mouse.set_visible(True)
             self.weapons[self.sel_weapon].update()
             w = self.weapons[self.sel_weapon]
             if inventory.TAGS['magic_weapon'] in inventory.ITEMS[w.name.replace(' ', '_')].tags or \

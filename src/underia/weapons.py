@@ -329,6 +329,48 @@ class ThiefWeapon(SweepWeapon):
         proj.obj.velocity.add(game.get_game().player.obj.velocity.get_net_vector())
         game.get_game().projectiles.append(proj)
 
+class ThrowerThiefWeapon(SweepWeapon):
+    DMG_AS_IDX = 1
+
+    def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, rot_speed: int,
+                 st_pos: int, throw_interval: int, power: int, stack_size: int):
+        super().__init__(name, damages, kb, img, speed, at_time, rot_speed, st_pos, auto_fire=True)
+        self.stack_size = stack_size
+        self.amount = 0
+        self.throwing = False
+        self.auto_throw = False
+        self.sk_mcd = throw_interval
+        self.pow = power
+
+    def on_start_attack(self):
+        super().on_start_attack()
+        self.throwing = False
+        if self.amount:
+            self.throwing = True
+            self.timer = abs(self.st_pos // self.rot_speed)
+            self.amount -= 1
+
+    def update(self):
+        super().update()
+        if not self.sk_cd:
+            if self.amount < self.stack_size:
+                self.amount += 1
+                self.sk_cd = self.sk_mcd
+
+    def on_end_attack(self):
+        if self.throwing:
+            mx, my = position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
+            self.rot = vector.coordinate_rotation(mx, my)
+            self.skill()
+        super().on_end_attack()
+
+    def skill(self):
+        proj = projectiles.THIEF_WEAPONS[self.name.replace(' ', '_')]((self.x + game.get_game().player.obj.pos[0],
+                                                                       self.y + game.get_game().player.obj.pos[1]),
+                                                                      self.rot, self.pow)
+        proj.obj.velocity.add(game.get_game().player.obj.velocity.get_net_vector())
+        game.get_game().projectiles.append(proj)
+
 class ThiefDoubleKnife(ThiefWeapon):
     HAND_INTERVAL = 20
 
@@ -1458,7 +1500,20 @@ class PoetWeapon(MagicWeapon):
                       ('A4', 1), ('E5', 1), ('D5', 1), ('E5', 1), ('C5', 1), ('E5', 1),
                       ('B4', 2), ('B4', 1), ('C5', 1), ('B4', 1), ('C5', 1),
                       ('B4', 2), ('D5', 2), ('G5', 2), ('E5', 6)],
-
+        'beat': [('C5', 4), ('C5', 4), ('C5', 2), ('C5', 2), ('C5', 1), ('C5', 1), ('C5', 2),
+                 ('C5', 1), ('C5', 1), ('C5', 1), ('C5', 1), ('C5', 1), ('C5', 1), ('C5', 1), ('C5', 1),
+                 ('C5', 1), ('C5', 1), ('C5', 2), ('C5', 1), ('C5', 1), ('C5', 2)],
+        'legend': [('00', 2), ('B5', 1), ('C6', 1), ('B5', 1), ('A5', 1),
+                   ('E5', 2), ('C5', 2), ('E5', 2),
+                   ('00', 2), ('B5', 1), ('C6', 1), ('B5', 1), ('A5', 1),
+                   ('D6', 6),
+                   ('00', 2), ('B5', 1), ('C6', 1), ('B5', 1), ('A5', 1),
+                   ('A5', 4), ('C6', 6),
+                   ('G5', 2), ('G5', 1), ('F5', 1), ('E5', 1), ('F5', 1),
+                   ('E5', 6)],
+        'apple_smells_good': [('A4', 2), ('A4', 2), ('A4', 1), ('C5', 1), ('B4', 2), ('A4', 2), ('A4', 1), ('C5', 1),
+                              ('E4', 8),
+                              ('D5', 1), ('E5', 1), ('E5', 2), ('E5', 2), ('C6', 1), ('B5', 1), ('A5', 8)]
     }
     SONGS_S = {
         'his_theme_s': [[('F4', 16)]] + [[]] * 6 +
@@ -1472,8 +1527,10 @@ class PoetWeapon(MagicWeapon):
                        [[('G4', 6), ('C4', 6), ('A3', 6), ('F3', 6)]] + [[]] * 5 +
                        [[('A4', 6), ('D4', 6), ('B3', 6), ('G3', 6)]] + [[]] * 4 +
                        [[('B4', 6), ('E4', 6), ('D4', 6), ('A3', 6)]] + [[]] * 2 +
-                       [[('C5', 2), ('E4', 2), ('C4', 2)], [('B4', 2)], [('G4', 2)]]
-
+                       [[('C5', 2), ('E4', 2), ('C4', 2)], [('B4', 2)], [('G4', 2)]],
+        'beat_s': [[]] * 21,
+        'legend_s': [[]] * 27,
+        'apple_smells_good_s': [[]] * 16
     }
 
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int,
@@ -2904,6 +2961,8 @@ def set_weapons():
                                             'items_weapons_twilight_shortsword', 1, 8, 48, 144, 18, 1200),
         'apple_knife': ThiefWeapon('apple knife', {dmg.DamageTypes.PIERCING: 58}, 0.3, 'items_weapons_apple_knife',
                                     1, 4, 80, 240, 7, 1000),
+        'grenade': ThrowerThiefWeapon('grenade', {dmg.DamageTypes.PIERCING: 188}, 0.2, 'items_weapons_grenade',
+                               7, 10, 1, 2, 18, 1600, 10),
         'dawn_shortsword': ThiefWeapon('dawn shortsword', {dmg.DamageTypes.PIERCING: 88}, 0.6,
                                         'items_weapons_dawn_shortsword', 1, 8, 48, 144, 16, 1800),
         'night_twinsword': ThiefDoubleKnife('night twinsword', {dmg.DamageTypes.PIERCING: 108}, 0.4,
@@ -2912,6 +2971,8 @@ def set_weapons():
         'storm_stabber': StormStabber('storm stabber', {dmg.DamageTypes.PIERCING: 98}, 0.3,
                                        'items_weapons_storm_stabber', 1, 12, 40, 360,
                                       10, 5600),
+        'jade_grenade': ThrowerThiefWeapon('jade grenade', {dmg.DamageTypes.PIERCING: 158}, 0.2, 'items_weapons_jade_grenade',
+                                    5, 10, 1, 1, 15, 1800, 16),
         'spiritual_knife': ThiefWeapon('spiritual knife', {dmg.DamageTypes.PIERCING: 118}, 0.5,
                                          'items_weapons_spiritual_knife', 0, 6, 48, 144, 8, 2000),
         'daedalus_knife': ThiefWeapon('daedalus knife', {dmg.DamageTypes.PIERCING: 132}, 0.5,
@@ -2931,6 +2992,9 @@ def set_weapons():
         'time_flies': ThiefDoubleKnife('time flies', {dmg.DamageTypes.PIERCING: 800}, 0.5,
                                         'items_weapons_time_flies', 0, 5, 40, 120,
                                        4, 1800, dcols=((255, 200, 150), (255, 255, 255))),
+
+        'shuriken': ThrowerThiefWeapon('shuriken', {dmg.DamageTypes.PIERCING: 8}, 0, 'items_weapons_shuriken',
+                                      1, 1, 1, 1, 3, 1200, 20),
 
         'glowing_splint': MagicWeapon('glowing splint', {dmg.DamageTypes.MAGICAL: 3}, 0.1,
                                       'items_weapons_glowing_splint', 6,
@@ -3198,6 +3262,21 @@ def set_weapons():
                                  0, 4, projectiles.Projectiles.StormHarp, [effects.OctSpeedI, effects.OctWisdomI,
                                                                          effects.OctLimitlessI, effects.OctToughnessII],
                                  2, 80, auto_fire=True, song='true_hero', back_rate=0.65, heavy=True),
+        'snare': PoetWeapon('snare', {dmg.DamageTypes.OCTAVE: 256}, 1, 'items_weapons_snare',
+                           0, 5, projectiles.Projectiles.Snare, [effects.OctLimitlessII, effects.OctSpeedI, effects.OctStrengthIII],
+                           8, 240, auto_fire=True, instrument='snare', back_rate=0.8, heavy=True, song='beat'),
+        'watcher_bell': PoetWeapon('watcher bell', {dmg.DamageTypes.OCTAVE: 72}, 1, 'items_weapons_watcher_bell',
+                                   0, 4, projectiles.Projectiles.WatcherBell, [effects.OctLuckyIII, effects.OctSpeedIII, effects.OctToughnessI],
+                                   3, 60, auto_fire=True, instrument='bell', back_rate=0.7, heavy=True, song='legend'),
+        'apple_smells_good': PoetWeapon('apple smells good', {dmg.DamageTypes.OCTAVE: 188}, 1, 'items_weapons_apple_smells_good',
+                                        0, 4, projectiles.Projectiles.AppleSmellsGood, [effects.OctStrengthI, effects.OctLuckyIII,
+                                                                                     effects.OctLimitlessIII, effects.OctStrengthIII, effects.OctLuckyII],
+                                        3, 100, auto_fire=True, instrument='flute', back_rate=0.55, song='apple_smells_good'),
+        'holy_stormer': PoetWeapon('holy stormer', {dmg.DamageTypes.OCTAVE: 256}, 1, 'items_weapons_holy_stormer',
+                                   0, 1, projectiles.Projectiles.HolyStormer, [effects.OctLuckyI, effects.OctLuckyII, effects.OctSpeedI,
+                                                                             effects.OctSpeedII, effects.OctSpeedIII, effects.OctStrengthI, effects.OctStrengthII,
+                                                                                effects.OctStrengthIII],
+                                   1, 40, auto_fire=True, back_rate=0.3, song='beat'),
 
         'saint_healer': PriestHealer('saint healer', 50, 1, 'items_weapons_saint_healer',
                                     9, 1, 15, 80,
@@ -3212,6 +3291,13 @@ def set_weapons():
         'great_heal': PriestHealer('great heal', 60, 1, 'items_weapons_great_heal',
                                    0, 1, 10, 70,
                                    True, 'Great Healer'),
+        'the_prayer': PriestHealer('the prayer', 400, 1, 'items_weapons_the_prayer',
+                                   11, 1, 60, 500,
+                                   True, 'The Prayer'),
+        'the_true_gods_penalty': PriestWeapon('the true gods penalty', {dmg.DamageTypes.HALLOW: 88}, 1,
+                                              'items_weapons_the_true_gods_penalty', 49, 1,
+                                              projectiles.Projectiles.TheTrueGodsPenalty, 80, 25,
+                                              True, 'The True God\'s Penalty'),
 
         'mystery_watch': PacifistWeapon('mystery watch', {dmg.DamageTypes.PACIFY: 188}, 1,
                                        'items_weapons_mystery_watch', 5, 2,
