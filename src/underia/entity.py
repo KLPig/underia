@@ -497,8 +497,8 @@ class StarAI(MonsterAI):
             py = player.pos[1] - self.pos[1]
             self.apply_force(vector.Vector(vector.coordinate_rotation(px, py), 400))
             if self.touched_player:
-                self.pos = (self.pos[0] + px * random.randint(-10, 10) // 2,
-                            self.pos[1] + py * random.randint(-10, 10) // 2)
+                self.pos = (self.pos[0] + px * 6,
+                            self.pos[1] + py * 6)
         else:
             self.idle()
 

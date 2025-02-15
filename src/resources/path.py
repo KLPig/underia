@@ -26,7 +26,10 @@ def get_path(filename=None):
         return pt
 
 
-save_path = os.path.join(os.environ.get('HOME'), '.underia')
+if OS == 'Windows':
+    save_path = os.path.join(os.environ.get('HOMEPATH'), '.underia')
+else:
+    save_path = os.path.join(os.environ.get('HOME'), '.underia')
 if not os.path.exists(save_path):
     os.makedirs(save_path)
 

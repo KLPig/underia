@@ -1,12 +1,16 @@
 import copy
 import os
-import appscript
 import pygame as pg
 from src import constants
 
 from src.resources import path
 from src.mods import UnderiaModData
 import pickle
+
+if constants.OS == "Windows":
+    pass
+else:
+    import appscript
 
 anchor = 0
 cmds = []
@@ -18,6 +22,9 @@ datas = []
 load_mods = []
 
 mod_dir = path.get_save_path('mods')
+
+if not os.path.exists(mod_dir):
+    os.mkdir(mod_dir)
 
 for d in os.listdir(mod_dir):
     if os.path.isdir(os.path.join(mod_dir, d)):
@@ -50,8 +57,11 @@ def load_mod():
                 if event.button == 1:
                     pos = pg.mouse.get_pos()
                     if btn_r[0].collidepoint(pos):
-                        appscript.app('Finder').reveal(appscript.mactypes.Alias(mod_dir).alias)
-                        appscript.app('Finder').activate()
+                        if constants.OS == "Windows":
+                            os.system(f'explorer {mod_dir}')
+                        else:
+                            appscript.app('Finder').reveal(appscript.mactypes.Alias(mod_dir).alias)
+                            appscript.app('Finder').activate()
                     elif btn_r[1].collidepoint(pos):
                         mod_datas = [pickle.load(open(os.path.join(mod_dir, d, 'data.umod'), 'rb')) for d in os.listdir(mod_dir)]
                         icos = [pg.image.load(os.path.join(mod_dir, d, 'assets/assets/icon.png')) for d in os.listdir(mod_dir)]
@@ -79,8 +89,11 @@ def load_mod():
                     pg.quit()
                     return cmds, None
                 elif event.key in [pg.K_f, pg.K_c]:
-                    appscript.app('Finder').reveal(appscript.mactypes.Alias(mod_dir).alias)
-                    appscript.app('Finder').activate()
+                    if constants.OS == "Windows":
+                        os.system(f'explorer {mod_dir}')
+                    else:
+                        appscript.app('Finder').reveal(appscript.mactypes.Alias(mod_dir).alias)
+                        appscript.app('Finder').activate()
                 elif event.key in [pg.K_r, pg.K_x]:
                     mod_datas = [pickle.load(open(os.path.join(mod_dir, d, 'data.umod'), 'rb')) for d in os.listdir(mod_dir)]
                     icos = [pg.image.load(os.path.join(mod_dir, d, 'assets/assets/icon.png')) for d in os.listdir(mod_dir)]

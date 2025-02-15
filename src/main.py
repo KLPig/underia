@@ -136,17 +136,18 @@ for m in load_mods:
 game.map = pg.PixelArray(game.graphics['background_map'])
 underia.set_weapons()
 game.player.weapons = 4 * [underia.WEAPONS['null']]
-game.player.sel_weapon = 0
+game.player.sel_weapon = 1
 game.player.inventory.sort()
 game.player.inventory.items['recipe_book'] = 1
 game.player.inventory.items['arrow_thrower'] = 1
 game.player.hp_sys(op='config', immune_time=10, true_drop_speed_max_value=1, immune=False)
 game.player.hp_sys.shields = []
 
+for r in underia.RECIPES:
+    r.material.clear()
+
 for s in setups:
     exec(s)
-
-game.hallow_points = []
 
 @game.update_function
 def update():

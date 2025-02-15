@@ -2,7 +2,6 @@ import math
 import random
 
 import pygame as pg
-from pgzero import tone
 from src import constants
 from src.physics import vector
 from src.resources import position, tone

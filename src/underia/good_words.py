@@ -17,5 +17,8 @@ WORDS = [
     '開局三選一',
     'Program Mechanic Electronic',
     '一定要選wong 天 she',
-    '所以開局一定選熊貓'
+    '所以開局一定選熊貓',
+    'upperia',
+    '石',
+    '他帮我评价Underia',
 ]
