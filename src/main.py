@@ -11,7 +11,7 @@ pg.init()
 random.seed(time.time())
 pg.display.set_mode((1600, 900), constants.FLAGS)
 pg.display.set_caption(f'Underia - {random.choice(good_words.WORDS)}')
-pg.display.set_icon(pg.image.load(resources.get_path('assets/graphics/items/the_final_ingot.png')))
+pg.display.set_icon(pg.image.load(resources.get_path('assets/graphics/items/holy_stormer.png')))
 
 legend.show_legend()
 

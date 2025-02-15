@@ -14,7 +14,7 @@ class PlayerProfile:
         self.point_ranged = 0
         self.point_magic = 0
         self.stage = 0
-        self.dialogger = dialog.Dialogger(88, pg.Rect(0, 0, 1600, 300), target_surface=pg.Surface((1, 1)))
+        self.dialogger = dialog.Dialogger(36, pg.Rect(0, 0, 1600, 300), target_surface=pg.Surface((1, 1)))
         self.font: pg.font.Font | None = None
 
     def get_color(self, w = 0, s = 0, a = 0, ml = 0, rg = 0, mg = 0):
@@ -45,7 +45,7 @@ class PlayerProfile:
         return r, g, b
 
     def get_surface(self, r = 255, g = 255, b = 255):
-        self.font = pg.font.SysFont('dtm-mono', 88)
+        self.font = pg.font.SysFont('dtm-mono', 36)
         sl = [
             [0, 1, 1, 0, 0, 1, 1, 0],
             [1, 1, 1, 1, 1, 1, 1, 1],
@@ -65,6 +65,7 @@ class PlayerProfile:
     def chapter_select(self):
         window = pg.display.get_surface()
         width, height = window.get_size()
+        clock = pg.time.Clock()
         title = self.font.render('Chapters', True, (255, 255, 255))
         title_rect = title.get_rect(center=(width // 2, 100))
         chapter_names = ['The Soul', 'The Mottled Land', 'The Adventure',
@@ -73,7 +74,7 @@ class PlayerProfile:
         image = [game.get_game().graphics['legend_route_' + str(i + 1) + '_locked'] if i < avail_chapter
                  else game.get_game().graphics['legend_route_' + str(i + 1)] if i == avail_chapter
                  else game.get_game().graphics['legend_route_locked'] for i in range(6)]
-        image = [pg.transform.scale(i, (1050, 1400)) for i in image]
+        image = [pg.transform.scale(i, (350, 466)) for i in image]
         select = avail_chapter - 1
         if select < 0:
             return
@@ -90,7 +91,8 @@ class PlayerProfile:
                         pg.quit()
                         exit()
                     elif event.key == pg.K_F4:
-                        constants.FULLSCREEN = not constants.FULLSCREENpg.display.set_mode(pg.display.get_window_size(), (pg.FULLSCREEN if constants.FULLSCREEN else 0) | constants.FLAGS)
+                        constants.FULLSCREEN = not constants.FULLSCREEN
+                        pg.display.set_mode(pg.display.get_window_size(), (pg.FULLSCREEN if constants.FULLSCREEN else 0) | constants.FLAGS)
             window.fill((0, 0, 0))
             window.blit(title, title_rect)
             if select:
@@ -113,10 +115,11 @@ class PlayerProfile:
                 select += 1
             elif tk == 400:
                 return
+            clock.tick(40)
 
     def add_point(self, t = 0):
-        self.font = pg.font.SysFont('dtm-mono', 88)
-        self.dialogger = dialog.Dialogger(88, pg.Rect(0, 0, 1600, 300), target_surface=pg.Surface((1, 1)))
+        self.font = pg.font.SysFont('dtm-mono', 36)
+        self.dialogger = dialog.Dialogger(36, pg.Rect(0, 0, 1600, 300), target_surface=pg.Surface((1, 1)))
         self.dialogger.target_surface = pg.display.get_surface()
         if t != self.stage:
             return
@@ -148,6 +151,7 @@ class PlayerProfile:
             self.point_melee = 0
             self.point_ranged = 0
             self.point_magic = 0
+        clock = pg.time.Clock()
         if t in [0, 5]:
             if t:
                 game.get_game().chapter += 1
@@ -250,7 +254,7 @@ class PlayerProfile:
                         color = (255, 255, 255)
                     text = self.font.render(t, True, color)
                     text_rect = text.get_rect(center=(soul_x - window.get_width() // 2,
-                                                      window.get_height() // 2 - 200 + i * 100))
+                                                      window.get_height() // 2 - 80 + i * 40))
                     window.blit(text, text_rect)
             if stage == 2 and pg.K_z in keys and sum(points) == 30:
                 stage = 3
@@ -271,11 +275,11 @@ class PlayerProfile:
             else:
                 col = self.get_color(ml=points[0], rg=points[1], mg=points[2])
             soul = self.get_surface(*col)
-            soul = pg.transform.scale(soul, (400, 400))
+            soul = pg.transform.scale(soul, (120, 120))
             soul_rect = soul.get_rect(center=pg.display.get_surface().get_rect().center)
             soul_rect.centerx = soul_x
             soul_rect.centery += math.sin(tick / 50) * 50
             window.blit(soul, soul_rect)
             soul_x = (target_soul_x + soul_x) // 2
             pg.display.update()
-
+            clock.tick(40)
