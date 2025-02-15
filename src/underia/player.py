@@ -1526,12 +1526,6 @@ class Player:
             pg.mouse.set_cursor(cursors.arrow_cursor_cursor)
             pg.mouse.set_visible(not mouse_text)
         else:
-            pg.mouse.set_visible(True)
+            pg.mouse.set_cursor(cursors.arrow_cursor_cursor)
+            pg.mouse.set_visible(self.weapons[self.sel_weapon].name in ['null', 'arrow_thrower'])
             self.weapons[self.sel_weapon].update()
-            w = self.weapons[self.sel_weapon]
-            if inventory.TAGS['magic_weapon'] in inventory.ITEMS[w.name.replace(' ', '_')].tags or \
-                    inventory.TAGS['bow'] in inventory.ITEMS[w.name.replace(' ', '_')].tags or \
-                    inventory.TAGS['gun'] in inventory.ITEMS[w.name.replace(' ', '_')].tags:
-                pg.mouse.set_cursor(cursors.target_cursor_cursor)
-            else:
-                pg.mouse.set_cursor(cursors.sword_cursor_cursor)

@@ -335,9 +335,9 @@ class Game:
                                     paused = False
                                 elif ev.key == pg.K_ESCAPE:
                                     raise resources.Interrupt()
-                            elif ev.key == pg.K_F4:
-                                constants.FULLSCREEN = not constants.FULLSCREEN
-                                pg.display.set_mode(pg.display.get_window_size(), (pg.FULLSCREEN if constants.FULLSCREEN else 0) | constants.FLAGS)
+                                elif ev.key == pg.K_F4:
+                                    constants.FULLSCREEN = not constants.FULLSCREEN
+                                    pg.display.set_mode(pg.display.get_window_size(), (pg.FULLSCREEN if constants.FULLSCREEN else 0) | constants.FLAGS)
                         pg.display.flip()
                     self.pressed_mouse = []
                     self.pressed_keys = []
@@ -516,6 +516,12 @@ class Game:
             if constants.USE_ALPHA:
                 sf.set_alpha(200)
             self.displayer.canvas.blit(sf, (self.displayer.SCREEN_WIDTH // 2 - 250, self.displayer.SCREEN_HEIGHT // 2 - 250))
+        if not self.player.in_ui:
+            w = self.player.weapons[self.player.sel_weapon]
+            im = self.graphics['items_' + inventory.ITEMS[w.name.replace(' ', '_')].img]
+            im = pg.transform.scale(im, (64, 64))
+            imr = im.get_rect(topright=self.displayer.reflect(*pg.mouse.get_pos()))
+            self.displayer.canvas.blit(im, imr)
         self.displayer.update()
         if len(self.dialog.word_queue) or self.dialog.curr_text != '':
             self.dialog.update(self.pressed_keys)

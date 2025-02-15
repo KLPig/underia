@@ -295,6 +295,7 @@ def update():
             underia.entity_spawn(underia.Entities.ScarlettPillar, target_number=2, to_player_max=3000, to_player_min=1000,
                                  rate=50, number_factor=1.9)
 
+game.player.hp_sys(op='config', immune=True)
 
 try:
     game.run()
