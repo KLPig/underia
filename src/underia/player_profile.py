@@ -1,10 +1,40 @@
 import math
 import random
 import pygame as pg
-from . import dialog, game, weapons
+from . import dialog, game, weapons, styles
 from src import constants
+import copy
 
 class PlayerProfile:
+    SKILL_DATA = {
+        'melee_demand': ('Melee Demand', '+20% melee damage\n-40% ranged damage\n-40% magic damage'),
+        'ranged_demand': ('Ranged Demand', '+20% ranged damage\n-40% melee damage\n-40% magic damage'),
+        'magic_demand': ('Magic Demand', '+20% magic damage\n-40% melee damage\n-40% ranged damage'),
+        'the_fury': ('The Fury', 'Key: Z\nContinue for 6s:\n+50% melee damage\n+30 touching defense\n-50% speed'),
+        'warrior_shield': ('Warrior Shield', 'Key: X\nSummon a shield to absorb a damage for 4s.'),
+        'fast_throw': ('Fast Throw', 'Key: Z\nSprint for a distance, \nthrow 3 projectiles of 3x damage.'),
+        'perfect_shot': ('Perfect Shot', 'Key: X\nShoot a energy ammo with 5x damage.'),
+        'healer': ('Healer', 'Key: Z\nHeal 10% max hp & 25% max mana.'),
+        'multi_user': ('Multi-User', 'Key: X\nUse the current weapon all in once for the mana cost.'),
+
+        'melee_reinforce_i': ('Melee Reinforce I', '+10% melee damage\n-5% ranged damage\n-5% magic damage'),
+        'melee_reinforce_ii': ('Melee Reinforce II', '+12% damage\n+5/sec regeneration'),
+        'melee_reinforce_iii': ('Melee Reinforce III', '+25 touching defense'),
+        'melee_reinforce_iv': ('Melee Reinforce IV', '+25 magic defense'),
+
+        'ranged_reinforce_i': ('Ranged Reinforce I', '+10% ranged damage\n-5% melee damage\n-5% magic damage'),
+        'ranged_reinforce_ii': ('Ranged Reinforce II', '+5% damage\n+12% critical'),
+        'ranged_reinforce_iii': ('Ranged Reinforce III', '+15% speed\n+3 touching defense'),
+        'ranged_reinforce_iv': ('Ranged Reinforce IV', '-5% air resistance\n+7 magic defense'),
+
+        'magic_reinforce_i': ('Magic Reinforce I', '+10% magic damage\n-5% melee damage\n-5% ranged damage'),
+        'magic_reinforce_ii': ('Magic Reinforce II', '+6% damage\n+12/sec regeneration'),
+        'magic_reinforce_iii': ('Magic Reinforce III', '+40 additional maximum mana\n+5 touching defense'),
+        'magic_reinforce_iv': ('Magic Reinforce IV', '+20/sec mana regeneration\n+12 magic defense'),
+
+        'star_supporter': ('Star Supporter', 'A chance to drop stars when defeating enemies.'),
+    }
+
     def __init__(self):
         self.avail_points = 0
         self.point_wisdom = 0
@@ -16,6 +46,9 @@ class PlayerProfile:
         self.stage = 0
         self.dialogger = dialog.Dialogger(36, pg.Rect(0, 0, 1600, 300), target_surface=pg.Surface((1, 1)))
         self.font: pg.font.Font | None = None
+        self.font_s: pg.font.Font | None = None
+        self.select_skill = []
+        self.point_left = 0
 
     def get_color(self, w = 0, s = 0, a = 0, ml = 0, rg = 0, mg = 0):
         r, g, b = 255, 255, 255
@@ -45,7 +78,6 @@ class PlayerProfile:
         return r, g, b
 
     def get_surface(self, r = 255, g = 255, b = 255):
-        self.font = pg.font.SysFont('dtm-mono', 36)
         sl = [
             [0, 1, 1, 0, 0, 1, 1, 0],
             [1, 1, 1, 1, 1, 1, 1, 1],
@@ -117,13 +149,79 @@ class PlayerProfile:
                 return
             clock.tick(40)
 
+    def skill_display(self, pos, name, select=False, window=None):
+        im = game.get_game().graphics['skill_' + name]
+        im = pg.transform.scale(im, (60, 60))
+        if not select:
+            im = copy.copy(im)
+            im.set_alpha(128)
+        if window is None:
+            window = pg.display.get_surface()
+        window.blit(im, pos)
+
+    def skill_mouse(self, pos, name, rc=(255, 0, 255), anchor='left', window=None, mps=None):
+        rect = pg.Rect(pos, (60, 60))
+        if window is None:
+            window = pg.display.get_surface()
+        if mps is None:
+            mps = pg.mouse.get_pos()
+        title, desc_split = self.SKILL_DATA[name]
+        desc_split = desc_split.split('\n')
+        l = len(desc_split) + 1
+
+        if not rect.collidepoint(mps):
+            return
+
+        t = game.get_game().displayer.font.render(styles.text(title), True, rc, (0, 0, 0))
+
+        if mps[1] > 36 * l:
+            p_y = 0
+        else:
+            p_y = 36 * l - mps[1] + 36
+
+        mw = t.get_width()
+        mh = 36 * l
+        ts = []
+
+        for j in range(l - 1):
+            ft = game.get_game().displayer.font.render(styles.text(desc_split[j]), True,
+                                                      (255, 255, 255), (0, 0, 0))
+            ts.append(ft)
+            mw = max(mw, ft.get_width())
+
+        mr = pg.Rect(0, 0, mw + 50, mh + 50)
+        if anchor == 'left':
+            mr.bottomleft = (mps[0] - 25, mps[1] - 36 + p_y + 25)
+        else:
+            mr.bottomright = (mps[0] - 60 + 25, mps[1] - 36 + p_y + 25)
+        pg.draw.rect(window, (0, 0, 0), mr, border_radius=8)
+        pg.draw.rect(window, rc, mr, 5, 8)
+
+        for j in range(l - 1):
+            ft = ts[j]
+            if anchor == 'left':
+                tr = ft.get_rect(bottomleft=(mps[0], mps[1] - 36 * (l - j - 1) + p_y))
+            else:
+                tr = ft.get_rect(bottomright=(mps[0] - 60, mps[1] - 36 * (l - j - 1) + p_y))
+            window.blit(ft, tr)
+
+        if anchor == 'left':
+            tr = t.get_rect(bottomleft=(mps[0],
+                                        mps[1] - 36 * l + p_y))
+        else:
+            tr = t.get_rect(bottomright=(mps[0] - 60,
+                                         mps[1] - 36 * l + p_y))
+        window.blit(t, tr)
+
     def add_point(self, t = 0):
         self.font = pg.font.SysFont('dtm-mono', 36)
+        self.font_s = pg.font.SysFont('dtm-mono', 18)
         self.dialogger = dialog.Dialogger(36, pg.Rect(0, 0, 1600, 300), target_surface=pg.Surface((1, 1)))
         self.dialogger.target_surface = pg.display.get_surface()
         if t != self.stage:
             return
         self.stage = t + 1
+        game.get_game().stage = t
         self.avail_points += 20
         dialogues = [
             ['[PRESS Z TO CONTINUE]',
@@ -229,9 +327,10 @@ class PlayerProfile:
                                                       window.get_height() // 2 - 200 + i * 100))
                     window.blit(text, text_rect)
             if stage == 1 and pg.K_z in keys and sum(points) == 30:
-                stage = 2
-                target_soul_x = window.get_width() * 3 // 4
-                self.dialogger.dialog('If he/she must FIGHT, how will he/she DO that?')
+                self.skill_tree(round(stage ** 1.5) + 2)
+                stage = 3
+                # target_soul_x = window.get_width() * 3 // 4
+                # self.dialogger.dialog('If he/she must FIGHT, how will he/she DO that?')
                 self.point_wisdom += points[0]
                 self.point_strength += points[1]
                 self.point_agility += points[2]
@@ -281,5 +380,89 @@ class PlayerProfile:
             soul_rect.centery += math.sin(tick / 50) * 50
             window.blit(soul, soul_rect)
             soul_x = (target_soul_x + soul_x) // 2
+            pg.display.update()
+            clock.tick(40)
+
+    def skill_tree(self, point: int):
+        window = pg.display.get_surface()
+        self.font = pg.font.SysFont('dtm-mono', 36)
+        self.font_s = pg.font.SysFont('dtm-mono', 18)
+        skills = [
+            [
+                ['melee_demand'],
+                ['the_fury', 'warrior_shield'],
+                ['melee_reinforce_i', 'melee_reinforce_ii'],
+                ['melee_reinforce_iii', 'melee_reinforce_iv'],
+            ],
+            [
+                ['ranged_demand'],
+                ['fast_throw', 'perfect_shot'],
+                ['ranged_reinforce_i', 'ranged_reinforce_ii'],
+                ['ranged_reinforce_iii', 'ranged_reinforce_iv'],
+            ],
+            [
+                ['magic_demand'],
+                ['healer', 'multi_user'],
+                ['magic_reinforce_i', 'magic_reinforce_ii'],
+                ['magic_reinforce_iii', 'magic_reinforce_iv']
+            ]
+        ]
+        select_skill = []
+        colours = [(255, 0, 255), (255, 255, 0), (0, 255, 255)]
+        clock = pg.time.Clock()
+        self.point_left += point
+        while True:
+            keys = []
+            mouse = []
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    pg.quit()
+                    exit()
+                elif event.type == pg.KEYDOWN:
+                    keys.append(event.key)
+                    if event.key == pg.K_F4:
+                        constants.FULLSCREEN = not constants.FULLSCREEN
+                        pg.display.set_mode(pg.display.get_window_size(), (pg.FULLSCREEN if constants.FULLSCREEN else 0) | constants.FLAGS)
+                    elif event.key == pg.K_ESCAPE:
+                        pg.quit()
+                        exit()
+                    elif event.key == pg.K_z:
+                        self.select_skill.extend(select_skill)
+                        return
+                elif event.type == pg.MOUSEBUTTONDOWN:
+                    mouse.append(event.button)
+            window.fill((0, 0, 0))
+            for i, r_c in enumerate(skills):
+                sy = window.get_height() * (i + 1) / 4
+                for j, c in enumerate(r_c):
+                    if not j or len([1 for s in r_c[j - 1] if s in select_skill or s in self.select_skill]):
+                        x = 40 + j * 100
+                        for k, s in enumerate(c):
+                            y = sy - (len(c) - 1) * 40 + k * 80
+                            self.skill_display((x - 30, y - 30), s, select=s in select_skill + self.select_skill)
+                    else:
+                        for s in c:
+                            if s in select_skill:
+                                select_skill.remove(s)
+            for i, r_c in enumerate(skills):
+                sy = window.get_height() * (i + 1) / 4
+                for j, c in enumerate(r_c):
+                    if not j or len([1 for s in r_c[j - 1] if s in select_skill or s in self.select_skill]):
+                        x = 40 + j * 100
+                        for k, s in enumerate(c):
+                            y = sy - (len(c) - 1) * 40 + k * 80
+                            self.skill_mouse((x - 30, y - 30), s, rc=colours[i])
+                            rc = pg.Rect(x - 30, y - 30, 60, 60)
+                            if rc.collidepoint(pg.mouse.get_pos()):
+                                if 1 in mouse:
+                                    if s not in self.select_skill:
+                                        if s not in select_skill and len(select_skill) < self.point_left:
+                                            select_skill.append(s)
+                                        elif s in select_skill:
+                                            select_skill.remove(s)
+            t = self.font.render('Select %d skills' % (point - len(select_skill)) if (len(select_skill) < self.point_left)
+                                 else 'Press Z to continue', True, (255, 255, 255))
+            t_rect = t.get_rect(center=(window.get_width() // 2, 50))
+            window.blit(t, t_rect)
             pg.display.update()
             clock.tick(40)

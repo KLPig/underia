@@ -34,8 +34,14 @@ ENTITIES: dict[str, ENTITY_TYPE] = {
 # SETUP_FUNC
 # Code here (import allowed)
 from src import underia
-for item in underia.RECIPES:
-    item.material.clear()
+for i in range(len(underia.RECIPES)):
+    r = underia.RECIPES[i]
+    for m, _ in r.material.items():
+        if not len([1 for r in underia.RECIPES if r.result == m]):
+            underia.RECIPES.insert(i - 1, underia.Recipe({}, m , 9999))
+            i += 1
+    r.material.clear()
+    r.crafted_amount = 9999
 # SETUP_FUNC
 # UPDATE_FUNC
 # Code here (import allowed)

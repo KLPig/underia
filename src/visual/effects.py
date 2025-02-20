@@ -3,6 +3,7 @@ import pygame as pg
 from src.resources import position
 from src.underia import game
 from src import constants
+from . import draw
 
 
 class Effect:
@@ -10,8 +11,12 @@ class Effect:
         return False
 
 
-def pointed_curve(colour: tuple[int, int, int], pts: list[tuple[int, int]], width: int = 10, salpha: int = 255):
-    displayer = game.get_game().displayer
+def pointed_curve(colour: tuple[int, int, int], pts: list[tuple[int, int]], width: int = 10, salpha: int = 255,
+                  target: pg.Surface = None):
+    if target is None:
+        displayer = game.get_game().displayer.canvas
+    else:
+        displayer = target
     num_points = len(pts)
 
     if num_points < 2:
@@ -24,12 +29,13 @@ def pointed_curve(colour: tuple[int, int, int], pts: list[tuple[int, int]], widt
         ex, ey = position.displayed_position(pts[i + 1])
         if (ex - sx) ** 2 + (ey - sy) ** 2 > 1000000:
             continue
-        s = pg.Surface((abs(ex - sx) + width, abs(ey - sy) + width), pg.SRCALPHA)
-        ax, ay = min(sx, ex), min(sy, ey)
-        for aax in range(-width // 2, width // 2 + 1, 1):
-            for aay in range(-width // 2, width // 2 + 1, 1):
-                pg.draw.aaline(s, current_colour, (aax + sx + width // 2 - ax, aay + sy + width // 2 - ay),
-                               (aax + ex + width // 2 - ax, aay + ey + width // 2 - ay))
-        if constants.USE_ALPHA:
-            s.set_alpha(alpha)
-        displayer.canvas.blit(s, (min(sx, ex), min(sy, ey)))
+        if constants.USE_ALPHA and alpha < 255:
+            s = pg.Surface((abs(ex - sx) + width, abs(ey - sy) + width), pg.SRCALPHA)
+            ax, ay = min(sx, ex), min(sy, ey)
+            draw.line(s, current_colour, (sx + width // 2 - ax, sy + width // 2 - ay),
+                      (ex + width // 2 - ax, ey + width // 2 - ay))
+            if constants.USE_ALPHA:
+                s.set_alpha(alpha)
+            displayer.blit(s, (min(sx, ex), min(sy, ey)))
+        else:
+            draw.line(displayer, current_colour, (sx, sy), (ex, ey), width)

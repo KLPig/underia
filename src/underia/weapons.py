@@ -12,6 +12,7 @@ from src.visual import effects as eff
 from src.visual import particle_effects as pef
 
 import perlin_noise
+import functools
 
 class Weapon:
     ENABLE_IMMUNE = True
@@ -125,8 +126,6 @@ class Weapon:
         if not len(self.noises):
             noises = perlin_noise.PerlinNoise(octaves=2, seed=random.randint(0, 1000000))
             self.noises = [noises(i / 100) for i in range(1000)]
-        mx = max(self.noises)
-        mn = min(self.noises)
         self.rot %= 360
         self.lrot %= 360
         if self.rot - self.lrot > 180:
@@ -134,17 +133,29 @@ class Weapon:
         if self.lrot - self.rot > 180:
             self.rot += 360
         arot = self.rot - self.lrot
+        self.lrot = self.rot
+        sf = self._get_cut_surf(arot, size, col1, col2)
+        sf = pg.transform.scale_by(pg.transform.rotate(sf, self.rot), 1 / game.get_game().player.get_screen_scale())
+        sfr = sf.get_rect(center=position.displayed_position((self.x + game.get_game().player.obj.pos[0],
+                                                              self.y + game.get_game().player.obj.pos[1])))
+        game.get_game().displayer.canvas.blit(sf, sfr)
+
+    @functools.lru_cache(maxsize=None)
+    def _get_cut_surf(self, arot, size, col1, col2):
+        mx = max(self.noises)
+        mn = min(self.noises)
         sz = {3: 32, 4: 40, 6: 64, 8: 80, 10: 100, 16: 160, 32: 320}[size]
         dst = {3: 100, 4: 130, 6: 200, 8: 260, 10: 350, 16: 520, 32: 1080}[size]
         gdt = 23
         sz //= constants.BLADE_EFFECT_QUALITY
         gdt *= constants.BLADE_EFFECT_QUALITY
+        surf = pg.Surface((dst * 2 + 10, dst * 2 + 10), pg.SRCALPHA)
         for j in range(sz):
             i = j / 10
             d = (dst - i * gdt)
             dt = (sz - j) * arot / sz * ((self.noises[j * 999 // sz] - mn) / (mx - mn) * 8 / 5 + .2)
             adt = (sz - j) * arot / sz * ((self.noises[j * 999 // sz] - mn) / (mx - mn) * 2) / 8
-            rots = [vector.rotation_coordinate(self.rot - (dt + adt) * i / 9 + adt) for i in range(9, -1, -1)]
+            rots = [vector.rotation_coordinate( -(dt + adt) * i / 9 + adt) for i in range(9, -1, -1)]
             if arot:
                 for i, p in enumerate(self.poss):
                     ad = abs(adt / arot * i / 9)
@@ -157,14 +168,12 @@ class Weapon:
                     self.poss[i] = (self.poss[i][0] + aax, self.poss[i][1] + aay)
             eff.pointed_curve((int(col1[0] + (col2[0] - col1[0]) / sz * j),
                                int(col1[1] + (col2[1] - col1[1]) / sz * j),
-                               int(col1[2] + (col2[2] - col1[2]) / sz * j)),
-                              [(vx * d + game.get_game().player.obj.pos[0] + self.x,
-                                vy * d + game.get_game().player.obj.pos[1] + self.y)
-                               for vx, vy in rots], 3 * constants.BLADE_EFFECT_QUALITY,
-                              salpha=int(255 * (1 - j / sz / 6)))
-        self.lrot = self.rot
-        self.lx = self.x
-        self.ly = self.y
+                               int(col1[2] + (col2[2] - col1[2]) / sz * j)), [(vx * d + surf.get_width() // 2,
+                                                                               vy * d + surf.get_height() // 2)
+                                                                              for vx, vy in rots],
+                              3 * constants.BLADE_EFFECT_QUALITY, salpha=int(255 * (1 - j / sz / 6)),
+                              target=surf)
+        return surf
 
     def activated_cutting_effect(self, size=4, col1=(100, 0, 100), col2=(255, 100, 255), length=3):
         self.rot %= 360
@@ -188,9 +197,8 @@ class Weapon:
                 self.aposs[j].pop(0)
             eff.pointed_curve((int(col1[0] + (col2[0] - col1[0]) / sz * j),
                                int(col1[1] + (col2[1] - col1[1]) / sz * j),
-                               int(col1[2] + (col2[2] - col1[2]) / sz * j)),
-                              self.aposs[j][-length:], 3 * constants.BLADE_EFFECT_QUALITY,
-                              salpha=int(127 * (1 - j / sz)))
+                               int(col1[2] + (col2[2] - col1[2]) / sz * j)), self.aposs[j][-length:],
+                              3 * constants.BLADE_EFFECT_QUALITY, salpha=int(127 * (1 - j / sz)))
         self.lrot = self.rot
         self.lx = self.x
         self.ly = self.y
@@ -2417,8 +2425,7 @@ class Resolution(Bow):
 
 class DaedelusStormbow(Bow):
     def on_start_attack(self):
-        self.face_to(
-            *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+        self.face_to(*position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
         if game.get_game().player.ammo[0] not in projectiles.AMMOS or not game.get_game().player.ammo[1]:
             self.timer = 0
             return
@@ -2458,7 +2465,7 @@ class TrueDaedalusStormbow(Bow):
                                                                       -1, 1), self.spd,
                                                                   self.damages[dmg.DamageTypes.PIERCING])
             game.get_game().projectiles.append(p)
-        self.face_to(mx, - 1200)
+        self.face_to(mx, -1200)
 
 
 class Gun(Bow):
@@ -2481,7 +2488,7 @@ class Gun(Bow):
             game.get_game().player.ammo_bullet[0], game.get_game().player.ammo_bullet[1] - 1)
         pj = projectiles.AMMOS[game.get_game().player.ammo_bullet[0]]((self.x + game.get_game().player.obj.pos[0],
                                                                 self.y + game.get_game().player.obj.pos[1]),
-                                                               self.rot, self.spd,
+                                                               self.rot + random.randint(-self.precision, self.precision), self.spd,
                                                                self.damages[dmg.DamageTypes.PIERCING])
         if self.tail_col is not None:
             pj.TAIL_COLOR = self.tail_col
@@ -2505,6 +2512,11 @@ class DarkExploder(Gun):
                                                 self.rot + random.randint(-self.precision, self.precision), self.spd + pj.SPEED,
                                                 self.damages[dmg.DamageTypes.PIERCING] + pj.DAMAGES)
         game.get_game().projectiles.append(am)
+
+class Shotgun(Gun):
+    def on_start_attack(self):
+        for _ in range(3):
+            super().on_start_attack()
 
 class LazerGun(Gun):
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, projectile_speed: int,
@@ -2801,6 +2813,8 @@ def set_weapons():
                                            {dmg.DamageTypes.PHYSICAL: 220, dmg.DamageTypes.MAGICAL: 120}, 2,
                                            'items_weapons_true_nights_edge',
                                            1, 32, 60, 100),
+        'wooden_club': Blade('wooden club', {dmg.DamageTypes.PHYSICAL: 880}, 5,
+                             'items_weapons_wooden_club', 2, 5, 50, 140),
         'muramasa': Muramasa('muramasa', {dmg.DamageTypes.PHYSICAL: 240}, 3.2,
                              'items_weapons_muramasa',
                              0, 6, 36, 120),
@@ -2820,25 +2834,25 @@ def set_weapons():
         'demon_blade__muramasa': Muramasa('demon blade  muramasa', {dmg.DamageTypes.PHYSICAL: 600}, 12,
                                           'items_weapons_demon_blade__muramasa',
                                           0, 4, 110, 280, _type=1),
-        'uncanny_valley': UncannyValley('uncanny valley', {dmg.DamageTypes.PHYSICAL: 2200}, 18, 'items_weapons__uncanny_valley',
+        'uncanny_valley': UncannyValley('uncanny valley', {dmg.DamageTypes.PHYSICAL: 540}, 18, 'items_weapons__uncanny_valley',
                                          0, 10, 100, 110),
-        'hour_hand': HourHand('hour hand', {dmg.DamageTypes.PHYSICAL: 2800}, 12, 'items_weapons_hour_hand',
+        'hour_hand': HourHand('hour hand', {dmg.DamageTypes.PHYSICAL: 900}, 12, 'items_weapons_hour_hand',
                               0, 40, 9, 0),
-        'deconstruction': Deconstruction('deconstruction', {dmg.DamageTypes.PHYSICAL: 1900}, 12, 'items_weapons_deconstruction',
+        'deconstruction': Deconstruction('deconstruction', {dmg.DamageTypes.PHYSICAL: 800}, 12, 'items_weapons_deconstruction',
                                          0, 6, 50, 150),
-        'starfury': Starfury('starfury', {dmg.DamageTypes.PHYSICAL: 1600}, 8, 'items_weapons_starfury',
+        'starfury': Starfury('starfury', {dmg.DamageTypes.PHYSICAL: 500}, 8, 'items_weapons_starfury',
                              0, 5, 60, 120),
-        'lysis': Lysis('lysis', {dmg.DamageTypes.PHYSICAL: 2600}, 12, 'items_weapons_lysis',
+        'lysis': Lysis('lysis', {dmg.DamageTypes.PHYSICAL: 900}, 12, 'items_weapons_lysis',
                        6, 6, 20, 120),
-        'star_wrath': StarWrath('star wrath', {dmg.DamageTypes.PHYSICAL: 2800}, 16, 'items_weapons_star_wrath',
+        'star_wrath': StarWrath('star wrath', {dmg.DamageTypes.PHYSICAL: 700}, 16, 'items_weapons_star_wrath',
                                 0, 5, 60, 120),
-        'galaxy_broadsword': GalaxyBroadsword('galaxy broadsword', {dmg.DamageTypes.PHYSICAL: 45600, dmg.DamageTypes.THINKING: 12800}, 38,
+        'galaxy_broadsword': GalaxyBroadsword('galaxy broadsword', {dmg.DamageTypes.PHYSICAL: 18800, dmg.DamageTypes.THINKING: 6600}, 38,
                                                'items_weapons_galaxy_broadsword',
                                                6, 8, 45, 200),
-        'highlight': Highlight('highlight', {dmg.DamageTypes.PHYSICAL: 8800, dmg.DamageTypes.THINKING: 12000}, 16, 'items_weapons_highlight',
+        'highlight': Highlight('highlight', {dmg.DamageTypes.PHYSICAL: 2500, dmg.DamageTypes.THINKING: 3200}, 16, 'items_weapons_highlight',
                                0, 3, 30, 60, auto_fire=True),
-        'turning_point': ComplexWeapon('turning point', {dmg.DamageTypes.PHYSICAL: 8000, dmg.DamageTypes.THINKING: 16000},
-                                       {dmg.DamageTypes.PHYSICAL: 22000}, 45, 'items_weapons_turning_point',
+        'turning_point': ComplexWeapon('turning point', {dmg.DamageTypes.PHYSICAL: 2000, dmg.DamageTypes.THINKING: 3600},
+                                       {dmg.DamageTypes.PHYSICAL: 5000}, 45, 'items_weapons_turning_point',
                                        1, 6, 4, 70, 280, 180, 400,
                                        True, [0, 0, 0, 0, 1, 1], TurningPointSweep, TurningPointSpear),
 
@@ -2904,12 +2918,12 @@ def set_weapons():
                                                        0, 3, 1000, auto_fire=True, ammo_save_chance=1 / 3),
         'bow_of_sanction': Bow('bow of sanction', {dmg.DamageTypes.PIERCING: 1800}, 0.5, 'items_weapons_bow_of_sanction',
                                7, 5, 2000, auto_fire=True, tail_col=(255, 255, 0)),
-        'lazer_rain': LazerRain('lazer rain', {dmg.DamageTypes.PIERCING: 800}, 0.5, 'items_weapons_lazer_rain',
+        'lazer_rain': LazerRain('lazer rain', {dmg.DamageTypes.PIERCING: 500}, 0.5, 'items_weapons_lazer_rain',
                                 1, 3, 500, auto_fire=True, tail_col=(127, 127, 255), ammo_save_chance=1 / 2),
-        'accelerationism': Accelerationism('accelerationism', {dmg.DamageTypes.PIERCING: 2200}, 0.5,
+        'accelerationism': Accelerationism('accelerationism', {dmg.DamageTypes.PIERCING: 420}, 0.5,
                                            'items_weapons_accelerationism',
                                            0, 2, 320, True, ammo_save_chance=2 / 3),
-        'resolution': Resolution('resolution', {dmg.DamageTypes.PIERCING: 4800}, 0.5, 'items_weapons_resolution',
+        'resolution': Resolution('resolution', {dmg.DamageTypes.PIERCING: 720}, 0.5, 'items_weapons_resolution',
                                   0, 2, 2200, True, ammo_save_chance=3 / 4),
 
         'pistol': Gun('pistol', {dmg.DamageTypes.PIERCING: 12}, 0.1, 'items_weapons_pistol',
@@ -2933,14 +2947,18 @@ def set_weapons():
                                       6, 8, 100, auto_fire=True, precision=1),
         'true_shadow': Gun('true shadow', {dmg.DamageTypes.PIERCING: 1800}, 0.5, 'items_weapons_true_shadow',
                            5, 10, 5000, auto_fire=True, precision=2),
-        'climax': Gun('climax', {dmg.DamageTypes.PIERCING: 10800}, 0.5, 'items_weapons_climax',
+        'shotgun': Shotgun('shotgun', {dmg.DamageTypes.PIERCING: 540}, 0.1, 'items_weapons_shotgun',
+                            3, 8, 1000, auto_fire=True, precision=12, ammo_save_chance=2 / 3),
+        'justice_shotgun': Shotgun('justice shotgun', {dmg.DamageTypes.PIERCING: 450}, 0.1, 'items_weapons_justice_shotgun',
+                                   1, 2, 500, auto_fire=True, precision=25, ammo_save_chance=3 / 4),
+        'climax': Gun('climax', {dmg.DamageTypes.PIERCING: 440}, 0.5, 'items_weapons_climax',
                       0, 0, 8000, auto_fire=True, precision=1, tail_col=(255, 0, 0), ammo_save_chance=4 / 5),
 
         'lazer_gun': LazerGun('lazer gun', {dmg.DamageTypes.PIERCING: 280}, 0.5, 'items_weapons_lazer_gun',
                               1, 12, 380, auto_fire=True, ammo_save_chance=1 / 2),
         'lazer_sniper': LazerGun('lazer sniper', {dmg.DamageTypes.PIERCING: 1800}, 0.5, 'items_weapons_lazer_sniper',
                                 60, 12, 800, lazer_len=2, auto_fire=True),
-        'matter_disintegrator': LazerGun('matter disintegrator', {dmg.DamageTypes.PIERCING: 1200}, 0.5,
+        'matter_disintegrator': LazerGun('matter disintegrator', {dmg.DamageTypes.PIERCING: 560}, 0.5,
                                           'items_weapons_matter_disintegrator',
                                           3, 7, 1000, lazer_len=5, auto_fire=True, lazer_width=120,
                                          lazer_col=(180, 255, 150)),
@@ -2984,16 +3002,18 @@ def set_weapons():
                                              ('items_weapons_true_twinblade_1', 'items_weapons_true_twinblade_2'),
                                              0, 6, 50, 250, 6, 100,
                                            (((0, 0, 100), (200, 100, 100)), ((0, 100, 0), (100, 200, 150))), 6),
-        'chaos_chaos': ThiefDoubleKnife('chaos chaos', {dmg.DamageTypes.PIERCING: 720}, 0.5,
+        'chaos_chaos': ThiefDoubleKnife('chaos chaos', {dmg.DamageTypes.PIERCING: 320}, 0.5,
                                         ('items_weapons_chaos_chaos1', 'items_weapons_chaos_chaos2'), 0,
                                         8, 60, 300, 10, 12000,
                                    (((0, 0, 0), (255, 255, 255)), ((255, 255, 255), (0, 0, 0))), 6),
-        'time_flies': ThiefDoubleKnife('time flies', {dmg.DamageTypes.PIERCING: 800}, 0.5,
+        'time_flies': ThiefDoubleKnife('time flies', {dmg.DamageTypes.PIERCING: 200}, 0.5,
                                         'items_weapons_time_flies', 0, 5, 40, 120,
                                        4, 1800, dcols=((255, 200, 150), (255, 255, 255))),
 
         'shuriken': ThrowerThiefWeapon('shuriken', {dmg.DamageTypes.PIERCING: 8}, 0, 'items_weapons_shuriken',
                                       1, 1, 1, 1, 3, 1200, 20),
+        'spikeball': ThrowerThiefWeapon('spikeball', {dmg.DamageTypes.PIERCING: 88}, 0, 'items_weapons_spikeball',
+                                       10, 10, 1, 1, 8, 800, 4),
 
         'glowing_splint': MagicWeapon('glowing splint', {dmg.DamageTypes.MAGICAL: 3}, 0.1,
                                       'items_weapons_glowing_splint', 6,
@@ -3137,7 +3157,7 @@ def set_weapons():
                                        19, 1, 1000, 300, False, 'Chaos Teleport'),
         'chaos_killer': ChaosKiller('chaos_killer', {dmg.DamageTypes.MAGICAL: 3200}, 1, 'items_weapons_chaos_killer',
                                      9, 1, projectiles.Projectiles.Projectile, 40, False, 'Chaos Kill'),
-        'skyfire__meteor': MagicWeapon('skyfire__meteor', {dmg.DamageTypes.MAGICAL: 880}, 1, 'items_weapons_skyfire__meteor',
+        'skyfire__meteor': MagicWeapon('skyfire__meteor', {dmg.DamageTypes.MAGICAL: 480}, 1, 'items_weapons_skyfire__meteor',
                                        1, 2, projectiles.Projectiles.Meteor, 8, True, 'Skyfire Meteor'),
         'azure_guard': AzureGuard('azure_guard', {}, 1, 'items_weapons_azure_guard',
                                   35, 1, projectiles.Projectiles.Projectile, 300, False, 'Azure Guard'),
@@ -3154,7 +3174,7 @@ def set_weapons():
                                                'items_weapons_forbidden_curse__water', 40,
                                               10, projectiles.Projectiles.AcidRain, 500, 10, True,
                                                'Acid Rain'),
-        'storm': MagicWeapon('storm', {dmg.DamageTypes.MAGICAL: 540}, 1, 'items_weapons_storm',
+        'storm': MagicWeapon('storm', {dmg.DamageTypes.MAGICAL: 200}, 1, 'items_weapons_storm',
                              9, 1, projectiles.Projectiles.Storm, 120, True, 'Storm'),
         'earth_wall': EarthWall('earth_wall', {}, 1, 'items_weapons_earth_wall',
                                 12, 1, projectiles.Projectiles.Projectile, 600, False, 'Earth Wall'),
@@ -3162,27 +3182,27 @@ def set_weapons():
                                    110, 10, projectiles.Projectiles.LifeBringer, 500, True, 'Life Bringer'),
         'target_dummy': TargetDummy('target_dummy', {}, 1, 'items_weapons_target_dummy',
                                      0, 10, projectiles.Projectiles.Projectile, 15, True, 'Target Dummy'),
-        'judgement_light': MagicWeapon('judgement light', {dmg.DamageTypes.MAGICAL: 680}, 1, 'items_weapons_judgement_light',
+        'judgement_light': MagicWeapon('judgement light', {dmg.DamageTypes.MAGICAL: 450}, 1, 'items_weapons_judgement_light',
                                        220, 10, projectiles.Projectiles.JudgementLight, 800, True, 'Judgement Light'),
         'dark_restrict': MagicWeapon('dark restrict', {}, 1, 'items_weapons_dark_restrict',
                                       1, 14, projectiles.Projectiles.DarkRestrict, 200, True, 'Dark Restrict'),
-        'death_note': ArcaneWeapon('death note', {dmg.DamageTypes.ARCANE: 88}, 1, 'items_weapons_death_note',
+        'death_note': ArcaneWeapon('death note', {dmg.DamageTypes.ARCANE: 45}, 1, 'items_weapons_death_note',
                                    10, 10, projectiles.Projectiles.DeathNote, 120, 8, True, 'Death Note'),
-        'great_forbidden_curse__dark': ArcaneWeapon('great forbidden curse  dark', {dmg.DamageTypes.ARCANE: 44}, 0.8,
+        'great_forbidden_curse__dark': ArcaneWeapon('great forbidden curse  dark', {dmg.DamageTypes.ARCANE: 24}, 0.8,
                                                'items_weapons_forbidden_curse__darks_wield', 230,
                                               10, projectiles.Projectiles.ForbiddenCurseDarkWield, 600, 15, True,
                                                'Dark\'s Wield'),
-        'great_forbidden_curse__evil': ArcaneWeapon('great forbidden curse  evil', {dmg.DamageTypes.ARCANE: 29}, 0.8,
+        'great_forbidden_curse__evil': ArcaneWeapon('great forbidden curse  evil', {dmg.DamageTypes.ARCANE: 12}, 0.8,
                                                'items_weapons_forbidden_curse__blood_moon', 590,
                                               10, projectiles.Projectiles.ForbiddenCurseBloodMoon, 800, 32, True,
                                                'Blood Moon'),
         'stop': MagicWeapon('stop', {}, 1, 'items_weapons_stop', 240, 1,
                             projectiles.Projectiles.Stop, 800, True, 'Stop'),
-        'sun_pearl': MagicWeapon('sun pearl', {dmg.DamageTypes.MAGICAL: 1280}, 1, 'items_weapons_sun_pearl',
+        'sun_pearl': MagicWeapon('sun pearl', {dmg.DamageTypes.MAGICAL: 660}, 1, 'items_weapons_sun_pearl',
                                   8, 8, projectiles.Projectiles.SunPearl, 88, True, 'Sun Guard'),
-        'falling_action': MagicWeapon('falling action', {dmg.DamageTypes.MAGICAL: 5600, dmg.DamageTypes.THINKING: 10800}, 1, 'items_weapons_falling_action',
+        'falling_action': MagicWeapon('falling action', {dmg.DamageTypes.MAGICAL: 400, dmg.DamageTypes.THINKING: 400}, 1, 'items_weapons_falling_action',
                                        1, 1, projectiles.Projectiles.FallingAction, 25, True, 'Falling Action'),
-        'rising_action': MagicWeapon('rising action', {dmg.DamageTypes.MAGICAL: 4800, dmg.DamageTypes.THINKING: 6600}, 1, 'items_weapons_rising_action',
+        'rising_action': MagicWeapon('rising action', {dmg.DamageTypes.MAGICAL: 360, dmg.DamageTypes.THINKING: 800}, 1, 'items_weapons_rising_action',
                                        1, 8, projectiles.Projectiles.RisingAction, 188, True, 'Rising Action'),
 
         'primal__winds_wand': MagicSet('primal  winds wand', 'items_weapons_primal__winds_wand',

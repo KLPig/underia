@@ -12,7 +12,7 @@ DAMAGE_TYPE_CONSTANT = 13829
 
 INFINITY = 2 ** 31 - 1
 
-DEBUG = False
+DEBUG = True
 OS = "OSX"
 
 # Graphics

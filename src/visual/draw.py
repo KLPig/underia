@@ -1,0 +1,25 @@
+import pygame as pg
+
+def line(window, color, start_pos, end_pos, width=1):
+    if start_pos == end_pos:
+        pg.draw.circle(window, color, start_pos, width)
+        return
+    gradient = (end_pos[1] - start_pos[1]) / (end_pos[0] - start_pos[0])
+    if start_pos[0] < 0:
+        start_pos = (0, int(start_pos[1] - gradient * start_pos[0]))
+    if end_pos[0] < 0:
+        end_pos = (0, int(end_pos[1] - gradient * end_pos[0]))
+    if start_pos[0] > window.get_width():
+        start_pos = (window.get_width(), int(start_pos[1] + (gradient * (window.get_width() - start_pos[0]))))
+    if end_pos[0] > window.get_width():
+        end_pos = (window.get_width(), int(end_pos[1] + (gradient * (window.get_width() - end_pos[0]))))
+    gradient = (end_pos[1] - start_pos[1] + 10 ** -5) / (end_pos[0] - start_pos[0] + 10 ** -5)
+    if start_pos[1] < 0:
+        start_pos = (int(start_pos[0] - (1 / gradient) * start_pos[1]), 0)
+    if end_pos[1] < 0:
+        end_pos = (int(end_pos[0] - (1 / gradient) * end_pos[1]), 0)
+    if start_pos[1] > window.get_height():
+        start_pos = (int(start_pos[0] + ((1 / gradient) * (window.get_height() - start_pos[1]))), window.get_height())
+    if end_pos[1] > window.get_height():
+        end_pos = (int(end_pos[0] + ((1 / gradient) * (window.get_height() - end_pos[1]))), window.get_height())
+    pg.draw.line(window, color, start_pos, end_pos, width)

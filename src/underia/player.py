@@ -5,10 +5,11 @@ import tracemalloc
 import pygame as pg
 
 from src.physics import mover, vector
-from src.resources import time, position, cursors, errors
+from src.resources import position, cursors, errors
 from src.underia import game, styles, inventory, weapons, entity, projectiles, player_profile
 from src.values import hp_system, damages, effects
 from src import constants
+from src.visual import draw
 
 
 class PlayerObject(mover.Mover):
@@ -127,6 +128,9 @@ class Player:
         self.ui_recipes = False
         self.ui_recipe_overlook = False
         self.mouse: tuple[str, int] = ('null', 0)
+        self.cd_z = 0
+        self.cd_x = 0
+        self.cd_c = 0
 
     def calculate_regeneration(self):
         ACCESSORY_REGEN = {}
@@ -254,6 +258,29 @@ class Player:
         self.ntcs = []
         self.p_data = []
         self.top_notice = ''
+        if 'melee_demand' in self.profile.select_skill:
+            self.hp_sys.effect(effects.MeleeDemand(5, 1))
+        if 'ranged_demand' in self.profile.select_skill:
+            self.hp_sys.effect(effects.RangedDemand(5, 1))
+        if 'magic_demand' in self.profile.select_skill:
+            self.hp_sys.effect(effects.MagicDemand(5, 1))
+        if 'melee_reinforce_i' in self.profile.select_skill:
+            self.hp_sys.effect(effects.MeleeReinforceI(5, 1))
+        if 'melee_reinforce_ii' in self.profile.select_skill:
+            self.hp_sys.effect(effects.RangedReinforceII(5, 1))
+        if 'melee_reinforce_iii' in self.profile.select_skill:
+            self.hp_sys.effect(effects.MeleeReinforceIII(5, 1))
+        if 'melee_reinforce_iv' in self.profile.select_skill:
+            self.hp_sys.effect(effects.MeleeReinforceIV(5, 1))
+        if 'ranged_reinforce_i' in self.profile.select_skill:
+            self.hp_sys.effect(effects.RangedReinforceI(5, 1))
+        if 'ranged_reinforce_ii' in self.profile.select_skill:
+            self.hp_sys.effect(effects.RangedReinforceII(5, 1))
+        if 'ranged_reinforce_iii' in self.profile.select_skill:
+            self.hp_sys.effect(effects.RangedReinforceIII(5, 1))
+        if 'ranged_reinforce_iv' in self.profile.select_skill:
+            self.hp_sys.effect(effects.RangedReinforceIV(5, 1))
+
         if self.t_ntc_timer > 0:
             self.t_ntc_timer -= 1
         if self.tutorial_step < 5:
@@ -304,9 +331,9 @@ class Player:
         self.hp_sys.pos = self.obj.pos
         self.attack = self.calculate_damage() * self.calculate_data('damage', rate_data=True, rate_multiply=True)
         self.strike = 0.08 + self.calculate_data('crit', False) / 100
-        self.attacks = [self.calculate_melee_damage() * self.calculate_data('melee_damage', rate_data=True, rate_plus=True),
-                        self.calculate_ranged_damage() * self.calculate_data('ranged_damage', rate_data=True, rate_plus=True),
-                        self.calculate_magic_damage() * self.calculate_data('magic_damage', rate_data=True, rate_plus=True),
+        self.attacks = [self.calculate_melee_damage() * self.calculate_data('melee_damage', rate_data=True, rate_multiply=True),
+                        self.calculate_ranged_damage() * self.calculate_data('ranged_damage', rate_data=True, rate_multiply=True),
+                        self.calculate_magic_damage() * self.calculate_data('magic_damage', rate_data=True, rate_multiply=True),
                         self.calculate_data('octave_damage', rate_data=True, rate_multiply=True),
                         self.calculate_data('hallow_damage', rate_data=True, rate_multiply=True),
                         self.calculate_data('pacify_damage', rate_data=True, rate_multiply=True)]
@@ -766,21 +793,24 @@ class Player:
 
             rc = pg.Rect(10, 10, hp_l + mp_l + tp_l, 25)
             ic = pg.Rect(game.get_game().displayer.SCREEN_WIDTH - 35, 10, 25, is_l)
-        for i in range(len(self.hp_sys.effects)):
-            img = pg.transform.scale(game.get_game().graphics['effect_' + self.hp_sys.effects[i].IMG], (72, 72))
+        eff = self.hp_sys.effects
+        if not self.ui_attributes:
+            eff = [e for e in eff if not issubclass(type(e), effects.OctaveIncrease) and not issubclass(type(e), effects.SkillReinforce)]
+        for i in range(len(eff)):
+            img = pg.transform.scale(game.get_game().graphics['effect_' + eff[i].IMG], (72, 72))
             imr = img.get_rect(
-                topright=(game.get_game().displayer.SCREEN_WIDTH - 10 - 80 * len(self.hp_sys.effects) + 80 * i, 10))
+                topright=(game.get_game().displayer.SCREEN_WIDTH - 10 - 80 * len(eff) + 80 * i, 10))
             displayer.canvas.blit(img, imr)
-        for i in range(len(self.hp_sys.effects)):
-            img = pg.transform.scale(game.get_game().graphics['effect_' + self.hp_sys.effects[i].IMG], (72, 72))
+        for i in range(len(eff)):
+            img = pg.transform.scale(game.get_game().graphics['effect_' + eff[i].IMG], (72, 72))
             imr = img.get_rect(
-                topright=(game.get_game().displayer.SCREEN_WIDTH - 10 - 80 * len(self.hp_sys.effects) + 80 * i, 10))
+                topright=(game.get_game().displayer.SCREEN_WIDTH - 10 - 80 * len(eff) + 80 * i, 10))
             if imr.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
                 self.in_ui = True
                 mouse_text = True
-                f = displayer.font.render(f"{self.hp_sys.effects[i].NAME} ({self.hp_sys.effects[i].timer}s)", True,
+                f = displayer.font.render(f"{eff[i].NAME} ({int(eff[i].timer)}s)", True,
                                           (255, 255, 255))
-                fb = displayer.font.render(f"{self.hp_sys.effects[i].NAME} ({self.hp_sys.effects[i].timer}s)", True,
+                fb = displayer.font.render(f"{eff[i].NAME} ({int(eff[i].timer)}s)", True,
                                                (0, 0, 0))
                 ffr = f.get_rect(topright=game.get_game().displayer.reflect(*pg.mouse.get_pos()))
                 ffr.y += 3
@@ -788,7 +818,7 @@ class Player:
                 ffr.x -= 3
                 ffr.y -= 3
                 displayer.canvas.blit(f, ffr)
-                for j, d in enumerate(self.hp_sys.effects[i].DESC.split('\n')):
+                for j, d in enumerate(eff[i].DESC.split('\n')):
                     f = displayer.font.render(d, True, (255, 255, 255))
                     fb = displayer.font.render(d, True, (0, 0, 0))
                     ffr = f.get_rect(topright=game.get_game().displayer.reflect(*pg.mouse.get_pos()))
@@ -808,26 +838,26 @@ class Player:
                     self.hp_sys.enable_immume()
             self.obj.object_gravitational(_entity.obj)
             _entity.obj.object_gravitational(self.obj)
-        nx = 10 + len(self.weapons) * 60 + 30 + 10
-        tsk_rect = pg.Rect(nx - 30, 105 - 30, 60, 60)
+        nx = 10 + 30 + 10
+        tsk_rect = pg.Rect(nx - 30, 140, 60, 60)
         im = game.get_game().graphics['background_ui_tasks']
         if not tsk_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
             im = pg.transform.scale(im, (54, 54))
-        imr = im.get_rect(center=(nx, 105))
+        imr = im.get_rect(center=(nx, 170))
         displayer.canvas.blit(im, imr)
-        nx = 10 + len(self.weapons) * 60 + 30 + 10 + 60
-        att_rect = pg.Rect(nx - 30, 105 - 30, 60, 60)
+        nx = 10 + 30 + 10 + 60
+        att_rect = pg.Rect(nx - 30, 140, 60, 60)
         im = game.get_game().graphics['background_ui_attributes']
         if not att_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
             im = pg.transform.scale(im, (54, 54))
-        imr = im.get_rect(center=(nx, 105))
+        imr = im.get_rect(center=(nx, 170))
         displayer.canvas.blit(im, imr)
-        nx = 10 + len(self.weapons) * 60 + 30 + 10 + 60 * 2
-        inv_rect = pg.Rect(nx - 30, 105 - 30, 60, 60)
+        nx = 10 + 30 + 10 + 60 * 2
+        inv_rect = pg.Rect(nx - 30, 140, 60, 60)
         im = game.get_game().graphics['background_ui_inventory']
         if not inv_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
             im = pg.transform.scale(im, (54, 54))
-        imr = im.get_rect(center=(nx, 105))
+        imr = im.get_rect(center=(nx, 170))
         displayer.canvas.blit(im, imr)
         if tsk_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
             self.in_ui = True
@@ -905,6 +935,139 @@ class Player:
                 displayer.canvas.blit(f, fr)
                 if self.weapons[i].sk_cd:
                     self.weapons[i].sk_cd -= 1
+        w = self.weapons[self.sel_weapon]
+        if inventory.TAGS['magic_weapon'] in inventory.ITEMS[w.name.replace(' ', '_')].tags:
+            sk_z = 'healer' if 'healer' in self.profile.select_skill else None
+            sk_x = 'multi_user' if'multi_user' in self.profile.select_skill else None
+            sk_c = None
+            cdd = 300, 120, 0
+            rc = (255, 0, 255)
+        elif inventory.TAGS['bow'] in inventory.ITEMS[w.name.replace(' ', '_')].tags or inventory.TAGS['gun'] in \
+             inventory.ITEMS[w.name.replace(' ', '_')].tags or inventory.TAGS['knife'] in inventory.ITEMS[w.name.replace(' ', '_')].tags:
+            sk_z = 'fast_throw' if 'fast_throw' in self.profile.select_skill else None
+            sk_x = 'perfect_shot' if 'perfect_shot' in self.profile.select_skill else None
+            sk_c = None
+            cdd = 80, 30, 0
+            rc = (255, 255, 0)
+        else:
+            sk_z = 'the_fury' if 'the_fury' in self.profile.select_skill else None
+            sk_x = 'warrior_shield' if 'warrior_shield' in self.profile.select_skill else None
+            sk_c = None
+            cdd = 360, 250, 0
+            rc = (0, 255, 255)
+        if sk_z is not None:
+            ps = (250, 80)
+            self.profile.skill_display(ps, sk_z, select=True, window=game.get_game().displayer.canvas)
+            sf = pg.Surface((60, 60 * self.cd_z // cdd[0]), pg.SRCALPHA)
+            sf.fill((0, 0, 0, 255))
+            sf.set_alpha(64)
+            game.get_game().displayer.canvas.blit(sf, ps)
+        if sk_x is not None:
+            ps = (310, 80)
+            self.profile.skill_display(ps, sk_x, select=True, window=game.get_game().displayer.canvas)
+            sf = pg.Surface((60, 60 * self.cd_x // cdd[1]), pg.SRCALPHA)
+            sf.fill((0, 0, 0, 255))
+            sf.set_alpha(64)
+            game.get_game().displayer.canvas.blit(sf, ps)
+        if sk_c is not None:
+            ps = (370, 80)
+            self.profile.skill_display(ps, sk_c, select=True, window=game.get_game().displayer.canvas)
+            sf = pg.Surface((60, 60 * self.cd_c // cdd[2]), pg.SRCALPHA)
+            sf.fill((0, 0, 0, 255))
+            sf.set_alpha(64)
+            game.get_game().displayer.canvas.blit(sf, ps)
+        if sk_z is not None:
+            ps = (250, 80)
+            self.profile.skill_mouse(ps, sk_z, rc=rc, window=game.get_game().displayer.canvas,
+                                     mps=game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+        if sk_x is not None:
+            ps = (310, 80)
+            self.profile.skill_mouse(ps, sk_x, rc=rc, window=game.get_game().displayer.canvas,
+                                     mps=game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+        if sk_c is not None:
+            ps = (370, 80)
+            self.profile.skill_mouse(ps, sk_c, rc=rc, window=game.get_game().displayer.canvas,
+                                     mps=game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+        if self.cd_z:
+            self.cd_z -= 1
+        elif sk_z is not None and pg.K_z in game.get_game().get_keys():
+            if sk_z == 'fast_throw':
+                self.obj.velocity.add(vector.Vector(self.obj.velocity.get_net_rotation(), 30 * self.obj.SPEED / self.obj.MASS))
+                self.hp_sys.effect(effects.FastThrow(.4, 1))
+            elif sk_z == 'the_fury':
+                self.hp_sys.effect(effects.TheFury(6, 1))
+            elif sk_z == 'healer':
+                self.hp_sys.heal(self.hp_sys.max_hp / 10)
+                self.mana = max(min(self.mana + self.max_mana / 4, self.max_mana), self.mana)
+                self.hp_sys.effect(effects.Healer(2, 1))
+            self.cd_z = cdd[0]
+        if self.cd_x:
+            self.cd_x -= 1
+        elif sk_x is not None and pg.K_x in game.get_game().get_keys():
+            if sk_x == 'perfect_shot':
+                am1 = self.ammo
+                am2 = self.ammo_bullet
+                self.ammo = ('energy_arrow', 1)
+                self.ammo_bullet = ('energy_arrow', 1)
+                w.attack()
+                self.ammo = am1
+                self.ammo_bullet = am2
+            elif sk_x == 'warrior_shield':
+                self.hp_sys.effect(effects.WarriorShield(4, 1))
+                self.hp_sys.shields.append(('war', 1))
+            elif sk_x == 'multi_user':
+                mc = self.mana
+                mmc = self.max_mana // w.mana_cost
+                for _ in range(mmc):
+                    self.mana = self.max_mana
+                    w.attack()
+                    w.sk_cd = 0
+                self.mana = mc
+            self.cd_x = cdd[1]
+        if self.cd_c:
+            self.cd_c -= 1
+        te = [e for e in self.hp_sys.effects if type(e) is effects.FastThrow]
+        if len(te):
+            self.obj.velocity.add(vector.Vector(self.obj.velocity.get_net_rotation(), 3 * self.obj.SPEED / self.obj.MASS))
+            if te[0].tick in [4, 8, 12] and sk_z == 'fast_throw':
+                if 'throwing' in dir(w):
+                    w.throwing = True
+                w.attack()
+            for e in game.get_game().entities:
+                if vector.distance(self.obj.pos[0] - e.obj.pos[0], self.obj.pos[1] - e.obj.pos[1]) < 200:
+                    if not e.hp_sys.is_immune:
+                        e.hp_sys.damage(w.damages[damages.DamageTypes.PIERCING] * self.attack * self.attacks[1], damages.DamageTypes.PIERCING)
+                        e.hp_sys.enable_immume()
+            vr = 180 - self.obj.velocity.get_net_rotation()
+            sp = int(te[0].tick * 50 * self.obj.SPEED / self.obj.MASS)
+            ps1 = []
+            ps2 = []
+            for i in range(0, sp, 1):
+                d = i / 5
+                vx, vy = vector.rotation_coordinate(-vr)
+                vdx, vdy = vector.rotation_coordinate(90 - vr)
+                ar = te[0].tick / 3 + d / 20
+                ps1.append((self.obj.pos[0] + vx * d + math.sin(ar) * vdx * (sp / 4.5 - d) / 8,
+                            self.obj.pos[1] + vy * d + math.sin(ar) * vdy * (sp / 4.5 - d) / 8))
+                ps2.append((self.obj.pos[0] + vx * d - math.sin(ar) * vdx * (sp / 4.5 - d) / 8,
+                            self.obj.pos[1] + vy * d - math.sin(ar) * vdy * (sp / 4.5 - d) / 8))
+            for i in range(len(ps1) - 1):
+                draw.line(game.get_game().displayer.canvas, self.profile.get_color(),
+                             position.displayed_position(ps1[i]),
+                             position.displayed_position(ps1[i + 1]),
+                             width=int((30 - i * 20 / len(ps1)) / self.get_screen_scale()))
+                draw.line(game.get_game().displayer.canvas, self.profile.get_color(),
+                             position.displayed_position(ps2[i]),
+                             position.displayed_position(ps2[i + 1]),
+                             width=int((30 - i * 20 / len(ps1)) / self.get_screen_scale()))
+        if len([1 for e in self.hp_sys.effects if type(e) is effects.WarriorShield]):
+            if len([1 for s, t in self.hp_sys.shields if s == 'war']):
+                pg.draw.circle(game.get_game().displayer.canvas, (0, 255, 255),
+                               position.displayed_position(self.obj.pos),
+                               int(5 / self.get_screen_scale()),
+                               int(100 / self.get_screen_scale()))
+        else:
+            self.hp_sys.shields = [(s, t) for s, t in self.hp_sys.shields if s != 'war']
         for i in range(len(self.weapons)):
             if i % len(self.weapons) == 0 and i:
                 break

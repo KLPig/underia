@@ -9,7 +9,8 @@ from src.resources import position
 from src.underia import game, styles, inventory
 from src.values import hp_system, damages, effects
 from src import constants
-from src.visual import particle_effects as pef, fade_circle as fc
+from src.visual import particle_effects as pef, fade_circle as fc, draw
+import functools
 
 
 class Loots:
@@ -203,6 +204,37 @@ class SlowMoverAI(MonsterAI):
                 self.apply_force(vector.Vector(vector.coordinate_rotation(px, py), 150))
             else:
                 self.idle()
+        else:
+            self.idle()
+
+class OrgeAI(SlowMoverAI):
+    MASS = 6000
+    FRICTION = 0.6
+    TOUCHING_DAMAGE = 288
+    IDLE_SPEED = 10000
+    SIGHT_DISTANCE = 3600
+
+    def __init__(self, pos):
+        super().__init__(pos)
+        self.timer = 0
+        self.state = 0
+
+    def on_update(self):
+        player = self.cur_target
+        if player is not None:
+            px = player.pos[0] - self.pos[0]
+            py = player.pos[1] - self.pos[1]
+            if self.time_touched_player < 80:
+                self.idle()
+            elif self.state == 0:
+                self.FRICTION = 0.6
+                self.apply_force(vector.Vector(vector.coordinate_rotation(px, py), 12000))
+            elif self.state == 2:
+                self.FRICTION = 0.75
+                self.apply_force(vector.Vector(vector.coordinate_rotation(px, py), 72000))
+            self.timer += 1
+            if random.randint(0, self.timer) > 100:
+                self.state = (self.state + 1) % 3
         else:
             self.idle()
 
@@ -979,7 +1011,7 @@ class GreedAI(SlowMoverAI):
                 elif self.state == 3:
                     self.rot = (self.rot + 10) % 360
                 else:
-                    pg.draw.line(game.get_game().displayer.canvas, (255, 0, 0), position.displayed_position(self.pos),
+                    draw.line(game.get_game().displayer.canvas, (255, 0, 0), position.displayed_position(self.pos),
                                  position.displayed_position((self.pos[0] + px - 800 * ax, self.pos[1] + py - 800 * ay)),
                                  width=50)
             self.dp = self.pos
@@ -1073,6 +1105,22 @@ class WorldsTreeAI(MonsterAI):
             self.apply_force(vector.Vector(vector.coordinate_rotation(ax, ay),
                                            vector.distance(ax, ay) * 6 + 8000))
 
+@functools.lru_cache(maxsize=None)
+def entity_get_surface(display_mode, rot, scale, img):
+    if img.get_width() + img.get_height() > 30 * scale:
+        if display_mode == Entities.DisplayModes.DIRECTIONAL:
+            d_img = pg.transform.rotate(img, rot)
+        elif display_mode == Entities.DisplayModes.BIDIRECTIONAL:
+            if rot % 360 < 180:
+                d_img = pg.transform.flip(img, True, False)
+            else:
+                d_img = img
+        else:
+            d_img = img
+        return pg.transform.scale(d_img,(d_img.get_width() / scale, d_img.get_height() / scale))
+    else:
+        return pg.Surface((img.get_width() / scale, img.get_height() / scale))
+
 class Entities:
 
     class Tag(inventory.Inventory.Item.Tag):
@@ -1129,8 +1177,6 @@ class Entities:
             self.hp_sys.SOUND_HURT = self.SOUND_HURT
             if self.IS_MENACE:
                 self.hp_sys.displayed_hp = 0
-            self._l_rot = 0
-            self._lgf = 0
             self.adj = ''
             if not random.randint(0, 3) and not self.IS_MENACE:
                 self.adj, hp_t, def_a, mass_a, _atk_a = random.choice(self.ADJECTIVES)
@@ -1144,29 +1190,17 @@ class Entities:
                 self.obj.TOUCHING_DAMAGE += _atk_a
             self.hp_sys.max_hp *= 0.9 + 0.2 * random.random()
             self.hp_sys.hp = self.hp_sys.max_hp
+            if 'star_supporter' in game.get_game().player.profile.select_skill:
+                self.LOOT_TABLE.loot_list.append(IndividualLoot('star', 0.2, 1, 1))
 
         def set_rotation(self, rot):
-            self.rot = rot
-            if self._l_rot == rot and self._lgf == self.img and False:
+            if self.img.get_width() < 5:
                 return
-            self._l_rot = rot
-            self._lgf = self.img
-            if self.img.get_width() + self.img.get_height() > 30 * game.get_game().player.get_screen_scale():
-                if self.DISPLAY_MODE == Entities.DisplayModes.DIRECTIONAL:
-                    self.d_img = pg.transform.rotate(self.img, rot)
-                elif self.DISPLAY_MODE == Entities.DisplayModes.BIDIRECTIONAL:
-                    if rot % 360 < 180:
-                        self.d_img = pg.transform.flip(self.img, True, False)
-                    else:
-                        self.d_img = self.img
-                else:
-                    self.d_img = self.img
-                self.d_img = pg.transform.scale(self.d_img,
-                                                (self.d_img.get_width() / game.get_game().player.get_screen_scale(),
-                                                     self.d_img.get_height() / game.get_game().player.get_screen_scale()))
-            else:
-                self.d_img = pg.Surface((self.img.get_width() / game.get_game().player.get_screen_scale(),
-                                          self.img.get_height() / game.get_game().player.get_screen_scale()))
+            p = position.displayed_position((self.obj.pos[0], self.obj.pos[1]))
+            if p[0] < -100 or p[0] > game.get_game().displayer.SCREEN_WIDTH + 100 or p[1] < -100 or p[1] > game.get_game().displayer.SCREEN_HEIGHT + 100:
+                return
+            self.rot = rot
+            self.d_img = entity_get_surface(self.DISPLAY_MODE, self.rot, game.get_game().player.get_screen_scale(), self.img)
 
         def play_sound(self, sound):
             d = vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
@@ -1198,6 +1232,10 @@ class Entities:
                     return
             self.obj.update()
             if self.img.get_width() + self.img.get_height() > 30 * game.get_game().player.get_screen_scale():
+                if p[0] < -100 or p[0] > game.get_game().displayer.SCREEN_WIDTH + 100 or p[1] < -100 \
+                        or p[1] > game.get_game().displayer.SCREEN_HEIGHT + 100:
+                    return
+                self.set_rotation(self.rot)
                 self.draw()
 
         def draw(self):
@@ -2069,6 +2107,8 @@ class Entities:
                 px, py = game.get_game().player.obj.pos
                 px -= self.obj.pos[0]
                 py -= self.obj.pos[1]
+                if vector.distance(px, py) > 800:
+                    return
                 game.get_game().entities.append(Entities.MagmaKingFireball(self.obj.pos, vector.coordinate_rotation(px, py)))
 
     class DropItem(Entity):
@@ -2700,6 +2740,49 @@ class Entities:
                 game.get_game().player.hp_sys.enable_immume()
                 self.hp_sys.hp = 0
 
+    class UniSpike(Lazer):
+        NAME = 'Uni-Spike'
+        SOUND_SPAWN = None
+
+        def __init__(self, pos, rot):
+            super(Entities.Lazer, self).__init__(pos, game.get_game().graphics['entity_uni_spike'], AbyssRuneShootAI, 500000)
+            self.obj.rot = rot
+            self.set_rotation(90 - rot)
+            self.obj.apply_force(vector.Vector(rot, 36000))
+
+        def update(self):
+            self.set_rotation(self.rot + 18)
+            super().update()
+
+        def damage(self):
+            if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
+                               self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 36:
+                game.get_game().player.hp_sys.damage(98, damages.DamageTypes.MAGICAL)
+                game.get_game().player.hp_sys.enable_immume()
+                self.hp_sys.hp = 0
+
+    class PoisonSaliva(Lazer):
+        NAME = 'Poison Saliva'
+        SOUND_SPAWN = None
+
+        def __init__(self, pos, rot):
+            super(Entities.Lazer, self).__init__(pos, game.get_game().graphics['entity_poison_saliva'], AbyssRuneShootAI, 500000)
+            self.obj.rot = rot
+            self.set_rotation(90 - rot)
+            self.obj.apply_force(vector.Vector(rot, 36000))
+
+        def update(self):
+            self.set_rotation(self.rot + 18)
+            super().update()
+
+        def damage(self):
+            if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
+                               self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 36:
+                game.get_game().player.hp_sys.damage(180, damages.DamageTypes.MAGICAL)
+                game.get_game().player.hp_sys.effect(effects.Sticky(6, 10))
+                game.get_game().player.hp_sys.enable_immume()
+                self.hp_sys.hp = 0
+
     class GoblinArrow(Lazer):
         NAME = 'Goblin Arrow'
         SOUND_SPAWN = None
@@ -2848,7 +2931,7 @@ class Entities:
             super().__init__(pos, 80)
 
     class SoulFlower(Entity):
-        NAME = 'soul flower'
+        NAME = 'Soul Flower'
         DISPLAY_MODE = 3
         LOOT_TABLE = LootTable([
             IndividualLoot('mana_crystal', 0.9, 15, 25),
@@ -2862,6 +2945,34 @@ class Entities:
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 50
             self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 80
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 60
+
+    class UniSaur(Entity):
+        NAME = 'Uni-saur'
+        DISPLAY_MODE = 2
+        LOOT_TABLE = LootTable([
+            IndividualLoot('seatea', 0.9, 12, 16),
+            IndividualLoot('evil_ingot', 0.6, 12, 20),
+            SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 0, 1)
+        ])
+
+        def __init__(self, pos):
+            super().__init__(pos, game.get_game().graphics['entity_uni_saur'], SoulFlowerAI, 9800)
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 100
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 120
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 100
+            self.obj.TOUCHING_DAMAGE = 140
+            self.obj.SIGHT_DISTANCE *= 2
+            self.tick = 0
+
+        def update(self):
+            super().update()
+            self.tick += 1
+            px, py = (game.get_game().player.obj.pos[0] - self.obj.pos[0],
+                      game.get_game().player.obj.pos[1] - self.obj.pos[1])
+            self.set_rotation((self.rot * 2 + vector.coordinate_rotation(px, py)) // 3)
+            if 800 > vector.distance(px, py) > 400:
+                if self.tick % 38 == 1:
+                    game.get_game().entities.append(Entities.UniSpike(self.obj.pos, self.rot))
 
     class Cells(Entity):
         NAME = 'Cells'
@@ -2881,16 +2992,19 @@ class Entities:
         NAME = 'Heaven Goblin Fighter'
         DISPLAY_MODE = 2
         LOOT_TABLE = LootTable([
+            IndividualLoot('wooden_stick', 0.09, 1, 1),
+            IndividualLoot('spikeball', 0.09, 1, 1),
+            IndividualLoot('shotgun', 0.12, 1, 1)
             ])
 
         SOUND_HURT = 'sticky'
         SOUND_DEATH = 'monster'
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_heaven_goblin_fighter'], SoulFlowerAI, 8800)
-            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 88
-            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 75
-            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 66
+            super().__init__(pos, game.get_game().graphics['entity_heaven_goblin_fighter'], SoulFlowerAI, 600)
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 58
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 55
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 46
             self.obj.SPEED *= 3
             self.obj.MASS *= 2.5
             self.obj.TOUCHING_DAMAGE = 128
@@ -2904,13 +3018,15 @@ class Entities:
         NAME = 'Heaven Goblin Thief'
         DISPLAY_MODE = 2
         LOOT_TABLE = LootTable([
+            IndividualLoot('wooden_stick', 0.09, 1, 1),
+            IndividualLoot('spikeball', 0.09, 1, 1),
             ])
 
         SOUND_HURT = 'sticky'
         SOUND_DEATH = 'monster'
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_heaven_goblin_thief'], SoulFlowerAI, 10800)
+            super().__init__(pos, game.get_game().graphics['entity_heaven_goblin_thief'], SoulFlowerAI, 1000)
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = -20
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = -25
             self.hp_sys.defenses[damages.DamageTypes.PIERCING] = -30
@@ -2927,16 +3043,19 @@ class Entities:
         NAME = 'Heaven Goblin Ranger'
         DISPLAY_MODE = 2
         LOOT_TABLE = LootTable([
+            IndividualLoot('wooden_stick', 0.09, 1, 1),
+            IndividualLoot('spikeball', 0.09, 1, 1),
+            IndividualLoot('shotgun', 0.12, 1, 1)
             ])
 
         SOUND_HURT = 'sticky'
         SOUND_DEATH = 'monster'
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_heaven_goblin_ranger'], RangedAI, 7500)
-            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 30
-            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 35
-            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 38
+            super().__init__(pos, game.get_game().graphics['entity_heaven_goblin_ranger'], RangedAI, 560)
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 20
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 25
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 28
             self.obj.SPEED *= 2.5
             self.obj.MASS *= 2
             self.obj.TOUCHING_DAMAGE = 88
@@ -3021,6 +3140,35 @@ class Entities:
                     game.get_game().player.hp_sys.enable_immume()
             self.tick += 1
 
+    class Orge(Entity):
+        NAME = 'Orge'
+        DISPLAY_MODE = 2
+        LOOT_TABLE = LootTable([
+            ])
+
+        SOUND_SPAWN = 'boss'
+        SOUND_HURT = 'sticky'
+        SOUND_DEATH = 'huge_monster'
+        IS_MENACE = True
+
+        def __init__(self, pos):
+            super().__init__(pos, game.get_game().graphics['entity_orge'], OrgeAI, 44000)
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 40
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 45
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 50
+            self.tick = 0
+
+        def update(self):
+            super().update()
+            self.set_rotation((self.rot * 2 - self.obj.velocity.get_net_rotation()) // 3)
+            px, py = (game.get_game().player.obj.pos[0] - self.obj.pos[0],
+                      game.get_game().player.obj.pos[1] - self.obj.pos[1])
+            self.tick += 1
+            if 200 < vector.distance(px, py) < 1000 and self.tick % 16 == 1:
+                game.get_game().entities.append(Entities.PoisonSaliva(self.obj.pos,
+                                                                      vector.coordinate_rotation(px, py) + random.randint(-2, 2)))
+
+
     class GoblinWave(Entity):
         NAME = 'The Heaven Goblins'
         DISPLAY_MODE = 2
@@ -3028,32 +3176,45 @@ class Entities:
             ])
         IS_MENACE = True
 
+        NUMBERS = [20, 30, 30, 40, 60]
+
         def __init__(self, pos):
             super().__init__(pos, game.get_game().graphics['entity_goblin_wave'], BuildingAI, 120)
             self.obj.IS_OBJECT = False
             self.goblins = []
             self.tick = 0
-            self.hp_sys.max_hp = 120
-            self.hp_sys.hp = 120
+            self.this_no = []
+            self.wave = 3
+            self.hp_sys(op='config', immune=True)
 
         def update(self):
-            self.obj.pos = game.get_game().player.obj.pos
+            self.NAME = 'The Heaven Goblins(Wave %d)' % (self.wave + 1)
+            self.obj.pos = (game.get_game().player.obj.pos[0],
+                            game.get_game().player.obj.pos[1] - 1000)
             self.tick += 1
-            if self.tick % 10 == 1 and len(self.goblins) < 200:
-                px, py = self.obj.pos
+            if self.tick % 10 == 1 and len(self.goblins) < self.NUMBERS[self.wave] * 2:
+                px, py = game.get_game().player.obj.pos
                 ax, ay = vector.rotation_coordinate(random.randint(0, 360))
                 dt = random.randint(800, 1200)
                 ps = px + ax * dt, py + ay * dt
-                if not random.randint(0, 3):
-                    self.goblins.append(Entities.HeavenGoblinFighter(ps))
-                elif random.randint(0, 1):
+                if (not random.randint(0, 10) or not len(self.goblins)) and self.wave == 4:
+                    self.goblins.append(Entities.Orge(ps))
+                elif not random.randint(0, 3) and self.wave > 1:
+                    self.goblins.append(Entities.HeavenGoblinRanger(ps))
+                elif not random.randint(0, 1) and self.wave not in [0, 2]:
                     self.goblins.append(Entities.HeavenGoblinThief(ps))
                 else:
-                    self.goblins.append(Entities.HeavenGoblinRanger(ps))
+                    self.goblins.append(Entities.HeavenGoblinFighter(ps))
                 game.get_game().entities.append(self.goblins[-1])
-            self.hp_sys.hp = 120 - sum([e.hp_sys.hp <= 0 for e in self.goblins])
+            self.hp_sys.max_hp = self.NUMBERS[self.wave]
+            self.hp_sys.hp = self.NUMBERS[self.wave] - sum([e.hp_sys.hp <= 0 for e in self.goblins])
+            if self.hp_sys.hp <= 0:
+                if self.wave < 4:
+                    self.wave += 1
+                    self.goblins.clear()
+                    self.hp_sys.hp = self.NUMBERS[self.wave]
             self.goblins = [g for g in self.goblins if vector.distance(g.obj.pos[0] - self.obj.pos[0],
-                                                                        g.obj.pos[1] - self.obj.pos[1]) < 1300 ** 2]
+                                                                        g.obj.pos[1] - self.obj.pos[1]) < (1300 + g.IS_MENACE * 2700) ** 2]
 
     class GoblinWaveEP2(Entity):
         NAME = 'The Heaven Goblins(EP2)'
@@ -3710,7 +3871,7 @@ class Entities:
         SOUND_DEATH = 'haha'
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_jevil'], JevilAI, 555000)
+            super().__init__(pos, game.get_game().graphics['entity_jevil'], JevilAI, 456000)
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 100
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 400
             self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 300
@@ -3777,7 +3938,7 @@ class Entities:
             return biome in ['inner']
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_plantera_bulb'], BuildingAI, 10 ** 5)
+            super().__init__(pos, game.get_game().graphics['entity_plantera_bulb'], BuildingAI, 10 ** 5 // 4)
 
     class Plantera(Entity):
         NAME = 'Plantera'
@@ -3790,7 +3951,7 @@ class Entities:
         PHASE_SEGMENTS = [0.6]
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_plantera'], PlanteraAI, 1250000)
+            super().__init__(pos, game.get_game().graphics['entity_plantera'], PlanteraAI, 320000)
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 50
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 50
             self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 50
@@ -3841,7 +4002,7 @@ class Entities:
             ])
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_ghost_face'], GhostFaceAI, 30000)
+            super().__init__(pos, game.get_game().graphics['entity_ghost_face'], GhostFaceAI, 22000)
 
     class SadFace(Entity):
         NAME = 'Sad Face'
@@ -3852,7 +4013,7 @@ class Entities:
             ])
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_sad_face'], GhostFaceAI, 40000)
+            super().__init__(pos, game.get_game().graphics['entity_sad_face'], GhostFaceAI, 22000)
             self.obj.appear_time = 80
             self.obj.appear_rate = 7
             self.obj.TOUCHING_DAMAGE = 500
@@ -3866,7 +4027,7 @@ class Entities:
             ])
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_angry_face'], GhostFaceAI, 20000)
+            super().__init__(pos, game.get_game().graphics['entity_angry_face'], GhostFaceAI, 12000)
             self.obj.appear_time = 30
             self.obj.appear_rate = 2
             self.obj.TOUCHING_DAMAGE = 380
@@ -3880,7 +4041,7 @@ class Entities:
             ])
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_timetrap'], BuildingAI, 100000)
+            super().__init__(pos, game.get_game().graphics['entity_timetrap'], BuildingAI, 25000)
             self.obj.TOUCHING_DAMAGE = 300
 
         def update(self):
@@ -3891,7 +4052,7 @@ class Entities:
             if vector.distance(px, py) < 200:
                 game.get_game().player.obj.pos = self.obj.pos
             elif vector.distance(px, py) < 2000:
-                pg.draw.line(game.get_game().displayer.canvas, (0, 255, 0),
+                draw.line(game.get_game().displayer.canvas, (0, 255, 0),
                              position.displayed_position(self.obj.pos),
                              position.displayed_position(game.get_game().player.obj.pos), 10)
                 game.get_game().player.obj.pos = (game.get_game().player.obj.pos[0] - px // 20, game.get_game().player.obj.pos[1] - py // 20)
@@ -3909,7 +4070,7 @@ class Entities:
             ])
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_timeflower'], SoulFlowerAI, 100000)
+            super().__init__(pos, game.get_game().graphics['entity_timeflower'], SoulFlowerAI, 25000)
             self.obj.TOUCHING_DAMAGE = 560
 
         def update(self):
@@ -3920,7 +4081,7 @@ class Entities:
             if vector.distance(px, py) < 100:
                 game.get_game().player.obj.pos = self.obj.pos
             elif vector.distance(px, py) < 1000:
-                pg.draw.line(game.get_game().displayer.canvas, (0, 255, 0),
+                draw.line(game.get_game().displayer.canvas, (0, 255, 0),
                              position.displayed_position(self.obj.pos),
                              position.displayed_position(game.get_game().player.obj.pos), 10)
                 game.get_game().player.obj.pos = (game.get_game().player.obj.pos[0] - px // 40, game.get_game().player.obj.pos[1] - py // 40)
@@ -3939,7 +4100,7 @@ class Entities:
             ])
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_molecules'], CellsAI, 108)
+            super().__init__(pos, game.get_game().graphics['entity_molecules'], CellsAI, 55)
             self.obj.TOUCHING_DAMAGE = 640
             self.hp_sys.resistances[damages.DamageTypes.PHYSICAL] /= 1000
             self.hp_sys.resistances[damages.DamageTypes.PIERCING] /= 1000
@@ -3960,7 +4121,7 @@ class Entities:
             ])
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_titanium_ingot'], BuildingAI, 66)
+            super().__init__(pos, game.get_game().graphics['entity_titanium_ingot'], BuildingAI, 24)
             self.obj.TOUCHING_DAMAGE = 720
             self.hp_sys.resistances[damages.DamageTypes.PHYSICAL] /= 2500
             self.hp_sys.resistances[damages.DamageTypes.PIERCING] /= 2500
@@ -3993,7 +4154,7 @@ class Entities:
             ])
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_holyfire'], StarAI, 40000)
+            super().__init__(pos, game.get_game().graphics['entity_holyfire'], StarAI, 20000)
             self.obj.TOUCHING_DAMAGE = 540
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 600
             self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 720
@@ -4016,7 +4177,7 @@ class Entities:
             self.tick += 1
             if self.tick < 10:
                 ax, ay = vector.rotation_coordinate(self.obj.rot)
-                pg.draw.line(game.get_game().displayer.canvas, (255, 0, 0),
+                draw.line(game.get_game().displayer.canvas, (255, 0, 0),
                              position.displayed_position(self.obj.pos),
                              position.displayed_position((self.obj.pos[0] + ax * 3000, self.obj.pos[1] + ay * 3000)), 3)
 
@@ -4092,7 +4253,7 @@ class Entities:
                     self.obj.pos = (self.follow_entity.obj.pos[0] + self.ax, self.follow_entity.obj.pos[1] + self.ay)
                     self.obj.rot = -self.follow_entity.rot + self.arot
                 ax, ay = vector.rotation_coordinate(self.obj.rot)
-                pg.draw.line(game.get_game().displayer.canvas, (255, 0, 0),
+                draw.line(game.get_game().displayer.canvas, (255, 0, 0),
                              position.displayed_position(self.obj.pos),
                              position.displayed_position((self.obj.pos[0] + ax * 3000, self.obj.pos[1] + ay * 3000)), 3)
 
@@ -4136,7 +4297,7 @@ class Entities:
                     self.obj.pos = (self.follow_entity.obj.pos[0] + self.ax, self.follow_entity.obj.pos[1] + self.ay)
                     self.obj.rot = -self.follow_entity.rot + self.arot
                 ax, ay = vector.rotation_coordinate(self.obj.rot)
-                pg.draw.line(game.get_game().displayer.canvas, (0, 255, 0),
+                draw.line(game.get_game().displayer.canvas, (0, 255, 0),
                              position.displayed_position(self.obj.pos),
                              position.displayed_position((self.obj.pos[0] + ax * 3000, self.obj.pos[1] + ay * 3000)), 3)
 
@@ -4178,7 +4339,7 @@ class Entities:
         PHASE_SEGMENTS = [i / 12 for i in range(1, 12)]
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_clock'], BuildingAI, 4800000)
+            super().__init__(pos, game.get_game().graphics['entity_clock'], BuildingAI, 800000)
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 50
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 50
             self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 50
@@ -4316,7 +4477,7 @@ class Entities:
         PHASE_SEGMENTS = [i / 9 for i in range(1, 9)]
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_matters'], BuildingAI, 42000)
+            super().__init__(pos, game.get_game().graphics['entity_matters'], BuildingAI, 7200)
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 50
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 50
             self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 50
@@ -4558,7 +4719,7 @@ class Entities:
         PHASE_SEGMENTS = [0.08, 0.13, 0.18, 0.24, 0.30, 0.38, 0.46, 0.55, 0.64, 0.76, 0.88, 0.94, 0.98]
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['items_null'], BuildingAI, 5550000)
+            super().__init__(pos, game.get_game().graphics['items_null'], BuildingAI, 540000)
             self.obj.IS_OBJECT = False
             self.sun_eye = Entities.SunEye((self.obj.pos[0] + random.randint(-1000, 1000),
                                             self.obj.pos[1] + random.randint(-1000, 1000)), self.hp_sys)
@@ -4675,7 +4836,7 @@ class Entities:
         ])
 
         def __init__(self, pos):
-            super().__init__(pos, 120000)
+            super().__init__(pos, 10000)
             self.hp_sys.resistances[damages.DamageTypes.PHYSICAL] = 0
             self.hp_sys.resistances[damages.DamageTypes.MAGICAL] = 0
             self.hp_sys.resistances[damages.DamageTypes.ARCANE] = 0
@@ -4691,7 +4852,7 @@ class Entities:
         ])
 
         def __init__(self, pos):
-            super().__init__(pos, 120000)
+            super().__init__(pos, 10000)
             self.hp_sys.resistances[damages.DamageTypes.PHYSICAL] = 0
             self.hp_sys.resistances[damages.DamageTypes.MAGICAL] = 0
             self.hp_sys.resistances[damages.DamageTypes.ARCANE] = 0
@@ -4725,7 +4886,7 @@ class Entities:
                     self.obj.pos = (self.follow_entity.obj.pos[0] + self.ax, self.follow_entity.obj.pos[1] + self.ay)
                     self.obj.rot = -self.follow_entity.rot + self.arot
                 ax, ay = vector.rotation_coordinate(self.obj.rot)
-                pg.draw.line(game.get_game().displayer.canvas, (0, 255, 0),
+                draw.line(game.get_game().displayer.canvas, (0, 255, 0),
                              position.displayed_position(self.obj.pos),
                              position.displayed_position((self.obj.pos[0] + ax * 3000, self.obj.pos[1] + ay * 3000)), 3)
 
@@ -4770,7 +4931,7 @@ class Entities:
                     self.follow_entity.obj.pos[0] + self.ax, self.follow_entity.obj.pos[1] + self.ay)
                     self.obj.rot = -self.follow_entity.rot + self.arot
                 ax, ay = vector.rotation_coordinate(self.obj.rot)
-                pg.draw.line(game.get_game().displayer.canvas, (0, 0, 0),
+                draw.line(game.get_game().displayer.canvas, (0, 0, 0),
                              position.displayed_position(self.obj.pos),
                              position.displayed_position(
                                  (self.obj.pos[0] + ax * 3000, self.obj.pos[1] + ay * 3000)), 3)
@@ -4801,7 +4962,7 @@ class Entities:
         PHASES = ['none', 'born', 'growth', 'huge', 'fruit', 'death', 'gone', 'recovery', 'rebirth']
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_reincarnation__the_worlds_tree_none'], WorldsTreeAI, 188000000)
+            super().__init__(pos, game.get_game().graphics['entity_reincarnation__the_worlds_tree_none'], WorldsTreeAI, 45000000)
             self.hp_sys.resistances[damages.DamageTypes.PHYSICAL] = 0.8
             self.hp_sys.resistances[damages.DamageTypes.MAGICAL] = 0.8
             self.hp_sys.resistances[damages.DamageTypes.ARCANE] = 0.8
@@ -4914,7 +5075,7 @@ class Entities:
         PHASES = []
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_faith'], BuildingAI, 48000000)
+            super().__init__(pos, game.get_game().graphics['entity_faith'], BuildingAI, 5600000)
             self.obj.MASS = 1800
             self.obj.TOUCHING_DAMAGE = 980
             self.state = 0
@@ -4937,7 +5098,7 @@ class Entities:
                 self.interval = 40
                 self.tick = 0
             if self.tick % 12 == 0:
-                self.hp_sys.heal(42000)
+                self.hp_sys.heal(6600)
             px, py = game.get_game().player.obj.pos
             px -= self.obj.pos[0]
             py -= self.obj.pos[1] + 1000
@@ -4998,7 +5159,7 @@ class Entities:
         PHASE_SEGMENTS = [0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_omega_flowery'], BuildingAI, 10 ** 10)
+            super().__init__(pos, game.get_game().graphics['entity_omega_flowery'], BuildingAI, 10 ** 9 * 4)
             self.obj.MASS = 10 ** 8
             self.obj.TOUCHING_DAMAGE = 0
             self.obj.IS_OBJECT = False
@@ -5418,7 +5579,7 @@ class Entities:
                     self.obj.pos = (self.follow_entity.obj.pos[0] + self.ax, self.follow_entity.obj.pos[1] + self.ay)
                     self.obj.rot = -self.follow_entity.rot + self.arot
                 ax, ay = vector.rotation_coordinate(self.obj.rot)
-                pg.draw.line(game.get_game().displayer.canvas, (255, 0, 0),
+                draw.line(game.get_game().displayer.canvas, (255, 0, 0),
                              position.displayed_position(self.obj.pos),
                              position.displayed_position((self.obj.pos[0] + ax * 3000, self.obj.pos[1] + ay * 3000)), 3)
             else:
@@ -5489,7 +5650,7 @@ class Entities:
                     self.obj.pos = (self.follow_entity.obj.pos[0] + self.ax, self.follow_entity.obj.pos[1] + self.ay)
                     self.obj.rot = -self.follow_entity.rot + self.arot
                 ax, ay = vector.rotation_coordinate(self.obj.rot)
-                pg.draw.line(game.get_game().displayer.canvas, (255, 0, 0),
+                draw.line(game.get_game().displayer.canvas, (255, 0, 0),
                              position.displayed_position(self.obj.pos),
                              position.displayed_position((self.obj.pos[0] + ax * 3000, self.obj.pos[1] + ay * 3000)), 3)
 
@@ -5643,7 +5804,7 @@ class Entities:
             self.hp_sys.hp -= 25 * 10 ** 6
             if self.tick < 5:
                 ax, ay = vector.rotation_coordinate(self.obj.rot)
-                pg.draw.line(game.get_game().displayer.canvas, (255, 0, 0),
+                draw.line(game.get_game().displayer.canvas, (255, 0, 0),
                              position.displayed_position(self.obj.pos),
                              position.displayed_position((self.obj.pos[0] + ax * 3000, self.obj.pos[1] + ay * 3000)), 3)
             else:

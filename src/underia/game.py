@@ -263,10 +263,10 @@ class Game:
                 idx = 6
         biome = lvs[idx]
         if b:
-            no_of_decor = [4, 7, 10, 8, 4, 3, 0][idx]
+            no_of_decor = [4, 7, 10, 8, 4, 3, 6][idx]
             if no_of_decor:
                 for i in range(no_of_decor):
-                    if random.random() < 0.007 - [0.003, 0.004, -0.002, -0.001, 0.003, 0.003][idx]:
+                    if random.random() < (0.007 - [0.003, 0.004, -0.002, -0.001, 0.003, 0.003, -0.001][idx]) / 3:
                         self.decors.append((f'background_decor_{biome}{i + 1}',
                                             (pos[0] - 120) * self.CHUNK_SIZE + random.randint(-self.CHUNK_SIZE // 2, self.CHUNK_SIZE // 2),
                                              (pos[1] - 120) * self.CHUNK_SIZE + random.randint(-self.CHUNK_SIZE // 2, self.CHUNK_SIZE // 2),
@@ -393,31 +393,13 @@ class Game:
                     cx, cy = resources.real_position((i - bg_ax + bg_size // 2, j - bg_ay + bg_size // 2))
                     cx = int(cx // self.CHUNK_SIZE) + 120
                     cy = int(cy // self.CHUNK_SIZE) + 120
-                    if not self.last_biome[1]:
-                        ap = 100
-                        bi = self.get_biome()
-                    elif self.last_biome[1] > 10:
-                        ap = self.last_biome[1] * 2 - 100
-                        bi = self.get_biome()
-                    else:
-                        ap = (10 - self.last_biome[1]) ** 2
-                        bi = self.last_biome[0]
                     bo = self.get_biome(pos=(cx, cy))
                     if constants.EASY_BACKGROUND:
                         bg = pg.Surface((bg_size, bg_size))
                         bg.fill(cols[bo])
                     else:
-                        bg = copy.copy(self.graphics.get_graphics('nbackground_' + bo))
+                        bg = self.graphics.get_graphics('nbackground_' + bo)
                     self.displayer.canvas.blit(bg, (i - bg_ax, j - bg_ay))
-                    if bi != bo and False:
-                        if constants.EASY_BACKGROUND:
-                            s = pg.Surface((bg_size, bg_size))
-                            s.fill(cols[bi])
-                        else:
-                            s = copy.copy(self.graphics.get_graphics('nbackground_' + bi))
-                        if g.get_alpha() != ap:
-                            g.set_alpha(ap)
-                        self.displayer.canvas.blit(s, (i - bg_ax, j - bg_ay))
         for img, x, y, scale_req in self.decors:
             if self.displayer.canvas.get_rect().collidepoint(*resources.displayed_position((x, y))) and scale_req >= self.player.get_screen_scale():
                 self.displayer.canvas.blit(pg.transform.scale_by(self.graphics.get_graphics(img),

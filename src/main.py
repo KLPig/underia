@@ -114,6 +114,20 @@ try:
             game.hallow_points
         except AttributeError:
             game.hallow_points = []
+        try:
+            game.player.profile.select_skill
+        except AttributeError:
+            game.player.profile.select_skill = []
+        try:
+            game.player.profile.point_left
+        except AttributeError:
+            game.player.profile.point_left = 0
+        try:
+            game.player.cd_z
+        except AttributeError:
+            game.player.cd_z = 0
+            game.player.cd_x = 0
+            game.player.cd_c = 0
         game.player.t_ntc_timer = 200
     else:
         game = underia.Game()
@@ -143,14 +157,18 @@ game.player.inventory.items['arrow_thrower'] = 1
 game.player.hp_sys(op='config', immune_time=10, true_drop_speed_max_value=1, immune=False)
 game.player.hp_sys.shields = []
 
-for r in underia.RECIPES:
-    r.material.clear()
+game.player.profile.point_melee = 0
+game.player.profile.point_ranged = 0
+game.player.profile.point_magic = 0
 
 for s in setups:
     exec(s)
 
 @game.update_function
 def update():
+    if game.player.inventory.is_enough(underia.ITEMS['star']):
+        game.player.inventory.remove_item(underia.ITEMS['star'])
+        game.player.mana = max(game.player.mana, min(game.player.max_mana, game.player.mana + 40))
     for u in updates:
         exec(u)
     bm = 'blood moon' in game.world_events
@@ -181,7 +199,7 @@ def update():
                              rate=5)
         underia.entity_spawn(underia.Entities.ClosedBloodflower, target_number=22, to_player_max=5000,
                              to_player_min=800, rate=1)
-        if 6 > game.stage > 0:
+        if 5 > game.stage > 0:
             underia.entity_spawn(underia.Entities.SoulFlower, target_number=42 + bm * 36, to_player_max=5000, to_player_min=800,
                                  rate=1)
         underia.entity_spawn(underia.Entities.GreenChest, target_number=1, to_player_max=5000, to_player_min=4000,
@@ -194,8 +212,8 @@ def update():
                              rate=5)
         underia.entity_spawn(underia.Entities.ClosedBloodflower, target_number=35, to_player_max=5000,
                              to_player_min=800, rate=1)
-        if 6 != game.stage > 0:
-            if game.stage < 6:
+        if 5 != game.stage > 0:
+            if game.stage < 5:
                 underia.entity_spawn(underia.Entities.SoulFlower, target_number=45 + bm * 40, to_player_max=5000, to_player_min=800,
                                      rate=1)
             underia.entity_spawn(underia.Entities.Leaf, target_number=50, to_player_max=5000, to_player_min=1000,
@@ -209,29 +227,33 @@ def update():
                                  rate=0.8)
         underia.entity_spawn(underia.Entities.OrangeChest, target_number=1, to_player_max=5000, to_player_min=4000,
                              rate=50, number_factor=3.5)
+    elif game.get_biome() == 'hallow':
+        underia.entity_spawn(underia.Entities.UniSaur, target_number=15, to_player_max=5000, to_player_min=1000, rate=5)
+        underia.entity_spawn(underia.Entities.GreenChest, target_number=1, to_player_max=5000, to_player_min=4000,
+                             rate=50, number_factor=3.5)
     elif game.get_biome() == 'hell':
         underia.entity_spawn(underia.Entities.MagmaCube, target_number=12, to_player_max=2000, to_player_min=1000,
                              rate=0.8)
         underia.entity_spawn(underia.Entities.RedChest, target_number=1, to_player_max=5000, to_player_min=4000,
                              rate=50, number_factor=4.5)
-        if 6 > game.stage > 3:
+        if 5 > game.stage > 3:
             underia.entity_spawn(underia.Entities.ScarlettPillar, target_number=2, to_player_max=5000, to_player_min=4000,
                                  rate=50, number_factor=1.9)
     elif game.get_biome() == 'heaven':
         underia.entity_spawn(underia.Entities.HeavenGuard, target_number=7 + bm * 12, to_player_max=2000, to_player_min=1000,
                              rate=0.4 + bm * 2)
-        if 6 != game.stage > 0:
+        if 5 != game.stage > 0:
             underia.entity_spawn(underia.Entities.Cells, target_number=6, to_player_max=2000, to_player_min=1500,
                                  rate=0.8)
         underia.entity_spawn(underia.Entities.BlueChest, target_number=1, to_player_max=5000, to_player_min=4000,
                              rate=50, number_factor=4.5)
-        if 6 > game.stage > 3:
+        if 5 > game.stage > 3:
             underia.entity_spawn(underia.Entities.HolyPillar, target_number=2, to_player_max=5000, to_player_min=4000,
                                  rate=50, number_factor=1.9)
     elif game.get_biome() == 'snowland':
         underia.entity_spawn(underia.Entities.ConiferousTree, target_number=15, to_player_max=5000, to_player_min=1000, rate=5)
         underia.entity_spawn(underia.Entities.FluffBall, target_number=5, to_player_max=5000, to_player_min=1000, rate=.8)
-        if 6 != game.stage > 0:
+        if 5 != game.stage > 0:
             underia.entity_spawn(underia.Entities.SnowDrake, target_number=12, to_player_max=5000, to_player_min=1000,
                                  rate=.9)
             underia.entity_spawn(underia.Entities.IceCap, target_number=15, to_player_max=5000, to_player_min=1000,
@@ -244,14 +266,14 @@ def update():
                          rate=50, number_factor=3)
     underia.entity_spawn(underia.Entities.RawOre, target_number=3, to_player_max=5000, to_player_min=1000,
                          rate=.2, number_factor=300)
-    if 6 > game.stage > 0:
+    if 5 > game.stage > 0:
         underia.entity_spawn(underia.Entities.MetalAltar, target_number=3, to_player_max=5000, to_player_min=4000,
                              rate=50, number_factor=3)
-    if game.stage > 6:
+    if game.stage > 5:
         underia.entity_spawn(underia.Entities.ScarlettAltar, target_number=3, to_player_max=5000, to_player_min=4000,
                              rate=50, number_factor=3)
     if game.get_biome() not in ['inner']:
-        if 6 > game.stage > 0:
+        if 5 > game.stage > 0:
             underia.entity_spawn(underia.Entities.EvilMark, target_number=3, to_player_max=5000, to_player_min=4000,
                                  rate=50, number_factor=1.9)
         if game.day_time > 0.75 or game.day_time < 0.2:
@@ -279,7 +301,7 @@ def update():
         underia.entity_spawn(underia.Entities.Star, target_number=12 + bm * 10, to_player_max=2000, to_player_min=1500, rate=0.7)
     elif game.get_biome() == 'inner':
         underia.entity_spawn(underia.Entities.PlanteraBulb, target_number=5, to_player_max=5000, to_player_min=1000, rate=5)
-        if 6 > game.stage > 3:
+        if 5 > game.stage > 2:
             underia.entity_spawn(underia.Entities.GhostFace, target_number=5, to_player_max=5000, to_player_min=2000, rate=0.3)
             underia.entity_spawn(underia.Entities.SadFace, target_number=5, to_player_max=5000, to_player_min=2000, rate=0.3)
             underia.entity_spawn(underia.Entities.AngryFace, target_number=5, to_player_max=5000, to_player_min=2000, rate=0.3)
@@ -289,13 +311,11 @@ def update():
             underia.entity_spawn(underia.Entities.TitaniumIngot, target_number=5, to_player_max=5000, to_player_min=2000, rate=0.4)
             underia.entity_spawn(underia.Entities.Spark, target_number=5, to_player_max=5000, to_player_min=2000, rate=0.4)
             underia.entity_spawn(underia.Entities.Holyfire, target_number=5, to_player_max=5000, to_player_min=2000, rate=0.4)
-        if 6 > game.stage > 4:
+        if 5 > game.stage > 3:
             underia.entity_spawn(underia.Entities.HolyPillar, target_number=2, to_player_max=3000, to_player_min=1000,
                                  rate=50, number_factor=1.9)
             underia.entity_spawn(underia.Entities.ScarlettPillar, target_number=2, to_player_max=3000, to_player_min=1000,
                                  rate=50, number_factor=1.9)
-
-game.player.hp_sys(op='config', immune=True)
 
 try:
     game.run()
@@ -321,6 +341,7 @@ except Exception as err:
     try_delete_attribute(game, 'sounds')
     try_delete_attribute(game, 'dialog')
     try_delete_attribute(game.player.profile, 'font')
+    try_delete_attribute(game.player.profile, 'font_s')
     try_delete_attribute(game.player.profile, 'dialogger')
     game.events = []
     game.projectiles = []

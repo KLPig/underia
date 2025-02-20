@@ -285,6 +285,8 @@ items_dict: dict[str, Inventory.Item] = {
 
     'recipe_book': Inventory.Item('Recipe Book', 'Find related recipes', 'recipe_book', 0, [TAGS['item']]),
 
+    'star': Inventory.Item('Star', 'It suppose to recover you 40 mp.', 'star', 0, [TAGS['item']]),
+
     'tip0': Inventory.Item('Paper tip', 'Trap a star-shaped monster, '
                                         'it\'ll help you to enhance your intelligence.',
                            'tip0', 0, [TAGS['item']]),
@@ -471,6 +473,7 @@ items_dict: dict[str, Inventory.Item] = {
                                 [TAGS['item'], TAGS['weapon']]),
     'true_excalibur': Inventory.Item('True Excalibur', 'Inviolable hallow.', 'true_excalibur', 7,
                                      [TAGS['item'], TAGS['weapon']]),
+    'wooden_club': Inventory.Item('Wooden Club', '', 'wooden_club', 6, [TAGS['item'], TAGS['weapon']]),
     'remote_sword': Inventory.Item('Remote Sword', '', 'remote_sword', 6,
                                     [TAGS['item'], TAGS['weapon']]),
     'true_nights_edge': Inventory.Item('True Night\'s Edge', 'Inviolable dark.', 'true_nights_edge', 7,
@@ -570,6 +573,9 @@ items_dict: dict[str, Inventory.Item] = {
                                      [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
     'true_shadow': Inventory.Item('True Shadow', 'Not the others, \'Pong! Nobody left.\'', 'true_shadow', 7,
                                   [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
+    'shotgun': Inventory.Item('Shotgun', 'Why a ranger should stand close?\nShoot three times.', 'shotgun', 6, [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
+    'justice_shotgun': Inventory.Item('Justice Shotgun', 'Stand closer?', 'justice_shotgun', 7,
+                                       [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
     'climax': Inventory.Item('Climax', 'When it reaches the highest point, everyone is surprised! Everyone is dead.', 'climax', 11,
                              [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
 
@@ -611,6 +617,7 @@ items_dict: dict[str, Inventory.Item] = {
                                   [TAGS['item'], TAGS['weapon'], TAGS['knife']]),
 
     'shuriken': Inventory.Item('Shuriken', '', 'shuriken', 0, [TAGS['item'], TAGS['weapon'], TAGS['knife']]),
+    'spikeball': Inventory.Item('Spikeball', '', 'spikeball', 6, [TAGS['item'], TAGS['weapon'], TAGS['knife']]),
 
     'grenade': Inventory.Item('Grenade', '', 'grenade', 2, [TAGS['item'], TAGS['weapon'], TAGS['knife']]),
     'jade_grenade': Inventory.Item('Jade Grenade', '', 'jade_grenade', 4, [TAGS['item'], TAGS['weapon'], TAGS['knife']]),
@@ -937,7 +944,7 @@ items_dict: dict[str, Inventory.Item] = {
                                        [TAGS['item'], TAGS['accessory']]),
     'copper_traveller_boots': Inventory.Item('Copper Traveller Boots', '30kg\n+60% speed\n+3 touching defense', 'copper_traveller_boots', 1,
                                               [TAGS['item'], TAGS['accessory']]),
-    'thiefs_charm': Inventory.Item('Thief\'s Charm', '-60kg\n+300% ranged damage\n-50% damage\n+50% speed\n+40% critical', 'thiefs_charm', 1,
+    'thiefs_charm': Inventory.Item('Thief\'s Charm', '-40kg\n+120% ranged damage\n-50% damage\n+50% speed\n+40% critical', 'thiefs_charm', 1,
                                     [TAGS['item'], TAGS['accessory']]),
     'metal_traveller_boots': Inventory.Item('Metal Traveller Boots', '40kg\n+90% speed\n+5 touching defense',
                                              'metal_traveller_boots', 1, [TAGS['item'], TAGS['accessory']]),
@@ -963,7 +970,7 @@ items_dict: dict[str, Inventory.Item] = {
                                 [TAGS['item'], TAGS['accessory']]),
     'yellow_ring': Inventory.Item('Yellow Ring', '+50% magic damage\n-20% damage\n+6% critical', 'yellow_ring', 1,
                                    [TAGS['item'], TAGS['accessory']]),
-    'gorgeous_ring': Inventory.Item('Gorgeous Ring', '+80% damage\n+22% critical',
+    'gorgeous_ring': Inventory.Item('Gorgeous Ring', '+50% damage\n+22% critical',
                                      'gorgeous_ring', 1, [TAGS['item'], TAGS['accessory']]),
     'hermes_boots': Inventory.Item('Herme\'s Boots', '10kg\n+120% speed', 'hermes_boots', 2,
                                    [TAGS['item'], TAGS['accessory']]),
@@ -1023,91 +1030,107 @@ items_dict: dict[str, Inventory.Item] = {
                                        'magnificent_ring', 3, [TAGS['item'], TAGS['accessory']]),
     'bloody_traveller_boots': Inventory.Item('Bloody Traveller Boots', '60kg\n+150% speed\n+12 touching defense',
                                               'bloody_traveller_boots', 4, [TAGS['item'], TAGS['accessory']]),
-    'fire_eye': Inventory.Item('Fire Eye', '1kg\n+30% ranged damage\n+10 magic defense', 'fire_eye', 2,
+    'fire_eye': Inventory.Item('Fire Eye', '1kg\n+8% ranged damage\n+10 magic defense', 'fire_eye', 2,
                                 [TAGS['item'], TAGS['accessory'], TAGS['light_source']]),
     'aimer': Inventory.Item('Aimer', 'Enables aiming to menaces.\n1kg', 'aimer', 2,
                             [TAGS['item'], TAGS['accessory'], TAGS['light_source']]),
-    'photon_aimer': Inventory.Item('Photon Aimer', 'Enables aiming to menaces.\n1.5kg', 'photon_aimer', 3,
+    'photon_aimer': Inventory.Item('Photon Aimer', 'Enables aiming to menaces.\n1.5kg', 'photon_aimer', 5,
                                     [TAGS['item'], TAGS['accessory'], TAGS['light_source']]),
     'winds_necklace': Inventory.Item('Winds Necklace', '+50% speed.\n-35% damage.\n+20% ranged damage.\n.5kg',
                                      'winds_necklace', 2, [TAGS['item'], TAGS['accessory']]),
-    'rune_cross': Inventory.Item('Rune Cross', '2kg\n+25% magic damage\n+12/sec mana regeneration',
+    'rune_cross': Inventory.Item('Rune Cross', '2kg\n+12% magic damage\n+12/sec mana regeneration',
                                   'rune_cross', 3, [TAGS['item'], TAGS['accessory']]),
-    'rune_gloves': Inventory.Item('Rune Gloves', '5kg\n+30% melee damage\n+12% critical\n+22 touching defense',
+    'rune_gloves': Inventory.Item('Rune Gloves', '5kg\n+12% melee damage\n+12% critical\n+22 touching defense',
                                   'rune_gloves', 3, [TAGS['item'], TAGS['accessory']]),
-    'rune_eye': Inventory.Item('Rune Eye', '10kg\n+32% ranged damage\n+80% speed',
+    'rune_eye': Inventory.Item('Rune Eye', '10kg\n+12% ranged damage\n+80% speed',
                                 'rune_eye', 3, [TAGS['item'], TAGS['accessory']]),
     'star_amulet': Inventory.Item('Star Amulet', '+30 additional maximum mana',
                                   'star_amulet', 1, [TAGS['item'], TAGS['accessory']]),
+    'starstorm_bottle': Inventory.Item('Star-Storm Bottle', '+40 additional maximum mana\n+100% speed\n+18% magic damage',
+                                       'starstorm_bottle', 1, [TAGS['item'], TAGS['accessory']]),
     'windstorm_swordman_mark': Inventory.Item('Windstorm Swordman\'s Mark',
-                                              '5kg\n+45% melee damage\n-12% damage\n+32 touching defense\n+34 magic defense\n+3/sec regeneration\nNight vision\nY: sweep the weapon and dealing 3 times the damage\n80 mana cost',
+                                              '5kg\n+24% melee damage\n-12% damage\n+32 touching defense\n+34 magic defense\n+3/sec regeneration\nNight vision\nY: sweep the weapon and dealing 3 times the damage\n80 mana cost',
                                               'windstorm_swordman_mark', 4,
                                               [TAGS['item'], TAGS['accessory'], TAGS['night_vision'],
                                                TAGS['light_source'], TAGS['major_accessory']]),
     'windstorm_assassin_mark': Inventory.Item('Windstorm Assassin\'s Mark',
-                                              '5kg\n+56% ranged damage\n-12% damage\n+17 touching defense\n+18 magic defense\n+1/sec regeneration\nNight vision\nY: use the weapon and sprint\n60 mana cost',
+                                              '5kg\n+26% ranged damage\n-12% damage\n+17 touching defense\n+18 magic defense\n+1/sec regeneration\nNight vision\nY: use the weapon and sprint\n60 mana cost',
                                               'windstorm_assassin_mark', 4,
                                               [TAGS['item'], TAGS['accessory'], TAGS['night_vision'],
                                                TAGS['light_source'], TAGS['major_accessory']]),
     'windstorm_warlock_mark': Inventory.Item('Windstorm Warlock\'s Mark',
-                                             '5kg\n+60% magical damage\n-12% damage\n+5 touching defense\n+12 magic defense\n+6/sec regeneration\n+15/sec mana regeneration\nNight vision\nY: use 20 times of the mana cost, summon 25 projectiles to the enemies',
+                                             '5kg\n+25% magical damage\n-12% damage\n+5 touching defense\n+12 magic defense\n+6/sec regeneration\n+15/sec mana regeneration\nNight vision\nY: use 20 times of the mana cost, summon 25 projectiles to the enemies',
                                              'windstorm_warlock_mark', 4,
                                              [TAGS['item'], TAGS['accessory'], TAGS['night_vision'],
                                               TAGS['light_source'], TAGS['major_accessory']]),
+    'storm_charm': Inventory.Item('Storm Charm', '-30kg\n+100% speed\n-60% damage\n+180% ranged damage',
+                                   'storm_charm', 4, [TAGS['item'], TAGS['accessory'], TAGS['light_source']]),
+    'soarer_bottle': Inventory.Item('Soarer Bottle', '+50 additinal maximum mana\n+240% speed\n-40% air resistance\n+22% magic damage',
+                                     'soarer_bottle', 4, [TAGS['item'], TAGS['accessory']]),
+    'red_ring': Inventory.Item('Red Ring', '+40% speed\n+22 touching defense\n+10 magic defense\n+12/sec mana regeneration\n+19% critical\n+40% damage',
+                               'red_ring', 3, [TAGS['item'], TAGS['accessory']]),
+
     'palladium_glove': Inventory.Item('Palladium Glove',
-                                      '32kg\n+25% damage\n+32% speed\n+18/sec regeneration\n+8/sec mana regeneration\n+90 touching defense\n+65 magic defense\nNight vision',
+                                      '32kg\n+28% damage\n+32% speed\n+18/sec regeneration\n+8/sec mana regeneration\n+90 touching defense\n+65 magic defense\nNight vision',
                                       'palladium_glove', 5,
                                       [TAGS['item'], TAGS['accessory'], TAGS['night_vision'], TAGS['major_accessory']]),
     'mithrill_glove': Inventory.Item('Mithrill Glove',
-                                     '32kg\n+32% damage\n+120% speed\n+3/sec regeneration\n+40/sec mana regeneration\n85 touching defense\n+95 magic defense\nNight vision',
+                                     '32kg\n+30% damage\n+120% speed\n+3/sec regeneration\n+40/sec mana regeneration\n85 touching defense\n+95 magic defense\nNight vision',
                                      'mithrill_glove', 5,
                                      [TAGS['item'], TAGS['accessory'], TAGS['night_vision'], TAGS['major_accessory']]),
     'titanium_glove': Inventory.Item('Titanium Glove',
-                                     '32 kg\n+50% damage\n+45% speed\n+10/sec regeneration\n+32/sec mana regeneration\n+108 touching defense\n+40 magic defense\nNight vision',
+                                     '32 kg\n+32% damage\n+45% speed\n+10/sec regeneration\n+32/sec mana regeneration\n+108 touching defense\n+40 magic defense\nNight vision',
                                      'titanium_glove', 5,
                                      [TAGS['item'], TAGS['accessory'], TAGS['night_vision'], TAGS['major_accessory']]),
     'paladins_mark': Inventory.Item('Paladin\'s Mark',
-                                    '80kg\n+100% speed\n+66% melee damage\n-15% damage\n+85 touching defense\n+70 magic defense\n+5/sec regeneration\nNight vision\nY: deal hallow stab\n40 mana cost',
+                                    '80kg\n+100% speed\n+32% melee damage\n-15% damage\n+85 touching defense\n+70 magic defense\n+5/sec regeneration\nNight vision\nY: deal hallow stab\n40 mana cost',
                                     'paladins_mark', 5,
                                     [TAGS['item'], TAGS['accessory'], TAGS['night_vision'], TAGS['light_source'],
                                      TAGS['major_accessory']]),
     'daedalus_mark': Inventory.Item('Daedalus\'s Mark',
-                                    '40kg\n+60% speed\n+72% ranged damage\n-15% damage\n+55 touching defense\n+45 magic defense\n+2/sec regeneration\nNight vision\nY: summon daedalus storm\n1200 piercing damage\n600 projectile speed\n60 mana cost',
+                                    '40kg\n+60% speed\n+36% ranged damage\n-15% damage\n+55 touching defense\n+45 magic defense\n+2/sec regeneration\nNight vision\nY: summon daedalus storm\n1200 piercing damage\n600 projectile speed\n60 mana cost',
                                     'daedalus_mark', 5,
                                     [TAGS['item'], TAGS['accessory'], TAGS['night_vision'], TAGS['light_source'],
                                      TAGS['major_accessory']]),
+    'red_spirit_ring': Inventory.Item('Red Spirit Ring', '+45% speed\n+28 touching defense\n+16 magic defense\n+25/sec mana regeneration\n+24% critical\n+45% damage',
+                                   'red_spirit_ring', 5, [TAGS['item'], TAGS['accessory']]),
+
     'necklace_of_life': Inventory.Item('Necklace of Life', '0.2kg\n+30/sec regeneration\n+60/sec mana regeneration',
                                        'necklace_of_life', 7, [TAGS['item'], TAGS['accessory']]),
-    'thorn_ring': Inventory.Item('Thorn Ring', '+120% magic damage\n-36/sec regeneration\n+200/sec mana regeneration',
+    'thorn_ring': Inventory.Item('Thorn Ring', '+60% magic damage\n-36/sec regeneration\n+200/sec mana regeneration',
                                  'thorn_ring', 7, [TAGS['item'], TAGS['accessory']]),
-    'jevils_tail': Inventory.Item('Jevil\'s Tail', '+130 touching defense\n+280 magic defense\n-50% damage',
+    'jevils_tail': Inventory.Item('Jevil\'s Tail', '+130 touching defense\n+280 magic defense\n-30% damage',
                                  'jevils_tail', 7, [TAGS['item'], TAGS['accessory']]),
-    'cloudy_glasses': Inventory.Item('Cloudy Glasses', '50kg\n-20% damage\n+150% melee damage\n'
+    'cloudy_glasses': Inventory.Item('Cloudy Glasses', '50kg\n-20% damage\n+66% melee damage\n'
                                                        '80% speed\n+188 touching defense\n+128 magic defense\nNight vision\n'
                                                        'Y: Kill all projectiles.\n600 mana cost', 'cloudy_glasses', 7,
                                       [TAGS['item'], TAGS['accessory'], TAGS['night_vision']]),
-    'cowboy_hat': Inventory.Item('Cowboy Hat', '20kg\n-20% damage\n+110% ranged damage\n+100% speed\n+10/sec '
+    'cowboy_hat': Inventory.Item('Cowboy Hat', '20kg\n-20% damage\n+64% ranged damage\n+100% speed\n+10/sec '
                                                'regeneration\n+120 touching defense\n+150 magic defense\nNight '
                                                'vision\nY: Justice Time\n400 mana '
                                                'cost', 'cowboy_hat', 7, [TAGS['item'], TAGS['accessory'],
                                                                          TAGS['night_vision'],
                                                                          TAGS['major_accessory']]),
-    'magicians_hat': Inventory.Item('Magician\'s Hat', '40kg\n-20% damage\n+210% magical damage\n+100% speed\n+40/sec '
+    'magicians_hat': Inventory.Item('Magician\'s Hat', '40kg\n-20% damage\n+68% magical damage\n+100% speed\n+40/sec '
                                                   'regeneration\n+100 touching defense\n+240 magic defense\n+200/sec mana regeneration\n'
                                                        'Night vision','magicians_hat', 7, [TAGS['item'], TAGS['accessory'],
                                                                                TAGS['night_vision'], TAGS['major_accessory']]),
-    'great_magicians_hat': Inventory.Item('Great Magician\'s Hat', '60kg\n-20% damage\n+320% magical damage\n+100% speed\n+60/sec '
+    'life_boots': Inventory.Item('Life Boots', '42kg\n-26% air resistance\n+250% speed\n+12% damage\n+22% critical\n+120 splint', 'life_boots', 7,
+                                   [TAGS['item'], TAGS['accessory']]),
+    'great_magicians_hat': Inventory.Item('Great Magician\'s Hat', '60kg\n-20% damage\n+72% magical damage\n+100% speed\n+60/sec '
                                                                     'regeneration\n+120 touching defense\n+280 magic defense\n+240/sec mana regeneration\n'
                                                                      '+80% domain size\n+20/sec mentality regeneration', 'great_magicians_hat', 8, [TAGS['item'], TAGS['accessory'],
                                                                                            TAGS['night_vision'], TAGS['major_accessory']]),
+    'the_chaos_flower_vase': Inventory.Item('The Chaos Flower Vase', '120kg\n+200 additinal maximum mana\n+270% speed\n-38% air resistance\n+32% magic damage\n+80/sec mana regeneration\n+20% domain size\n+20 touching defense',
+                                             'the_chaos_flower_vase', 8, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
     'gods_necklace': Inventory.Item('God\'s Necklace', '+50% domain size\n+6/sec talent regeneration', 'gods_necklace', 9, [TAGS['item'], TAGS['accessory']]),
-    'chaos_sheath': Inventory.Item('Chaos Sheath', '150kg\n+390% melee damage\n+28% critical\n+440 touching defense\n+420 magic defense'
+    'chaos_sheath': Inventory.Item('Chaos Sheath', '150kg\n+88% melee damage\n+28% critical\n+440 touching defense\n+420 magic defense'
                                                    '\n+30/sec regeneration\n+70/sec mana regeneration\n+120% speed', 'chaos_sheath',
                                    9, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
-    'chaos_quiver': Inventory.Item('Chaos Quiver', '10kg\n+480% ranged damage\n+45% critical\n+280 touching defense\n+360 magic defense'
+    'chaos_quiver': Inventory.Item('Chaos Quiver', '10kg\n+90% ranged damage\n+45% critical\n+280 touching defense\n+360 magic defense'
                                                    '\n+50/sec regeneration\n+110/sec mana regeneration\n+220% speed\n-80% air resistance', 'chaos_quiver',
                                    9, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
-    'magisters_hat': Inventory.Item('Magister\'s Hat', '80kg\n-20% damage\n+420% magical damage\n+100% speed\n+80/sec '
+    'magisters_hat': Inventory.Item('Magister\'s Hat', '80kg\n-20% damage\n+77% magical damage\n+80% speed\n+80/sec '
                                                  'regeneration\n+140 touching defense\n+480 magic defense\n+280/sec mana regeneration\n'
                                                   '+220% domain size\n+50/sec mentality regeneration','magisters_hat', 9, [TAGS['item'], TAGS['accessory'],
                                                                              TAGS['night_vision'], TAGS['major_accessory']]),
@@ -1115,8 +1138,11 @@ items_dict: dict[str, Inventory.Item] = {
                                        [TAGS['item'], TAGS['accessory']]),
     'rudder': Inventory.Item('Rudder', 'That\'s how to control.\n+114514% air resistance\n+800% speed', 'rudder', 10,
                               [TAGS['item'], TAGS['accessory']]),
-    'patience_amulet': Inventory.Item('Patience Amulet', 'Cool it down, and wait.\n100kg\n+300% speed\n+120% melee damage\n+180% ranged damage\n'
-                                                    '+200% damage\n+60% critical\n+320 touching defense\n320 magic defense\n'
+    'determined_ring': Inventory.Item('Determined Ring', '+55% speed\n+45 touching defense\n+36 magic defense\n+150 additional maximum mana\n+28% critical\n+55% damage',
+                                       'determined_ring', 9, [TAGS['item'], TAGS['accessory']]),
+
+    'patience_amulet': Inventory.Item('Patience Amulet', 'Cool it down, and wait.\n100kg\n+300% speed\n+94% melee damage\n+94% ranged damage\n'
+                                                    '+28% damage\n+60% critical\n+320 touching defense\n320 magic defense\n'
                                                     '+50/sec regeneration\n+250/sec mana regeneration\n+80% domain size\n'
                                                          '+10/sec mentality regeneration\nWhen HP > 50%, +80% speed\n'
                                                          'When HP < 50%, +200% damage', 'patience_amulet', 10,
@@ -1124,30 +1150,32 @@ items_dict: dict[str, Inventory.Item] = {
     'integrity_amulet': Inventory.Item('Integrity Amulet',
                                        'Say the right words, do the right thing.\n90kg\n+120 touching defense\n+330 magic defense\n'
                                        '+320/sec mana regeneration\n+180% domain size\n+30/sec mentality regeneration\n+120% speed\n'
-                                       '+200% damage\n+120% magic damage\n+200% speed\n+90/sec regeneration\n+25% critical\n+800 splint\n'
+                                       '+30% damage\n+108% magic damage\n+200% speed\n+90/sec regeneration\n+25% critical\n+800 splint\n'
                                        '-50% splint cooldown\nY: Use 32x of mana cost of current weapon, summoning 50 projectiles',
                                        'integrity_amulet', 10, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
-    'perseverance_amulet': Inventory.Item('Perseverance Amulet', 'Never give up.\n200kg\n+350% speed\n+180% melee damage\n+210% damage\n'
+    'perseverance_amulet': Inventory.Item('Perseverance Amulet', 'Never give up.\n200kg\n+350% speed\n+110% melee damage\n+35% damage\n'
                                                                  '+18% critical\n+480 touching defense\n+360 magic defense\n+50/sec regeneration\n'
                                                                  '+110/sec mana regeneration\n+30% domain size\n+5/sec mentality regeneration\n'
                                                                  'Y: 50x the speed of the current weapon for a moment, 800 mana cost', 'perseverance_amulet', 11,
                                            [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
-    'bravery_amulet': Inventory.Item('Bravery Amulet', 'The willpower of courage.\n-20kg\n+180% speed\n+160% ranged damage\n+280% damage\n'
-                                                 '+80% magic damage\n+36% critical\n+360 touching defense\n+388 magic defense\n+80/sec regeneration\n'
+    'bravery_amulet': Inventory.Item('Bravery Amulet', 'The willpower of courage.\n-20kg\n+180% speed\n+105% ranged damage\n+28% damage\n'
+                                                 '+96% magic damage\n+36% critical\n+360 touching defense\n+388 magic defense\n+80/sec regeneration\n'
                                                  '+250/sec mana regeneration\n+180% domain size\n+36/sec mentality regeneration\n'
                                                  'Y: Attack for 10 times, deal 20x of damage to any menace', 'bravery_amulet', 11,
                                      [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
-    'kindness_amulet': Inventory.Item('Kindness Amulet', 'The friendliest mercy.\n+100kg\n+240% speed\n+180% melee damage\n+240% damage\n'
-                                                         '+120% magic damage\n+24% critical\n+450 touching defense\n+325 magic defense\n+240/sec regeneration\n'
+    'kindness_amulet': Inventory.Item('Kindness Amulet', 'The friendliest mercy.\n+100kg\n+240% speed\n+102% melee damage\n+33% damage\n'
+                                                         '+112% magic damage\n+24% critical\n+450 touching defense\n+325 magic defense\n+240/sec regeneration\n'
                                                          '+400/sec mana regeneration\n+380% domain size\n+50/sec mentality regeneration\n'
                                                          'Y: Heal everyone until your hp max out', 'kindness_amulet', 11,
                                        [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
-    'justice_amulet': Inventory.Item('Justice Amulet', 'The righteousness of the law.\n-80kg\n+300% speed\n+220% ranged damage\n+220% damage\n'
+    'justice_amulet': Inventory.Item('Justice Amulet', 'The righteousness of the law.\n-80kg\n+300% speed\n+120% ranged damage\n+25% damage\n'
                                                        '+100% critical\n+240 touching defense\n+450 magic defense\n+30/sec regeneration\n'
                                                        '+200/sec mana regeneration\n+80% domain size\n+15/sec mentality regeneration\n'
                                                        'Y: Teleport, 800 mana cost', 'justice_amulet', 11,
                                        [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
-    'heart_locket': Inventory.Item('Heart Locket', 'You can feel it beating\n+300% speed\n+500% damage\n+100% critical\n'
+    'my_ring': Inventory.Item('My Ring', '+80% speed\n+65 touching defense\n+55 magic defense\n+400 additional maximum mana\n+32% critical\n+66% damage',
+                              'my_ring', 11, [TAGS['item'], TAGS['accessory']]),
+    'heart_locket': Inventory.Item('Heart Locket', 'You can feel it beating\n+300% speed\n+200% damage\n+100% critical\n'
                                                    '+600 touching defense\n+600 magic defense\n+120/sec regeneration\n600/sec mana regeneration\n'
                                                    '+360% domain size\n+120/sec mentality regeneration', 'heart_locket', 12,
                                      [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
@@ -1372,6 +1400,7 @@ RECIPES = [
     Recipe({'platinum_ingot': 3, 'magic_arrow': 100}, 'quiver'),
     Recipe({'orange_ring': 1, 'blue_ring': 1, 'green_ring': 1}, 'magnificent_ring'),
     Recipe({'platinum': 9, 'mana_crystal': 3}, 'hat'),
+    Recipe({'star_amulet': 1, 'snowstorm_bottle': 1}, 'starstorm_bottle'),
 
     Recipe({'blood_ingot': 18, 'anvil': 1}, 'bloody_traveller_boots'),
     Recipe({'platinum_ingot': 10, 'blood_ingot': 20, 'anvil': 1}, 'bloody_sword'),
@@ -1425,6 +1454,10 @@ RECIPES = [
     Recipe({'storm_core': 3}, 'windstorm_warlock_mark'),
     Recipe({'storm_core': 3}, 'windstorm_assassin_mark'),
     Recipe({'storm_core': 3}, 'windstorm_swordman_mark'),
+    Recipe({'storm_core': 1, 'starstorm_bottle': 1, 'snow_wings': 1}, 'soarer_bottle'),
+    Recipe({'storm_core': 1, 'thiefs_charm': 1, 'winds_necklace': 1}, 'storm_charm'),
+    Recipe({'gorgeous_ring': 1, 'magnificient_ring': 1, 'storm_core': 1}, 'red_ring'),
+
     Recipe({'soul': 60}, 'spiritual_heart'),
     Recipe({'soul': 30, 'firy_plant': 5}, 'butterscotch_pie', 20),
     Recipe({'soul': 10, 'magic_stone': 5}, 'seatea', 20),
@@ -1441,6 +1474,8 @@ RECIPES = [
     Recipe({'palladium_ingot': 15, 'mithrill_anvil': 1}, 'palladium_glove'),
     Recipe({'mithrill_ingot': 15, 'mithrill_anvil': 1}, 'mithrill_glove'),
     Recipe({'titanium_ingot': 15, 'mithrill_anvil': 1}, 'titanium_glove'),
+    Recipe({'red_ring': 1, 'palladium_ingot': 20, 'mithrill_ingot': 20, 'titanium_ingot': 20,
+            'soul': 50, 'mithrill_anvil': 1}, 'red_spirit_ring'),
     Recipe({'spiritual_stabber': 1, 'evil_ingot': 20, 'soul': 120, 'mithrill_anvil': 1}, 'balanced_stabber'),
     Recipe({'spiritual_piercer': 1, 'evil_ingot': 20, 'soul': 120, 'mithrill_anvil': 1}, 'discord_storm'),
     Recipe({'spiritual_piercer': 1, 'evil_ingot': 20, 'soul': 120, 'mithrill_anvil': 1}, 'spiritual_knife'),
@@ -1496,6 +1531,8 @@ RECIPES = [
     Recipe({'dark_ingot': 18, 'soul_of_patience': 12}, 'toy_knife'),
     Recipe({'saint_steel_ingot': 20, 'soul_of_patience': 12, 'soul_of_perseverance': 18}, 'millennium_persists'),
     Recipe({'daedalus_ingot': 18, 'soul_of_justice': 12}, 'empty_gun'),
+    Recipe({'shotgun': 1, 'daedalus_ingot': 15, 'soul_of_justice': 25, 'soul_of_bravery': 10},
+           'justice_shotgun'),
     Recipe({'daedalus_ingot': 24, 'soul_of_justice': 22, 'soul_of_patience': 8, 'soul_of_bravery': 8}, 'bow_of_sanction'),
     Recipe({'chlorophyll': 1, 'weak_healing_potion': 1}, 'photon'),
     Recipe({'chlorophyll': 1, 'crabapple': 1}, 'photon', 2),
@@ -1524,6 +1561,7 @@ RECIPES = [
     Recipe({'chlorophyte_ingot': 5, 'soul_of_justice': 32, 'soul_of_patience': 1, 'soul_of_perseverance': 1}, 'cowboy_hat'),
     Recipe({'chlorophyte_ingot': 5, 'soul_of_perseverance': 32, 'soul_of_patience': 1, 'soul_of_justice': 1}, 'cloudy_glasses'),
     Recipe({'chlorophyte_ingot': 5, 'soul_of_patience': 32, 'soul_of_perseverance': 1, 'soul_of_justice': 1}, 'magicians_hat'),
+    Recipe({'fairy_boots': 1, 'chlorophyte_ingot': 12, 'photon': 24}, 'life_boots'),
     Recipe({'chaos_ingot': 3}, 'space_jumper', 100),
     Recipe({'chaos_ingot': 32}, 'chaos_teleporter'),
     Recipe({'chaos_ingot': 36}, 'chaos_killer'),
@@ -1547,6 +1585,7 @@ RECIPES = [
     Recipe({'chaos_ingot': 128, 'soul_of_patience': 64}, 'great_magicians_hat'),
     Recipe({'chaos_ingot': 128, 'soul_of_justice': 64, 'quiver': 1}, 'chaos_quiver'),
     Recipe({'chaos_ingot': 128, 'soul_of_perseverance': 64, 'sheath': 1}, 'chaos_sheath'),
+    Recipe({'chaos_ingot': 32, 'soarer_bottle': 1, 'magic_anklet': 1, 'mana_flower': 1}, 'the_chaos_flower_vase'),
 
     Recipe({'chaos_ingot': 128, 'storm_core': 32}, 'primal__winds_wand'),
     Recipe({'chaos_ingot': 128, 'blood_ingot': 512, 'cell_organization': 128}, 'primal__life_wand'),
@@ -1562,6 +1601,7 @@ RECIPES = [
     Recipe({'soul_of_determination': 1, 'soul_of_coldness': 10}, 'snowman_piece', 50),
     Recipe({'chaos_ingot': 200, 'soul_of_determination': 12, 'origin': 1}, 'magisters_hat'),
     Recipe({'origin': 1, 'chaos_ingot': 25}, 'chaos_heart'),
+    Recipe({'chaos_ingot': 240, 'red_spirit_ring': 1, 'soul_of_determination': 20}, 'determined_ring'),
     Recipe({'chaos_ingot': 500, 'soul_of_determination': 8, 'wierd_essence': 36}, 'uncanny_valley'),
     Recipe({'chaos_ingot': 300, 'soul_of_determination': 12, 'wierd_essence': 32}, 'death_note'),
     Recipe({'chaos_ingot': 300, 'soul_of_determination': 12, 'wierd_essence': 32}, 'great_forbidden_curse_dark'),
@@ -1590,6 +1630,7 @@ RECIPES = [
             'anvil': 1, 'furnace': 1, 'mithrill_anvil': 1, 'chlorophyll': 1, 'time_fountain': 1,
             'substance_fountain': 1, 'celestial_fountain': 1, 'my_soul': 1, 'reason': 4, 'result': 4},
            'the_final_ingot'),
+    Recipe({'the_final_ingot': 32, 'determined_ring': 1, 'my_soul': 1}, 'my_ring'),
     Recipe({'the_final_ingot': 18, 'my_soul': 1}, 'galaxy_broadsword'),
     Recipe({'the_final_ingot': 16, 'my_soul': 1}, 'highlight'),
     Recipe({'the_final_ingot': 22, 'my_soul': 1}, 'turning_point'),

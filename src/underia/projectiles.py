@@ -3,13 +3,12 @@ import math
 import random
 import pygame as pg
 import perlin_noise
-
+import functools
 from src.physics import mover, vector
 from src.resources import position
 from src.underia import game, weapons, entity
 from src.values import damages, effects, DamageTypes
-from src.visual import effects as eff
-from src.visual import particle_effects, fade_circle
+from src.visual import effects as eff, particle_effects, fade_circle, draw
 from src import constants
 
 
@@ -39,6 +38,10 @@ class WeakProjectileMotion(ProjectileMotion):
     def on_update(self):
         pass
 
+@functools.lru_cache(maxsize=None)
+def projectile_get_surface(rot, scale, img):
+    img = pg.transform.rotate(img, 90 - rot)
+    return pg.transform.scale_by(img, 1 / scale)
 
 class Projectiles:
     class Projectile:
@@ -68,9 +71,14 @@ class Projectiles:
             self.dead = False
 
         def set_rotation(self, rot):
+            if self.img.get_width() < 5:
+                return
+            p = position.displayed_position(self.obj.pos)
+            if p[0] < -50 or p[0] > game.get_game().displayer.SCREEN_WIDTH + 50 or p[1] < -50 or p[
+                1] > game.get_game().displayer.SCREEN_HEIGHT + 50:
+                return
             self.rot = rot
-            self.d_img = pg.transform.rotate(self.img, 90 - rot)
-            self.d_img = pg.transform.scale_by(self.d_img, 1 / game.get_game().player.get_screen_scale())
+            self.d_img = projectile_get_surface(rot, game.get_game().player.get_screen_scale(), self.img)
 
         def rotate(self, angle):
             self.set_rotation((self.rot + angle) % 360)
@@ -81,6 +89,9 @@ class Projectiles:
                 1] > game.get_game().displayer.SCREEN_HEIGHT + 500:
                 return
             self.obj.update()
+            if p[0] < -50 or p[0] > game.get_game().displayer.SCREEN_WIDTH + 50 or p[1] < -50 or p[
+                1] > game.get_game().displayer.SCREEN_HEIGHT + 50:
+                return
             self.draw()
             self.set_rotation(self.obj.velocity.get_net_rotation())
             if p[1] > game.get_game().displayer.SCREEN_HEIGHT + 500:
@@ -427,7 +438,7 @@ class Projectiles:
         def update(self):
             super().update()
             ax, ay = vector.rotation_coordinate(self.rot)
-            pg.draw.line(game.get_game().displayer.canvas, (200, 200, 255),
+            draw.line(game.get_game().displayer.canvas, (200, 200, 255),
                          position.displayed_position(self.obj.pos),
                          position.displayed_position((self.obj.pos[0] + ax * 400, self.obj.pos[1] + ay * 400)),
                          width=int(5 / game.get_game().player.get_screen_scale()))
@@ -860,7 +871,7 @@ class Projectiles:
             w += int(math.sin(self.tick / 10) * 10)
             sf = pg.Surface((600, 2600), pg.SRCALPHA)
             sf.fill((0, 0, 0, 0))
-            pg.draw.line(sf, (255, 255, 200),
+            draw.line(sf, (255, 255, 200),
                          (300, 300), (300, 2300), width=w)
             pg.draw.circle(sf, (255, 255, 200),
                            (300, 2300), w // 2)
@@ -906,7 +917,7 @@ class Projectiles:
             pg.draw.circle(game.get_game().displayer.canvas, (0, 0, 0),
                            position.displayed_position((self.tx, self.ty)), w, 2)
             for i in range(len(self.te)):
-                pg.draw.line(game.get_game().displayer.canvas, (0, 0, 0),
+                draw.line(game.get_game().displayer.canvas, (0, 0, 0),
                              position.displayed_position(self.tep[i]),
                              position.displayed_position(self.te[i].obj.pos), 10)
                 self.te[i].obj.pos = self.tep[i]
@@ -989,7 +1000,7 @@ class Projectiles:
             size = int(size / game.get_game().player.get_screen_scale())
             pg.draw.circle(game.get_game().displayer.canvas, self.COLOR, position.displayed_position(self.start_pos),
                            size // 2)
-            pg.draw.line(game.get_game().displayer.canvas, self.COLOR, position.displayed_position(self.start_pos),
+            draw.line(game.get_game().displayer.canvas, self.COLOR, position.displayed_position(self.start_pos),
                          position.displayed_position(self.end_pos), size)
 
     class ForwardBow(Beam):
@@ -1408,7 +1419,7 @@ class Projectiles:
             if len(self.poss) > 8:
                 self.poss.pop(0)
             for i in range(len(self.poss) - 1):
-                pg.draw.line(game.get_game().displayer.canvas, (255, 0, 0), position.displayed_position(self.poss[i]),
+                draw.line(game.get_game().displayer.canvas, (255, 0, 0), position.displayed_position(self.poss[i]),
                              position.displayed_position(self.poss[i + 1]),
                              int((i * 9 + 6) / game.get_game().player.get_screen_scale()))
             pg.draw.circle(game.get_game().displayer.canvas, (255, 0, 0), position.displayed_position(self.obj.pos),
@@ -1440,7 +1451,7 @@ class Projectiles:
             self.tick = 0
 
         def update(self):
-            pg.draw.line(game.get_game().displayer.canvas, (127, 255, 0),
+            draw.line(game.get_game().displayer.canvas, (127, 255, 0),
                          position.displayed_position(self.obj.pos),
                          position.displayed_position((self.obj.pos[0], self.obj.pos[1] + 240)),
                          int(5 / game.get_game().player.get_screen_scale()))
@@ -1471,7 +1482,7 @@ class Projectiles:
             if len(self.poss) > 8:
                 self.poss.pop(0)
             for i in range(len(self.poss) - 1):
-                pg.draw.line(game.get_game().displayer.canvas, (127, 255, 0), position.displayed_position(self.poss[i]),
+                draw.line(game.get_game().displayer.canvas, (127, 255, 0), position.displayed_position(self.poss[i]),
                              position.displayed_position(self.poss[i + 1]),
                              int((i * 9 + 6) / game.get_game().player.get_screen_scale()))
             pg.draw.circle(game.get_game().displayer.canvas, (127, 255, 0), position.displayed_position(self.obj.pos),
@@ -1526,7 +1537,7 @@ class Projectiles:
                 self.poss.pop(0)
             self.cols.append(self.cols.pop(0))
             for i in range(len(self.poss) - 1):
-                pg.draw.line(game.get_game().displayer.canvas, self.cols[i], position.displayed_position(self.poss[i]),
+                draw.line(game.get_game().displayer.canvas, self.cols[i], position.displayed_position(self.poss[i]),
                              position.displayed_position(self.poss[i + 1]),
                              int((i * 6 + 4) / game.get_game().player.get_screen_scale()))
             pg.draw.circle(game.get_game().displayer.canvas, (255, 255, 255), position.displayed_position(self.obj.pos),
@@ -1621,19 +1632,19 @@ class Projectiles:
             if min(x_high, pos[0] + 100) <= max(x_low, pos[0] - 100) or width <= 0:
                 return
             if abs(pos[1] - window.get_height() / 2) < 150 and width == 20:
-                pg.draw.line(window, col, pos, window.get_rect().center, width)
+                draw.line(window, col, pos, window.get_rect().center, width)
             elif pos[1] > window.get_height() / 2:
                 return
             else:
                 nx = random.randint(max(x_low, pos[0] - 100), min(x_high, pos[0] + 100))
                 ny = pos[1] + random.randint(50, 100)
-                pg.draw.line(window, col, pos, (nx, ny), width)
+                draw.line(window, col, pos, (nx, ny), width)
                 self.draw_effect(window, x_low, x_high, (nx, ny), width, col)
                 for _ in range(2 if random.random() < 0.01 else 1 if random.random() < 0.1 else 0):
                     nx = random.randint(max(x_low, pos[0] - 100), min(x_high, pos[0] + 100))
                     ny = pos[1] + random.randint(50, 100)
                     nw = width - random.randint(6, 12)
-                    pg.draw.line(window, col, pos, (nx, ny), nw)
+                    draw.line(window, col, pos, (nx, ny), nw)
                     self.draw_effect(window, x_low, x_high, (nx, ny), nw, col)
 
 
@@ -1717,9 +1728,10 @@ class Projectiles:
         TAIL_SIZE = 0
         TAIL_WIDTH = 3
         TAIL_COLOR = (255, 255, 255)
+        SPEED_RATE = 1.0
 
         def __init__(self, pos, rotation, speed, damage):
-            self.obj = ProjectileMotion(pos, rotation, speed + self.SPEED)
+            self.obj = ProjectileMotion(pos, rotation, (speed + self.SPEED) * self.SPEED_RATE)
             self.dmg = damage + self.DAMAGES
             self.img = game.get_game().graphics['projectiles_' + self.IMG]
             self.d_img = self.img
@@ -1730,6 +1742,10 @@ class Projectiles:
             self.ps = [pos]
 
         def update(self):
+            if self.TAIL_SIZE:
+                self.img = game.get_game().graphics['items_null']
+            if self.dead:
+                return
             t, target_rot = self.get_closest_entity()
             self.rot %= 360
             target_rot %= 360
@@ -1754,14 +1770,14 @@ class Projectiles:
             if self.TAIL_SIZE:
                 eff.pointed_curve(self.TAIL_COLOR, self.ps, self.TAIL_WIDTH, 255)
             self.tick += 1
-            if self.tick > 300:
+            if self.tick > 30:
                 self.dead = True
             if ox != ax:
-                aax = -(ox - ax) / abs(ox - ax) * 50
+                aax = -(ox - ax) / abs(ox - ax) * 120
             else:
                 aax = 1
             if oy != ay:
-                aay = -(oy - ay) / abs(oy - ay) * 50
+                aay = -(oy - ay) / abs(oy - ay) * 120
             else:
                 aay = 1
             cd = []
@@ -1815,6 +1831,7 @@ class Projectiles:
         TAIL_SIZE = 1
         TAIL_WIDTH = 2
         TAIL_COLOR = (127, 127, 127)
+        SPEED_RATE = 0.6
 
     class PlatinumBullet(Bullet):
         DAMAGES = 16
@@ -1899,6 +1916,35 @@ class Projectiles:
             vp = self.obj.pos
             super().update()
             self.obj.pos = vp
+
+    class EnergyArrow(Arrow):
+        DAMAGES = 20
+        SPEED = 50
+        IMG = 'null'
+        TAIL_SIZE = 3
+        TAIL_WIDTH = 10
+        TAIL_COLOR = (0, 255, 255)
+
+        def __init__(self, pos, rotation, speed, damage):
+            self.DAMAGES = damage * 5 + self.DAMAGES
+            super().__init__(pos, rotation, speed, damage)
+
+        def damage(self, pos, cd):
+            imr = self.d_img.get_rect(center=pos)
+            x, y = pos
+            for ee in game.get_game().entities:
+                if imr.collidepoint(ee.obj.pos[0], ee.obj.pos[1]) or ee.d_img.get_rect(
+                        center=ee.obj.pos).collidepoint(x, y) and ee not in cd:
+                    for e2 in game.get_game().entities:
+                        if vector.distance(e2.obj.pos[0] - self.obj.pos[0], e2.obj.pos[1] - self.obj.pos[1]) < 300:
+                            e2.hp_sys.damage(self.dmg, damages.DamageTypes.PIERCING)
+                    game.get_game().displayer.effect(fade_circle.p_fade_circle(*position.displayed_position(self.obj.pos),
+                                                                                (0, 255, 255), t=12, sp=25 / game.get_game().player.get_screen_scale()))
+                    if self.DELETE:
+                        self.dead = True
+                    else:
+                        cd.append(ee)
+            return cd
 
     class QuickArrow(Arrow):
         DAMAGES = 40
@@ -2043,6 +2089,14 @@ class Projectiles:
     class Shuriken(ThiefWeapon):
         DAMAGE_AS = 'shuriken'
         IMG = 'items_weapons_shuriken'
+
+    class SpikeBall(ThiefWeapon):
+        DAMAGE_AS = 'spike_ball'
+        IMG = 'items_weapons_spike_ball'
+
+        def update(self):
+            super().update()
+            self.obj.apply_force(vector.Vector(0, 50))
 
     class DaedalusTwinknife(Projectile):
         def __init__(self, pos, rotation, power):
@@ -2351,6 +2405,7 @@ AMMOS = {
     'quick_bullet': Projectiles.QuickBullet,
     'chloro_arrow': Projectiles.ChloroArrow,
     'space_jumper': Projectiles.SpaceJumper,
+    'energy_arrow': Projectiles.EnergyArrow,
 }
 
 THIEF_WEAPONS = {
@@ -2373,4 +2428,5 @@ THIEF_WEAPONS = {
     'grenade': Projectiles.Grenade,
     'jade_grenade': Projectiles.JadeGrenade,
     'shuriken': Projectiles.Shuriken,
+    'spikeball': Projectiles.SpikeBall,
 }

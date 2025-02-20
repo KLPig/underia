@@ -1,5 +1,8 @@
+from matplotlib.offsetbox import AnnotationBbox
+
 from src.resources import time
 from src.values import hp_system, elements, damages
+from src import constants
 
 
 class Effect:
@@ -60,8 +63,8 @@ class Effect:
 
     def on_update(self, entity: hp_system.HPSystem):
         self.tick += 1
-        if time.time_interval(time.get_time(self.tick), 1, 0) and self.duration < 10 ** 8:
-            self.timer -= 1
+        if self.duration < 10 ** 8:
+            self.timer -= 1 / constants.FPS
 
     def on_end(self, entity: hp_system.HPSystem):
         pass
@@ -129,6 +132,12 @@ class FaithlessCurse(Effect):
     IMG = 'faithless_curse'
     NAME = 'Faithless Curse'
     DESC = 'Cursed\n-80% damage'
+
+class Sticky(Aberration):
+    IMG = 'sticky'
+    NAME = 'Sticky'
+    DESC = 'Continuously dealing damage\n-50% speed'
+    CORRESPONDED_ELEMENT = elements.ElementTypes.POISON
 
 class Shield(Effect):
     IMG = 'shield'
@@ -306,3 +315,83 @@ class OctToughnessV(OctaveIncrease):
     IMG = 'n_purple'
     NAME = 'Toughness V'
     DESC = '+85 touching defense'
+
+class SkillReinforce(Effect):
+    pass
+
+class MeleeDemand(SkillReinforce):
+    IMG = 'melee_demand'
+    NAME = 'Melee Demand'
+    DESC = '+20% melee damage\n-10% ranged damage\n-10% magic damage'
+
+class RangedDemand(SkillReinforce):
+    IMG = 'ranged_demand'
+    NAME = 'Ranged Demand'
+    DESC = '+20% ranged damage\n-10% melee damage\n-10% magic damage'
+
+class MagicDemand(SkillReinforce):
+    IMG = 'magic_demand'
+    NAME = 'Magic Demand'
+    DESC = '+20% magic damage\n-10% melee damage\n-10% ranged damage'
+
+class FastThrow(Effect):
+    IMG = 'fast_throw'
+    NAME = 'Fast Throw'
+    DESC = 'Sprinting\n+200% ranged damage'
+
+class TheFury(Effect):
+    IMG = 'the_fury'
+    NAME = 'The Fury'
+    DESC = '+50% melee damage\n+30 touching defense\n-50% speed'
+
+class WarriorShield(Effect):
+    IMG = 'warrior_shield'
+    NAME = 'Warrior Shield'
+    DESC = 'Allows to summon a shield to absorb damage'
+
+class Healer(Effect):
+    IMG = 'healer'
+    NAME = 'Heals'
+    DESC = '+20/sec regeneration\n+50/sec mana regeneration'
+
+class MeleeReinforceI(SkillReinforce):
+    IMG = 'melee_reinforce'
+    NAME = 'Melee Reinforce'
+    DESC = '+10% melee damage\n-5% ranged damage\n-5% magic damage'
+
+class MeleeReinforceII(MeleeReinforceI):
+    DESC = '12% damage\n+5/sec regeneration'
+
+class MeleeReinforceIII(MeleeReinforceI):
+    DESC = '+25 touching defense'
+
+class MeleeReinforceIV(MeleeReinforceI):
+    DESC = '+25 magic defense'
+
+class RangedReinforceI(SkillReinforce):
+    IMG = 'ranged_reinforce'
+    NAME = 'Ranged Reinforce'
+    DESC = '+10% ranged damage\n-5% melee damage\n-5% magic damage'
+
+class RangedReinforceII(RangedReinforceI):
+    DESC = '5% damage\n+12% critical'
+
+class RangedReinforceIII(RangedReinforceI):
+    DESC = '+15% speed\n+3 touching defense'
+
+class RangedReinforceIV(RangedReinforceI):
+    DESC = '-5% air resistance\n+7 magic defense'
+
+class MagicReinforceI(SkillReinforce):
+    IMG = 'magic_reinforce'
+    NAME = 'Magic Reinforce'
+    DESC = '+10% magic damage\n-5% melee damage\n-5% ranged damage'
+
+class MagicReinforceII(MagicReinforceI):
+    DESC = '+6% damage\n+12/sec regeneration'
+
+class MagicReinforceIII(MagicReinforceI):
+    DESC = '+40 additional maximum mana\n+5 touching defense'
+
+class MagicReinforceIV(MagicReinforceI):
+    DESC = '+20/sec mana regeneration\n+12 magic defense'
