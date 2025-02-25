@@ -1,4 +1,4 @@
-from src.values import damages
+from values import damages
 
 
 class Resistances:

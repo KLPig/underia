@@ -1,6 +1,6 @@
 import os
+from constants import DEBUG, OS
 from tkinter import messagebox
-from src.constants import DEBUG, OS
 
 if not DEBUG:
     if OS == 'Windows':
@@ -11,6 +11,7 @@ else:
     pt = '.'
 
 print("Discovering path...")
+print(pt)
 d = os.listdir(pt)
 if 'assets' not in d:
     print('Assets not found.')
@@ -27,9 +28,12 @@ def get_path(filename=None):
 
 
 if OS == 'Windows':
-    save_path = os.path.join(os.environ.get('HOMEPATH'), '.underia')
+    save_path = os.environ.get('HOMEPATH')
 else:
-    save_path = os.path.join(os.environ.get('HOME'), '.underia')
+    save_path = os.environ.get('HOME')
+if save_path is None:
+    save_path = '.'
+save_path = os.path.join(save_path, '.underia')
 if not os.path.exists(save_path):
     os.makedirs(save_path)
 

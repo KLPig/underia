@@ -4,12 +4,12 @@ import random
 import pygame as pg
 import perlin_noise
 import functools
-from src.physics import mover, vector
-from src.resources import position
-from src.underia import game, weapons, entity
-from src.values import damages, effects, DamageTypes
-from src.visual import effects as eff, particle_effects, fade_circle, draw
-from src import constants
+from physics import mover, vector
+from resources import position
+from underia import game, weapons, entity
+from values import damages, effects, DamageTypes
+from visual import effects as eff, particle_effects, fade_circle, draw
+import constants
 
 
 class ProjectileMotion(mover.Mover):
@@ -28,12 +28,12 @@ class ProjectileMotion(mover.Mover):
 
 class WeakProjectileMotion(ProjectileMotion):
     MASS = 10
-    FRICTION = 0.9
+    FRICTION = 0.95
     TOUCHING_DAMAGE = 5
 
     def __init__(self, pos, rotation):
         super().__init__(pos, rotation)
-        self.apply_force(vector.Vector(self.rotation, 500))
+        self.apply_force(vector.Vector(self.rotation, 800))
 
     def on_update(self):
         pass
@@ -85,8 +85,11 @@ class Projectiles:
 
         def update(self):
             p = position.displayed_position((self.obj.pos[0], self.obj.pos[1]))
-            if p[0] < -500 or p[0] > game.get_game().displayer.SCREEN_WIDTH + 500 or p[1] < -500 or p[
-                1] > game.get_game().displayer.SCREEN_HEIGHT + 500:
+            vx, vy = vector.rotation_coordinate(self.obj.velocity.get_net_rotation())
+            if vx > 0 and p[0] > game.get_game().displayer.SCREEN_WIDTH + 50 or\
+                    vx < 0 and p[0] < -50 or vy > 0 and p[1] > game.get_game().displayer.SCREEN_HEIGHT + 50 or \
+                    vy < 0 and p[1] < -50:
+                self.dead = True
                 return
             self.obj.update()
             if p[0] < -50 or p[0] > game.get_game().displayer.SCREEN_WIDTH + 50 or p[1] < -50 or p[
@@ -94,8 +97,6 @@ class Projectiles:
                 return
             self.draw()
             self.set_rotation(self.obj.velocity.get_net_rotation())
-            if p[1] > game.get_game().displayer.SCREEN_HEIGHT + 500:
-                self.dead = True
 
         def draw(self):
             displayer = game.get_game().displayer
@@ -151,6 +152,7 @@ class Projectiles:
             self.set_rotation(rotation)
             self.tick = 0
             self.dead = False
+            self.obj.velocity.add(vector.Vector(rotation, 100))
 
         def update(self):
             super().update()
@@ -225,6 +227,7 @@ class Projectiles:
         NAME = 'Glow'
         COL = (255, 127, 63)
         EFF = True
+        EFF_INTERVAL = 6
 
         def __init__(self, pos, rotation):
             self.obj = WeakProjectileMotion(pos, rotation)
@@ -233,16 +236,19 @@ class Projectiles:
             self.rot = rotation
             self.set_rotation(rotation)
             self.dead = False
+            self.tick = 0
 
         def update(self):
+            self.tick += 1
             super().update()
             if self.obj.velocity.get_net_value() < 3 and type(self) not in [Projectiles.TalentBook, Projectiles.BurningBook]:
                 self.dead = True
             if self.EFF:
-                game.get_game().displayer.effect(particle_effects.p_particle_effects(*position.displayed_position(self.obj.pos),
-                                                                                     3, t=8, r=20 / game.get_game().player.get_screen_scale(), col=self.COL,
-                                                                                     sp=10 / game.get_game().player.get_screen_scale(),
-                                                 ))
+                if self.tick % self.EFF_INTERVAL == 1:
+                    game.get_game().displayer.effect(particle_effects.p_particle_effects(*position.displayed_position(self.obj.pos),
+                                                                                         n=12, t=12, r=20 / game.get_game().player.get_screen_scale(), col=self.COL,
+                                                                                         sp=10 / game.get_game().player.get_screen_scale(),
+                                                     ))
             imr = self.d_img.get_rect(center=self.obj.pos)
             if not game.get_game().displayer.canvas.get_rect().collidepoint(position.displayed_position(self.obj.pos)):
                 self.dead = True
@@ -257,8 +263,19 @@ class Projectiles:
                         entity.hp_sys.effect(effects.Burning(5, weapons.WEAPONS['glowing_splint'].damages[
                             damages.DamageTypes.MAGICAL] * game.get_game().player.attack * game.get_game().player.attacks[
                                                                  2] // 10 + 1))
+                        self.damage_particle()
                         self.dead = True
                         break
+
+        def damage_particle(self):
+            game.get_game().displayer.effect(
+                particle_effects.p_particle_effects(*position.displayed_position(self.obj.pos),
+                                                    n=16, t=18,
+                                                    r=20 / game.get_game().player.get_screen_scale(),
+                                                    col=self.COL,
+                                                    sp=12 / game.get_game().player.get_screen_scale(),
+                                                    ))
+
 
     class BurningBook(Glow):
         NAME = 'Burning Book'
@@ -300,6 +317,7 @@ class Projectiles:
                     entity.hp_sys.effect(effects.Burning(9, weapons.WEAPONS['burning_book'].damages[
                         damages.DamageTypes.MAGICAL] * game.get_game().player.attack * game.get_game().player.attacks[
                                                              2] // 10 + 1))
+                    self.damage_particle()
                     self.dead = True
 
     class TalentBook(Glow):
@@ -307,6 +325,7 @@ class Projectiles:
         IMG = 'projectiles_talent_book'
         DAMAGE_AS = 'talent_book'
         COL = (100, 100, 255)
+        EFF_INTERVAL = 18
 
         def __init__(self, pos, rotation):
             self.obj = ProjectileMotion(pos, rotation)
@@ -330,13 +349,13 @@ class Projectiles:
             super().update()
             if self.tick > 100:
                 self.dead = True
-            imr = self.d_img.get_rect(center=self.obj.pos)
             for entity in game.get_game().entities:
                 if (vector.distance(entity.obj.pos[0] - self.obj.pos[0], entity.obj.pos[1] - self.obj.pos[1]) <
-                        50 + (entity.d_img.get_width() + self.d_img.get_height())) / 4:
+                        50 + (entity.d_img.get_width() + self.d_img.get_height())) / 4 and not entity.hp_sys.is_immune:
                     entity.hp_sys.damage(weapons.WEAPONS[self.DAMAGE_AS].damages[
                                              damages.DamageTypes.MAGICAL] * game.get_game().player.attack *
                                          game.get_game().player.attacks[2], damages.DamageTypes.MAGICAL)
+                    self.damage_particle()
                     self.dead = True
 
     class CopperWand(Glow):
@@ -344,7 +363,7 @@ class Projectiles:
         IMG = 'projectiles_copper_wand'
         DMG_TYPE = damages.DamageTypes.MAGICAL
         WT = damages.DamageTypes.MAGICAL
-        COL = (220, 210, 200)
+        COL = (176, 48, 92)
 
         def __init__(self, pos, rotation):
             super().__init__(pos, rotation)
@@ -358,10 +377,9 @@ class Projectiles:
 
         def damage(self):
             kb = weapons.WEAPONS[self.DAMAGE_AS].knock_back
-            imr = self.d_img.get_rect(center=self.obj.pos)
             for entity in game.get_game().entities:
                 if (vector.distance(entity.obj.pos[0] - self.obj.pos[0], entity.obj.pos[1] - self.obj.pos[1]) <
-                        50 + (entity.d_img.get_width() + self.d_img.get_height())) / 4:
+                        50 + (entity.d_img.get_width() + self.d_img.get_height())) / 4 and not entity.hp_sys.is_immune:
                     at_mt = {damages.DamageTypes.PHYSICAL: 0, damages.DamageTypes.PIERCING: 1,
                              damages.DamageTypes.ARCANE: 2, damages.DamageTypes.MAGICAL: 2}[self.WT]
                     entity.hp_sys.damage(
@@ -372,6 +390,8 @@ class Projectiles:
                         r = vector.coordinate_rotation(entity.obj.pos[0] - self.obj.pos[0],
                                                        entity.obj.pos[1] - self.obj.pos[1])
                         entity.obj.apply_force(vector.Vector(r, kb * 120000 / entity.obj.MASS))
+                    entity.hp_sys.enable_immume()
+                    self.damage_particle()
                     break
 
     class IronWand(CopperWand):
@@ -460,6 +480,7 @@ class Projectiles:
                                              damages.DamageTypes.MAGICAL] * game.get_game().player.attack *
                                          game.get_game().player.attacks[2], damages.DamageTypes.MAGICAL,
                                          )
+                    self.damage_particle()
                     self.dead = True
 
     class NightsEdge(PlatinumWand):
@@ -933,6 +954,7 @@ class Projectiles:
         DURATION = 30
         FOLLOW_PLAYER = True
         FACE_TO_MOUSE = False
+        ENABLE_IMMUNE = True
 
         def __init__(self, pos, rotation):
             ax, ay = vector.rotation_coordinate(rotation)
@@ -984,7 +1006,7 @@ class Projectiles:
                 ey = entity.obj.pos[1] - game.get_game().player.obj.pos[1]
                 if (abs(self.slope * ey - ex) * math.sin(math.atan(abs(1 / (self.slope + 10 ** -10)))) <
                         self.WIDTH + (entity.d_img.get_width() + entity.d_img.get_height()) // 2 and
-                        ((ex > 0) == self.lf) and ((ey > 0) == self.lr) and vector.distance(ey, ex) < self.LENGTH):
+                        ((ex > 0) == self.lf) and ((ey > 0) == self.lr) and vector.distance(ey, ex) < self.LENGTH) and not entity.hp_sys.is_immune:
                     entity.hp_sys.damage((weapons.WEAPONS[self.DAMAGE_AS].damages[self.DMG_TYPE] if self.DMG is None
                                           else self.DMG) * \
                                          game.get_game().player.attack * game.get_game().player.attacks[{DamageTypes.PHYSICAL: 0,
@@ -992,6 +1014,7 @@ class Projectiles:
                                                                                                          DamageTypes.MAGICAL: 2,
                                                                                                          DamageTypes.ARCANE: 2}[self.DMG_TYPE]],
                                          self.DMG_TYPE)
+                    entity.hp_sys.enable_immume()
             if self.tick > self.DURATION:
                 self.dead = True
             self.tick += 1
@@ -1309,9 +1332,17 @@ class Projectiles:
             if self.tick < 10 and constants.USE_ALPHA:
                 self.img.set_alpha(self.tick * 10)
             elif self.tick < 90:
+                game.get_game().displayer.effect(
+                    particle_effects.p_particle_effects(*position.displayed_position(self.obj.pos),
+                                                        n=18, r=15 / game.get_game().player.get_screen_scale(),
+                                                        t=15, sp=6 / game.get_game().player.get_screen_scale(),
+                                                        g=-0.6))
+
                 if self.tick % 8 == 0:
                     game.get_game().displayer.effect(particle_effects.p_particle_effects(*position.displayed_position(self.obj.pos),
-                                                                                         n=120, r=10, t=50, sp=40))
+                                                                                         n=120, r=40 / game.get_game().player.get_screen_scale(),
+                                                                                         t=50, sp=40 / game.get_game().player.get_screen_scale(),
+                                                                                         g=0.2))
                     for e in game.get_game().entities:
                         if vector.distance(self.obj.pos[0] - e.obj.pos[0], self.obj.pos[1] - e.obj.pos[1]) < 2000:
                             e.hp_sys.damage(

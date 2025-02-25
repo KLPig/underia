@@ -1,3 +1,3 @@
-from src.visual.displayer import *
-from src.visual.effects import *
-from src.visual.particle_effects import *
+from visual.displayer import *
+from visual.effects import *
+from visual.particle_effects import *

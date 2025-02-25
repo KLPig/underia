@@ -1,10 +1,10 @@
 import copy
 import os
 import pygame as pg
-from src import constants
+import constants
 
-from src.resources import path
-from src.mods import UnderiaModData
+from resources import path
+from mods import UnderiaModData
 import pickle
 
 if constants.OS == "Windows":
@@ -43,17 +43,20 @@ def load_mod():
     global anchor, cmds, cb, mod_datas, icos, scr, ds
     clk = pg.time.Clock()
     screen = pg.display.get_surface()
-    font = pg.font.SysFont('dtm-mono', 32)
+    font = pg.font.Font(path.get_path('assets/dtm-mono.otf'), 32)
     btn_t = ['Open Mod Folder', 'Reload Mods', 'Done']
     btn_r = [pg.Rect(300, 50, 320, 80), pg.Rect(640, 50, 320, 80), pg.Rect(980, 50, 320, 80)]
 
     tick = 0
+    last_tick = 0
+    tt = 0
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 pg.quit()
                 return cmds, None
             elif event.type == pg.MOUSEBUTTONDOWN:
+                last_tick = tt
                 if event.button == 1:
                     pos = pg.mouse.get_pos()
                     if btn_r[0].collidepoint(pos):
@@ -78,6 +81,7 @@ def load_mod():
                                 pg.display.update()
                         return cmds, load_mods
             elif event.type == pg.KEYDOWN:
+                last_tick = tt
                 if event.key == pg.K_UP:
                     scr = max(0, min(scr + 240, 240 * len(mod_datas) - 760))
                 elif event.key == pg.K_DOWN:
@@ -166,5 +170,17 @@ def load_mod():
             tick = 0
             cb = (cb + 1) % 7
         tick += 1
+        tt += 1
+        if tt - last_tick > 180:
+            cv = pg.Surface(screen.get_size(), pg.SRCALPHA)
+            cv.blit(screen, (0, 0))
+            if constants.USE_ALPHA:
+                for i in range(255):
+                    pg.event.get()
+                    screen.fill((0, 0, 0))
+                    cv.set_alpha(255 - i)
+                    screen.blit(cv, (0, 0))
+                    pg.display.update()
+            return cmds, load_mods
         pg.display.flip()
         clk.tick(60)

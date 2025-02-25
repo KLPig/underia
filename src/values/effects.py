@@ -1,8 +1,6 @@
-from matplotlib.offsetbox import AnnotationBbox
-
-from src.resources import time
-from src.values import hp_system, elements, damages
-from src import constants
+from resources import time
+from values import hp_system, elements, damages
+import constants
 
 
 class Effect:

@@ -25,7 +25,6 @@ class Vector:
         x, y = rotation_coordinate(self.rotation)
         return x * self.value, y * self.value
 
-
 class Vectors:
     def __init__(self):
         self.vectors = []

@@ -1,15 +1,16 @@
 import math
+import os.path
 import random
 
 import pygame as pg
-from src import constants
-from src.physics import vector
-from src.resources import position, tone
-from src.underia import game, projectiles, inventory, entity
-from src.values import damages as dmg
-from src.values import effects
-from src.visual import effects as eff
-from src.visual import particle_effects as pef
+import constants
+from physics import vector
+from resources import position, tone
+from underia import game, projectiles, inventory, entity
+from values import damages as dmg
+from values import effects
+from visual import effects as eff
+from visual import particle_effects as pef
 
 import perlin_noise
 import functools
@@ -17,6 +18,7 @@ import functools
 class Weapon:
     ENABLE_IMMUNE = True
     ATTACK_SOUND: str | None = None
+    _EFF_NOISES = []
 
     def __init__(self, name, damages: dict[int, float], kb: float, img_index: str, speed: int, at_time: int,
                  auto_fire: bool = False):
@@ -28,8 +30,8 @@ class Weapon:
         self.timer = 0
         self.cool = 0
         self.knock_back = kb
-        self.cd = speed
-        self.at_time = at_time
+        self.cd = speed * 2
+        self.at_time = at_time * 2
         self.rot = 0
         self.x = 0
         self.y = 0
@@ -123,9 +125,6 @@ class Weapon:
                     self.combo = -1
 
     def cutting_effect(self, size=4, col1=(100, 0, 100), col2=(255, 100, 255)):
-        if not len(self.noises):
-            noises = perlin_noise.PerlinNoise(octaves=2, seed=random.randint(0, 1000000))
-            self.noises = [noises(i / 100) for i in range(1000)]
         self.rot %= 360
         self.lrot %= 360
         if self.rot - self.lrot > 180:
@@ -134,16 +133,21 @@ class Weapon:
             self.rot += 360
         arot = self.rot - self.lrot
         self.lrot = self.rot
-        sf = self._get_cut_surf(arot, size, col1, col2)
-        sf = pg.transform.scale_by(pg.transform.rotate(sf, self.rot), 1 / game.get_game().player.get_screen_scale())
-        sfr = sf.get_rect(center=position.displayed_position((self.x + game.get_game().player.obj.pos[0],
-                                                              self.y + game.get_game().player.obj.pos[1])))
-        game.get_game().displayer.canvas.blit(sf, sfr)
+        if abs(arot) > 5:
+            sf = Weapon.get_cut_surf(round(arot / 20) * 20, size, col1, col2)
+            sf = pg.transform.scale_by(pg.transform.rotate(sf, -self.rot), 1 / game.get_game().player.get_screen_scale())
+            sfr = sf.get_rect(center=position.displayed_position((self.x + game.get_game().player.obj.pos[0],
+                                                                  self.y + game.get_game().player.obj.pos[1])))
+            game.get_game().displayer.canvas.blit(sf, sfr)
 
+    @staticmethod
     @functools.lru_cache(maxsize=None)
-    def _get_cut_surf(self, arot, size, col1, col2):
-        mx = max(self.noises)
-        mn = min(self.noises)
+    def get_cut_surf(arot, size, col1, col2):
+        if not len(Weapon._EFF_NOISES):
+            noises = perlin_noise.PerlinNoise(octaves=2, seed=random.randint(0, 1000000))
+            Weapon._EFF_NOISES = [noises(i / 100) for i in range(1000)]
+        mx = max(Weapon._EFF_NOISES)
+        mn = min(Weapon._EFF_NOISES)
         sz = {3: 32, 4: 40, 6: 64, 8: 80, 10: 100, 16: 160, 32: 320}[size]
         dst = {3: 100, 4: 130, 6: 200, 8: 260, 10: 350, 16: 520, 32: 1080}[size]
         gdt = 23
@@ -153,23 +157,13 @@ class Weapon:
         for j in range(sz):
             i = j / 10
             d = (dst - i * gdt)
-            dt = (sz - j) * arot / sz * ((self.noises[j * 999 // sz] - mn) / (mx - mn) * 8 / 5 + .2)
-            adt = (sz - j) * arot / sz * ((self.noises[j * 999 // sz] - mn) / (mx - mn) * 2) / 8
+            dt = (sz - j) * arot / sz * ((Weapon._EFF_NOISES[j * 999 // sz] - mn) / (mx - mn) * 8 / 5 + .2)
+            adt = (sz - j) * arot / sz * ((Weapon._EFF_NOISES[j * 999 // sz] - mn) / (mx - mn) * 2) / 8
             rots = [vector.rotation_coordinate( -(dt + adt) * i / 9 + adt) for i in range(9, -1, -1)]
-            if arot:
-                for i, p in enumerate(self.poss):
-                    ad = abs(adt / arot * i / 9)
-                    aax, aay = self.poss[9 - math.floor(ad)]
-                    fx, fy = self.poss[9 - math.floor(ad)]
-                    sx, sy = self.poss[9 - math.ceil(ad)]
-                    ad -= math.floor(ad)
-                    aax += (sx - fx) * ad
-                    aay += (sy - fy) * ad
-                    self.poss[i] = (self.poss[i][0] + aax, self.poss[i][1] + aay)
             eff.pointed_curve((int(col1[0] + (col2[0] - col1[0]) / sz * j),
                                int(col1[1] + (col2[1] - col1[1]) / sz * j),
-                               int(col1[2] + (col2[2] - col1[2]) / sz * j)), [(vx * d + surf.get_width() // 2,
-                                                                               vy * d + surf.get_height() // 2)
+                               int(col1[2] + (col2[2] - col1[2]) / sz * j)), [position.real_position((vx * d + surf.get_width() // 2,
+                                                                                                     vy * d + surf.get_height() // 2))
                                                                               for vx, vy in rots],
                               3 * constants.BLADE_EFFECT_QUALITY, salpha=int(255 * (1 - j / sz / 6)),
                               target=surf)
@@ -210,7 +204,7 @@ class SweepWeapon(Weapon):
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, rot_speed: int,
                  st_pos: int, double_sided: bool = False, auto_fire: bool = False):
         super().__init__(name, damages, kb, img, speed, at_time, auto_fire)
-        self.rot_speed = rot_speed
+        self.rot_speed = rot_speed // 2
         self.st_pos = st_pos
         self.double_sided = double_sided
         self.lrot = 0
@@ -296,7 +290,7 @@ class ThiefWeapon(SweepWeapon):
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, rot_speed: int,
                  st_pos: int, throw_interval: int, power: int):
         super().__init__(name, damages, kb, img, speed, at_time, rot_speed, st_pos, auto_fire=True)
-        self.sk_mcd = throw_interval
+        self.sk_mcd = throw_interval * 2
         self.throwing = False
         self.pow = power
         self.auto_throw = False
@@ -805,6 +799,7 @@ class Excalibur(Blade):
         super().__init__(name, damages, kb, img, speed, at_time, rot_speed, st_pos, double_sided)
         self.rots = []
         self.lrot = 0
+        self.cnt = 0
 
     def on_start_attack(self):
         self.rots = []
@@ -813,6 +808,11 @@ class Excalibur(Blade):
             position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
         r = -1 if px > 0 else 1
         vx, vy = vector.rotation_coordinate(self.rot - 180 * r)
+        if self.cnt == 0:
+            self.cnt = 2
+        else:
+            self.cnt -= 1
+            return
         for ar in range(-30, 31, 10):
             n = projectiles.Projectiles.Excalibur((self.x + game.get_game().player.obj.pos[0] + vx * 200,
                                                    self.y + game.get_game().player.obj.pos[1] + vy * 200),
@@ -833,6 +833,7 @@ class TrueExcalibur(Blade):
         super().__init__(name, damages, kb, img, speed, at_time, rot_speed, st_pos, double_sided)
         self.rots = []
         self.lrot = 0
+        self.cnt = 0
 
     def on_start_attack(self):
         self.rots = []
@@ -841,6 +842,11 @@ class TrueExcalibur(Blade):
             position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
         r = -1 if px > 0 else 1
         vx, vy = vector.rotation_coordinate(self.rot - 180 * r)
+        if self.cnt == 0:
+            self.cnt = 3
+        else:
+            self.cnt -= 1
+            return
         for ar in range(-80, 81, 8):
             n = projectiles.Projectiles.TrueExcalibur((self.x + game.get_game().player.obj.pos[0] + vx * 200,
                                                        self.y + game.get_game().player.obj.pos[1] + vy * 200),
@@ -928,22 +934,6 @@ class Muramasa(Blade):
             self.cutting_effect(8, (255, 20, 20), (50, 20, 20))
         else:
             self.cutting_effect(8, (0, 0, 90), (150, 150, 255))
-        """
-        for j in range(80):
-            i = j / 10
-            d = 260 - i * 23
-            ax, ay = vector.rotation_coordinate(self.rot)
-            self.ppos[j].append((ax * d + game.get_game().player.obj.pos[0] + self.x,
-                                 ay * d + game.get_game().player.obj.pos[1] + self.y))
-            if len(self.ppos[j]) > 6:
-                self.ppos[j].pop(0)
-            if not self.t:
-                eff.pointed_curve((int(i * 2), int(i * 2), 90 + int(i * 2)), self.ppos[j], 3,
-                                  salpha=int(120 - i * 15))
-            else:
-                eff.pointed_curve((255, int(i * 2), int(i * 2)), self.ppos[j], 3,
-                                  salpha=int(120 - i * 15))
-                """
         super().update()
         if pg.K_q in game.get_game().get_pressed_keys() and not f and not self.sk_cd:
             self.damages[dmg.DamageTypes.PHYSICAL] *= 25
@@ -1444,10 +1434,14 @@ class RuneBlade(AutoSweepWeapon):
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, rot_speed: int,
                  st_pos: int, auto_fire: bool = False):
         super().__init__(name, damages, kb, img, speed, at_time, rot_speed, st_pos, auto_fire)
-        self.sk_mcd = 30
+        self.sk_mcd = 50
+        self.t = 0
 
     def on_end_attack(self):
         super().on_end_attack()
+        self.t = not self.t
+        if not self.t:
+            return
         for _ in range(1 + (not self.sk_cd) * 2):
             mx, my = position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
             ax, ay = vector.rotation_coordinate(random.randint(0, 360))
@@ -2758,10 +2752,10 @@ def set_weapons():
         'life_wooden_sword': LifeWoodenSword('life wooden sword', {dmg.DamageTypes.PHYSICAL: 26}, 1.2,
                                              'items_weapons_life_wooden_sword', 1,
                                              5, 36, 110),
-        'magic_sword': MagicSword('magic sword', {dmg.DamageTypes.PHYSICAL: 44}, 0.5,
+        'magic_sword': MagicSword('magic sword', {dmg.DamageTypes.PHYSICAL: 48}, 0.7,
                                   'items_weapons_magic_sword', 0,
                                   16, 12, 96),
-        'magic_blade': MagicBlade('magic blade', {dmg.DamageTypes.PHYSICAL: 32}, 0.6,
+        'magic_blade': MagicBlade('magic blade', {dmg.DamageTypes.PHYSICAL: 25}, 0.5,
                                   'items_weapons_magic_blade', 0,
                                   1, 30, 15),
         'bloody_sword': BloodySword('bloody sword', {dmg.DamageTypes.PHYSICAL: 56}, 0.2,
@@ -2979,7 +2973,7 @@ def set_weapons():
         'apple_knife': ThiefWeapon('apple knife', {dmg.DamageTypes.PIERCING: 58}, 0.3, 'items_weapons_apple_knife',
                                     1, 4, 80, 240, 7, 1000),
         'grenade': ThrowerThiefWeapon('grenade', {dmg.DamageTypes.PIERCING: 188}, 0.2, 'items_weapons_grenade',
-                               7, 10, 1, 2, 18, 1600, 10),
+                               7, 10, 2, 2, 18, 1600, 10),
         'dawn_shortsword': ThiefWeapon('dawn shortsword', {dmg.DamageTypes.PIERCING: 88}, 0.6,
                                         'items_weapons_dawn_shortsword', 1, 8, 48, 144, 16, 1800),
         'night_twinsword': ThiefDoubleKnife('night twinsword', {dmg.DamageTypes.PIERCING: 108}, 0.4,
@@ -2989,7 +2983,7 @@ def set_weapons():
                                        'items_weapons_storm_stabber', 1, 12, 40, 360,
                                       10, 5600),
         'jade_grenade': ThrowerThiefWeapon('jade grenade', {dmg.DamageTypes.PIERCING: 158}, 0.2, 'items_weapons_jade_grenade',
-                                    5, 10, 1, 1, 15, 1800, 16),
+                                    5, 10, 2, 1, 15, 1800, 16),
         'spiritual_knife': ThiefWeapon('spiritual knife', {dmg.DamageTypes.PIERCING: 118}, 0.5,
                                          'items_weapons_spiritual_knife', 0, 6, 48, 144, 8, 2000),
         'daedalus_knife': ThiefWeapon('daedalus knife', {dmg.DamageTypes.PIERCING: 132}, 0.5,
@@ -3011,9 +3005,9 @@ def set_weapons():
                                        4, 1800, dcols=((255, 200, 150), (255, 255, 255))),
 
         'shuriken': ThrowerThiefWeapon('shuriken', {dmg.DamageTypes.PIERCING: 8}, 0, 'items_weapons_shuriken',
-                                      1, 1, 1, 1, 3, 1200, 20),
+                                      1, 1, 2, 1, 3, 1200, 20),
         'spikeball': ThrowerThiefWeapon('spikeball', {dmg.DamageTypes.PIERCING: 88}, 0, 'items_weapons_spikeball',
-                                       10, 10, 1, 1, 8, 800, 4),
+                                       10, 10, 2, 1, 8, 800, 4),
 
         'glowing_splint': MagicWeapon('glowing splint', {dmg.DamageTypes.MAGICAL: 3}, 0.1,
                                       'items_weapons_glowing_splint', 6,

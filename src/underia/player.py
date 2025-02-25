@@ -1,15 +1,14 @@
 import math
 import random
-import tracemalloc
 
 import pygame as pg
 
-from src.physics import mover, vector
-from src.resources import position, cursors, errors
-from src.underia import game, styles, inventory, weapons, entity, projectiles, player_profile
-from src.values import hp_system, damages, effects
-from src import constants
-from src.visual import draw
+from physics import mover, vector
+from resources import position, cursors, errors
+from underia import game, styles, inventory, weapons, entity, projectiles, player_profile
+from values import hp_system, damages, effects
+import constants
+from visual import draw
 
 
 class PlayerObject(mover.Mover):
@@ -308,6 +307,25 @@ class Player:
             self.top_notice = f'Task: {notice}({round(self.tutorial_process)}%)'
             self.ntcs.append('Item collection: ' + notice)
             self.ntcs.append(f'Required any {items_num} out of {len(items)}.')
+            self.ntcs.append(f'Entity image saving: {entity.entity_get_surface.cache_info().hits}/'
+                             f'{entity.entity_get_surface.cache_info().hits + entity.entity_get_surface.cache_info().misses}'
+                             f'({entity.entity_get_surface.cache_info().hits * 100 / 
+                                 (entity.entity_get_surface.cache_info().hits + entity.entity_get_surface.cache_info().misses)
+                             if entity.entity_get_surface.cache_info().currsize else 0:.2f}%)'
+                             f', MEM: {entity.entity_get_surface.cache_info().currsize}')
+            self.ntcs.append(f'Projectile image saving: {projectiles.projectile_get_surface.cache_info().hits}/'
+                             f'{projectiles.projectile_get_surface.cache_info().hits + projectiles.projectile_get_surface.cache_info().misses}'
+                             f'({projectiles.projectile_get_surface.cache_info().hits * 100 / 
+                                 (projectiles.projectile_get_surface.cache_info().hits + projectiles.projectile_get_surface.cache_info().misses)
+                             if projectiles.projectile_get_surface.cache_info().currsize else 0:.2f}%)'
+                             f', MEM: {projectiles.projectile_get_surface.cache_info().currsize}')
+            self.ntcs.append(f'Weapon sweep image: {weapons.Weapon.get_cut_surf.cache_info().hits}/'
+                             f'{weapons.Weapon.get_cut_surf.cache_info().hits + weapons.Weapon.get_cut_surf.cache_info().misses}'
+                             f'({weapons.Weapon.get_cut_surf.cache_info().hits * 100 / 
+                                 (weapons.Weapon.get_cut_surf.cache_info().hits + weapons.Weapon.get_cut_surf.cache_info().misses)
+                             if weapons.Weapon.get_cut_surf.cache_info().currsize else 0:.2f}%)'
+                             f', MEM: {weapons.Weapon.get_cut_surf.cache_info().currsize}')
+
             for i in items:
                 if i not in self.owned_items:
                     self.ntcs.append(f'->{i.replace('_', ' ')}')
@@ -329,7 +347,7 @@ class Player:
                 self.tutorial_process += 10
         self.talent = min(self.talent + 0.005 + math.sqrt(self.max_talent) / 2000 + (self.max_talent - self.talent) / 1000, self.max_talent)
         self.hp_sys.pos = self.obj.pos
-        self.attack = self.calculate_damage() * self.calculate_data('damage', rate_data=True, rate_multiply=True)
+        self.attack = math.sqrt(self.calculate_damage() * self.calculate_data('damage', rate_data=True, rate_multiply=True))
         self.strike = 0.08 + self.calculate_data('crit', False) / 100
         self.attacks = [self.calculate_melee_damage() * self.calculate_data('melee_damage', rate_data=True, rate_multiply=True),
                         self.calculate_ranged_damage() * self.calculate_data('ranged_damage', rate_data=True, rate_multiply=True),
@@ -337,8 +355,10 @@ class Player:
                         self.calculate_data('octave_damage', rate_data=True, rate_multiply=True),
                         self.calculate_data('hallow_damage', rate_data=True, rate_multiply=True),
                         self.calculate_data('pacify_damage', rate_data=True, rate_multiply=True)]
+        for i in range(len(self.attacks)):
+            self.attacks[i] = math.sqrt(self.attacks[i])
         self.attack *= 1 + (random.random() < self.strike)
-        self.p_data.append(f'Memory use: {tracemalloc.get_traced_memory()[1] / 1024 / 1024:.2f}MB {1000 / game.get_game().clock.last_tick:.2f}fps')
+        self.p_data.append(f'{1000 / game.get_game().clock.last_tick:.2f}fps')
         self.p_data.append(f'Magic Damage: {int(self.attacks[2] * self.attack * 100) / 100}x')
         self.p_data.append(f'Ranged Damage: {int(self.attacks[1] * self.attack * 100) / 100}x')
         self.p_data.append(f'Melee Damage: {int(self.attacks[0] * self.attack * 100) / 100}x')
@@ -458,8 +478,12 @@ class Player:
         w = self.weapons[self.sel_weapon]
         if pg.K_EQUALS in game.get_game().get_pressed_keys():
             self.scale = min(self.scale + 0.05, self.get_max_screen_scale())
+            entity.entity_get_surface.cache_clear()
+            projectiles.projectile_get_surface.cache_clear()
         if pg.K_MINUS in game.get_game().get_pressed_keys():
             self.scale = max(self.scale - 0.05, 0.8)
+            entity.entity_get_surface.cache_clear()
+            projectiles.projectile_get_surface.cache_clear()
         if inventory.TAGS['magic_weapon'] in inventory.ITEMS[w.name.replace(' ', '_')].tags:
             if pg.K_y in game.get_game().get_keys():
                 if 'windstorm_warlock_mark' in self.accessories:
@@ -1386,8 +1410,8 @@ class Player:
                                 self.inventory.add_item(inventory.ITEMS['tip0'])
                             if not self.inventory.is_enough(inventory.ITEMS['tip1']):
                                 self.inventory.add_item(inventory.ITEMS['tip1'])
-                            lft = pg.font.SysFont('dtm-mono', 96)
-                            lss = pg.font.SysFont('dtm-mono', 56)
+                            lft = pg.font.Font(path.get_path('assets/dtm-mono.otf'), 45)
+                            lss = pg.font.Font(path.get_path('assets/dtm-mono.otf'), 24)
                             while window_opened:
                                 for event in pg.event.get():
                                     if event.type == pg.QUIT:
@@ -1402,25 +1426,27 @@ class Player:
                                             sel = (sel - 1 + len(rep)) % len(rep)
                                         if event.key == pg.K_DOWN:
                                             sel = (sel + 1) % len(rep)
-                                pg.draw.rect(window, (255, 255, 255), (wx - 1200, wy - 750, 2400, 1600))
-                                pg.draw.rect(window, (0, 0, 0), (wx - 1200, wy - 750, 2400, 1600), 18)
+                                pg.draw.rect(window, (255, 255, 255), (wx - 480, wy - 300, 960, 640))
+                                pg.draw.rect(window, (0, 0, 0), (wx - 480, wy - 300, 960, 640), 18)
                                 f = lss.render(f"{sel + 1}/{len(rep)}", True, (0, 0, 0))
-                                fr = f.get_rect(midbottom=(wx, wy + 800))
+                                fr = f.get_rect(midbottom=(wx, wy + 320))
                                 window.blit(f, fr)
                                 cr = rep[sel]
-                                styles.item_display(wx - 1120, wy - 460, cr.result, '',
-                                                    str(cr.crafted_amount), 4, _window=window)
+                                styles.item_display(wx - 448, wy - 184, cr.result, '',
+                                                    str(cr.crafted_amount), 1.6, _window=window,
+                                                    mp=pg.mouse.get_pos())
                                 j = 0
                                 ml = 6
                                 for it, qt in cr.material.items():
-                                    styles.item_display(wx + 80 + 170 * (j % ml), wy - 460 + 170 * (j // ml), it, '', str(qt),
-                                                        2, _window=window, red=not self.inventory.is_enough(inventory.ITEMS[it], qt))
+                                    styles.item_display(wx + 32 + 68 * (j % ml), wy - 184 + 68 * (j // ml), it, '', str(qt),
+                                                        .8, _window=window, red=not self.inventory.is_enough(inventory.ITEMS[it], qt),
+                                                        mp=pg.mouse.get_pos())
                                     j += 1
                                 tt = lft.render(inventory.ITEMS[cr.result].name if len(inventory.ITEMS[cr.result].name) < 20 \
                                                     else inventory.ITEMS[cr.result].name[:16] + '...',True, (0, 0, 0))
-                                window.blit(tt, (wx - 1120, wy - 660))
+                                window.blit(tt, (wx - 448, wy - 264))
                                 tr = lft.render(f"Materials: ", True, (0, 0, 0))
-                                window.blit(tr, (wx + 80, wy - 660))
+                                window.blit(tr, (wx + 32, wy - 264))
                                 desc = inventory.ITEMS[cr.result].get_full_desc().split('\n')
                                 for ii in range(len(desc)):
                                     if len(desc[ii]) > 30:
@@ -1431,10 +1457,10 @@ class Player:
                                         ii -= 1
                                 for j, d in enumerate(desc):
                                     td = lss.render(d, True, (0, 0, 0))
-                                    window.blit(td, (wx - 1120, wy - 100 + 60 * j))
+                                    window.blit(td, (wx - 448, wy - 40 + 24 * j))
                                 j = 0
                                 for it, qt in cr.material.items():
-                                    r = pg.Rect(wx + 80 + 170 * (j % ml), wy - 460 + 170 * (j // ml), 160, 160)
+                                    r = pg.Rect(wx + 32 + 68 * (j % ml), wy - 184 + 68 * (j // ml), 64, 64)
                                     if r.collidepoint(pg.mouse.get_pos()):
                                         try:
                                             am = self.inventory.items[it]
@@ -1451,11 +1477,11 @@ class Player:
                                                 ii -= 1
                                         for j, d in enumerate(desc):
                                             td = lss.render(d, True, (0, 0, 0))
-                                            window.blit(td, (wx + 80, wy - 100 + 60 * j + \
-                                                             max(0, len(cr.material) // ml - 1) * 170))
+                                            window.blit(td, (wx + 32, wy - 40 + 24 * j + \
+                                                             max(0, len(cr.material) // ml - 1) * 68))
                                         break
                                     j += 1
-                                pg.display.update((wx - 1200, wy - 800, 2400, 1600))
+                                pg.display.update()
                             game.get_game().pressed_keys = []
                             game.get_game().pressed_mouse = []
                         self.in_ui = True

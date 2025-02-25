@@ -1,10 +1,11 @@
 import pygame as pg
-from src import underia
+import underia
+import resources
 
 class Dialogger:
     def __init__(self, font_size: int = 64, rect: pg.Rect = None, with_border: bool = False,
                  target_surface: pg.Surface = None, speed: float = 10):
-        self.font = pg.font.SysFont('dtm-mono', font_size)
+        self.font = pg.font.Font(resources.get_path('assets/dtm-mono.otf'), font_size)
         self.word_queue = []
         self.curr_text = ''
         self.curr_idx = 0

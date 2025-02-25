@@ -1,20 +1,28 @@
 import random
 import time
+
 from pygame import constants as pg
 
 random.seed(time.time())
 
-FLAGS = pg.HWSURFACE | pg.DOUBLEBUF | pg.SRCALPHA
-FULLSCREEN = False
 
 ELEMENT_TYPE_CONSTANT = 49034
 DAMAGE_TYPE_CONSTANT = 13829
 
 INFINITY = 2 ** 31 - 1
 
-DEBUG = True
+DEBUG = False
 OS = "OSX"
+TONE = True
+ENTITY_NUMBER = 25
+WEB_DEPLOY = False
 
+if not WEB_DEPLOY:
+    FLAGS = pg.HWSURFACE | pg.DOUBLEBUF | pg.SRCALPHA
+    FULLSCREEN = False
+else:
+    FLAGS = 0
+    FULLSCREEN = False
 # Graphics
 USE_ALPHA = True
 EASY_BACKGROUND = False
@@ -22,8 +30,9 @@ BLADE_EFFECT_QUALITY = 1
 PARTICLES = 1
 DISPLAY_STYLE = 0
 HEART_BAR = True
+FADING_PARTICLE = True
 
-FPS = 40
+FPS = 50
 
 LIGHTING = False
 

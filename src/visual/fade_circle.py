@@ -2,9 +2,9 @@ import math
 
 import pygame as pg
 
-from src.visual import effects
-from src.resources import position
-from src.underia import game
+from visual import effects
+from resources import position
+from underia import game
 
 
 class FadeCircle(effects.Effect):
