@@ -1,8 +1,8 @@
 import pygame as pg
 
-from src.underia import game, inventory, word_dict
-from src.values import hp_system
-from src import constants
+from underia import game, inventory, word_dict
+from values import hp_system
+import constants
 
 
 def hp_bar(hp: hp_system.HPSystem, midtop: tuple, size: float):

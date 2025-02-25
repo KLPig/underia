@@ -1,8 +1,9 @@
-from src.underia import dialog, version
-from src.resources import path
-from src import constants
+from underia import dialog, version
+from resources import path
+import constants
 import pygame as pg
 import os
+import asyncio
 
 pt = path.get_path('assets/graphics/legend')
 image = {l: pg.image.load(os.path.join(pt, l)) for l in os.listdir(pt)}
@@ -12,7 +13,7 @@ def show_legend():
     music = pg.mixer.Sound(os.path.join(path.get_path('assets/musics'), 'the_legend.ogg'))
     dialogger = dialog.Dialogger(48, pg.Rect(0, window.get_height() - 180, window.get_width(), 180), target_surface=window, speed=12)
     texts = [[f'UNDERIA version {version.VERSION[0]}.{version.VERSION[1]}.{version.VERSION[2]}',
-              'All left reserved.', 'by KLPIG\n', 'Released in 15/2/2025',
+              'All left reserved.', 'by KLPIG\n', 'Released in 25/2/2025',
               'Press [C] to continue.', 'Press [ESC] to quit.', 'Assets:', 'Music from Undertale OST, Deltarune OST,\nand Terraria OST.',
               'Image drawn by KLPIG'],
              ['Once upon a time, the world was full in chaos.',

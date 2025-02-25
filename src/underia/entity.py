@@ -4,12 +4,12 @@ import random
 
 import pygame as pg
 
-from src.physics import mover, vector
-from src.resources import position
-from src.underia import game, styles, inventory
-from src.values import hp_system, damages, effects
-from src import constants
-from src.visual import particle_effects as pef, fade_circle as fc, draw
+from physics import mover, vector
+from resources import position
+from underia import game, styles, inventory
+from values import hp_system, damages, effects
+import constants
+from visual import particle_effects as pef, fade_circle as fc, draw
 import functools
 
 
@@ -1200,17 +1200,20 @@ class Entities:
             if p[0] < -100 or p[0] > game.get_game().displayer.SCREEN_WIDTH + 100 or p[1] < -100 or p[1] > game.get_game().displayer.SCREEN_HEIGHT + 100:
                 return
             self.rot = rot
-            self.d_img = entity_get_surface(self.DISPLAY_MODE, self.rot, game.get_game().player.get_screen_scale(), self.img)
+            self.d_img = entity_get_surface(self.DISPLAY_MODE, (round(self.rot / 3) * 3 % 360 + 360) % 360,
+                                            game.get_game().player.get_screen_scale(), self.img)
 
         def play_sound(self, sound):
             d = vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                 self.obj.pos[1] - game.get_game().player.obj.pos[1])
             game.get_game().play_sound(sound, 0.99 ** int(d / 10))
-
-        def is_playing(self, sound):
+            
+        @staticmethod
+        def is_playing(sound):
             return game.get_game().sounds[sound].get_num_channels() > 0
 
-        def is_suitable(self, biome: str):
+        @staticmethod
+        def is_suitable(biome: str):
             return True
 
         def on_damage_player(self):
@@ -1342,8 +1345,9 @@ class Entities:
         def __init__(self, pos, hp=0):
             super().__init__(pos, self.HP if not hp else hp)
 
-        def is_suitable(self, biome: str):
-            return biome in self.BIOMES
+        @staticmethod
+        def is_suitable(biome: str):
+            return biome in []
 
         def update(self):
             super().update()
@@ -1364,6 +1368,10 @@ class Entities:
         ])
         BIOMES = ['forest', 'rainforest']
 
+        @staticmethod
+        def is_suitable(biome: str):
+            return biome in ['forest', 'rainforest']
+
     class RedChest(Chest):
         IMG = 'entity_red_chest'
         LOOT_TABLE = LootTable([
@@ -1377,6 +1385,10 @@ class Entities:
         BIOMES = ['hell']
         TOUGHNESS = 7
         HP = 50
+
+        @staticmethod
+        def is_suitable(biome: str):
+            return biome in ['hell']
 
     class WhiteChest(Chest):
         IMG = 'entity_white_chest'
@@ -1392,6 +1404,10 @@ class Entities:
         TOUGHNESS = 4
         HP = 40
 
+        @staticmethod
+        def is_suitable(biome: str):
+            return biome in ['snowland']
+
     class OrangeChest(Chest):
         IMG = 'entity_orange_chest'
         LOOT_TABLE = LootTable([
@@ -1405,6 +1421,10 @@ class Entities:
         TOUGHNESS = 4
         HP = 40
 
+        @staticmethod
+        def is_suitable(biome: str):
+            return biome in ['desert']
+
     class BlueChest(Chest):
         IMG = 'entity_blue_chest'
         LOOT_TABLE = LootTable([
@@ -1415,6 +1435,10 @@ class Entities:
         BIOMES = ['heaven']
         TOUGHNESS = 7
         HP = 50
+
+        @staticmethod
+        def is_suitable(biome: str):
+            return biome in ['heaven']
 
     class StoneAltar(Ore):
         DISPLAY_MODE = 3
@@ -1473,7 +1497,7 @@ class Entities:
         TOUGHNESS = 0
         HP = 10
         LOOT_TABLE = LootTable([
-            IndividualLoot('copper', 1, 10, 12),
+            IndividualLoot('copper', 1, 30, 32),
             ])
 
     class IronOre(Ore):
@@ -1482,7 +1506,7 @@ class Entities:
         TOUGHNESS = 2
         HP = 12
         LOOT_TABLE = LootTable([
-            IndividualLoot('iron', 1, 10, 12),
+            IndividualLoot('iron', 1, 20, 25),
             ])
 
     class SteelOre(Ore):
@@ -1491,7 +1515,7 @@ class Entities:
         TOUGHNESS = 2
         HP = 12
         LOOT_TABLE = LootTable([
-            IndividualLoot('steel', 1, 10, 12),
+            IndividualLoot('steel', 1, 20, 25),
             ])
 
     class PlatinumOre(Ore):
@@ -1500,7 +1524,7 @@ class Entities:
         TOUGHNESS = 5
         HP = 16
         LOOT_TABLE = LootTable([
-            IndividualLoot('platinum', 1, 10, 12),
+            IndividualLoot('platinum', 1, 28, 36),
             ])
 
     class MagicOre(Ore):
@@ -1509,7 +1533,7 @@ class Entities:
         TOUGHNESS = 7
         HP = 20
         LOOT_TABLE = LootTable([
-            IndividualLoot('magic_stone', 1, 10, 12),
+            IndividualLoot('magic_stone', 1, 15, 18),
             ])
 
     class BloodOre(Ore):
@@ -1518,7 +1542,7 @@ class Entities:
         TOUGHNESS = 8
         HP = 35
         LOOT_TABLE = LootTable([
-            IndividualLoot('cell_organization', 1, 10, 12),
+            IndividualLoot('cell_organization', 1, 12, 18),
             ])
 
     class FiriteOre(Ore):
@@ -1572,7 +1596,7 @@ class Entities:
         TOUGHNESS = 84
         HP = 300
         LOOT_TABLE = LootTable([
-            IndividualLoot('palladium', 1, 10, 12),
+            IndividualLoot('palladium', 1, 20, 24),
             ])
 
     class MithrillOre(Ore):
@@ -1581,7 +1605,7 @@ class Entities:
         TOUGHNESS = 84
         HP = 300
         LOOT_TABLE = LootTable([
-            IndividualLoot('mithrill', 1, 10, 12),
+            IndividualLoot('mithrill', 1, 20, 24),
             ])
 
     class TitaniumOre(Ore):
@@ -1590,7 +1614,7 @@ class Entities:
         TOUGHNESS = 84
         HP = 300
         LOOT_TABLE = LootTable([
-            IndividualLoot('titanium', 1, 10, 12),
+            IndividualLoot('titanium', 1, 20, 24),
             ])
 
     class TalentOre(Ore):
@@ -1599,7 +1623,7 @@ class Entities:
         TOUGHNESS = 128
         HP = 500
         LOOT_TABLE = LootTable([
-            IndividualLoot('mystery_core', 1, 2, 3),
+            IndividualLoot('mystery_core', 1, 1, 3),
             ])
 
     class ChlorophyteOre(Ore):
@@ -1697,7 +1721,8 @@ class Entities:
         def rotate(self, rot):
             self.body[0].rotate(rot)
 
-        def is_suitable(self, biome: str):
+        @staticmethod
+        def is_suitable(biome: str):
             return True
 
     class Test(Entity):
@@ -1716,7 +1741,8 @@ class Entities:
 
         SOUND_HURT = 'sticky'
 
-        def is_suitable(self, biome: str):
+        @staticmethod
+        def is_suitable(biome: str):
             return True
 
         def __init__(self, pos):
@@ -1750,7 +1776,8 @@ class Entities:
             IndividualLoot('cell_organization', 0.8, 1, 3),
         ])
 
-        def is_suitable(self, biome: str):
+        @staticmethod
+        def is_suitable(biome: str):
             return True
 
         def __init__(self, pos):
@@ -1868,7 +1895,8 @@ class Entities:
             IndividualLoot('red_apple', 0.03, 1, 1),
         ])
 
-        def is_suitable(self, biome: str):
+        @staticmethod
+        def is_suitable(biome: str):
             return biome in ['forest', 'rainforest']
 
         def __init__(self, pos):
@@ -1884,7 +1912,8 @@ class Entities:
             IndividualLoot('red_apple', 0.07, 1, 1),
         ])
 
-        def is_suitable(self, biome: str):
+        @staticmethod
+        def is_suitable(biome: str):
             return biome in ['rainforest']
 
         def __init__(self, pos):
@@ -1903,7 +1932,8 @@ class Entities:
 
         SOUND_DEATH = 'monster'
 
-        def is_suitable(self, biome: str):
+        @staticmethod
+        def is_suitable(biome: str):
             return biome in ['forest', 'rainforest']
 
         def __init__(self, pos):
@@ -1932,7 +1962,8 @@ class Entities:
         SOUND_HURT = 'corrupt'
         SOUND_DEATH = 'sticky'
 
-        def is_suitable(self, biome: str):
+        @staticmethod
+        def is_suitable(biome: str):
             return biome in ['forest', 'rainforest']
 
         def __init__(self, pos):
@@ -2023,7 +2054,8 @@ class Entities:
 
         SOUND_DEATH = 'monster'
 
-        def is_suitable(self, biome: str):
+        @staticmethod
+        def is_suitable(biome: str):
             return biome in ['desert']
 
         def __init__(self, pos):
@@ -2051,7 +2083,8 @@ class Entities:
 
         SOUND_DEATH = 'monster'
 
-        def is_suitable(self, biome: str):
+        @staticmethod
+        def is_suitable(biome: str):
             return biome in ['snowland']
 
         def __init__(self, pos):
@@ -2079,7 +2112,8 @@ class Entities:
         SOUND_HURT = 'sticky'
         SOUND_DEATH = 'sticky'
 
-        def is_suitable(self, biome: str):
+        @staticmethod
+        def is_suitable(biome: str):
             return biome in ['hell']
 
         def __init__(self, pos):
@@ -2310,7 +2344,8 @@ class Entities:
         SOUND_HURT = 'sticky'
         SOUND_DEATH = 'sticky'
 
-        def is_suitable(self, biome: str):
+        @staticmethod
+        def is_suitable(biome: str):
             return True
 
         def __init__(self, pos):
@@ -2430,7 +2465,8 @@ class Entities:
         SOUND_HURT = 'metal'
         SOUND_DEATH = 'explosive'
 
-        def is_suitable(self, biome: str):
+        @staticmethod
+        def is_suitable(biome: str):
             return biome in ['desert']
 
         def __init__(self, pos):
@@ -2855,7 +2891,8 @@ class Entities:
         SOUND_HURT = 'corrupt'
         SOUND_DEATH = 'huge_monster'
 
-        def is_suitable(self, biome: str):
+        @staticmethod
+        def is_suitable(biome: str):
             return biome in ['heaven']
 
         def __init__(self, pos):
@@ -3842,6 +3879,51 @@ class Entities:
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 15
             self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 50
 
+    class LifeTree(Entity):
+        NAME = 'Life Tree'
+        DISPLAY_MODE = 1
+        LOOT_TABLE = LootTable([
+            IndividualLoot('soul_of_growth', 1, 5, 10),
+            IndividualLoot('leaf', 1, 5, 10),
+            IndividualLoot('wood', 1, 25, 30),
+            IndividualLoot('chlorophyll', 0.03, 1, 1),
+            IndividualLoot('chlorophyte_ingot', 0.03, 1, 5),
+            ])
+
+        SOUND_HURT = 'corrupt'
+        SOUND_DEATH = 'sticky'
+
+        def __init__(self, pos):
+            super().__init__(pos, game.get_game().graphics['entity_life_tree'], LeafAI, 8800)
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 95
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 114
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 128
+            self.obj.SPEED *= 2
+            self.obj.MASS *= 4
+            self.obj.TOUCHING_DAMAGE *= 2
+
+    class IceThorn(Entity):
+        NAME = 'Ice Thorn'
+        DISPLAY_MODE = 1
+        LOOT_TABLE = LootTable([
+            IndividualLoot('soul_of_coldness', 1, 5, 10),
+            IndividualLoot('leaf', 1, 5, 10),
+            IndividualLoot('chlorophyll', 0.03, 1, 1),
+            IndividualLoot('chlorophyte_ingot', 0.05, 1, 5),
+            ])
+
+        SOUND_HURT = 'corrupt'
+        SOUND_DEATH = 'sticky'
+
+        def __init__(self, pos):
+            super().__init__(pos, game.get_game().graphics['entity_life_tree'], LeafAI, 4800)
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 195
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 188
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 188
+            self.obj.SPEED *= 3
+            self.obj.MASS *= 2
+            self.obj.TOUCHING_DAMAGE *= 2.5
+
     class JevilKnife(Entity):
         NAME = 'Joker Evil Knife'
         DISPLAY_MODE = 1
@@ -3934,7 +4016,8 @@ class Entities:
             IndividualLoot('plantera_bulb', 1, 1, 1),
             ])
 
-        def is_suitable(self, biome: str):
+        @staticmethod
+        def is_suitable(biome: str):
             return biome in ['inner']
 
         def __init__(self, pos):
@@ -4032,6 +4115,32 @@ class Entities:
             self.obj.appear_rate = 2
             self.obj.TOUCHING_DAMAGE = 380
 
+    class CurseGhost(Entity):
+        NAME = 'Curse Ghost'
+        DISPLAY_MODE = 1
+        LOOT_TABLE = LootTable([
+            IndividualLoot('soul', 1, 12, 18),
+            IndividualLoot('wierd_essence', 0.3, 8, 15),
+        ])
+
+        def __init__(self, pos):
+            super().__init__(pos, game.get_game().graphics['entity_curse_ghost'], SoulFlowerAI, 88000)
+            self.obj.TOUCHING_DAMAGE = 660
+            self.obj.SPEED *= 2
+            self.obj.FRICTION = 0.8
+
+        def update(self):
+            super().update()
+            px, py = game.get_game().player.obj.pos
+            px -= self.obj.pos[0]
+            py -= self.obj.pos[1]
+            pg.draw.circle(game.get_game().displayer.canvas, (127, 255, 0), position.displayed_position(self.obj.pos),
+                           radius=800 / game.get_game().player.get_screen_scale(), width=5)
+            if vector.distance(px, py) < 800:
+                entity_spawn(Entities.GhostFace, target_number=1, to_player_max=5000, to_player_min=2000, rate=0.2)
+                entity_spawn(Entities.AngryFace, target_number=1, to_player_max=5000, to_player_min=2000, rate=0.2)
+                entity_spawn(Entities.SadFace, target_number=1, to_player_max=5000, to_player_min=2000, rate=0.2)
+
     class TimeTrap(Entity):
         NAME = 'Timetrap'
         DISPLAY_MODE = 1
@@ -4090,6 +4199,34 @@ class Entities:
             pg.draw.circle(game.get_game().displayer.canvas, (100, 100, 255),
                            position.displayed_position(self.obj.pos), 1000 / game.get_game().player.get_screen_scale(), 5)
 
+    class TimeTrapGuard(TimeTrap):
+        LOOT_TABLE = LootTable([])
+
+    class AncientDebris(Entity):
+        NAME = 'Ancient Debris'
+        DISPLAY_MODE = 1
+        LOOT_TABLE = LootTable([
+            IndividualLoot('mysterious_ingot', 1, 12, 18),
+            IndividualLoot('time_essence', 0.3, 8, 15),
+        ])
+
+
+        def __init__(self, pos):
+            super().__init__(pos, game.get_game().graphics['entity_ancient_debris'], BuildingAI, 32000)
+            self.obj.TOUCHING_DAMAGE = 360
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 440
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 480
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 400
+
+        def update(self):
+            super().update()
+            px, py = game.get_game().player.obj.pos
+            px -= self.obj.pos[0]
+            py -= self.obj.pos[1]
+            pg.draw.circle(game.get_game().displayer.canvas,(0, 255, 255), position.displayed_position(self.obj.pos),
+                           radius=800 / game.get_game().player.get_screen_scale(), width=5)
+            if vector.distance(px, py) < 800:
+                entity_spawn(Entities.TimeTrapGuard, target_number=3, to_player_max=5000, to_player_min=2000, rate=0.2)
 
     class Molecules(Entity):
         NAME = 'Molecules'
@@ -5892,8 +6029,9 @@ class Entities:
 def entity_spawn(entity: type(Entities.Entity), to_player_min=1500, to_player_max=2500, number_factor=0.5,
                  target_number=5, rate=0.5):
     game_obj = game.get_game()
-    if random.random() < max(0.0, (len([e for e in game_obj.entities if
-                                        type(e) is entity]) - target_number) * number_factor / 10) - rate / 50 + 1:
+    if (random.random() < max(0.0, len([e for e in game_obj.entities if type(e) is entity]) - target_number
+                                   * number_factor / 10) - rate / 50 + max(0, len(game_obj.entities) - constants.ENTITY_NUMBER)
+            * target_number / 45 * (not entity.IS_MENACE) + 1):
         return
     player = game_obj.player
     dist = random.randint(to_player_min, to_player_max)

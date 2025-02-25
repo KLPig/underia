@@ -1,7 +1,7 @@
 import pygame as pg
 
-from src.resources import path as pth
-from src.resources import strings
+from resources import path as pth
+from resources import strings
 
 noticed = []
 

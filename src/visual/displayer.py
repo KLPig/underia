@@ -1,12 +1,10 @@
-import copy
-
 import pygame as pg
 
-from src import pygame_lights
-from src.resources import position
-from src.underia import game, weapons
-from src.visual import effects
-from src import constants
+import pygame_lights
+from resources import position, path
+from underia import game, weapons
+from visual import effects
+import constants
 
 
 class Displayer:
@@ -15,7 +13,10 @@ class Displayer:
 
     def __init__(self):
         try:
-            pg.display.set_mode((4800, 2700), pg.RESIZABLE | pg.HWSURFACE | pg.DOUBLEBUF | pg.SCALED | pg.FULLSCREEN)
+            if constants.WEB_DEPLOY:
+                pg.display.set_mode((4800, 2700))
+            else:
+                pg.display.set_mode((4800, 2700), pg.RESIZABLE | pg.HWSURFACE | pg.DOUBLEBUF | pg.SCALED | pg.FULLSCREEN)
         except pg.error:
             pass
         self.canvas = pg.Surface((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pg.SRCALPHA | pg.HWACCEL)
@@ -23,9 +24,9 @@ class Displayer:
         self.alpha_masks: list[tuple[int, int, int, int]] = []
         self.shake_x, self.shake_y = 0, 0
         self.effects: list[effects.Effect] = []
-        font = 'dtm-sans'
-        self.font = pg.font.SysFont(font, 32)
-        self.font_s = pg.font.SysFont(font, 20)
+        font = path.get_path('assets/dtm-sans.otf')
+        self.font = pg.font.Font(font, 32)
+        self.font_s = pg.font.Font(font, 20)
         self.night_darkness_color = (127, 127, 0)
         self.lsw, self.lsh = 1600, 900
         self.blit_pos = (0, 0)

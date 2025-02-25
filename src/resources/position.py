@@ -1,4 +1,4 @@
-from src.underia import game
+from underia import game
 
 
 def absolute_position(pos):

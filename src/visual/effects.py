@@ -1,9 +1,9 @@
 import pygame as pg
 
-from src.resources import position
-from src.underia import game
-from src import constants
-from . import draw
+from resources import position
+from underia import game
+import constants
+from visual import draw
 
 
 class Effect:
@@ -33,9 +33,8 @@ def pointed_curve(colour: tuple[int, int, int], pts: list[tuple[int, int]], widt
             s = pg.Surface((abs(ex - sx) + width, abs(ey - sy) + width), pg.SRCALPHA)
             ax, ay = min(sx, ex), min(sy, ey)
             draw.line(s, current_colour, (sx + width // 2 - ax, sy + width // 2 - ay),
-                      (ex + width // 2 - ax, ey + width // 2 - ay))
-            if constants.USE_ALPHA:
-                s.set_alpha(alpha)
+                      (ex + width // 2 - ax, ey + width // 2 - ay), width=width)
+            s.set_alpha(alpha)
             displayer.blit(s, (min(sx, ex), min(sy, ey)))
         else:
             draw.line(displayer, current_colour, (sx, sy), (ex, ey), width)

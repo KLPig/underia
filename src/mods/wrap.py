@@ -1,4 +1,4 @@
-from src.mods import mod
+from mods import mod
 import os
 import sys
 import pickle

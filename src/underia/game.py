@@ -1,11 +1,10 @@
-import copy
 import os
 import random
 import time
 import pygame as pg
 
-from src import resources, visual, constants, physics
-from src.underia import player, entity, projectiles, weapons, inventory, dialog
+import resources, visual, constants, physics
+from underia import player, entity, projectiles, weapons, inventory, dialog
 import perlin_noise
 
 MUSICS = {
@@ -174,19 +173,19 @@ class Game:
         self.map = pg.PixelArray(self.graphics['background_map'])
         cnt = 0
         for m in os.listdir(resources.get_path('assets/musics')):
-            if m[-4:] in ['.wav', '.ogg', '.m4a', '.mp3']:
+            if m[-4:] in ['.ogg']:
                 cnt += 1
         for s in os.listdir(resources.get_path('assets/sounds')):
-            if s[-4:] in ['.wav', '.ogg', '.m4a', '.mp3']:
+            if s[-4:] in ['.ogg']:
                 cnt += 1
         self.gcnt = 0
         for m in os.listdir(resources.get_path('assets/musics')):
-            if m[-4:] in ['.wav', '.ogg', '.m4a', '.mp3']:
+            if m[-4:] in ['.ogg']:
                 self.gcnt += 1
                 self._display_progress(self.gcnt / cnt)
                 self.musics[m.split('.')[0]] = pg.mixer.Sound(resources.get_path('assets/musics/' + m))
         for s in os.listdir(resources.get_path('assets/sounds')):
-            if s[-4:] in ['.wav', '.ogg', '.m4a', '.mp3']:
+            if s[-4:] in ['.ogg']:
                 self.gcnt += 1
                 self._display_progress(self.gcnt / cnt)
                 self.sounds[s.split('.')[0]] = pg.mixer.Sound(resources.get_path('assets/sounds/' + s))
@@ -319,41 +318,7 @@ class Game:
         if self.day_time - self.TIME_SPEED < 0.8 <= self.day_time:
             self.on_day_end()
         self.on_update()
-        self.events = pg.event.get()
-        for event in self.events:
-            if event.type == pg.QUIT:
-                raise resources.Interrupt()
-            elif event.type == pg.KEYDOWN:
-                if event.key == pg.K_ESCAPE:
-                    paused = True
-                    while paused:
-                        for ev in pg.event.get():
-                            if ev.type == pg.QUIT:
-                                raise resources.Interrupt()
-                            elif ev.type == pg.KEYDOWN:
-                                if ev.key == pg.K_BACKSPACE:
-                                    paused = False
-                                elif ev.key == pg.K_ESCAPE:
-                                    raise resources.Interrupt()
-                                elif ev.key == pg.K_F4:
-                                    constants.FULLSCREEN = not constants.FULLSCREEN
-                                    pg.display.set_mode(pg.display.get_window_size(), (pg.FULLSCREEN if constants.FULLSCREEN else 0) | constants.FLAGS)
-                        pg.display.flip()
-                    self.pressed_mouse = []
-                    self.pressed_keys = []
-                elif event.key == pg.K_F4:
-                    constants.FULLSCREEN = not constants.FULLSCREEN
-                    pg.display.set_mode(pg.display.get_window_size(), (pg.FULLSCREEN if constants.FULLSCREEN else 0) | constants.FLAGS)
-                else:
-                    self.pressed_keys.append(event.key)
-            elif event.type == pg.KEYUP:
-                if event.key in self.pressed_keys:
-                    self.pressed_keys.remove(event.key)
-            elif event.type == pg.MOUSEBUTTONDOWN:
-                self.pressed_mouse.append(event.button)
-            elif event.type == pg.MOUSEBUTTONUP:
-                if event.button in self.pressed_mouse:
-                    self.pressed_mouse.remove(event.button)
+        self.handle_events()
         bg_size = int(120 / self.player.get_screen_scale())
         bg_ax = int(self.player.ax / self.player.get_screen_scale()) % bg_size
         bg_ay = int(self.player.ay / self.player.get_screen_scale()) % bg_size
@@ -521,6 +486,29 @@ class Game:
                 raise resources.Interrupt()
             elif event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
+                    window = pg.display.get_surface()
+                    mask = pg.Surface(window.get_size(), pg.SRCALPHA)
+                    mask.fill((0, 0, 0))
+                    mask.set_alpha(200)
+                    window.blit(mask, (0, 0))
+                    font = pg.font.Font(resources.get_path('assets/dtm-sans.otf'), 30)
+                    text = font.render('Underia', True, (255, 255, 255))
+                    text_rect = text.get_rect(center=(window.get_rect().centerx,
+                                                      window.get_rect().centery - 300))
+                    window.blit(text, text_rect)
+                    text = font.render('by KLpig', True, (255, 255, 255))
+                    text_rect = text.get_rect(center=(window.get_rect().centerx,
+                                                      window.get_rect().centery - 270))
+                    window.blit(text, text_rect)
+                    text = font.render('[BACKSPACE] to continue', True, (255, 255, 255))
+                    text_rect = text.get_rect(center=(window.get_rect().centerx,
+                                                      window.get_rect().centery - 80))
+                    window.blit(text, text_rect)
+                    text = font.render('[ESCAPE] to quit', True, (255, 255, 255))
+                    text_rect = text.get_rect(center=(window.get_rect().centerx,
+                                                      window.get_rect().centery))
+                    window.blit(text, text_rect)
+                    pg.display.flip()
                     paused = True
                     while paused:
                         for ev in pg.event.get():
@@ -534,7 +522,7 @@ class Game:
                                 elif ev.key == pg.K_F4:
                                     constants.FULLSCREEN = not constants.FULLSCREEN
                                     pg.display.set_mode(pg.display.get_window_size(), (pg.FULLSCREEN if constants.FULLSCREEN else 0) | constants.FLAGS)
-                        pg.display.flip()
+                        pg.display.update()
                     self.pressed_mouse = []
                     self.pressed_keys = []
                 elif event.key == pg.K_F4:

@@ -1,5 +1,5 @@
-from src import constants
-from src.values import elements
+import constants
+from values import elements
 
 
 class DamageTypes:

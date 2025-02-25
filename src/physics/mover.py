@@ -1,7 +1,7 @@
 import math
 
-from src import constants
-from src.physics import vector
+import constants
+from physics import vector
 
 
 class Mover:
@@ -34,7 +34,7 @@ class Mover:
         self.velocity.add(self.force.get_net_vector(1 / self.MASS))
         self.force.clear()
         vx, vy = self.velocity.get_net_coordinates()
-        self.pos = (self.pos[0] + vx, self.pos[1] + vy)
+        self.pos = (self.pos[0] + vx / 2, self.pos[1] + vy / 2)
         self.pos = (max(-constants.MOVER_POS, min(constants.MOVER_POS, self.pos[0])),
                     max(-constants.MOVER_POS, min(constants.MOVER_POS, self.pos[1])))
         self.velocity.reset(self.FRICTION)
@@ -73,7 +73,7 @@ class Mover:
             u1 = self.velocity.get_net_value() * math.cos(math.radians(rot - self.velocity.get_net_rotation())) * self.FRICTION
             u2 = other.velocity.get_net_value() * math.cos(math.radians(rot - other.velocity.get_net_rotation())) * other.FRICTION
             if u1 < 0 or u2 > 0:
-                return False
+                return True
             self.velocity.add(vector.Vector(rot, -u1))
             m1 = self.MASS
             m2 = other.MASS

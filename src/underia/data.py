@@ -1,4 +1,4 @@
-from . import player_profile
+from underia import player_profile
 
 class GameData:
     def __init__(self, pf: player_profile.PlayerProfile):

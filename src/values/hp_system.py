@@ -1,9 +1,9 @@
 import random
 
-from src import constants
-from src.physics import distance
-from src.underia import game
-from src.values import reduction, effects, damages
+import constants
+from physics import distance
+from underia import game
+from values import reduction, effects, damages
 
 
 class HPSystem:

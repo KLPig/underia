@@ -1,6 +1,6 @@
 from pygame import time as tm
 
-from src import constants
+import constants
 
 
 def get_time(tick: int):

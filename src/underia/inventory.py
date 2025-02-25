@@ -1,5 +1,5 @@
-from src.underia import weapons, projectiles, game
-from src.values import damages
+from underia import weapons, projectiles, game
+from values import damages
 
 
 class Inventory:
@@ -1406,9 +1406,9 @@ RECIPES = [
     Recipe({'platinum_ingot': 10, 'blood_ingot': 20, 'anvil': 1}, 'bloody_sword'),
     Recipe({'platinum_ingot': 12, 'blood_ingot': 32, 'anvil': 1}, 'blood_pike'),
     Recipe({'platinum_ingot': 6, 'blood_ingot': 24, 'anvil': 1}, 'bloody_bow'),
-    Recipe({'platinum_ingot': 6, 'fluffur': 8, 'anvil': 1}, 'fluffy_pluvial'),
-    Recipe({'platinum_ingot': 12, 'fluffur': 7, 'anvil': 1}, 'fur_spear'),
-    Recipe({'platinum_ingot': 6, 'fluffur': 12, 'anvil': 1}, 'ice_shard'),
+    Recipe({'platinum_ingot': 6, 'flufffur': 8, 'anvil': 1}, 'fluffy_pluvial'),
+    Recipe({'platinum_ingot': 12, 'flufffur': 7, 'anvil': 1}, 'fur_spear'),
+    Recipe({'platinum_ingot': 6, 'flufffur': 12, 'anvil': 1}, 'ice_shard'),
     Recipe({'wood': 20, 'leaf': 20, 'coniferous_leaf': 50, 'blood_ingot': 32, 'anvil': 1}, 'forests_bow'),
     Recipe({'platinum_ingot': 8, 'blood_ingot': 16, 'mana_crystal': 1, 'anvil': 1}, 'blood_wand'),
     Recipe({'blood_ingot': 5, 'platinum_ingot': 5, 'anvil': 1}, 'blood_arrow', 100),

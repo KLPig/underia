@@ -1,3 +1,4 @@
+"""
 import numpy as np
 
 import pygame
@@ -198,3 +199,4 @@ def pixel_shader(size, color, intensity, point, angle=0, angle_width=360):
     final_array *= final_intensity[..., np.newaxis]
 
     return pygame.surfarray.make_surface(final_array.astype(np.uint8))
+"""

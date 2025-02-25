@@ -2,10 +2,10 @@ import copy
 import math
 import os
 import pygame as pg
-from src import constants
+import constants
 
-from src.resources import path
-from src import underia
+from resources import path
+import underia
 import pickle
 
 n = -1
@@ -32,6 +32,8 @@ for i in range(1, 10):
             datas.append(pickle.load(f))
     except FileNotFoundError:
         datas.append(underia.GameData(underia.PlayerProfile()))
+    except ModuleNotFoundError:
+        datas.append(underia.GameData(underia.PlayerProfile()))
 
 pf = underia.PlayerProfile()
 t = 0
@@ -39,9 +41,9 @@ t = 0
 def choose_save():
     global n, selects, anchor, cmds, cb, t
     clk = pg.time.Clock()
-    font_s = pg.font.SysFont('dtm-mono', 30)
-    font = pg.font.SysFont('dtm-mono', 48)
-    font_large = pg.font.SysFont('dtm-mono', 72)
+    font_s = pg.font.Font(path.get_path('assets/dtm-mono.otf'), 30)
+    font = pg.font.Font(path.get_path('assets/dtm-mono.otf'), 48)
+    font_large = pg.font.Font(path.get_path('assets/dtm-mono.otf'), 72)
     screen = pg.display.get_surface()
     mask = pg.Surface(screen.get_size(), pg.SRCALPHA)
     mask.fill((0, 0, 0, 255))
