@@ -1,6 +1,8 @@
 import os
 import random
 import time
+from functools import lru_cache
+
 import pygame as pg
 
 import resources, visual, constants, physics
@@ -74,6 +76,9 @@ class Game:
         self.wm_max = 0
         self.w_ns = {}
         self.hallow_points: list[tuple[tuple[int, int], int]] = []
+        self.role = ''
+        self.server = None
+        self.client = None
 
     def get_night_color(self, time_days: float):
         if len([1 for e in self.entities if type(e) is entity.Entities.AbyssEye]):
@@ -145,6 +150,9 @@ class Game:
         time.sleep(0.001)
 
     def setup(self):
+        self.server = None
+        self.client = None
+        self.role = ''
         self.p_obj = []
         self.sounds = {}
         self.map_open = False
@@ -275,6 +283,53 @@ class Game:
     def get_player_objects(self) -> list[physics.Mover]:
         return [self.player.obj] + self.p_obj
 
+    @lru_cache(maxsize=None)
+    def get_chunked_images(self, biomes, bg_size):
+        cols = {'hell': (255, 0, 0), 'desert': (255, 191, 63), 'forest': (0, 255, 0), 'rainforest': (127, 255, 0),
+                'snowland': (255, 255, 255), 'heaven': (127, 127, 255), 'inner': (0, 0, 0), 'none': (0, 0, 0),
+                'hallow': (0, 255, 255)}
+        size = len(biomes)
+        surf = pg.Surface((size * bg_size, size * bg_size), pg.SRCALPHA)
+        surf.set_alpha(255)
+        for i in range(size):
+            for j in range(size):
+                bo = biomes[i][j]
+                if constants.EASY_BACKGROUND:
+                    bg = pg.Surface((bg_size, bg_size))
+                    bg.fill(cols[bo])
+                else:
+                    bg = self.graphics.get_graphics('nbackground_' + bo)
+                surf.blit(bg, (i * bg_size, j * bg_size))
+        return surf
+
+    def blend_map(self):
+        bg_size = 150 #int(120 / self.player.get_screen_scale())
+        chunk_size = 5
+        bg_ax = int(self.player.ax / self.player.get_screen_scale()) % (bg_size * chunk_size)
+        bg_ay = int(self.player.ay / self.player.get_screen_scale()) % (bg_size * chunk_size)
+        cols = {'hell': (255, 0, 0), 'desert': (255, 191, 63), 'forest': (0, 255, 0), 'rainforest': (127, 255, 0),
+                'snowland': (255, 255, 255), 'heaven': (127, 127, 255), 'inner': (0, 0, 0), 'none': (0, 0, 0),
+                'hallow': (0, 255, 255)}
+        if not self.graphics.is_loaded('nbackground_hell') or self.graphics['nbackground_hell'].get_width() != bg_size:
+            for k in cols.keys():
+                self.graphics['nbackground_' + k] = pg.transform.scale(self.graphics['background_' + k],
+                                                                       (bg_size, bg_size))
+        if pg.K_TAB in self.pressed_keys:
+            self.map_open = not self.map_open
+        if self.get_biome() != self.last_biome[0]:
+            self.last_biome = (self.last_biome[0], self.last_biome[1] + 1)
+            if self.last_biome[1] >= 20:
+                self.last_biome = (self.get_biome(), 0)
+        slg, _ = self.last_biome
+        for i in range(-bg_size, self.displayer.SCREEN_WIDTH + bg_size * chunk_size, bg_size * chunk_size):
+            for j in range(-bg_size, self.displayer.SCREEN_HEIGHT + bg_size * chunk_size, bg_size * chunk_size):
+                cx, cy = resources.real_position((i - bg_ax + bg_size // 2, j - bg_ay + bg_size // 2))
+                bgg = [[self.get_biome(((cx + i * bg_size * self.player.get_screen_scale()) // self.CHUNK_SIZE + 120,
+                                      (cy + j * bg_size * self.player.get_screen_scale()) // self.CHUNK_SIZE + 120))
+                       for j in range(chunk_size)] for i in range(chunk_size)]
+                surf = self.get_chunked_images(tuple([tuple(b) for b in bgg]), bg_size)
+                self.displayer.canvas.blit(surf, (i - bg_ax, j - bg_ay))
+
     def update(self):
         if (self.prepared_music is None and self.channel.get_busy() == 0) or \
                 (self.cur_music is not None and (self.get_biome() + str(int(0.3 < self.day_time < 0.7))) not in
@@ -319,52 +374,7 @@ class Game:
             self.on_day_end()
         self.on_update()
         self.handle_events()
-        bg_size = int(120 / self.player.get_screen_scale())
-        bg_ax = int(self.player.ax / self.player.get_screen_scale()) % bg_size
-        bg_ay = int(self.player.ay / self.player.get_screen_scale()) % bg_size
-        cols = {'hell': (255, 0, 0), 'desert': (255, 191, 63), 'forest': (0, 255, 0), 'rainforest': (127, 255, 0),
-                'snowland': (255, 255, 255), 'heaven': (127, 127, 255), 'inner': (0, 0, 0), 'none': (0, 0, 0),
-                'hallow': (0, 255, 255)}
-        if not self.graphics.is_loaded('nbackground_hell') or self.graphics['nbackground_hell'].get_width() != bg_size:
-            for k in cols.keys():
-                self.graphics['nbackground_' + k] = pg.transform.scale(self.graphics['background_' + k], (bg_size, bg_size))
-        if pg.K_TAB in self.pressed_keys:
-            self.map_open = not self.map_open
-        if self.get_biome() != self.last_biome[0]:
-            self.last_biome = (self.last_biome[0], self.last_biome[1] + 1)
-            if self.last_biome[1] >= 20:
-                self.last_biome = (self.get_biome(), 0)
-        if constants.EASY_BACKGROUND:
-            g = pg.Surface((bg_size, bg_size))
-            g.fill(cols[self.get_biome()])
-        else:
-            g = self.graphics.get_graphics('nbackground_' + self.get_biome())
-        if constants.DISPLAY_STYLE:
-            if constants.EASY_BACKGROUND:
-                lg = pg.Surface((bg_size, bg_size))
-                lg.fill(cols[self.last_biome[0]])
-            else:
-                lg = self.graphics.get_graphics('nbackground_' + self.last_biome[0])
-        else:
-            lg = pg.Surface((bg_size, bg_size))
-        slg, _ = self.last_biome
-        for i in range(-bg_size, self.displayer.SCREEN_WIDTH + bg_size, bg_size):
-            for j in range(-bg_size, self.displayer.SCREEN_HEIGHT + bg_size, bg_size):
-                if constants.DISPLAY_STYLE:
-                    self.displayer.canvas.blit(g, (i - bg_ax, j - bg_ay))
-                    if self.get_biome() != self.last_biome[0]:
-                        self.displayer.canvas.blit(lg, (i - bg_ax, j - bg_ay))
-                else:
-                    cx, cy = resources.real_position((i - bg_ax + bg_size // 2, j - bg_ay + bg_size // 2))
-                    cx = int(cx // self.CHUNK_SIZE) + 120
-                    cy = int(cy // self.CHUNK_SIZE) + 120
-                    bo = self.get_biome(pos=(cx, cy))
-                    if constants.EASY_BACKGROUND:
-                        bg = pg.Surface((bg_size, bg_size))
-                        bg.fill(cols[bo])
-                    else:
-                        bg = self.graphics.get_graphics('nbackground_' + bo)
-                    self.displayer.canvas.blit(bg, (i - bg_ax, j - bg_ay))
+        self.blend_map()
         for img, x, y, scale_req in self.decors:
             if self.displayer.canvas.get_rect().collidepoint(*resources.displayed_position((x, y))) and scale_req >= self.player.get_screen_scale():
                 self.displayer.canvas.blit(pg.transform.scale_by(self.graphics.get_graphics(img),

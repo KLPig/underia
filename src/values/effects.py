@@ -1,6 +1,6 @@
 from resources import time
 from values import hp_system, elements, damages
-import constants
+from underia import game
 
 
 class Effect:
@@ -62,7 +62,7 @@ class Effect:
     def on_update(self, entity: hp_system.HPSystem):
         self.tick += 1
         if self.duration < 10 ** 8:
-            self.timer -= 1 / constants.FPS
+            self.timer -= 1 / 1000 * game.get_game().clock.last_tick
 
     def on_end(self, entity: hp_system.HPSystem):
         pass

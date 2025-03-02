@@ -1,5 +1,5 @@
 import math
-
+from underia import game
 import constants
 from physics import vector
 
@@ -34,7 +34,8 @@ class Mover:
         self.velocity.add(self.force.get_net_vector(1 / self.MASS))
         self.force.clear()
         vx, vy = self.velocity.get_net_coordinates()
-        self.pos = (self.pos[0] + vx / 2, self.pos[1] + vy / 2)
+        self.pos = (self.pos[0] + vx / 50 * game.get_game().clock.last_tick,
+                    self.pos[1] + vy / 50 * game.get_game().clock.last_tick)
         self.pos = (max(-constants.MOVER_POS, min(constants.MOVER_POS, self.pos[0])),
                     max(-constants.MOVER_POS, min(constants.MOVER_POS, self.pos[1])))
         self.velocity.reset(self.FRICTION)

@@ -3360,7 +3360,8 @@ def set_weapons():
         'worn_notebook': Blade('worn notebook', {dmg.DamageTypes.PHYSICAL: 190}, 0.1,
                                'items_weapons_worn_notebook', 1, 3, 60, 120),
         'empty_gun': Gun('empty gun', {dmg.DamageTypes.PIERCING: 200}, 0.1,
-                         'items_weapons_empty_gun', 1, 4, 800, auto_fire=True),
+                         'items_weapons_empty_gun', 1, 4, 800, auto_fire=True,
+                         ammo_save_chance=1.0),
 
         'murders_knife': MurderersKnife('murders knife', {}, 0, 'items_weapons_murders_knife',
                               0, 12, 30, 180, auto_fire=True),

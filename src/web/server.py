@@ -1,8 +1,12 @@
+from web import game_pack_data
 import socket
 import threading
+import pickle
 
 
 class SocketServer:
+    pack_data = game_pack_data.FirstConnectData()
+
     def __init__(self):
         self.port = 1145
         self.host = socket.gethostname()
@@ -11,13 +15,16 @@ class SocketServer:
         self.sock.listen(1)
         print(f'Server started on {self.host}:{self.port}')
 
-    def command_handler(self, recv_data: bytes) -> bytes:
+    @staticmethod
+    def command_handler(recv_data: bytes) -> bytes:
         return f'Decoded {recv_data.decode()}'.encode()
 
-    def socket_handle(self, conn):
+    @staticmethod
+    def socket_handle(conn: socket.socket):
+        conn.send(pickle.dumps(SocketServer.pack_data))
         while True:
             recv = conn.recv(1024)
-            response = self.command_handler(recv)
+            response = SocketServer.command_handler(recv)
             conn.send(response)
             if not recv:
                 break

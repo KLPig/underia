@@ -50,6 +50,10 @@ class PlayerProfile:
         self.font_s: pg.font.Font | None = None
         self.select_skill = []
         self.point_left = 0
+        self.point_blades = 0
+        self.point_magics = 0
+        self.point_armors = 0
+        self.point_ranged = 0
 
     def get_color(self, w = 0, s = 0, a = 0, ml = 0, rg = 0, mg = 0):
         r, g, b = 255, 255, 255
