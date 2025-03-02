@@ -1400,6 +1400,7 @@ RECIPES = [
     Recipe({'platinum_ingot': 3, 'magic_arrow': 100}, 'quiver'),
     Recipe({'orange_ring': 1, 'blue_ring': 1, 'green_ring': 1}, 'magnificent_ring'),
     Recipe({'platinum': 9, 'mana_crystal': 3}, 'hat'),
+    Recipe({'platinum_ingot': 25, 'mana_crystal': 12}, 'star_amulet'),
     Recipe({'star_amulet': 1, 'snowstorm_bottle': 1}, 'starstorm_bottle'),
 
     Recipe({'blood_ingot': 18, 'anvil': 1}, 'bloody_traveller_boots'),
@@ -1456,7 +1457,7 @@ RECIPES = [
     Recipe({'storm_core': 3}, 'windstorm_swordman_mark'),
     Recipe({'storm_core': 1, 'starstorm_bottle': 1, 'snow_wings': 1}, 'soarer_bottle'),
     Recipe({'storm_core': 1, 'thiefs_charm': 1, 'winds_necklace': 1}, 'storm_charm'),
-    Recipe({'gorgeous_ring': 1, 'magnificient_ring': 1, 'storm_core': 1}, 'red_ring'),
+    Recipe({'gorgeous_ring': 1, 'magnificent_ring': 1, 'storm_core': 1}, 'red_ring'),
 
     Recipe({'soul': 60}, 'spiritual_heart'),
     Recipe({'soul': 30, 'firy_plant': 5}, 'butterscotch_pie', 20),

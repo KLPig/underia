@@ -195,8 +195,11 @@ print('Presets...')
 for s in setups:
     exec(s)
 
+fpss = []
+
 @game.update_function
 def update():
+    fpss.append(round(1000 / game.clock.last_tick, 2))
     if game.player.inventory.is_enough(underia.ITEMS['star']):
         game.player.inventory.remove_item(underia.ITEMS['star'])
         game.player.mana = max(game.player.mana, min(game.player.max_mana, game.player.mana + 40))
@@ -339,6 +342,7 @@ def update():
                                  rate=0.5 + bm * 1.2)
             underia.entity_spawn(underia.Entities.RedWatcher, target_number=2 + bm * 17, to_player_max=2000, to_player_min=1800,
                                  rate=0.2 + bm * 0.7)
+
             if game.stage == 1:
                 underia.entity_spawn(underia.Entities.MechanicEye, target_number=1 + bm * 8, to_player_max=2000, to_player_min=1500,
                                      rate=0.2 + bm * 0.9)
@@ -386,6 +390,13 @@ else:
         print('Running game...')
         game.run()
     except Exception as err:
+        import matplotlib.pyplot as plt
+
+        plt.plot(fpss)
+        plt.title('FPS over time')
+        plt.xlabel('Frames')
+        plt.ylabel('FPS')
+
         def try_delete_attribute(obj, attr):
             try:
                 delattr(obj, attr)
@@ -412,11 +423,13 @@ else:
             for w in game.player.weapons:
                 game.player.inventory.add_item(underia.ITEMS[w.name.replace(" ", "_")])
             game.player.weapons = []
+            game_pickle = pickle.dumps(game)
             with open(resources.get_save_path(game.save), 'wb') as w:
-                w.write(pickle.dumps(game))
+                w.write(game_pickle)
                 w.close()
+            game_data = pickle.dumps(underia.GameData(game.player.profile))
             with open(resources.get_save_path(sfd), 'wb') as w:
-                w.write(pickle.dumps(underia.GameData(game.player.profile)))
+                w.write(game_data)
                 w.close()
             pg.quit()
             if type(err) not in [resources.Interrupt, KeyboardInterrupt]:

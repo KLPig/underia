@@ -400,9 +400,9 @@ class Player:
                 pass
         self.domain_size = self.calculate_data('domain_size', True, rate_multiply=True)
         mtp_regen = self.calculate_data('mentality_regen', False)
-        self.REGENERATION = 0.015 + self.calculate_regeneration() + self.calculate_data('regen', rate_data=False) / 40.0
+        self.REGENERATION = 0.015 + self.calculate_regeneration() + self.calculate_data('regen', rate_data=False) / 1000 * game.get_game().clock.last_tick
         self.MAGIC_REGEN = self.calculate_magic_regeneration() * (0.04 + self.calculate_data('mana_regen', rate_data=False) / 120.0)
-        ins_regen = (.8 + self.calculate_data('ins_regen', rate_data=False) / 40.0) * self.calculate_magic_regeneration()
+        ins_regen = (.8 + self.calculate_data('ins_regen', rate_data=False) / 1000 * game.get_game().clock.last_tick) * self.calculate_magic_regeneration()
         max_ins = self.calculate_data('max_ins', False)
         max_mana = self.calculate_data('max_mana', False)
         karma_reduce = 5 * self.calculate_data('karma_reduce', True, rate_multiply=True)
@@ -410,7 +410,7 @@ class Player:
             self.p_data.append(f'Domain Size x{int(self.domain_size * 100)}%')
         if self.hp_sys.max_hp > 1000:
             self.p_data.append(f'Mentality: {int(mtp_regen)}/s')
-            self.talent = min(self.talent + mtp_regen / 40, self.max_talent)
+            self.talent = min(self.talent + mtp_regen / 1000 * game.get_game().clock.last_tick, self.max_talent)
         self.p_data.append(f'Regeneration: {int(self.REGENERATION * 400) / 10}/s')
         self.p_data.append(f'Mana Regeneration: {int(self.MAGIC_REGEN * 400) / 10}/s')
         if ins_regen:
@@ -1252,7 +1252,7 @@ class Player:
                                 game.get_game().dialog.dialog('Unable to summon Sandstorm.',
                                                               'There is no Stone Altar nearby.')
                             else:
-                                entity.spawn_sandstorm()
+                                entity.entity_spawn(entity.Entities.SandStorm, 2000, 2000, 0, 1145, 100000)
                                 self.inventory.remove_item(item)
                         elif item.id == 'blood_substance':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if

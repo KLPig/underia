@@ -602,7 +602,7 @@ class SandStormAI(MonsterAI):
         pos = self.cur_target.pos if self.cur_target is not None else (0, 0)
         ax, ay = vector.rotation_coordinate(self.rot)
         px, py = pos[0] + ax * self.d, pos[1] + ay * self.d
-        self.pos = ((self.pos[0] + px * 5) // 6, (self.pos[1] + py * 5) // 6)
+        self.pos = ((self.pos[0] + px * 6) / 7, (self.pos[1] + py * 6) / 7)
 
 
 class AbyssRuneAI(MonsterAI):
@@ -1360,7 +1360,7 @@ class Entities:
             SelectionLoot([('iron', 10, 12), ('steel', 10, 12)], 1, 2),
             IndividualLoot('leaf', 1, 10, 12),
             IndividualLoot('platinum', 0.5, 20, 30),
-            SelectionLoot([('mana_flower', 1, 1), ('life_flower', 1, 1)], 0, 1),
+            SelectionLoot([('mana_flower', 1, 1), ('life_flower', 1, 1), ('star_amulet', 1, 1)], 0, 1),
             SelectionLoot([('hermes_boots', 1, 1), ('lucky_clover', 1, 1), ('seed_amulet', 1, 1)], 0, 2),
             IndividualLoot('fairy_wings', 0.2, 1, 1),
             SelectionLoot([('purple_ring', 1, 1), ('cyan_ring', 1, 1), ('yellow_ring', 1, 1),
@@ -2158,6 +2158,8 @@ class Entities:
             self.NAME = item_id.replace('_', '').title()
             self.item_id = item_id
             self.hp_sys(op='config', immune=True)
+            self.obj.FRICTION = 0.9
+            self.obj.velocity.add(vector.Vector(random.randint(0, 360), random.randint(2, 40)))
 
         def update(self):
             super().update()
@@ -2180,7 +2182,8 @@ class Entities:
         LOOT_TABLE = LootTable([
             IndividualLoot('platinum', 0.7, 15, 55),
             IndividualLoot('magic_stone', 0.9, 12, 15),
-            IndividualLoot('mana_crystal', 0.5, 1, 2)
+            IndividualLoot('mana_crystal', 0.5, 1, 2),
+            IndividualLoot('star_amulet', 0.4, 1, 1),
         ])
 
         SOUND_HURT = 'corrupt'
@@ -2438,12 +2441,17 @@ class Entities:
         SOUND_SPAWN = 'boss'
         SOUND_DEATH = 'huge_monster'
 
-        def __init__(self, pos, hp_sys, rot):
-            super().__init__(pos, game.get_game().graphics['entity_sandstorm'], SandStormAI, hp_sys=hp_sys)
+        def __init__(self, pos, hp_sys=None, rot=0, ss=True):
+            super().__init__(pos, game.get_game().graphics['entity_sandstorm'], SandStormAI, hp_sys=hp_sys if not ss else hp_system.HPSystem(18800))
+            if ss:
+                game.get_game().entities.append(Entities.SandStorm(pos, hp_sys=self.hp_sys, rot=rot + 180, ss=False))
+                self.IS_MENACE = False
             self.obj.rot = rot
+            self.obj.update()
             self.tick = 0
-            self.hp_sys.resistances[damages.DamageTypes.PIERCING] = 4
-            self.hp_sys.resistances[damages.DamageTypes.MAGICAL] = 5
+            self.phase = 0
+            self.obj.pos = (self.obj.pos[0] + random.randint(-100, 100), self.obj.pos[1] + random.randint(-100, 100))
+            self.obj.IS_OBJECT = False
 
         def update(self):
             super().update()
@@ -2453,6 +2461,19 @@ class Entities:
                 rot = vector.coordinate_rotation(px - self.obj.pos[0], py - self.obj.pos[1])
                 self.set_rotation(rot)
                 game.get_game().entities.append(Entities.SandStormAttack(self.obj.pos, self.rot))
+            if self.hp_sys.hp < self.hp_sys.max_hp * 0.5 and self.phase == 0:
+                self.phase = 1
+                self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] += 20
+                self.hp_sys.defenses[damages.DamageTypes.PIERCING] += 10
+                self.hp_sys.defenses[damages.DamageTypes.MAGICAL] += 15
+                self.obj = RangedAI(self.obj.pos)
+                self.obj.TOUCHING_DAMAGE = 180
+                self.obj.SIGHT_DISTANCE = 9999
+                self.obj.MASS *= 3
+                self.obj.SPEED *= 2
+                self.obj.shoot_distance = random.randint(500, 2000)
+                self.obj.state = 0
+
 
     class RuneRock(Entity):
         NAME = 'Rune Rock'
@@ -6042,12 +6063,3 @@ def entity_spawn(entity: type(Entities.Entity), to_player_min=1500, to_player_ma
                                                     py // game.get_game().CHUNK_SIZE + 120))):
         return
     game_obj.entities.append(e)
-
-
-def spawn_sandstorm():
-    hp_sys = hp_system.HPSystem(8800)
-    hp_sys.resistances[damages.DamageTypes.PIERCING] = 2.5
-    for i in range(2):
-        e = Entities.SandStorm((0, 0), hp_sys, i * 180)
-        e.IS_MENACE = i == 1
-        game.get_game().entities.append(e)
