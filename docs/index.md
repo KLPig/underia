@@ -43,7 +43,17 @@ Overall, **Underia** is a very good game(wordless).
 
 > **Entities** for Underia
 > 
-> [![underia 1.1.0](https://img.shields.io/badge/underia-magics-darkgreen)](https://klpig.github.io/underia/entities)
+> [![underia 1.1.0](https://img.shields.io/badge/underia-entities-darkgreen)](https://klpig.github.io/underia/entities)
+
+## Downloads
+
+> Underia for **MacOS**
+>
+> [![underia for macos](https://img.shields.io/badge/underia-MacOS-purple)](https://github.com/KLPig/underia/releases/download/1.1.0/Underia_v.1.1.0-osx-setup.pkg)
+
+> Underia for **Windows**
+>
+> [![underia for windows](https://img.shields.io/badge/underia-Windows-orange)](https://github.com/KLPig/underia/releases/download/1.1.0/Underia_v.1.1.0-windows-setup.exe)
 
 ## The End
 > *I just copy it from README*
