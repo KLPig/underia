@@ -5,7 +5,7 @@
 
 [![python 3.13.2](https://img.shields.io/badge/python-3.13.2-blue)](https://www.python.org/) [![pygame 2.6.1](https://img.shields.io/badge/pygame-2.6.1-green)](https://www.pygame.org/wiki/about) [![numpy 2.1.3](https://img.shields.io/badge/numpy-2.1.3-yellow)](https://numpy.org)
 
-## All **'left'** reserved, include **paste-right** (p)
+## Copyright KLPIG, 2025 (c)
 
 **Underia** is a **complicated** game merged Terraria and Undertale together.
 The game is well-**appreciated**. The following are some comments from the **players**.
