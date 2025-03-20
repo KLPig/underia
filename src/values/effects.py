@@ -190,11 +190,32 @@ class Polluted(Effect):
     DESC = '-65% speed\n-10% critical'
     CORRESPONDED_ELEMENT = elements.ElementTypes.DEATH
 
+class Wither(Aberration):
+    IMG = 'wither'
+    NAME = 'Wither'
+    DESC = 'Continuously dealing damage\n-10% speed'
+    CORRESPONDED_ELEMENT = elements.ElementTypes.DEATH
+
 class Weak(Effect):
     IMG = 'weak'
     NAME = 'Weak'
     DESC = '-99.5% melee damage\n-99.5% ranged damage\n-99.5% magic damage'
     CORRESPONDED_ELEMENT = elements.ElementTypes.DARK
+
+class FlashBack(Effect):
+    IMG = 'flashback'
+    NAME = 'Flashback'
+    DESC = 'Time is stopped\n-50% speed'
+
+class DemonContract(Effect):
+    IMG = 'demon_contract'
+    NAME = 'Demon Contract'
+    DESC = 'Vee hee hee!\nA good trade!\nA good trade!\n-50% damage\n-100 touching defense\n-100 magic defense'
+
+class FateAlign(Effect):
+    IMG = 'fate_align'
+    NAME = 'Fate Align'
+    DESC = 'Fate will guide you\n+25% damage\n+10% critical\n+10% speed'
 
 class OctaveIncrease(Effect):
     OCTAVE_INCREASE = True

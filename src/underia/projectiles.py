@@ -1586,10 +1586,67 @@ class Projectiles:
             if self.tick > 120:
                 self.dead = True
 
+    class RelevationOfCycles(Projectile):
+        def __init__(self, pos, rotation, no_left=3):
+            if no_left:
+                game.get_game().projectiles.append(Projectiles.RisingAction(pos, rotation, no_left - 1))
+            super().__init__(pos, rotation, motion=mover.Mover)
+            self.img = game.get_game().graphics['projectiles_rising_action']
+            self.d_img = self.img
+            self.rot = rotation
+            self.dead = False
+            self.obj.MASS = 20
+            self.obj.FRICTION = 1
+            self.obj.apply_force(vector.Vector(random.randint(50, 130) * random.choice([-1, 1]), 2000))
+            self.poss = [pos]
+            cols = [(255, 127, 127), (255, 191, 127), (255, 255, 127), (127, 255, 127), (127, 255, 255), (127, 127, 255), (255, 127, 255), (255, 127, 127)]
+            self.cols = []
+            for i in range(1, 8):
+                s_c = cols[i - 1]
+                e_c = cols[i]
+                for j in range(1, 11):
+                    self.cols.append((s_c[0] + (e_c[0] - s_c[0]) * j / 10, s_c[1] + (e_c[1] - s_c[1]) * j / 10, s_c[2] + (e_c[2] - s_c[2]) * j / 10))
+            self.cnt = 0
+            self.tick = 0
+            self.ax, self.ay = vector.rotation_coordinate(random.randint(0, 359))
+
+        def update(self):
+            tar = self.get_closest_entity()[0]
+            mx, my = position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+            if self.tick > 10:
+                self.obj.apply_force(vector.Vector(vector.coordinate_rotation(mx - self.obj.pos[0], my - self.obj.pos[1]),
+                                                   1000))
+                super().update()
+            else:
+                self.obj.pos = (self.obj.pos[0] + self.ax * 120 / (self.tick + 1),
+                                self.obj.pos[1] + self.ay * 120 / (self.tick + 1))
+            self.poss.append(self.obj.pos)
+            if len(self.poss) > 8:
+                self.poss.pop(0)
+            self.cols.append(self.cols.pop(0))
+            for i in range(len(self.poss) - 1):
+                draw.line(game.get_game().displayer.canvas, self.cols[i], position.displayed_position(self.poss[i]),
+                             position.displayed_position(self.poss[i + 1]),
+                             int((i * 3 + 6) / game.get_game().player.get_screen_scale()))
+            pg.draw.circle(game.get_game().displayer.canvas, (255, 255, 255), position.displayed_position(self.obj.pos),
+                           int(12 / game.get_game().player.get_screen_scale()))
+            pg.draw.circle(game.get_game().displayer.canvas, self.cols[0], position.displayed_position(self.obj.pos),
+                           int(12 / game.get_game().player.get_screen_scale()),
+                           int(4 / game.get_game().player.get_screen_scale()))
+            if vector.distance(self.obj.pos[0] - tar.obj.pos[0], self.obj.pos[1] - tar.obj.pos[1]) < 540 + (tar.d_img.get_height() + tar.d_img.get_width()) / 4:
+                tar.hp_sys.damage(weapons.WEAPONS['relevation_of_cycles'].damages[damages.DamageTypes.MAGICAL] *\
+                                  game.get_game().player.attack * game.get_game().player.attacks[2], damages.DamageTypes.MAGICAL)
+                tar.hp_sys.damage(weapons.WEAPONS['relevation_of_cycles'].damages[damages.DamageTypes.THINKING] *\
+                                  game.get_game().player.attack * game.get_game().player.attacks[2], damages.DamageTypes.THINKING)
+                self.tick += 30
+            self.tick += 1
+            if self.tick > 120:
+                self.dead = True
+
     class Stop(Projectile):
         def __init__(self, pos, rotation):
             game.get_game().player.hp_sys.effect(effects.TimeStop(duration=1000000, level=1))
-            for i in range(120):
+            for i in range(200):
                 game.get_game().handle_events()
                 game.get_game().player.update()
                 for e in game.get_game().entities:
@@ -1602,7 +1659,7 @@ class Projectiles:
                     game.get_game().displayer.canvas.set_alpha(i * 2 + 15)
                 game.get_game().displayer.update()
                 pg.display.update()
-                game.get_game().clock.update()
+                game.get_game().clock.update(40)
             game.get_game().player.hp_sys.effects = \
                 [e for e in game.get_game().player.hp_sys.effects if type(e) is not effects.TimeStop]
             super().__init__(pos, rotation, motion=mover.Mover)
@@ -1948,6 +2005,39 @@ class Projectiles:
             super().update()
             self.obj.pos = vp
 
+    class ScorchingArrow(Bullet):
+        DAMAGES = 320
+        SPEED = 500
+        IMG = 'null'
+        TAIL_SIZE = 3
+        TAIL_WIDTH = 12
+        TAIL_COLOR = (255, 0, 0)
+
+        def __init__(self, pos, rotation, speed, damage):
+            super().__init__(pos, rotation, speed, damage)
+            self.obj.velocity.clear()
+            self.spd = speed + self.SPEED
+
+        def damage(self, pos, cd):
+            imr = self.d_img.get_rect(center=pos)
+            x, y = pos
+            for ee in game.get_game().entities:
+                if imr.collidepoint(ee.obj.pos[0], ee.obj.pos[1]) or ee.d_img.get_rect(
+                        center=ee.obj.pos).collidepoint(x, y) and ee not in cd:
+                    for e2 in game.get_game().entities:
+                        if vector.distance(e2.obj.pos[0] - self.obj.pos[0], e2.obj.pos[1] - self.obj.pos[1]) < 100:
+                            e2.hp_sys.damage(self.dmg, damages.DamageTypes.PIERCING)
+                            e2.hp_sys.effect(effects.Burning(5, int(self.dmg / 12)))
+                    game.get_game().displayer.effect(
+                        fade_circle.p_fade_circle(*position.displayed_position(self.obj.pos),
+                                                  (0, 255, 255), t=5,
+                                                  sp=20 * game.get_game().player.get_screen_scale()))
+                    if self.DELETE:
+                        self.dead = True
+                    else:
+                        cd.append(ee)
+            return cd
+
     class EnergyArrow(Arrow):
         DAMAGES = 20
         SPEED = 50
@@ -1970,7 +2060,7 @@ class Projectiles:
                         if vector.distance(e2.obj.pos[0] - self.obj.pos[0], e2.obj.pos[1] - self.obj.pos[1]) < 300:
                             e2.hp_sys.damage(self.dmg, damages.DamageTypes.PIERCING)
                     game.get_game().displayer.effect(fade_circle.p_fade_circle(*position.displayed_position(self.obj.pos),
-                                                                                (0, 255, 255), t=12, sp=25 / game.get_game().player.get_screen_scale()))
+                                                                                (0, 255, 255), t=12, sp=25 * game.get_game().player.get_screen_scale()))
                     if self.DELETE:
                         self.dead = True
                     else:
@@ -2002,6 +2092,41 @@ class Projectiles:
         TAIL_SIZE = 2
         TAIL_WIDTH = 8
         TAIL_COLOR = (0, 0, 0)
+
+    class DirectBullet(Bullet):
+        DAMAGES = 0
+        SPEED = 500
+        TAIL_SIZE = 2
+        TAIL_WIDTH = 5
+        TAIL_COLOR = (240, 200, 160)
+
+    class Seperator(Bullet):
+        DAMAGES = 0
+        SPEED = 200
+        IMG = 'seperator'
+        TAIL_SIZE = 3
+        TAIL_WIDTH = 4
+        TAIL_COLOR = (0, 0, 255)
+        SPEED_RATE = 0.6
+
+        def __init__(self, pos, rotation, speed, damage, level=0):
+            super().__init__(pos, rotation, speed, damage)
+            self.level = level
+            self.sepd = False
+
+        def damage(self, pos, cd):
+            if self.level < 3 and (random.randint(0, self.tick) > 9 or self.tick >= 12) and not self.sepd:
+                self.sepd = True
+                sz = int(3 - self.level ** 1.5) + random.randint(-1, 1)
+                for _ in range(sz):
+                    game.get_game().projectiles.append(Projectiles.Seperator(pos, random.randint(0, 360),
+                                                                             self.obj.velocity.get_net_value() * self.obj.MASS
+                                                                             * random.randint(4, 6) / 18,
+                                                                             self.dmg - self.DAMAGES, self.level + 1))
+                self.dead = self.dead or self.tick > 12 or random.randint(0, 4)
+            if self.tick >= 12:
+                self.dead = True
+            return super().damage(pos, cd)
 
     class Lysis(Projectile):
         DAMAGE_AS = 'lysis'
@@ -2436,6 +2561,8 @@ AMMOS = {
     'quick_bullet': Projectiles.QuickBullet,
     'chloro_arrow': Projectiles.ChloroArrow,
     'space_jumper': Projectiles.SpaceJumper,
+    'scorching_arrow': Projectiles.ScorchingArrow,
+    'seperator': Projectiles.Seperator,
     'energy_arrow': Projectiles.EnergyArrow,
 }
 

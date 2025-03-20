@@ -1,5 +1,5 @@
+import copy
 import math
-import os.path
 import random
 
 import pygame as pg
@@ -10,7 +10,7 @@ from underia import game, projectiles, inventory, entity
 from values import damages as dmg
 from values import effects
 from visual import effects as eff
-from visual import particle_effects as pef
+from visual import particle_effects as pef, fade_circle as fc
 
 import perlin_noise
 import functools
@@ -100,7 +100,7 @@ class Weapon:
         elif self.timer == 1:
             self.on_end_attack()
             self.timer = 0
-            self.cool = self.cd
+            self.cool = self.cd - game.get_game().player.calculate_data('atk_speed', False) // 3
             self.on_idle()
         else:
             self.on_idle()
@@ -178,21 +178,21 @@ class Weapon:
             self.rot += 360
         sz = {3: 32, 4: 40, 6: 64, 8: 80, 10: 100, 16: 160, 32: 320}[size]
         dst = {3: 100, 4: 130, 6: 200, 8: 260, 10: 350, 16: 520, 32: 1080}[size]
-        gdt = 23
-        sz //= constants.BLADE_EFFECT_QUALITY
-        gdt *= constants.BLADE_EFFECT_QUALITY
-        for j in range(sz):
-            i = j / 10
-            d = (dst - i * gdt / 5)
-            ax, ay = vector.rotation_coordinate(self.rot)
-            self.aposs[j].append((self.x + ax * d + game.get_game().player.obj.pos[0],
-                                  self.y + ay * d + game.get_game().player.obj.pos[1]))
-            if len(self.aposs[j]) > length:
-                self.aposs[j].pop(0)
-            eff.pointed_curve((int(col1[0] + (col2[0] - col1[0]) / sz * j),
-                               int(col1[1] + (col2[1] - col1[1]) / sz * j),
-                               int(col1[2] + (col2[2] - col1[2]) / sz * j)), self.aposs[j][-length:],
-                              3 * constants.BLADE_EFFECT_QUALITY, salpha=int(127 * (1 - j / sz)))
+        d = dst
+        ax, ay = vector.rotation_coordinate(self.rot)
+        self.aposs[0].append((self.x + ax * d + game.get_game().player.obj.pos[0],
+                              self.y + ay * d + game.get_game().player.obj.pos[1]))
+        if len(self.aposs[0]) > length:
+            self.aposs[0].pop(0)
+        eff.pointed_curve(col1, self.aposs[0][-length:],
+                          5, salpha=127)
+        d -= 5
+        self.aposs[1].append((self.x + ax * d + game.get_game().player.obj.pos[0],
+                              self.y + ay * d + game.get_game().player.obj.pos[1]))
+        if len(self.aposs[1]) > length:
+            self.aposs[1].pop(0)
+        eff.pointed_curve(col2, self.aposs[1][-length:],
+                          5, salpha=127)
         self.lrot = self.rot
         self.lx = self.x
         self.ly = self.y
@@ -249,6 +249,15 @@ class SweepWeapon(Weapon):
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
                         e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS))
+                    if 'matters_touch' in game.get_game().player.accessories:
+                        e.obj.MASS *= 1.01
+                    if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
+                        if not e.IS_MENACE:
+                            e.hp_sys.damage(e.hp_sys.max_hp / 10, dmg.DamageTypes.THINKING)
+                            if random.randint(0, 10) == 0:
+                                e.hp_sys.hp = 0
+                        else:
+                            e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), dmg.DamageTypes.THINKING)
                     if self.ENABLE_IMMUNE:
                         e.hp_sys.enable_immume()
 
@@ -1243,8 +1252,9 @@ class EGalaxyBroadsword(Blade):
 class GalaxyBroadsword(Blade):
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, rot_speed: int,
                  st_pos: int, double_sided: bool = False):
-        super().__init__(name, damages, kb, img, at_time // 3, at_time, rot_speed, st_pos, double_sided)
+        super().__init__(name, damages, kb, img, speed, at_time, rot_speed, st_pos, double_sided)
         self.effs = []
+        self.ci = None
 
     def update(self):
         super().update()
@@ -1258,14 +1268,131 @@ class GalaxyBroadsword(Blade):
         self.cutting_effect(16, (255, 191, 63), (255, 0, 0))
 
     def on_end_attack(self):
+        if self.ci is None:
+            self.ci = copy.copy(self.img)
+            self.ci.set_alpha(100)
+            game.get_game().graphics['weff_' + self.name] = self.ci
         super().on_end_attack()
         mx, my = position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
         md = vector.distance(mx, my)
         weff = EGalaxyBroadsword(self.name, self.damages, self.knock_back * 2,
-                                'projectiles_galaxy_broadsword', 0, self.at_time * 2,
-                                abs(self.rot_speed) * 3, abs(self.st_pos))
+                                'weff_' + self.name, 0, self.at_time,
+                                abs(self.rot_speed), abs(self.st_pos))
         weff.x = mx * game.get_game().player.get_screen_scale() - 50 * mx / md
         weff.y = my * game.get_game().player.get_screen_scale() - 50 * my / md
+        weff.attack()
+        weff.keys = []
+        self.effs.append(weff)
+
+class EEternalEcho(Blade):
+    def on_attack(self):
+        super().on_attack()
+        self.display = False
+        self.cutting_effect(16, (200, 255, 255), (255, 0, 0))
+        if self.timer > self.at_time * 2 / 3:
+            mx, my = position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
+            mx *= game.get_game().player.get_screen_scale()
+            my *= game.get_game().player.get_screen_scale()
+            self.x = (self.x + mx) / 2
+            self.y = (self.y + my) / 2
+        else:
+            self.x /= 2
+            self.y /= 2
+
+    def damage(self):
+        for e in game.get_game().entities:
+            dps = e.obj.pos
+            px = dps[0] - self.x - game.get_game().player.obj.pos[0]
+            py = dps[1] - self.y - game.get_game().player.obj.pos[1]
+            if vector.distance(px, py) < self.img.get_width() + (
+            (e.img.get_width() + e.img.get_height()) // 2 if e.img is not None else 10):
+                for t, d in self.damages.items():
+                    e.hp_sys.damage(d * game.get_game().player.attack * game.get_game().player.attacks[self.DMG_AS_IDX], t)
+                if not e.hp_sys.is_immune:
+                    rf = vector.coordinate_rotation(px + self.x, py + self.y)
+                    e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS))
+                if 'matters_touch' in game.get_game().player.accessories:
+                    e.obj.MASS *= 1.01
+                if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
+                    if not e.IS_MENACE:
+                        e.hp_sys.damage(e.hp_sys.max_hp / 10, dmg.DamageTypes.THINKING)
+                        if random.randint(0, 10) == 0:
+                            e.hp_sys.hp = 0
+                    else:
+                        e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), dmg.DamageTypes.THINKING)
+                if self.ENABLE_IMMUNE:
+                    e.hp_sys.enable_immume()
+
+class EternalEcho(Blade):
+    def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, rot_speed: int,
+                 st_pos: int, double_sided: bool = False):
+        super().__init__(name, damages, kb, img, speed, at_time * 5, rot_speed, st_pos, double_sided)
+        self.effs = []
+        self.ci = None
+        self.tt = 0
+
+    def update(self):
+        super().update()
+        for e in self.effs:
+            e.update()
+            if not e.timer:
+                self.effs.remove(e)
+
+    def on_attack(self):
+        super().on_attack()
+        self.cutting_effect(16, (200, 255, 255), (255, 0, 0))
+
+    def on_end_attack(self):
+        self.tt = (self.tt + 1) % 3
+        if self.ci is None:
+            self.ci = copy.copy(self.img)
+            self.ci.set_alpha(100)
+            game.get_game().graphics['weff_' + self.name] = self.ci
+        super().on_end_attack()
+        if self.tt == 1:
+            weff = EEternalEcho(self.name, self.damages, self.knock_back * 2,
+                                    'weff_' + self.name, 0, self.at_time * 2,
+                                    abs(self.rot_speed), abs(self.st_pos))
+            weff.attack()
+            weff.keys = []
+            self.effs.append(weff)
+
+class EStarOfDevotion(Blade):
+    def on_attack(self):
+        super().on_attack()
+        self.display = False
+        self.cutting_effect(16, (255, 255, 180), (255, 0, 0))
+
+class StarOfDevotion(Blade):
+    def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, rot_speed: int,
+                 st_pos: int, double_sided: bool = False):
+        super().__init__(name, damages, kb, img, speed, at_time, rot_speed, st_pos, double_sided)
+        self.effs = []
+        self.ci = None
+
+    def update(self):
+        super().update()
+        for e in self.effs:
+            e.update()
+            if not e.timer:
+                self.effs.remove(e)
+
+    def on_attack(self):
+        super().on_attack()
+        self.cutting_effect(16, (255, 255, 180), (255, 0, 0))
+
+    def on_end_attack(self):
+        if self.ci is None:
+            self.ci = copy.copy(self.img)
+            self.ci.set_alpha(100)
+            game.get_game().graphics['weff_' + self.name] = self.ci
+        super().on_end_attack()
+        mx, my = position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
+        weff = EStarOfDevotion(self.name, self.damages, self.knock_back * 2,
+                                'weff_' + self.name, 0, self.at_time,
+                                abs(self.rot_speed), abs(self.st_pos))
+        weff.x = mx / (mx ** 2 + my ** 2) ** .5 * 480
+        weff.y = my / (mx ** 2 + my ** 2) ** .5 * 480
         weff.attack()
         weff.keys = []
         self.effs.append(weff)
@@ -1322,6 +1449,9 @@ class EZenith(Blade):
         super().on_start_attack()
         self.tick = 0
         self.arc = (0.1 + random.random() * 0.3) * random.choice([-1, 1])
+        if (self.arc < 0) != (self.rot_speed > 0):
+            self.rot_speed *= -1
+            self.rot = (self.rot + self.st_pos * 2) % 360
         for a in self.aposs:
             a.clear()
 
@@ -1565,8 +1695,8 @@ class PoetWeapon(MagicWeapon):
             self.at_t = (self.at_t + 1) % len(tones)
         t = tones[self.at_t][0]
         if t != '00':
-            tone.play_note(self.INSTRUMENT, tone.note_to_frequency(t), tones[self.at_t][1] * self.at_time / 19)
-        tone.play_notes('piano', [(t, d * self.at_time / 19) for t, d in tones_s[self.at_t]])
+            tone.play_note(self.INSTRUMENT, tone.note_to_frequency(t), tones[self.at_t][1] * self.at_time / 19 * 2)
+        tone.play_notes('piano', [(t, d * self.at_time / 19 * 2) for t, d in tones_s[self.at_t]])
         self.sk_cd = self.sk_mcd
 
         game.get_game().projectiles.append(
@@ -1576,7 +1706,7 @@ class PoetWeapon(MagicWeapon):
         game.get_game().player.mana -= self.mana_cost
         game.get_game().player.inspiration -= self.inspiration_cost
         if self.timer:
-            self.timer = self.at_time * tones[self.at_t][1] - 1
+            self.timer = self.at_time * tones[self.at_t][1] * 2 - 1
         self.s_t = self.cd + self.timer + 2
 
     def on_end_attack(self):
@@ -1629,10 +1759,11 @@ class PacifistWeapon(Weapon):
     ATTACK_SOUND = 'attack_magic'
 
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, attack_range: int,
-                 attack_distance: int, auto_fire: bool = False):
+                 attack_distance: int, auto_fire: bool = False, col=(0, 255, 255)):
         super().__init__(name, damages, kb, img, speed, at_time, auto_fire)
         self.attack_range = attack_range
         self.attack_distance = attack_distance
+        self.ccol = col
 
     def on_attack(self):
         super().on_attack()
@@ -1642,6 +1773,10 @@ class PacifistWeapon(Weapon):
         super().on_end_attack()
 
     def damage(self):
+        game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position((self.x + game.get_game().player.obj.pos[0],
+                                                                                             self.y + game.get_game().player.obj.pos[1])),
+                                                                sp=self.attack_distance * game.get_game().player.get_screen_scale() / 6, t=6,
+                                                                col=self.ccol, n=4))
         for e in game.get_game().entities:
             dps = e.obj.pos
             px = dps[0] - self.x - game.get_game().player.obj.pos[0]
@@ -2258,7 +2393,7 @@ class Bow(Weapon):
         if game.get_game().player.ammo[0] not in projectiles.AMMOS or not game.get_game().player.ammo[1]:
             self.timer = 0
             return
-        if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance:
+        if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
             game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
         pj = projectiles.AMMOS[game.get_game().player.ammo[0]]((self.x + game.get_game().player.obj.pos[0],
                                                                self.y + game.get_game().player.obj.pos[1]),
@@ -2277,7 +2412,7 @@ class ForestsBow(Bow):
         if game.get_game().player.ammo[0] not in projectiles.AMMOS or not game.get_game().player.ammo[1]:
             self.timer = 0
             return
-        if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance:
+        if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
             game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
         game.get_game().projectiles.append(
             projectiles.AMMOS[game.get_game().player.ammo[0]]((self.x + game.get_game().player.obj.pos[0],
@@ -2291,7 +2426,7 @@ class ForestsBow(Bow):
         self.sk_mcd = 60
         if game.get_game().player.ammo[0] in projectiles.AMMOS and game.get_game().player.ammo[1] and \
                 pg.K_q in game.get_game().get_pressed_keys() and not self.sk_cd:
-            if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance:
+            if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
                 game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
             self.sk_cd = self.sk_mcd
             ax, ay = vector.rotation_coordinate(self.rot)
@@ -2318,7 +2453,7 @@ class ForwardBow(Bow):
         if game.get_game().player.ammo[0] not in projectiles.AMMOS or not game.get_game().player.ammo[1]:
             self.timer = 0
             return
-        if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance:
+        if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
             game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
         if self.sk_cd:
             game.get_game().projectiles.append(projectiles.Projectiles.ForwardBow(game.get_game().player.obj.pos,
@@ -2358,7 +2493,7 @@ class DiscordStorm(Bow):
         if game.get_game().player.ammo[0] not in projectiles.AMMOS or not game.get_game().player.ammo[1]:
             self.timer = 0
             return
-        if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance:
+        if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
             game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
         for r in range(-30, 31, 15):
             game.get_game().projectiles.append(
@@ -2374,7 +2509,7 @@ class Accelerationism(Bow):
         if game.get_game().player.ammo[0] not in projectiles.AMMOS or not game.get_game().player.ammo[1]:
             self.timer = 0
             return
-        if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance:
+        if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
             game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
         sax, say = vector.rotation_coordinate(self.rot + 90)
         for i in [-1, 1]:
@@ -2393,7 +2528,7 @@ class Resolution(Bow):
         if game.get_game().player.ammo[0] not in projectiles.AMMOS or not game.get_game().player.ammo[1]:
             self.timer = 0
             return
-        if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance:
+        if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
             game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
         sax, say = vector.rotation_coordinate(self.rot + 90)
         ppx, ppy = vector.rotation_coordinate(self.rot)
@@ -2423,7 +2558,7 @@ class DaedelusStormbow(Bow):
         if game.get_game().player.ammo[0] not in projectiles.AMMOS or not game.get_game().player.ammo[1]:
             self.timer = 0
             return
-        if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance:
+        if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
             game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
         mx, my = position.relative_position(
             position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
@@ -2446,7 +2581,7 @@ class TrueDaedalusStormbow(Bow):
         if game.get_game().player.ammo[0] not in projectiles.AMMOS or not game.get_game().player.ammo[1]:
             self.timer = 0
             return
-        if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance:
+        if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
             game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
         mx, my = position.relative_position(
             position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
@@ -2477,7 +2612,7 @@ class Gun(Bow):
         if game.get_game().player.ammo_bullet[0] not in projectiles.AMMOS or not game.get_game().player.ammo_bullet[1]:
             self.timer = 0
             return
-        if game.get_game().player.ammo_bullet[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance:
+        if game.get_game().player.ammo_bullet[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
             game.get_game().player.ammo_bullet = (
             game.get_game().player.ammo_bullet[0], game.get_game().player.ammo_bullet[1] - 1)
         pj = projectiles.AMMOS[game.get_game().player.ammo_bullet[0]]((self.x + game.get_game().player.obj.pos[0],
@@ -2497,7 +2632,7 @@ class DarkExploder(Gun):
         if game.get_game().player.ammo_bullet[0] not in projectiles.AMMOS or not game.get_game().player.ammo_bullet[1]:
             self.timer = 0
             return
-        if game.get_game().player.ammo_bullet[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance:
+        if game.get_game().player.ammo_bullet[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
             game.get_game().player.ammo_bullet = (
             game.get_game().player.ammo_bullet[0], game.get_game().player.ammo_bullet[1] - 1)
         pj = projectiles.AMMOS[game.get_game().player.ammo_bullet[0]]
@@ -2528,7 +2663,7 @@ class LazerGun(Gun):
         if game.get_game().player.ammo_bullet[0] not in projectiles.AMMOS or not game.get_game().player.ammo_bullet[1]:
             self.timer = 0
             return
-        if game.get_game().player.ammo_bullet[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance:
+        if game.get_game().player.ammo_bullet[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
             game.get_game().player.ammo_bullet = (
             game.get_game().player.ammo_bullet[0], game.get_game().player.ammo_bullet[1] - 1)
         wp: projectiles.Projectiles.Bullet = projectiles.AMMOS[game.get_game().player.ammo_bullet[0]]
@@ -2571,7 +2706,7 @@ class Shadow(Gun):
         if game.get_game().player.ammo_bullet[0] not in projectiles.AMMOS or not game.get_game().player.ammo_bullet[1]:
             self.timer = 0
             return
-        if game.get_game().player.ammo_bullet[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance:
+        if game.get_game().player.ammo_bullet[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
             game.get_game().player.ammo_bullet = (
                 game.get_game().player.ammo_bullet[0], game.get_game().player.ammo_bullet[1] - 1)
         game.get_game().projectiles.append(
@@ -2579,6 +2714,57 @@ class Shadow(Gun):
                                                                       self.y + game.get_game().player.obj.pos[1]),
                                                                      self.rot, self.spd,
                                                                      self.damages[dmg.DamageTypes.PIERCING]))
+
+class Climax(Gun):
+    def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, projectile_speed: int,
+                 auto_fire: bool = False, precision: int = 0, tail_col: tuple[int, int, int] | None = None, ammo_save_chance: float = 0.0):
+        super().__init__(name, damages, kb, img, speed, at_time, projectile_speed, auto_fire, precision, tail_col, ammo_save_chance)
+        cols = [(255, 0, 0), (255, 127, 0), (255, 255, 0), (0, 255, 0), (0, 255, 255), (0, 0, 255), (255, 0, 255),
+                (255, 0, 0)]
+        self.cols = []
+        for i in range(1, 8):
+            s_c = cols[i - 1]
+            e_c = cols[i]
+            for j in range(1, 11):
+                self.cols.append((s_c[0] + (e_c[0] - s_c[0]) * j / 10, s_c[1] + (e_c[1] - s_c[1]) * j / 10,
+                                  s_c[2] + (e_c[2] - s_c[2]) * j / 10))
+
+    def on_start_attack(self):
+        self.tail_col = self.cols[0]
+        if game.get_game().player.ammo_bullet[0] not in projectiles.AMMOS or not game.get_game().player.ammo_bullet[
+            1]:
+            self.timer = 0
+            return
+        mx, my = position.relative_position(
+            position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
+        mx *= game.get_game().player.get_screen_scale()
+        my *= game.get_game().player.get_screen_scale()
+        for i in range(3):
+            super().on_start_attack()
+        self.x, self.y = random.randint(-1000, 1000), random.randint(-1000, 1000)
+        sz = int(4 - math.floor(math.sqrt(random.randint(1, 9))))
+        game.get_game().displayer.effect(fc.p_fade_circle(*position.displayed_position((game.get_game().player.obj.pos[0] + self.x,
+                                                                                        game.get_game().player.obj.pos[1] + self.y)),
+                                                          col=self.cols[0], sp=sz * 10 * game.get_game().player.get_screen_scale(),
+                                                          t=6))
+        self.face_to(mx, my)
+        for i in range(sz):
+            pj = projectiles.AMMOS[game.get_game().player.ammo_bullet[0]]((self.x + game.get_game().player.obj.pos[0],
+                                                                           self.y + game.get_game().player.obj.pos[1]),
+                                                                          self.rot + random.randint(-self.precision,
+                                                                                                    self.precision),
+                                                                          0,
+                                                                          self.damages[dmg.DamageTypes.PIERCING])
+            if self.tail_col is not None:
+                pj.TAIL_COLOR = self.cols[0]
+                pj.TAIL_SIZE = max(pj.TAIL_SIZE, 3)
+                pj.TAIL_WIDTH = max(pj.TAIL_WIDTH, 6)
+            game.get_game().projectiles.append(pj)
+        self.x, self.y = 0, 0
+        self.face_to(mx, my)
+        self.cols.append(self.cols.pop(0))
+
+
 
 
 class Astigmatism(Weapon):
@@ -2840,12 +3026,19 @@ def set_weapons():
                        6, 6, 20, 120),
         'star_wrath': StarWrath('star wrath', {dmg.DamageTypes.PHYSICAL: 700}, 16, 'items_weapons_star_wrath',
                                 0, 5, 60, 120),
-        'galaxy_broadsword': GalaxyBroadsword('galaxy broadsword', {dmg.DamageTypes.PHYSICAL: 18800, dmg.DamageTypes.THINKING: 6600}, 38,
+        'galaxy_broadsword': GalaxyBroadsword('galaxy broadsword', {dmg.DamageTypes.PHYSICAL: 3200, dmg.DamageTypes.THINKING: 1600}, 38,
                                                'items_weapons_galaxy_broadsword',
-                                               6, 8, 45, 200),
-        'highlight': Highlight('highlight', {dmg.DamageTypes.PHYSICAL: 2500, dmg.DamageTypes.THINKING: 3200}, 16, 'items_weapons_highlight',
+                                               0, 8, 45, 200),
+        'eternal_echo': EternalEcho('eternal echo', {dmg.DamageTypes.PHYSICAL: 3000, dmg.DamageTypes.THINKING: 2400}, 45,
+                                               'items_weapons_eternal_echo',
+                                               0, 8, 45, 200),
+        'star_of_devotion': StarOfDevotion('star of devotion', {dmg.DamageTypes.PHYSICAL: 2800, dmg.DamageTypes.THINKING: 2600}, 45,
+                                             'items_weapons_star_of_devotion',
+                                             0, 6, 60, 200),
+
+        'highlight': Highlight('highlight', {dmg.DamageTypes.PHYSICAL: 800, dmg.DamageTypes.THINKING: 800}, 16, 'items_weapons_highlight',
                                0, 3, 30, 60, auto_fire=True),
-        'turning_point': ComplexWeapon('turning point', {dmg.DamageTypes.PHYSICAL: 2000, dmg.DamageTypes.THINKING: 3600},
+        'turning_point': ComplexWeapon('turning point', {dmg.DamageTypes.PHYSICAL: 3000, dmg.DamageTypes.THINKING: 3600},
                                        {dmg.DamageTypes.PHYSICAL: 5000}, 45, 'items_weapons_turning_point',
                                        1, 6, 4, 70, 280, 180, 400,
                                        True, [0, 0, 0, 0, 1, 1], TurningPointSweep, TurningPointSpear),
@@ -2875,7 +3068,7 @@ def set_weapons():
         'metal_hand': Spear('metal hand', {dmg.DamageTypes.PHYSICAL: 3200}, 1.2, 'items_weapons_metal_hand',
                             2, 8, 80, 400, auto_fire=True),
 
-        'zenith': Zenith('zenith', {dmg.DamageTypes.PHYSICAL: 29999, dmg.DamageTypes.THINKING: 39999}, 10, 'items_weapons_zenith',
+        'zenith': Zenith('zenith', {dmg.DamageTypes.PHYSICAL: 2999, dmg.DamageTypes.THINKING: 3999}, 10, 'items_weapons_zenith',
                         0, 6, 50, 200),
 
         'bow': Bow('bow', {dmg.DamageTypes.PIERCING: 3}, 0.1, 'items_weapons_bow',
@@ -2945,7 +3138,7 @@ def set_weapons():
                             3, 8, 1000, auto_fire=True, precision=12, ammo_save_chance=2 / 3),
         'justice_shotgun': Shotgun('justice shotgun', {dmg.DamageTypes.PIERCING: 450}, 0.1, 'items_weapons_justice_shotgun',
                                    1, 2, 500, auto_fire=True, precision=25, ammo_save_chance=3 / 4),
-        'climax': Gun('climax', {dmg.DamageTypes.PIERCING: 440}, 0.5, 'items_weapons_climax',
+        'climax': Climax('climax', {dmg.DamageTypes.PIERCING: 240}, 0.5, 'items_weapons_climax',
                       0, 0, 8000, auto_fire=True, precision=1, tail_col=(255, 0, 0), ammo_save_chance=4 / 5),
 
         'lazer_gun': LazerGun('lazer gun', {dmg.DamageTypes.PIERCING: 280}, 0.5, 'items_weapons_lazer_gun',
@@ -3198,6 +3391,8 @@ def set_weapons():
                                        1, 1, projectiles.Projectiles.FallingAction, 25, True, 'Falling Action'),
         'rising_action': MagicWeapon('rising action', {dmg.DamageTypes.MAGICAL: 360, dmg.DamageTypes.THINKING: 800}, 1, 'items_weapons_rising_action',
                                        1, 8, projectiles.Projectiles.RisingAction, 188, True, 'Rising Action'),
+        'relevation_of_cycles': MagicWeapon('relevation of cycles', {dmg.DamageTypes.MAGICAL: 60, dmg.DamageTypes.THINKING: 500}, 1, 'items_weapons_relevation_of_cycles',
+                                             1, 2, projectiles.Projectiles.RelevationOfCycles, 64, True, 'Relevation of Cycles'),
 
         'primal__winds_wand': MagicSet('primal  winds wand', 'items_weapons_primal__winds_wand',
                                        lambda w: w.name in [' circulates domain', ' wd circulate clockwise',
@@ -3313,8 +3508,11 @@ def set_weapons():
                                               True, 'The True God\'s Penalty'),
 
         'mystery_watch': PacifistWeapon('mystery watch', {dmg.DamageTypes.PACIFY: 188}, 1,
-                                       'items_weapons_mystery_watch', 5, 2,
+                                       'items_weapons_mystery_watch', 8, 3,
                                         40, 200, True),
+        'hand_of_pacify': PacifistWeapon('hand of pacify', {dmg.DamageTypes.PACIFY: 88}, 1,
+                                        'items_weapons_hand_of_pacify', 15, 5,
+                                        60, 300, True, col=(255, 255, 100)),
 
 
         'wooden_pickaxe': Pickaxe('wooden pickaxe', {dmg.DamageTypes.MINE_POWER: 1}, 0.1,

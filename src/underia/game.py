@@ -2,7 +2,7 @@ import os
 import random
 import time
 from functools import lru_cache
-
+import asyncio
 import pygame as pg
 
 import resources, visual, constants, physics
@@ -11,13 +11,13 @@ import perlin_noise
 
 MUSICS = {
     'lantern': ['snowland1', 'snowland0', 'heaven1', 'heaven0', 'forest0', 'rainforest0', 'desert0'],
-    'wild_east': ['desert1', 'desert0'],
-    'waterfall': ['forest0', 'rainforest0', 'desert0', 'snowland0', 'heaven0', 'heaven1', 'inner0'],
+    'wild_east': ['desert1', 'desert0', 'wither0', 'wither1'],
+    'waterfall': ['forest0', 'rainforest0', 'desert0', 'snowland0', 'heaven0', 'heaven1', 'inner0', 'wither1'],
     'fields': ['forest1', 'rainforest1', 'snowland1', 'forest0'],
-    'empty': ['hell0', 'hell1', 'forest1', 'rainforest1', 'battle', 'hallow0', 'hallow1'],
+    'empty': ['hell0', 'hell1', 'forest1', 'rainforest1', 'battle', 'hallow0', 'hallow1', 'wither0', 'wither1'],
     'snow': ['snowland0', 'snowland1', 'hallow0', 'hallow1'],
     #'here_we_are': ['inner0', 'inner1'],
-    'amalgam': ['inner0', 'inner1', 'none0', 'none1'],
+    'amalgam': ['inner0', 'inner1', 'none0', 'none1', 'wither0', 'wither1'],
     'null': [],
     'rude_buster': ['battle'],
     'worlds_revolving': ['battle'],
@@ -76,9 +76,12 @@ class Game:
         self.wm_max = 0
         self.w_ns = {}
         self.hallow_points: list[tuple[tuple[int, int], int]] = []
+        self.wither_points: list[tuple[tuple[int, int], int]] = []
         self.role = ''
         self.server = None
         self.client = None
+        self.bl_bg = None
+        self.lp = (100, 100)
 
     def get_night_color(self, time_days: float):
         if len([1 for e in self.entities if type(e) is entity.Entities.AbyssEye]):
@@ -150,6 +153,7 @@ class Game:
         time.sleep(0.001)
 
     def setup(self):
+        self.lp = (0, 0)
         self.server = None
         self.client = None
         self.role = ''
@@ -164,6 +168,7 @@ class Game:
         self.wm_max = 0
         self.gcnt = 0
         self.decors = []
+        self.get_chunked_images.cache_clear()
         self.dialog = dialog.Dialogger(144, pg.Rect(0, 1980, 4800, 720), with_border=True, speed=.5,
                                        target_surface=pg.display.get_surface())
         self.noise = perlin_noise.PerlinNoise(1.2, self.seed)
@@ -227,7 +232,7 @@ class Game:
             pos = self.chunk_pos
         if pos[0] ** 2 + pos[1] ** 2 < 1000:
             return 'forest'
-        lvs = ['hell', 'desert', 'rainforest', 'forest', 'snowland', 'heaven', 'hallow']
+        lvs = ['hell', 'desert', 'rainforest', 'forest', 'snowland', 'heaven', 'hallow', 'wither']
         b = 0
         if pos not in self.map_ns.keys():
             val = self.noise([pos[0] / 400.0, pos[1] / 400.0])
@@ -268,12 +273,15 @@ class Game:
         for pp, r in self.hallow_points:
             if physics.distance(pp[0] - (pos[0] - 120) * self.CHUNK_SIZE, pp[1] - (pos[1] - 120) * self.CHUNK_SIZE) < r:
                 idx = 6
+        for pp, r in self.wither_points:
+            if physics.distance(pp[0] - (pos[0] - 120) * self.CHUNK_SIZE, pp[1] - (pos[1] - 120) * self.CHUNK_SIZE) < r:
+                idx = 7
         biome = lvs[idx]
         if b:
-            no_of_decor = [4, 7, 10, 8, 4, 3, 6][idx]
+            no_of_decor = [4, 7, 10, 8, 4, 3, 6, 5][idx]
             if no_of_decor:
                 for i in range(no_of_decor):
-                    if random.random() < (0.007 - [0.003, 0.004, -0.002, -0.001, 0.003, 0.003, -0.001][idx]) / 3:
+                    if random.random() < (0.007 - [0.003, 0.004, -0.002, -0.001, 0.003, 0.003, -0.001, -0.002][idx]) / 3:
                         self.decors.append((f'background_decor_{biome}{i + 1}',
                                             (pos[0] - 120) * self.CHUNK_SIZE + random.randint(-self.CHUNK_SIZE // 2, self.CHUNK_SIZE // 2),
                                              (pos[1] - 120) * self.CHUNK_SIZE + random.randint(-self.CHUNK_SIZE // 2, self.CHUNK_SIZE // 2),
@@ -302,14 +310,14 @@ class Game:
                 surf.blit(bg, (i * bg_size, j * bg_size))
         return surf
 
-    def blend_map(self):
-        bg_size = 150 #int(120 / self.player.get_screen_scale())
-        chunk_size = 5
+    def update_map(self):
+        bg_size = 200  # int(120 / self.player.get_screen_scale())
+        chunk_size = 3
         bg_ax = int(self.player.ax / self.player.get_screen_scale()) % (bg_size * chunk_size)
         bg_ay = int(self.player.ay / self.player.get_screen_scale()) % (bg_size * chunk_size)
         cols = {'hell': (255, 0, 0), 'desert': (255, 191, 63), 'forest': (0, 255, 0), 'rainforest': (127, 255, 0),
                 'snowland': (255, 255, 255), 'heaven': (127, 127, 255), 'inner': (0, 0, 0), 'none': (0, 0, 0),
-                'hallow': (0, 255, 255)}
+                'hallow': (0, 255, 255), 'wither': (50, 0, 0)}
         if not self.graphics.is_loaded('nbackground_hell') or self.graphics['nbackground_hell'].get_width() != bg_size:
             for k in cols.keys():
                 self.graphics['nbackground_' + k] = pg.transform.scale(self.graphics['background_' + k],
@@ -325,10 +333,15 @@ class Game:
             for j in range(-bg_size, self.displayer.SCREEN_HEIGHT + bg_size * chunk_size, bg_size * chunk_size):
                 cx, cy = resources.real_position((i - bg_ax + bg_size // 2, j - bg_ay + bg_size // 2))
                 bgg = [[self.get_biome(((cx + i * bg_size * self.player.get_screen_scale()) // self.CHUNK_SIZE + 120,
-                                      (cy + j * bg_size * self.player.get_screen_scale()) // self.CHUNK_SIZE + 120))
-                       for j in range(chunk_size)] for i in range(chunk_size)]
+                                        (cy + j * bg_size * self.player.get_screen_scale()) // self.CHUNK_SIZE + 120))
+                        for j in range(chunk_size)] for i in range(chunk_size)]
                 surf = self.get_chunked_images(tuple([tuple(b) for b in bgg]), bg_size)
+                #self.bl_bg.blit(surf, (i - bg_ax, j - bg_ay))
                 self.displayer.canvas.blit(surf, (i - bg_ax, j - bg_ay))
+
+    def blend_map(self):
+        # self.displayer.canvas.blit(self.bl_bg, (0, 0))
+        self.update_map()
 
     def update(self):
         if (self.prepared_music is None and self.channel.get_busy() == 0) or \
@@ -381,7 +394,7 @@ class Game:
                                                                      1 / self.player.get_screen_scale()),
                                            resources.displayed_position((x, y)))
         for monster in self.entities:
-            monster.update()
+            monster.t_draw()
             if monster.hp_sys.hp <= 0:
                 self.entities.remove(monster)
                 if monster.obj.IS_OBJECT:
@@ -567,9 +580,27 @@ class Game:
     def get_pressed_mouse(self):
         return self.pressed_mouse
 
-    def run(self):
+    async def entity_update(self):
+        st = time.time()
+        while True:
+            for ee in self.entities:
+                ee.t_update()
+            nt = time.time()
+            await asyncio.sleep(max(0.0, 1 / 40 - (nt - st)))
+            st = time.time()
+
+    async def map_update(self):
+        st = time.time()
+        while True:
+            self.update_map()
+            nt = time.time()
+            await asyncio.sleep(max(0.0, 1 / 100 - (nt - st)))
+            st = time.time()
+
+    async def run(self):
+        asyncio.create_task(self.entity_update())
         while self.update():
-            pass
+            await asyncio.sleep(0)
 
 
 GAME: Game | None = None

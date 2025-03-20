@@ -46,8 +46,9 @@ class Particle(effects.Effect):
         if self.radius <= 0:
             return False
         if constants.FADING_PARTICLE:
-            sf = pg.Surface((self.radius * 2, self.radius * 2), pg.SRCALPHA)
-            pg.draw.circle(sf, self.color, (self.radius, self.radius), self.radius)
+            sf = pg.Surface((int(self.radius * 1.5), int(self.radius * 1.5)), pg.SRCALPHA)
+            #pg.draw.circle(sf, self.color, (self.radius, self.radius), self.radius)
+            sf.fill(self.color)
             sf.set_alpha(max(0, int(255 * (1 - self.tick / self.t))))
             window.blit(sf, (int(self.x - self.radius), int(self.y - self.radius)))
         else:
@@ -58,8 +59,9 @@ def p_particle_effects(x, y, n=15, r=10, col=(255, 0, 0), sp=6, t=10, g=0.6, fol
                        randomize=True, randomize_size=True):
     particles = []
     n = int(math.sqrt(n)) if constants.PARTICLES == 1 else 0 if constants.PARTICLES == 2 else n
+    ar = random.uniform(0, 2 * math.pi) if randomize else 0
     for i in range(n):
-        angle = i * 2 * math.pi / n + randomize * random.uniform(-math.pi / 12, math.pi / 12)
+        angle = i * 2 * math.pi / n + randomize * random.uniform(-math.pi / 12, math.pi / 12) + ar
         nr = r + randomize_size * random.uniform(-r / 10, r / 10)
         particles.append(Particle(x, y, nr, col, sp, nr / t, angle, g, follow_map))
     return particles

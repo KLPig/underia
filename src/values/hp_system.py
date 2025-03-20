@@ -11,7 +11,7 @@ class HPSystem:
     TRUE_DROP_SPEED_MAX_VALUE = 5
 
     IMMUNE = False
-    IMMUNE_TIME = 2
+    IMMUNE_TIME = 5
 
     MINIMUM_DAMAGE = 1
     MAXIMUM_DAMAGE = constants.INFINITY
@@ -19,7 +19,7 @@ class HPSystem:
     DAMAGE_RANDOMIZE_RANGE = 0.12
     DAMAGE_TEXT_INTERVAL = 0
 
-    PACIFY_TIME = 20
+    PACIFY_TIME = 10
 
     SOUND_HURT = None
 

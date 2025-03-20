@@ -34,7 +34,9 @@ ENTITIES: dict[str, ENTITY_TYPE] = {
 # SETUP_FUNC
 # Code here (import allowed)
 import underia
-for i in range(len(underia.RECIPES)):
+for i in range(0x1FFFFFFF):
+    if i >= len(underia.RECIPES):
+        break
     r = underia.RECIPES[i]
     for m, _ in r.material.items():
         if not len([1 for r in underia.RECIPES if r.result == m]):

@@ -130,6 +130,9 @@ class Player:
         self.cd_z = 0
         self.cd_x = 0
         self.cd_c = 0
+        self.z = 0
+        self.boot_footprints = []
+        self.covered_items = []
 
     def calculate_regeneration(self):
         ACCESSORY_REGEN = {}
@@ -213,7 +216,7 @@ class Player:
         return val
 
     def get_max_screen_scale(self):
-        ACCESSORY_SIZE = {'aimer': 1.5, 'winds_necklace': 1.1, 'cowboy_hat': 1.4, 'photon_aimer': 4.5, 'cloudy_glasses': 1.2}
+        ACCESSORY_SIZE = {'aimer': 1.5, 'winds_necklace': 1.1, 'cowboy_hat': 1.4, 'photon_aimer': 4.5, 'cloudy_glasses': 1.2, 'chaos_evileye': 8, 'horizon_goggles': 20}
         t = 1.0
         for i in range(len(self.accessories)):
             if self.accessories[i] in ACCESSORY_SIZE.keys():
@@ -279,7 +282,13 @@ class Player:
             self.hp_sys.effect(effects.RangedReinforceIII(5, 1))
         if 'ranged_reinforce_iv' in self.profile.select_skill:
             self.hp_sys.effect(effects.RangedReinforceIV(5, 1))
-
+        am = self.calculate_data('wing_control', False) / 100
+        if pg.K_SPACE in game.get_game().get_pressed_keys():
+            self.z = (self.z * 2 - am) / 3
+        elif pg.K_LSHIFT in game.get_game().get_pressed_keys():
+            self.z = (self.z * 2 + am) / 3
+        else:
+            self.z *= 2 / 3
         if self.t_ntc_timer > 0:
             self.t_ntc_timer -= 1
         if self.tutorial_step < 5:
@@ -325,6 +334,11 @@ class Player:
                                  (weapons.Weapon.get_cut_surf.cache_info().hits + weapons.Weapon.get_cut_surf.cache_info().misses)
                              if weapons.Weapon.get_cut_surf.cache_info().currsize else 0:.2f}%)'
                              f', MEM: {weapons.Weapon.get_cut_surf.cache_info().currsize}')
+            self.ntcs.append(f'Map image: {game.get_game().get_chunked_images.cache_info().hits}/'
+                             f'{game.get_game().get_chunked_images.cache_info().hits + game.get_game().get_chunked_images.cache_info().misses}'
+                             f'({game.get_game().get_chunked_images.cache_info().hits * 100 / 
+                                (game.get_game().get_chunked_images.cache_info().hits + game.get_game().get_chunked_images.cache_info().misses)
+                             if game.get_game().get_chunked_images.cache_info().currsize else 0:.2f}%)')
 
             for i in items:
                 if i not in self.owned_items:
@@ -348,7 +362,7 @@ class Player:
         self.talent = min(self.talent + 0.005 + math.sqrt(self.max_talent) / 2000 + (self.max_talent - self.talent) / 1000, self.max_talent)
         self.hp_sys.pos = self.obj.pos
         self.attack = math.sqrt(self.calculate_damage() * self.calculate_data('damage', rate_data=True, rate_multiply=True))
-        self.strike = 0.08 + self.calculate_data('crit', False) / 100
+        self.strike = 0.08 + math.sqrt(self.calculate_data('crit', False)) / 100
         self.attacks = [self.calculate_melee_damage() * self.calculate_data('melee_damage', rate_data=True, rate_multiply=True),
                         self.calculate_ranged_damage() * self.calculate_data('ranged_damage', rate_data=True, rate_multiply=True),
                         self.calculate_magic_damage() * self.calculate_data('magic_damage', rate_data=True, rate_multiply=True),
@@ -357,13 +371,45 @@ class Player:
                         self.calculate_data('pacify_damage', rate_data=True, rate_multiply=True)]
         for i in range(len(self.attacks)):
             self.attacks[i] = math.sqrt(self.attacks[i])
-        self.attack *= 1 + (random.random() < self.strike)
+        if 'black_hole_pluvial' in self.accessories:
+            for e in game.get_game().entities:
+                px, py = self.obj.pos[0] - e.obj.pos[0], self.obj.pos[1] - e.obj.pos[1]
+                e.obj.velocity.add(vector.Vector(vector.coordinate_rotation(px, py), self.obj.velocity.get_net_value() / 40))
+
+        if 'karmic_trail_boots' in self.accessories:
+            self.boot_footprints.append(self.obj.pos)
+            if len(self.boot_footprints) > 63:
+                self.boot_footprints.pop(0)
+            cols = [(255, 0, 0), (255, 127, 0), (255, 255, 0), (0, 255, 0), (0, 255, 255), (0, 0, 255),
+                    (255, 0, 255), (255, 0, 0)]
+            ccols = []
+            for i in range(1, 8):
+                s_c = cols[i - 1]
+                e_c = cols[i]
+                for j in range(1, 10):
+                    ccols.append((s_c[0] + (e_c[0] - s_c[0]) * j // 9, s_c[1] + (e_c[1] - s_c[1]) * j // 9,
+                                  s_c[2] + (e_c[2] - s_c[2]) * j // 9))
+            for i in range(len(self.boot_footprints) - 1, 1, -1):
+                s_p = position.displayed_position(self.boot_footprints[i])
+                e_p = position.displayed_position(self.boot_footprints[i - 1])
+                draw.line(game.get_game().displayer.canvas, ccols[(len(self.boot_footprints) - 1 - 1 - i)], s_p, e_p,
+                          int(i / self.get_screen_scale()))
+                e_p = self.boot_footprints[i - 1]
+                for e in game.get_game().entities:
+                    if vector.distance(e.obj.pos[0] - e_p[0], e.obj.pos[1] - e_p[1]) < 80 and not e.hp_sys.is_immune:
+                        e.hp_sys.damage(1500, damages.DamageTypes.THINKING)
+                        e.obj.apply_force(
+                            vector.Vector(vector.coordinate_rotation(e_p[0] - e.obj.pos[0], e_p[1] - e.obj.pos[1]),
+                                          1000))
+                        e.hp_sys.enable_immume()
+
+        self.attack *= 1 + (random.random() < self.strike) * (1 + self.strike ** 2)
         self.p_data.append(f'{1000 / game.get_game().clock.last_tick:.2f}fps')
         self.p_data.append(f'Magic Damage: {int(self.attacks[2] * self.attack * 100) / 100}x')
         self.p_data.append(f'Ranged Damage: {int(self.attacks[1] * self.attack * 100) / 100}x')
         self.p_data.append(f'Melee Damage: {int(self.attacks[0] * self.attack * 100) / 100}x')
         self.obj.SPEED = self.calculate_data('speed', rate_data=True, rate_multiply=True) * 80 * self.calculate_speed()
-        self.obj.FRICTION = max(0, 1 - 0.2 * self.calculate_data('air_res', rate_data=True, rate_multiply=True))
+        self.obj.FRICTION = max(0, 1 - 0.2 * self.calculate_data('air_res', rate_data=True, rate_multiply=True) * (1 + self.z))
         self.obj.MASS = max(40, 80 + self.calculate_data('mass', False))
         self.p_data.append(f'Agility {int(self.obj.SPEED / 2) / 10}N')
         self.splint_distance = self.calculate_data('splint', False)
@@ -411,14 +457,14 @@ class Player:
         if self.hp_sys.max_hp > 1000:
             self.p_data.append(f'Mentality: {int(mtp_regen)}/s')
             self.talent = min(self.talent + mtp_regen / 1000 * game.get_game().clock.last_tick, self.max_talent)
-        self.p_data.append(f'Regeneration: {int(self.REGENERATION * 400) / 10}/s')
-        self.p_data.append(f'Mana Regeneration: {int(self.MAGIC_REGEN * 400) / 10}/s')
+        self.p_data.append(f'Regeneration: {int(self.REGENERATION * 10000 / game.get_game().clock.last_tick) / 10}/s')
+        self.p_data.append(f'Mana Regeneration: {int(self.MAGIC_REGEN * 10000 / game.get_game().clock.last_tick) / 10}/s')
         if ins_regen:
-            self.p_data.append(f'Inspiration Regeneration: {int(ins_regen * 400) / 10}/s')
+            self.p_data.append(f'Inspiration Regeneration: {int(ins_regen * 10000 / game.get_game().clock.last_tick) / 10}/s')
         if max_ins:
             self.p_data.append(f'Additional Maximum Inspiration: {int(max_ins)}')
         if self.good_karma != 0 or karma_reduce != 5:
-            self.p_data.append(f'Karma Reduction: -{int(karma_reduce * 40)}/s')
+            self.p_data.append(f'Karma Reduction: -{int(karma_reduce * 1000 / game.get_game().clock.last_tick)}/s')
             self.p_data.append(f'Good Karma: {int(self.good_karma)}')
         self.good_karma = max(0, self.good_karma - karma_reduce)
         self.inspiration = min(self.inspiration + ins_regen, self.max_inspiration + max_ins)
@@ -632,6 +678,50 @@ class Player:
                             if not e.obj.IS_OBJECT:
                                 e.hp_sys.hp = 0
         if self.hp_sys.hp <= 1 + self.REGENERATION:
+            if 'flashback' in self.accessories and not len([1 for e in self.hp_sys.effects if type(e) is effects.FlashBack]):
+                self.hp_sys(op='config', immune=True)
+                self.hp_sys.hp = 2 + self.REGENERATION
+                game.get_game().player.hp_sys.effect(effects.TimeStop(duration=1000000, level=1))
+                game.get_game().player.hp_sys.effect(effects.FlashBack(duration=50, level=1))
+                for i in range(80):
+                    game.get_game().handle_events()
+                    game.get_game().player.update()
+                    self.hp_sys.hp += self.REGENERATION * 40
+                    for e in game.get_game().entities:
+                        e.draw()
+                        e.hp_sys.is_immune = 0
+                    for p in game.get_game().projectiles:
+                        p.draw()
+                    game.get_game().player.ui()
+                    if constants.USE_ALPHA:
+                        game.get_game().displayer.canvas.set_alpha(i * 2 + 15)
+                    game.get_game().displayer.update()
+                    pg.display.update()
+                    game.get_game().clock.update(40)
+                self.hp_sys(op='config', immune=False)
+                game.get_game().player.hp_sys.effects = \
+                    [e for e in game.get_game().player.hp_sys.effects if type(e) is not effects.TimeStop]
+                return
+            if 'fate_alignment_amulet' in self.accessories and not len([1 for e in self.hp_sys.effects if type(e) is effects.FateAlign]):
+                self.hp_sys.heal(2000)
+                game.get_game().player.hp_sys.effect(effects.FateAlign(duration=100, level=1))
+                return
+            if 'demon_contract' in self.accessories and not len([1 for e in self.hp_sys.effects if type(e) is effects.DemonContract]):
+                self.hp_sys.heal(2000)
+                game.get_game().player.hp_sys.effect(effects.DemonContract(duration=30, level=1))
+                sr = random.randint(-1, 6)
+                if sr > 0:
+                    for _ in range(sr):
+                        self.inventory.remove_item(random.choice(self.inventory.items.keys()), random.randint(1, 30))
+                self.talent = max(0, self.talent - random.randint(0, 1000))
+                self.mana = max(0, self.mana - random.randint(0, 1000))
+                if random.random() > 0.5:
+                    self.cd_z = random.randint(500, 5000)
+                if random.random() > 0.5:
+                    self.cd_x = random.randint(500, 5000)
+                if random.random() > 0.5:
+                    self.cd_c = random.randint(500, 5000)
+                return
             sz = int(40 / self.get_screen_scale())
             game.get_game().dialog.with_border = False
             tck = 0
@@ -973,12 +1063,18 @@ class Player:
             sk_c = None
             cdd = 80, 30, 0
             rc = (255, 255, 0)
-        else:
+        elif inventory.TAGS['melee_weapon'] in inventory.ITEMS[w.name.replace(' ', '_')].tags:
             sk_z = 'the_fury' if 'the_fury' in self.profile.select_skill else None
             sk_x = 'warrior_shield' if 'warrior_shield' in self.profile.select_skill else None
             sk_c = None
             cdd = 360, 250, 0
             rc = (0, 255, 255)
+        else:
+            sk_z = None
+            sk_x = None
+            sk_c = None
+            cdd = 0, 0, 0
+            rc = (255, 255, 255)
         if sk_z is not None:
             ps = (250, 80)
             self.profile.skill_display(ps, sk_z, select=True, window=game.get_game().displayer.canvas)
@@ -1012,6 +1108,18 @@ class Player:
             ps = (370, 80)
             self.profile.skill_mouse(ps, sk_c, rc=rc, window=game.get_game().displayer.canvas,
                                      mps=game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+        if 'direct_bullet' in self.profile.select_skill:
+            if rc == (255, 255, 0) and game.get_game().clock.tick % 80 == 0:
+                es = [e for e in game.get_game().entities if vector.distance(e.obj.pos[0] -  self.obj.pos[0],
+                                                                             e.obj.pos[1] - self.obj.pos[1]) < 1500]
+                if len(es):
+                    e = random.choice(es)
+                    rt = vector.coordinate_rotation(e.obj.pos[0] - self.obj.pos[0], e.obj.pos[1] - self.obj.pos[1])
+                    game.get_game().projectiles.append(projectiles.Projectiles.DirectBullet(self.obj.pos, rt, 0,
+                                                                                            self.weapons[self.sel_weapon].damages[damages.DamageTypes.PIERCING] / 10))
+        if 'sweeper' in self.profile.select_skill:
+            if rc == (0, 255, 255) and not self.weapons[self.sel_weapon].cool:
+                self.weapons[self.sel_weapon].attack()
         if self.cd_z:
             self.cd_z -= 1
         elif sk_z is not None and pg.K_z in game.get_game().get_keys():
@@ -1352,12 +1460,27 @@ class Player:
                         elif item.id == 'mechanical':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.ScarlettAltar]):
-                                game.get_game().dialog.dialog('Unable to summon Faithless and Truthless Eyes.',
+                                game.get_game().dialog.dialog('Unable to summon the Mechanical Medusa.',
                                                                'There is no Scarlett Altar nearby.')
                             else:
                                 entity.entity_spawn(entity.Entities.MechanicalMedusa, 2000, 2000, 0, 1145, 100000)
                                 self.inventory.remove_item(item)
-
+                        elif item.id == 'dark_skull':
+                            if not len([1 for e in game.get_game().player.hp_sys.effects if
+                                        type(e) is effects.ScarlettAltar]):
+                                game.get_game().dialog.dialog('Unable to summon the Wither.',
+                                                               'There is no Scarlett Altar nearby.')
+                            else:
+                                entity.entity_spawn(entity.Entities.TheWither, 2000, 2000, 0, 1145, 100000)
+                                self.inventory.remove_item(item)
+                        elif item.id == 'plastic_flower':
+                            if not len([1 for e in game.get_game().player.hp_sys.effects if
+                                        type(e) is effects.ScarlettAltar]):
+                                game.get_game().dialog.dialog('Unable to summon the Life Watcher.',
+                                                               'There is no Scarlett Altar nearby.')
+                            else:
+                                entity.entity_spawn(entity.Entities.LifeWatcher, 2000, 2000, 0, 1145, 100000)
+                                self.inventory.remove_item(item)
                         elif item.id == 'my_soul':
                             self.profile.add_point(4)
                             if sum([v for _, v in self.hp_sys.shields]) + self.hp_sys.hp > self.hp_sys.max_hp:
@@ -1371,7 +1494,7 @@ class Player:
                                                           'If you can\'t afford to reset, [QUIT] now.\n'
                                                           'Then copy your archive.',
                                                           '...', 'Anyway, thank you for playing Underia!\nA game by KLPIG.',
-                                                          'Chapter 1: [The Soul] - [Ended]\nChapter 2')
+                                                          'Chapter 1: [The Soul] - [Ended]\nChapter 2: [The Adventure] - [..Start]')
                             while game.get_game().dialog.curr_text != '' and len(game.get_game().dialog.word_queue):
                                 keys = []
                                 for event in pg.event.get():
@@ -1389,6 +1512,8 @@ class Player:
                                 game.get_game().displayer.update()
                                 pg.display.update()
                                 game.get_game().clock.update()
+                            self.covered_items.extend(self.accessories)
+                            self.covered_items.extend([i for i in self.inventory.items.keys() if inventory.TAGS['ce_item'] in inventory.ITEMS[i].tags])
                             self.profile.add_point(5)
 
                         elif item.id == 'muse_core':
@@ -1668,6 +1793,42 @@ class Player:
                     dr = min(1, max(0, dis / 9000))
                     pg.draw.circle(displayer.canvas, (int((1 - dr) ** 2 * 255), int(dr ** 2 * 255), 0), position.displayed_position(
                         (px * 300 // dis + self.obj.pos[0], py * 300 // dis + self.obj.pos[1])),
+                                   max(30, int(300 - dis // 30)) // 15)
+        if len([1 for a in self.accessories if a == 'chaos_evileye']):
+            esf = game.get_game().graphics['background_chaos_eye']
+            if esf.get_width() != 64:
+                game.get_game().graphics['background_chaos_eye'] = pg.transform.scale(esf, (64, 64))
+                esf = game.get_game().graphics['background_chaos_eye']
+            for menace in [e for e in game.get_game().entities if e.IS_MENACE]:
+                px = menace.obj.pos[0] - self.obj.pos[0]
+                py = menace.obj.pos[1] - self.obj.pos[1]
+                dis = vector.distance(px, py)
+                if dis < 1500:
+                    displayer.canvas.blit(esf, position.displayed_position((menace.obj.pos[0] - 32,
+                                                                             menace.obj.pos[1] - 32)))
+                else:
+                    dr = min(1, max(0, dis / 9000))
+                    pg.draw.circle(displayer.canvas, (int((1 - dr) ** 2 * 255), 0, int(dr ** 2 * 255)),
+                                   position.displayed_position(
+                                       (px * 300 // dis + self.obj.pos[0], py * 300 // dis + self.obj.pos[1])),
+                                   max(30, int(300 - dis // 30)) // 15)
+        if len([1 for a in self.accessories if a == 'horizon_goggles']):
+            esf = game.get_game().graphics['background_horizon']
+            if esf.get_width() != 64:
+                game.get_game().graphics['background_horizon'] = pg.transform.scale(esf, (64, 64))
+                esf = game.get_game().graphics['background_horizon']
+            for menace in [e for e in game.get_game().entities if e.IS_MENACE]:
+                px = menace.obj.pos[0] - self.obj.pos[0]
+                py = menace.obj.pos[1] - self.obj.pos[1]
+                dis = vector.distance(px, py)
+                if dis < 2000:
+                    displayer.canvas.blit(esf, position.displayed_position((menace.obj.pos[0] - 32,
+                                                                             menace.obj.pos[1] - 32)))
+                else:
+                    dr = min(1, max(0, dis / 9000))
+                    pg.draw.circle(displayer.canvas, (int((1 - dr) ** 2 * 255), 0, int(dr ** 2 * 255)),
+                                   position.displayed_position(
+                                       (px * 300 // dis + self.obj.pos[0], py * 300 // dis + self.obj.pos[1])),
                                    max(30, int(300 - dis // 30)) // 15)
         if pg.K_h in game.get_game().get_keys():
             potions = [inventory.ITEMS['legendary_hero'],

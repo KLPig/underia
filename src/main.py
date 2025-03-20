@@ -20,6 +20,7 @@ import pickle
 import pygame as pg
 import random
 import time
+import asyncio
 
 import resources, visual, physics, underia, mods, legend, constants
 if not constants.WEB_DEPLOY:
@@ -141,6 +142,10 @@ try:
         except AttributeError:
             game.hallow_points = []
         try:
+            game.wither_points
+        except AttributeError:
+            game.wither_points = []
+        try:
             game.player.profile.select_skill
         except AttributeError:
             game.player.profile.select_skill = []
@@ -154,6 +159,15 @@ try:
             game.player.cd_z = 0
             game.player.cd_x = 0
             game.player.cd_c = 0
+        try:
+            game.player.z
+        except AttributeError:
+            game.player.z = 0
+        try:
+            game.player.covered_items
+        except AttributeError:
+            game.player.covered_items = []
+        game.player.boot_footprints = []
         game.player.t_ntc_timer = 200
     else:
         game = underia.Game()
@@ -206,7 +220,11 @@ def update():
     for u in updates:
         exec(u)
     bm = 'blood moon' in game.world_events
-    if game.stage > 6:
+    if game.stage > 5:
+        if len(game.hallow_points) > 6:
+            game.hallow_points.pop(0)
+        if len(game.wither_points) > 6:
+            game.wither_points.pop(0)
         f = 0
         for pp, r in game.hallow_points:
             if physics.distance(pp[0] - game.player.obj.pos[0], pp[1] - game.player.obj.pos[1]) < r * 7.5:
@@ -216,6 +234,15 @@ def update():
             ax, ay = physics.rotation_coordinate(random.randint(0, 360))
             game.hallow_points.append(((game.player.obj.pos[0] + ax * td,
                                         game.player.obj.pos[1] + ay * td), random.randint( 1600, 2000)))
+        f = 0
+        for pp, r in game.wither_points:
+            if physics.distance(pp[0] - game.player.obj.pos[0], pp[1] - game.player.obj.pos[1]) < r * 7.5:
+                f = 1
+        if not f:
+            td = (2.25 + random.random() * 0.5) * 2500
+            ax, ay = physics.rotation_coordinate(random.randint(0, 360))
+            game.wither_points.append(((game.player.obj.pos[0] + ax * td,
+                                        game.player.obj.pos[1] + ay * td), random.randint(1600, 2000)))
     for entity in game.entities:
         d = physics.distance(entity.obj.pos[0] - game.player.obj.pos[0], entity.obj.pos[1] - game.player.obj.pos[1])
         if d > 8000 + entity.IS_MENACE * 8000 or (d > 1200 + (entity.IS_MENACE or entity.VITAL) * 1200 and
@@ -282,6 +309,12 @@ def update():
                                  rate=0.3)
     elif game.get_biome() == 'hallow':
         underia.entity_spawn(underia.Entities.UniSaur, target_number=15, to_player_max=5000, to_player_min=1000, rate=5)
+        underia.entity_spawn(underia.Entities.LightFly, target_number=24, to_player_max=5000, to_player_min=1000, rate=4)
+        underia.entity_spawn(underia.Entities.GreenChest, target_number=1, to_player_max=5000, to_player_min=4000,
+                             rate=50, number_factor=3.5)
+    elif game.get_biome() == 'wither':
+        underia.entity_spawn(underia.Entities.RedCorruption, target_number=20, to_player_max=5000, to_player_min=1000, rate=4.5)
+        underia.entity_spawn(underia.Entities.PurpleCorruption, target_number=20, to_player_max=5000, to_player_min=1000, rate=4.5)
         underia.entity_spawn(underia.Entities.GreenChest, target_number=1, to_player_max=5000, to_player_min=4000,
                              rate=50, number_factor=3.5)
     elif game.get_biome() == 'hell':
@@ -388,14 +421,8 @@ if constants.WEB_DEPLOY:
 else:
     try:
         print('Running game...')
-        game.run()
+        asyncio.run(game.run())
     except Exception as err:
-        import matplotlib.pyplot as plt
-
-        plt.plot(fpss)
-        plt.title('FPS over time')
-        plt.xlabel('Frames')
-        plt.ylabel('FPS')
 
         def try_delete_attribute(obj, attr):
             try:
@@ -414,6 +441,7 @@ else:
             try_delete_attribute(game, "channel")
             try_delete_attribute(game, 'sounds')
             try_delete_attribute(game, 'dialog')
+            try_delete_attribute(game, 'bl_bg')
             try_delete_attribute(game.player.profile, 'font')
             try_delete_attribute(game.player.profile, 'font_s')
             try_delete_attribute(game.player.profile, 'dialogger')

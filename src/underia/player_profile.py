@@ -33,7 +33,14 @@ class PlayerProfile:
         'magic_reinforce_iii': ('Magic Reinforce III', '+40 additional maximum mana\n+5 touching defense'),
         'magic_reinforce_iv': ('Magic Reinforce IV', '+20/sec mana regeneration\n+12 magic defense'),
 
+        'sweeper': ('Sweeper', 'Auto sweep for melee items.'),
+        'direct_bullet': ('Direct Bullet', 'Shoots bullet aiming a random enemy in range.'),
         'star_supporter': ('Star Supporter', 'A chance to drop stars when defeating enemies.'),
+
+        'wraith': ('The Wraith', 'Key: Z\nContinue for 8s:\n+80% melee damage\n+100 touching defense\n-80% speed'),
+        'guard': ('The Guard', 'Key: X\nSummon a shield to absorb 200HP for 10s.'),
+        'storm_throw': ('Storm Throw', 'Key: Z\nThrow 10 projectiles of 5x damage.'),
+        'energy_shot': ('Energy Shot', 'Key: X\nShoot a energy ammo with 10x damage.'),
     }
 
     def __init__(self):
@@ -398,18 +405,23 @@ class PlayerProfile:
                 ['the_fury', 'warrior_shield'],
                 ['melee_reinforce_i', 'melee_reinforce_ii'],
                 ['melee_reinforce_iii', 'melee_reinforce_iv'],
+                ['sweeper'],
+                ['wraith', 'guard']
             ],
             [
                 ['ranged_demand'],
                 ['fast_throw', 'perfect_shot'],
                 ['ranged_reinforce_i', 'ranged_reinforce_ii'],
                 ['ranged_reinforce_iii', 'ranged_reinforce_iv'],
+                ['direct_bullet'],
+                ['storm_throw', 'energy_shot']
             ],
             [
                 ['magic_demand'],
                 ['healer', 'multi_user'],
                 ['magic_reinforce_i', 'magic_reinforce_ii'],
-                ['magic_reinforce_iii', 'magic_reinforce_iv']
+                ['magic_reinforce_iii', 'magic_reinforce_iv'],
+                ['star_supporter'],
             ]
         ]
         select_skill = []
