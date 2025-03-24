@@ -582,6 +582,18 @@ class Projectiles:
         ELLIPSE_COLOUR = (255, 150, 150)
         SPEED = 1500
 
+    class WitherOboe(GoldFine):
+        DAMAGE_AS = 'wither_oboe'
+        IMG = 'projectiles_wither_oboe'
+        ELLIPSE_SIZE = (50, 120)
+        ELLIPSE_COLOUR = (20, 20, 20)
+        SPEED = 1800
+        def __init__(self, pos, rot, t=5):
+            if t:
+                game.get_game().projectiles.append(Projectiles.WitherOboe(pos, rot + random.randint(-10, 10), t - 1))
+            self.SPEED *= random.uniform(.8, 1.2)
+            super().__init__(pos, rot)
+
     class HolyStormer(GoldFine):
         DAMAGE_AS = 'holy_stormer'
         IMG = 'projectiles_holy_stormer'
@@ -594,10 +606,13 @@ class Projectiles:
             px, py = pos
             super().__init__((px, py + 1000), vector.coordinate_rotation(0, -1))
 
+
+
     class Snare(GoldFine):
         DAMAGE_AS = 'snare'
         IMG = 'projectiles_snare'
         RANGE = 1200
+        COL = (200, 200, 200)
 
         def __init__(self, pos, rotation):
             super().__init__(pos, rotation)
@@ -605,8 +620,9 @@ class Projectiles:
             self.set_rotation(rotation)
             self.tick = 0
             self.hit = False
-            game.get_game().displayer.effect(fade_circle.p_fade_circle(*position.displayed_position(pos), col=(200, 200, 200),
-                                                                       sp=self.RANGE / 10, t=10, follow_map=True))
+            game.get_game().displayer.effect(fade_circle.p_fade_circle(*position.displayed_position(pos), col=self.COL,
+                                                                       sp=self.RANGE / 10,
+                                                                       t=10, follow_map=True))
 
         def update(self):
             self.tick += 1
@@ -630,6 +646,50 @@ class Projectiles:
                         self.hit = True
                     else:
                         continue
+                    if len(weapons.WEAPONS[self.DAMAGE_AS].gains):
+                        gain = random.choice(weapons.WEAPONS[self.DAMAGE_AS].gains)
+                        game.get_game().player.hp_sys.effect(gain(3 + game.get_game().player.calculate_data('gain_duration', rate_data=False), 3))
+                    game.get_game().player.inspiration += int(weapons.WEAPONS[self.DAMAGE_AS].back_rate *
+                                                           weapons.WEAPONS[self.DAMAGE_AS].inspiration_cost)
+
+    class DragonFlute(Snare):
+        DAMAGE_AS = 'dragon_flute'
+        COL = (127, 127, 127)
+        RANGE = 2000
+
+    class TheSongOfIceAndFire(Snare):
+        DAMAGE_AS = 'the_song_of_ice_and_fire'
+        IMG = 'projectiles_the_song_of_ice_and_fire'
+        RANGE = 2000
+        COL = (255, 0, 0)
+        COUNTER = 0
+
+        def __init__(self, pos, rotation):
+            Projectiles.TheSongOfIceAndFire.COUNTER += 1
+            if Projectiles.TheSongOfIceAndFire.COUNTER % 2 == 0:
+                self.COL = (0, 0, 255)
+            super().__init__(pos, rotation)
+
+        def damage(self):
+            for entity in game.get_game().entities:
+                if (vector.distance(entity.obj.pos[0] - self.obj.pos[0], entity.obj.pos[1] - self.obj.pos[1]) <
+                        self.RANGE + (entity.d_img.get_width() + self.d_img.get_height()) / 4):
+                    if entity.hp_sys.is_immune and self.ENABLE_IMMUNE:
+                        continue
+                    entity.hp_sys.damage(weapons.WEAPONS[self.DAMAGE_AS].damages[
+                                             damages.DamageTypes.OCTAVE] * game.get_game().player.attack *
+                                         game.get_game().player.attacks[3], damages.DamageTypes.OCTAVE,
+                                         )
+                    if self.ENABLE_IMMUNE:
+                        entity.hp_sys.enable_immume()
+                    if not self.hit:
+                        self.hit = True
+                    else:
+                        continue
+                    if self.COL == (0, 0, 255):
+                        entity.hp_sys.effect(effects.Frozen(5, 10))
+                    else:
+                        entity.hp_sys.effect(effects.Burning(15, 200))
                     if len(weapons.WEAPONS[self.DAMAGE_AS].gains):
                         gain = random.choice(weapons.WEAPONS[self.DAMAGE_AS].gains)
                         game.get_game().player.hp_sys.effect(gain(3 + game.get_game().player.calculate_data('gain_duration', rate_data=False), 3))
@@ -1803,6 +1863,40 @@ class Projectiles:
                                     damages.DamageTypes.HALLOW)
                     e.hp_sys.enable_immume()
 
+    class HolyLight(Projectile):
+        def __init__(self, pos, rotation):
+            super().__init__(pos, game.get_game().graphics['entity_null'])
+            self.tick = 0
+            self.ax, self.ay = vector.rotation_coordinate(rotation)
+
+        def update(self):
+            self.obj.pos = (self.obj.pos[0] + 20 * self.ax, self.obj.pos[1] + 20 * self.ay)
+            self.set_rotation(90)
+            pg.draw.circle(game.get_game().displayer.canvas, (255, 255, 0),
+                           position.displayed_position(self.obj.pos),
+                           int(800 / game.get_game().player.get_screen_scale()),
+                           int(5 / game.get_game().player.get_screen_scale()))
+            self.damage()
+            self.tick += 1
+            if self.tick > 20:
+                self.dead = True
+
+        def damage(self):
+            for e in game.get_game().entities:
+                if vector.distance(self.obj.pos[0] - e.obj.pos[0], self.obj.pos[1] - e.obj.pos[1]) < 800 \
+                        and not e.hp_sys.is_immune:
+                    karma = game.get_game().player.good_karma
+                    mult = weapons.WEAPONS['holy_light'].max_mult
+                    step = 80
+                    if not karma:
+                        rate = 1
+                    else:
+                        rate = (1 + step / karma) ** (karma / step * math.log(mult, math.e))
+                    e.hp_sys.damage(weapons.WEAPONS['holy_light'].damages[damages.DamageTypes.HALLOW] *\
+                                     game.get_game().player.attack * game.get_game().player.attacks[4] * rate,
+                                    damages.DamageTypes.HALLOW)
+                    e.hp_sys.enable_immume()
+
     class Bones(Projectile):
         pass
 
@@ -2031,7 +2125,7 @@ class Projectiles:
                     game.get_game().displayer.effect(
                         fade_circle.p_fade_circle(*position.displayed_position(self.obj.pos),
                                                   (0, 255, 255), t=5,
-                                                  sp=20 * game.get_game().player.get_screen_scale()))
+                                                  sp=20))
                     if self.DELETE:
                         self.dead = True
                     else:
@@ -2060,7 +2154,56 @@ class Projectiles:
                         if vector.distance(e2.obj.pos[0] - self.obj.pos[0], e2.obj.pos[1] - self.obj.pos[1]) < 300:
                             e2.hp_sys.damage(self.dmg, damages.DamageTypes.PIERCING)
                     game.get_game().displayer.effect(fade_circle.p_fade_circle(*position.displayed_position(self.obj.pos),
-                                                                                (0, 255, 255), t=12, sp=25 * game.get_game().player.get_screen_scale()))
+                                                                                (0, 255, 255), t=12,
+                                                                               sp=25))
+                    if self.DELETE:
+                        self.dead = True
+                    else:
+                        cd.append(ee)
+            return cd
+
+    class FireQuenchArrow(Arrow):
+        DAMAGES = 200
+        SPEED = 0
+        IMG = 'fire_quench__dragon_bow'
+
+        def damage(self, pos, cd):
+            imr = self.d_img.get_rect(center=pos)
+            x, y = pos
+            for ee in game.get_game().entities:
+                if imr.collidepoint(ee.obj.pos[0], ee.obj.pos[1]) or ee.d_img.get_rect(
+                        center=ee.obj.pos).collidepoint(x, y) and ee not in cd:
+                    for e2 in game.get_game().entities:
+                        if vector.distance(e2.obj.pos[0] - pos[0], e2.obj.pos[1] - pos[1]) < 100:
+                            e2.hp_sys.effect(effects.Burning(15, int(self.dmg / 2)))
+                            e2.hp_sys.damage(self.dmg, damages.DamageTypes.PIERCING)
+                    game.get_game().displayer.effect(particle_effects.p_particle_effects(*position.displayed_position(pos),
+                                                                                col=(255, 0, 0), t=10, n=18, r=20,
+                                                                               sp=10 / game.get_game().player.get_screen_scale()))
+                    if self.DELETE:
+                        self.dead = True
+                    else:
+                        cd.append(ee)
+            return cd
+
+    class IceQuenchArrow(Arrow):
+        DAMAGES = 300
+        SPEED = 0
+        IMG = 'ice_quench__dragon_bow'
+
+        def damage(self, pos, cd):
+            imr = self.d_img.get_rect(center=pos)
+            x, y = pos
+            for ee in game.get_game().entities:
+                if imr.collidepoint(ee.obj.pos[0], ee.obj.pos[1]) or ee.d_img.get_rect(
+                        center=ee.obj.pos).collidepoint(x, y) and ee not in cd:
+                    for e2 in game.get_game().entities:
+                        if vector.distance(e2.obj.pos[0] - pos[0], e2.obj.pos[1] - pos[1]) < 100 and random.randint(0, 3) == 0:
+                            e2.hp_sys.effect(effects.Frozen(3, 1))
+                            e2.hp_sys.damage(self.dmg, damages.DamageTypes.PIERCING)
+                    game.get_game().displayer.effect(particle_effects.p_particle_effects(*position.displayed_position(pos),
+                                                                                col=(0, 255, 255), t=10, n=18, r=20,
+                                                                               sp=10 / game.get_game().player.get_screen_scale()))
                     if self.DELETE:
                         self.dead = True
                     else:
@@ -2298,7 +2441,7 @@ class Projectiles:
                 if vector.distance(self.obj.pos[0] - e.obj.pos[0], self.obj.pos[1] - e.obj.pos[1]) < 120 or not self.t:
                     game.get_game().displayer.effect(fade_circle.p_fade_circle(*position.displayed_position(self.obj.pos),
                                                                                self.COL, t=10,
-                                                                               sp=self.DMG_RANGE / game.get_game().player.get_screen_scale()))
+                                                                               sp=self.DMG_RANGE))
                     for ee in game.get_game().entities:
                         if vector.distance(ee.obj.pos[0] - self.obj.pos[0], ee.obj.pos[1] - self.obj.pos[1]) < \
                             self.DMG_RANGE + (ee.d_img.get_width() + self.d_img.get_width()) / 4:

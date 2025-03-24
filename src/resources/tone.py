@@ -13,7 +13,8 @@ if constants.TONE:
         'flute': 'assets/sounds/flute_c5.wav',
         'trumpet': 'assets/sounds/trumpet_c5.wav',
         'snare': 'assets/sounds/snare_c5.wav',
-        'bell': 'assets/sounds/bell_c5.wav'
+        'bell': 'assets/sounds/bell_c5.wav',
+        'oboe': 'assets/sounds/oboe_c5.wav'
     }
 
     datas: dict[str, tuple[int, np.ndarray]] = {
@@ -81,22 +82,19 @@ if constants.TONE:
             original_frequency = note_to_frequency('C5')
 
             if original_frequency is not None:
-                # 调整音频音高
                 if audio_data.ndim == 2:  # 立体声
                     left_channel = change_pitch(audio_data[:, 0], new_frequency, original_frequency, sample_rate)
                     right_channel = change_pitch(audio_data[:, 1], new_frequency, original_frequency, sample_rate)
                     new_audio_data = np.stack((left_channel, right_channel), axis=-1)
-                else:  # 单声道
+                else:
                     new_audio_data = change_pitch(audio_data, new_frequency, original_frequency, sample_rate)
 
-                # 截取或填充音频数据以匹配所需的持续时间
                 target_length = int(sample_rate * duration)
                 if len(new_audio_data) > target_length:
                     new_audio_data = new_audio_data[:target_length]
                 else:
                     new_audio_data = np.pad(new_audio_data, ((0, target_length - len(new_audio_data)), (0, 0)), 'constant')
 
-                # 确保音频数据的类型是正确的
                 if new_audio_data.dtype != np.int16:
                     new_audio_data = np.int16(new_audio_data * 32767 / np.max(np.abs(new_audio_data)))
 

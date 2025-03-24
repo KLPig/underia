@@ -51,6 +51,8 @@ class Inventory:
                     try:
                         if desc.endswith('kg'):
                             self.accessory_data['mass'] = float(desc.removesuffix('kg'))
+                        elif desc.endswith('armor'):
+                            self.accessory_data['armor'] = float(desc.removesuffix('armor'))
                         elif desc.endswith('%wingcontrol'):
                             self.accessory_data['wing_control'] = int(desc.removesuffix('%wingcontrol'))
                         elif desc.endswith('touchingdefense'):
@@ -263,6 +265,10 @@ TAGS = {
     'ammo_arrow': Inventory.Item.Tag('ammo_arrow', 'ammo_arrow'),
     'ammo_bullet': Inventory.Item.Tag('ammo_bullet', 'ammo_bullet'),
     'pickaxe': Inventory.Item.Tag('pickaxe', 'pickaxe'),
+
+    'head': Inventory.Item.Tag('head', 'head'),
+    'body': Inventory.Item.Tag('body', 'body'),
+    'leg': Inventory.Item.Tag('leg', 'leg'),
 
     'ce_item': Inventory.Item.Tag('ce_item', 'ce_item'),
 
@@ -934,6 +940,8 @@ items_dict: dict[str, Inventory.Item] = {
                                           [TAGS['item'], TAGS['weapon'], TAGS['poet_weapon']]),
     'holy_stormer': Inventory.Item('Holy Stormer', 'Summon a storm of sound waves.', 'holy_stormer', 5,
                                     [TAGS['item'], TAGS['weapon'], TAGS['poet_weapon']]),
+    'wither_oboe': Inventory.Item('Wither Oboe', 'Shoots series of sound waves.', 'wither_oboe', 5,
+                                  [TAGS['item'], TAGS['weapon'], TAGS['poet_weapon']]),
 
     'bible': Inventory.Item('Bible', 'The god says...', 'bible', 4,
                             [TAGS['item'], TAGS['workstation']]),
@@ -955,6 +963,9 @@ items_dict: dict[str, Inventory.Item] = {
     'the_true_gods_penalty': Inventory.Item('The True God\'s Penalty', 'Summon a continous holy lightning bolt.', 'the_true_gods_penalty', 5,
                                              [TAGS['item'], TAGS['weapon'], TAGS['priest_weapon'], TAGS['magic_element_hallow'],
                                               TAGS['magic_lv_4']]),
+    'holy_light': Inventory.Item('Holy Light', 'Summon an area of light, dealing damage.', 'holy_light', 5,
+                                 [TAGS['item'], TAGS['weapon'], TAGS['priest_weapon'], TAGS['magic_element_hallow'],
+                                              TAGS['magic_lv_5']]),
 
     'z': Inventory.Item('\'Z\'', 'Z..z..Z..\nThey always say it as they fall asleep.', 'z', 4,
                         [TAGS['item'], TAGS['workstation']]),
@@ -962,13 +973,120 @@ items_dict: dict[str, Inventory.Item] = {
                                     [TAGS['item'], TAGS['weapon'], TAGS['hypnotist_weapon']]),
     'hand_of_pacify': Inventory.Item('Hand of Pacify', 'Pacify the enemy.', 'hand_of_pacify', 4,
                                       [TAGS['item'], TAGS['weapon'], TAGS['hypnotist_weapon']]),
+    'sleep_splint': Inventory.Item('Sleep Splint', 'Pacify the enemy.', 'sleep_splint', 4,
+                                    [TAGS['item'], TAGS['weapon'], TAGS['hypnotist_weapon']]),
+    'sleep_eye': Inventory.Item('Sleep Eye', 'Pacify for a long distance', 'sleep_eye', 5,
+                                [TAGS['item'], TAGS['weapon'], TAGS['hypnotist_weapon']]),
+    'good_dream': Inventory.Item('Good Dream', 'Anyway, good dream!', 'good_dream', 5,
+                                 [TAGS['item'], TAGS['weapon'], TAGS['hypnotist_weapon']]),
+    'nightmare': Inventory.Item('Nightmare', 'You cannot leave that.', 'nightmare', 5,
+                                [TAGS['item'], TAGS['weapon'], TAGS['hypnotist_weapon']]),
 
-    'colourful_substance': Inventory.Item('Colourful Substance', 'It\'s too god.', 'colourful_substance', 5,
+    'colourful_substance': Inventory.Item('Colourful Substance', 'It\'s too good.', 'colourful_substance', 5,
                                           [TAGS['item']]),
     'dark_substance': Inventory.Item('Dark Substance', 'It\'s too evil.', 'dark_substance', 5,
                                      [TAGS['item']]),
+    'cold_substance': Inventory.Item('Cold Substance', 'It\'s too cold', 'cold_substance', 5,
+                                     [TAGS['item']]),
 
-    'natural_necklace': Inventory.Item('Natural Necklace', '0.2kg\n+4/sec mana regeneration', 'natural_necklace', 0,
+    'visual_resonancer': Inventory.Item('Visual Resonancer', '+22% ranged damage\n+6% critical\n+200 maximum additional inspiration\n+15 maximum additional mana',
+                                        'visual_resonancer', 5, [TAGS['item'], TAGS['accessory']]),
+    'strength_resonancer': Inventory.Item('Strength Resonancer', '+14% damage\n+12% melee damage\n+10% critical\n+20% karma reduce\n+36% hallow damage\n+10/sec regeneration',
+                                          'strength_resonancer', 5, [TAGS['item'], TAGS['accessory']]),
+    'photon_resonancer': Inventory.Item('Photon Resonancer', '+25% magic damage\n+5% critical\n+40/sec mana regeneration\n+50% pacify time\n-15% karma reduce\n-10% damage',
+                                        'photon_resonancer', 5, [TAGS['item'], TAGS['accessory']]),
+
+    'wooden_helmet': Inventory.Item('Wooden Helmet', '2 armor', 'wooden_helmet', 0, [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'wooden_mask': Inventory.Item('Wooden Mask', '0 armor\n+1% speed', 'wooden_mask', 0, [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'wooden_chestplate': Inventory.Item('Wooden Chestplate', '1 armor', 'wooden_chestplate', 0, [TAGS['item'], TAGS['accessory'], TAGS['body']]),
+    'wooden_greaves': Inventory.Item('Wooden Greaves', '0 armor\n+1% speed', 'wooden_greaves', 0, [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
+
+    'copper_helmet': Inventory.Item('Copper Helmet', '3 armor', 'copper_helmet', 0, [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'copper_mask': Inventory.Item('Copper Mask', '1 armor\n+2% speed', 'copper_mask', 0, [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'copper_chestplate': Inventory.Item('Wooden Chestplate', '4 armor', 'wooden_chestplate', 0, [TAGS['item'], TAGS['accessory'], TAGS['body']]),
+    'copper_greaves': Inventory.Item('Copper Greaves', '0 armor\n+3% speed', 'copper_greaves', 0, [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
+
+    'iron_helmet': Inventory.Item('Iron Helmet', '5 armor\n+1% speed', 'iron_helmet', 1, [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'iron_mask': Inventory.Item('Iron Helmet', '1 armor\n+4% speed', 'iron_mask', 1, [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'iron_chestplate': Inventory.Item('Iron Chestplate', '6 armor\n+1% speed', 'iron_chestplate', 1, [TAGS['item'], TAGS['accessory'], TAGS['body']]),
+    'iron_greaves': Inventory.Item('Iron Greaves', '2 armor\n+5% speed', 'iron_greaves', 1, [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
+
+    'steel_helmet': Inventory.Item('Steel Helmet', '8 armor\n+2kg', 'steel_helmet', 1, [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'steel_mask': Inventory.Item('Steel Mask', '2 armor\n+1kg', 'steel_mask', 1, [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'steel_chestplate': Inventory.Item('Steel Chestplate', '7 armor\n+4kg', 'steel_chestplate', 1, [TAGS['item'], TAGS['accessory'], TAGS['body']]),
+    'steel_greaves': Inventory.Item('Steel Greaves', '4 armor\n+2kg', 'steel_greaves', 1, [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
+
+    'platinum_helmet': Inventory.Item('Platinum Helmet', '9 armor', 'platinum_helmet', 2, [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'platinum_mask': Inventory.Item('Platinum Mask', '4 armor\n-1% air resistance', 'platinum_mask', 2, [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'platinum_chestplate': Inventory.Item('Platinum Chestplate', '8 armor\n-2% air resistance', 'platinum_chestplate', 2, [TAGS['item'], TAGS['accessory'], TAGS['body']]),
+    'platinum_greaves': Inventory.Item('Platinum Greaves', '6 armor\n-2% air resistance', 'platinum_greaves', 2, [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
+
+    'bloody_helmet': Inventory.Item('Bloody Helmet', '7 armor', 'bloody_helmet', 2, [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'bloody_mask': Inventory.Item('Bloody Mask', '2 armor\n+2/sec regeneration', 'bloody_mask', 2, [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'bloody_chestplate': Inventory.Item('Bloody Chestplate', '8 armor\n+4/sec regeneration', 'bloody_chestplate', 2, [TAGS['item'], TAGS['accessory'], TAGS['body']]),
+    'bloody_greaves': Inventory.Item('Bloody Greaves', '3 armor\n+1/sec regeneration', 'bloody_greaves', 2, [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
+
+    'firy_helmet': Inventory.Item('Firy Helmet', '9 armor\n+8% damage', 'firy_helmet', 2, [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'firy_mask': Inventory.Item('Firy Mask', '4 armor\n+5% damage', 'firy_mask', 2, [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'firy_chestplate': Inventory.Item('Firy Chestplate', '9 armor\n+9% damage', 'firy_chestplate', 2, [TAGS['item'], TAGS['accessory'], TAGS['body']]),
+    'firy_greaves': Inventory.Item('Firy Greaves', '5 armor\n+9% damage', 'firy_greaves', 2, [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
+
+    'mysterious_helmet': Inventory.Item('Mysterious Helmet', '12 armor\n+2% critical', 'mysterious_helmet', 3, [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'mysterious_mask': Inventory.Item('Mysterious Mask', '6 armor\n+8% critical', 'mysterious_mask', 3, [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'mysterious_chestplate': Inventory.Item('Mysterious Chestplate', '14 armor\n+9% critical', 'mysterious_chestplate', 3, [TAGS['item'], TAGS['accessory'], TAGS['body']]),
+    'mysterious_greaves': Inventory.Item('Mysterious Greaves', '8 armor\n+5% critical', 'mysterious_greaves', 3, [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
+
+    'merged_metal_helmet': Inventory.Item('Merged Metal Helmet', '25 armor\n+15% damage', 'merged_metal_helmet', 5, [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'merged_metal_mask': Inventory.Item('Merged Metal Mask', '16 armor\n+15/sec regeneration', 'merged_metal_mask', 5, [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'merged_metal_headgear': Inventory.Item('Merged Metal Mask', '8 armor\n+20% critical', 'merged_metal_headgear', 5,
+                                        [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'merged_metal_chestplate': Inventory.Item('Merged Metal Chestplate', '28 armor\n+20kg', 'merged_metal_chestplate', 5, [TAGS['item'], TAGS['accessory'],
+                                                                                   TAGS['body']]),
+    'merged_metal_greaves': Inventory.Item('Merged Metal Greaves', '10 armor\n+30% speed', 'merged_metal_greaves', 5, [TAGS['item'], TAGS['accessory'],
+                                                                                   TAGS['leg']]),
+
+    'chloro_formal_hat': Inventory.Item('Chloro. Formal Hat', '19 armor\n+10/sec regeneration\n+30/sec mana regeneration', 'chloro_formal_hat',
+                                         7, [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'chloro_chestplate': Inventory.Item('Chloro. Chestplate', '35 armor\n+20/sec regeneration\n+50/sec mana regeneration', 'chloro_chestplate', 7,
+                                        [TAGS['item'], TAGS['accessory'], TAGS['body']]),
+    'chloro_leggings': Inventory.Item('Chloro. Leggings', '13 armor\n+30% speed\n+50/sec mana regeneration', 'chloro_leggings', 7,
+                                     [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
+
+    'chaos_hood': Inventory.Item('Chaos Hood', '27 armor\n+15% critical\n+30% speed', 'chaos_hood', 8, [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'chaos_chestplate': Inventory.Item('Chaos Chestplate', '47 armor\n+25% critical\n+50% speed', 'chaos_chestplate', 8,
+                                        [TAGS['item'], TAGS['accessory'], TAGS['body']]),
+    'chaos_leggings': Inventory.Item('Chaos Leggings', '22 armor\n+40% speed\n+100/sec mana regeneration', 'chaos_leggings', 8,
+                                      [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
+
+    'godkiller_helmet': Inventory.Item('Godkiller Helmet', '38 armor\n+20% damage\n+20% critical\n+20% speed', 'godkiller_helmet', 9,
+                                        [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'godkiller_chestplate': Inventory.Item('Godkiller Chestplate', '64 armor\n+30% damage\n+30% critical\n+30% speed', 'godkiller_chestplate', 9,
+                                            [TAGS['item'], TAGS['accessory'], TAGS['body']]),
+    'godkiller_leggings': Inventory.Item('Godkiller Leggings', '32 armor\n+15% damage\n+15% critical\n+15% speed', 'godkiller_leggings', 9,
+                                         [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
+
+    'karmic_helmet': Inventory.Item('Karmic Helmet', '120 armor\n+15% damage\n+15%critical\n+15% speed\n+15/sec regeneration\n+30/sec mana regeneration\n'
+                                                     '+30/sec mentality regeneration\n+15% domain size\n+15% speed\n+150 additonal maximum mana', 'karmic_helmet', 11,
+                                        [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'karmic_chestplate': Inventory.Item('Karmic Chestplate', '160 armor\n+20% damage\n+20% critical\n+20% speed\n+20/sec regeneration\n+40/sec mana regeneration\n'
+                                                       '+40/sec mentality regeneration\n+20% domain size\n+20% speed\n+200 additonal maximum mana', 'karmic_chestplate', 11,
+                                        [TAGS['item'], TAGS['accessory'], TAGS['body']]),
+    'karmic_leggings': Inventory.Item('Karmic Leggings', '80 armor\n+10% damage\n+10% critical\n+10% speed\n+10/sec regeneration\n+20/sec mana regeneration\n'
+                                                     '+20/sec mentality regeneration\n+10% domain size\n+10% speed\n+100 additonal maximum mana', 'karmic_leggings', 11,
+                                        [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
+
+    'hallowed_helmet': Inventory.Item('Hallowed Helmet', '22 armor\n+10% pacify time\n+10% melee damage', 'hallowed_helmet', 7,
+                                        [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'hallowed_mask': Inventory.Item('Hallowed Mask', '13 armor\n+100/sec inspiration regeneration\n+10% critical', 'hallowed_mask', 7,
+                                        [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'hallowed_headgear': Inventory.Item('Hallowed Mask', '7 armor\n-10% karma reduce\n+100 maximum additional mana', 'hallowed_headgear', 7,
+                                        [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'hallowed_plate_mail': Inventory.Item('Hallowed Plate Mail', '23 armor\n10kg\n+10% damage', 'hallowed_plate_mail', 7,
+                                        [TAGS['item'], TAGS['accessory'], TAGS['body']]),
+    'hallowed_greaves': Inventory.Item('Hallowed Greaves', '13 armor\n+10% speed\n-10% air resistance', 'hallowed_greaves', 7,
+                                        [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
+
+'natural_necklace': Inventory.Item('Natural Necklace', '0.2kg\n+4/sec mana regeneration', 'natural_necklace', 0,
                                        [TAGS['item'], TAGS['accessory']]),
     'copper_traveller_boots': Inventory.Item('Copper Traveller Boots', '30kg\n+60% speed\n+3 touching defense', 'copper_traveller_boots', 1,
                                               [TAGS['item'], TAGS['accessory']]),
@@ -1220,13 +1338,13 @@ items_dict: dict[str, Inventory.Item] = {
     'grasp_of_the_infinite_corridor': Inventory.Item('Grasp of the Infinite Corridor', 'A world, a planet, is all in my hand.\n+72% damage\n+180 touching defense\n+120 magic defense\n'
                                                                                        '+50/sec regeneration\n+500% domain size\n+10/sec mentality regeneration\n+80% speed\n+400 additional maximum mana\n'
                                                                                        '+36% critical\nWhen using melee to hit enemy, deal additionally 1% thinking damage, 0.5% chance to kill it.', 'grasp_of_the_infinite_corridor',
-                                                     10, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
+                                                     10, [TAGS['item'], TAGS['accessory']]),
     'karmic_trail_boots': Inventory.Item('Karmic Trail Boots', 'Prints down the path of karma.\n188kg\n-25% air resistance\n+450% speed\n+18% damage\n+32% critical\n+500 splint\n-95% splint cd\n'
                                                                '+15/sec regeneration\nYour footprint will deal damage to enemies.',
                                           'karmic_trail_boots', 10, [TAGS['item'], TAGS['accessory']]),
     'fate_alignment_amulet': Inventory.Item('Fate Alignment Amulet', 'The path of destiny.\n+50% speed\n+88% critical\n+80 touching defense\n120 magic defense\n'
                                                            '+40/sec regeneration\n+180/sec mana regeneration\nRevive after death.100CD',
-                                             'fate_alignment_amulet', 10, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
+                                             'fate_alignment_amulet', 10, [TAGS['item'], TAGS['accessory']]),
 
     'patience_amulet': Inventory.Item('Patience Amulet', 'Cool it down, and wait.\n100kg\n+300% speed\n+94% melee damage\n+94% ranged damage\n'
                                                     '+28% damage\n+60% critical\n+320 touching defense\n320 magic defense\n'
@@ -1278,6 +1396,9 @@ items_dict: dict[str, Inventory.Item] = {
     'windstorm_musicians_mark': Inventory.Item('Windstorm Musician\'s Mark', '10kg\n+90/sec inspiration regeneration\n+38% octave damage\n+30% speed\n'
                                                               '+20/sec mana regeneration\n+17% critical\n+48 touching defense\n+96 magic defense\nY: Directly own gains for 12s:\nSpeed II\nLimitless III\nStrength III\n500 inspiration cost', 'windstorm_musicians_mark',
                                                4, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
+    'instrument_belt': Inventory.Item('Instrument Belt', '15kg\n+200/sec inspiration regeneration\n+18% octave damage\n+40% speed\n'
+                                                      '+20/sec mana regeneration\n+22% critical\n+80 touching defense\n+128 magic defense\n+12% critical', 'instrument_belt', 7,
+                                      [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
 
 
     'cross_amulet': Inventory.Item('Cross Amulet', '-10% karma reduce\n+20 additional maximum mana',
@@ -1290,6 +1411,9 @@ items_dict: dict[str, Inventory.Item] = {
                                                               '+12/sec mana regeneration\n+54 touching defense\n+38 magic defense\n'
                                                                          'Y: Increase karma by 120.', 'windstorm_churchs_mark',
                                                5, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
+    'cross_pluvial': Inventory.Item('Cross Pluvial', '+18% hallow damage\n-40% karma reduce\n+100 additional maximum mana\n+10% speed\n'
+                                                     '-5/sec regeneration\n+10/sec mana regeneration\n+90 touching defense\n+60 magic defense', 'cross_pluvial', 7,
+                                      [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
 
     'eye_of_sleep': Inventory.Item('Eye of Sleep', '+15% pacify time', 'eye_of_sleep', 4,
                                    [TAGS['item'], TAGS['accessory']]),
@@ -1300,10 +1424,39 @@ items_dict: dict[str, Inventory.Item] = {
                                                               '+10/sec mana regeneration\n+10/sec regeneration\n+12% critical\n'
                                                                          '+96 touching defense\n+40 magic defense\nY: Increase enemies\' pacify time by 10s.\n400 mana cost', 'windstorm_pacifiers_mark',
                                                5, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
+    'talent_cloat': Inventory.Item('Talent Cloat', '20kg\n+30% pacify time\n+120 touching defense\n+70 magic defense\n+20% speed\n'
+                                                   '+10/sec regeneration', 'talent_cloat', 7,
+                                     [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
 
     'sight_ingot': Inventory.Item('Sight Ingot', 'Essence of a watcher.', 'sight_ingot', 5, [TAGS['item']]),
     'strength_ingot': Inventory.Item('Strength Ingot', 'Essence of a warrior.', 'strength_ingot', 5, [TAGS['item']]),
     'phantom_ingot': Inventory.Item('Phantom Ingot', 'Essence of a lie.', 'phantom_ingot', 5, [TAGS['item']]),
+    'wither_rib': Inventory.Item('Wither Rib', '', 'wither_rib', 6, [TAGS['item']]),
+    'iris_shard': Inventory.Item('Iris Shard', '', 'iris_shard', 6, [TAGS['item']]),
+    'freezing_ice': Inventory.Item('Freezing Ice', '', 'freezing_ice', 6, [TAGS['item']]),
+    'hallow_ingot': Inventory.Item('Hallow Ingot', 'The power scaring all the darks', 'hallow_ingot', 7,
+                                   [TAGS['item']]),
+
+    'dragon_bone': Inventory.Item('Dragon Bone', 'Incredibly strong and tough', 'dragon_bone', 9, [TAGS['item']]),
+    'dragon_skull': Inventory.Item('Dragon Skull', 'Staring at it makes you feel a bit uneasy.', 'dragon_skull', 9, [TAGS['item']]),
+    'dragon_scale_red': Inventory.Item('Dragon Scale (Red)', 'A red dragon\'s scales.\nEspecially resistant to magic attacks.', 'dragon_scale_red', 9, [TAGS['item']]),
+    'dragon_scale_blue': Inventory.Item('Dragon Scale (Blue)', 'A blue dragon\'s scales.\nEspecially resistant to magic attacks.', 'dragon_scale_blue', 9, [TAGS['item']]),
+
+    'fire_dragon_blood': Inventory.Item('Fire Dragon Blood', 'What an essence of a dragon of fire is.', 'fire_dragon_blood', 9, [TAGS['item']]),
+    'ice_dragon_blood': Inventory.Item('Ice Dragon Blood', 'What an essence of a dragon of ice is.', 'ice_dragon_blood', 9, [TAGS['item']]),
+
+    'fire_dragon_heart': Inventory.Item('Fire Dragon Heart', 'The true core of a dragon of fire.', 'fire_dragon_heart', 9, [TAGS['item']]),
+    'ice_dragon_heart': Inventory.Item('Ice Dragon Heart', 'The true core of a dragon of ice.', 'ice_dragon_heart', 9, [TAGS['item']]),
+
+    'dragon_swift_sword': Inventory.Item('Dragon Swift Sword', '', 'dragon_swift_sword', 9, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
+    'dragon_bow': Inventory.Item('Dragon Bow', '', 'dragon_bow', 9, [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
+    'dragon_flute': Inventory.Item('Dragon Flute', '', 'dragon_flute', 9, [TAGS['item'], TAGS['weapon'], TAGS['poet_weapon']]),
+
+    'fire_quench__dragon_sword': Inventory.Item('Fire Quench: Dragon Swift Sword', '', 'fire_quench__dragon_sword', 10, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
+    'fire_quench__dragon_bow': Inventory.Item('Fire Quench: Dragon Bow', '', 'fire_quench__dragon_bow', 10, [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
+    'ice_quench__dragon_sword': Inventory.Item('Ice Quench: Dragon Swift Sword', '', 'ice_quench__dragon_sword', 10, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
+    'ice_quench__dragon_bow': Inventory.Item('Ice Quench: Dragon Bow', '', 'ice_quench__dragon_bow', 10, [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
+    'the_song_of_ice_and_fire': Inventory.Item('The Song of Ice and Fire', '', 'the_song_of_ice_and_fire', 10, [TAGS['item'], TAGS['weapon'], TAGS['poet_weapon']]),
 
     'nice_cream': Inventory.Item('Nice Cream', 'Increase your speed.\nDuration: 36s', 'nice_cream', 4, [TAGS['item']]),
     'iron_donut': Inventory.Item('Iron Donut', 'Increase your defense by 32.\nDuration: 54s', 'iron_donut', 4, [TAGS['item']]),
@@ -1329,7 +1482,9 @@ items_dict: dict[str, Inventory.Item] = {
                                       '+100 maximum hp\n+180 maximum mana\nSomething perseverance happen.',
                                       'spiritual_heart', 4, [TAGS['item']]),
     'life_fruit': Inventory.Item('Life Fruit', '+400 maximum HP\n+500 maximum MP\n+40 maximum talent', 'life_fruit', 4,
-                                 [TAGS['item'], TAGS['healing_potion']]),
+                                 [TAGS['item']]),
+    'saint_apple': Inventory.Item('Life Fruit', '+900 maximum HP\n700 maximum MP\n+20 maximum talent', 'saint_apple', 7,
+                                 [TAGS['item']]),
 
     'ballet_shoes': Inventory.Item('Ballet Shoes', '', 'ballet_shoes', 6,
                                    [TAGS['item'], TAGS['weapon'], TAGS['magic_weapon'], TAGS['magic_element_water'], TAGS['magic_lv_3']]),
@@ -1361,6 +1516,9 @@ items_dict: dict[str, Inventory.Item] = {
 
     'dark_skull': Inventory.Item('Dark Skull', 'Summon the Wither', 'dark_skull', 0, [TAGS['item']]),
     'plastic_flower': Inventory.Item('Plastic Flower', 'Summon the Life Watcher', 'plastic_flower', 0, [TAGS['item']]),
+    'huge_snowball': Inventory.Item('Huge Snowball', 'Summon the Polar Cube', 'huge_snowball', 0, [TAGS['item']]),
+
+    'dragon_horn': Inventory.Item('Dragon Horn', 'Summon dragons around the world.', 'dragon_horn', 8, [TAGS['item']]),
 
     'mechanical': Inventory.Item('Mechanical', 'This is just made by metals combining together.\nSummon the mechanic medusa.', 'mechanical', 0, [TAGS['item']]),
 
@@ -1801,6 +1959,8 @@ RECIPES = [
     Recipe({'sight_ingot': 18, 'note': 1}, 'watcher_bell'),
     Recipe({'phantom_ingot': 17, 'apple_knife': 1, 'note': 1}, 'apple_smells_good'),
     Recipe({'phantom_ingot': 24, 'strength_ingot': 24, 'sight_ingot': 24, 'storm_core': 12, 'note': 1}, 'holy_stormer'),
+    Recipe({'strength_ingot': 18, 'dark_substance': 5, 'note': 1}, 'wither_oboe'),
+    Recipe({'note': 1, 'phantom_ingot': 30, 'strength_ingot': 30}, 'instrument_belt'),
 
     Recipe({'blood_ingot': 44, 'bible': 1}, 'saint_healer'),
     Recipe({'mysterious_substance': 12, 'torch': 1, 'bible': 1}, 'holy_shine'),
@@ -1811,20 +1971,114 @@ RECIPES = [
     Recipe({'storm_core': 4, 'bible': 1}, 'windstorm_churchs_mark'),
     Recipe({'sight_ingot': 18, 'bible': 1}, 'the_prayer'),
     Recipe({'strength_ingot': 18, 'bible': 1}, 'the_true_gods_penalty'),
+    Recipe({'sight_ingot': 28, 'strength_ingot': 24, 'bible': 1}, 'holy_light'),
+    Recipe({'bible': 1, 'strength_ingot': 30, 'sight_ingot': 30}, 'cross_pluvial'),
 
     Recipe({'z': 1, 'mysterious_ingot': 12, 'platinum_ingot': 48}, 'mystery_watch'),
     Recipe({'z': 1, 'mysterious_ingot': 25, 'blood_ingot': 25}, 'hand_of_pacify'),
+    Recipe({'z': 1, 'mysterious_ingot': 32, 'glowing_splint': 1}, 'sleep_splint'),
     Recipe({'z': 1, 'blood_ingot': 32, 'rune_eye': 1}, 'eye_of_sleep'),
     Recipe({'z': 1, 'mysterious_substance': 10, 'cell_organization': 12}, 'hypnotists_tie'),
     Recipe({'z': 1, 'storm_core': 4}, 'windstorm_pacifiers_mark'),
+    Recipe({'z': 1, 'sight_ingot': 18, 'mysterious_ingot': 20}, 'sleep_eye'),
+    Recipe({'z': 1, 'sight_ingot': 25, 'colourful_substance': 4}, 'good_dream'),
+    Recipe({'z': 1, 'strength_ingot': 25, 'dark_substance': 4}, 'nightmare'),
+    Recipe({'z': 1, 'phantom_ingot': 30, 'sight_ingot': 30}, 'talent_cloat'),
+
+    Recipe({'soul_resonancer': 1, 'sight_ingot': 24}, 'vision_resonancer'),
+    Recipe({'soul_resonancer': 1, 'strength_ingot': 24}, 'strength_resonancer'),
+    Recipe({'soul_resonancer': 1, 'phantom_ingot': 24}, 'photon_resonancer'),
+    Recipe({'wither_rib': 3, 'iris_shard': 3, 'freezing_ice': 3,
+            'dark_substance': 1, 'colourful_substance': 1, 'cold_substance': 1,
+            'strength_ingot': 5, 'sight_ingot': 5, 'phantom_ingot': 5}, 'hallow_ingot', 5),
+    Recipe({'hallow_ingot': 12}, 'saint_apple'),
+
+    Recipe({'dragon_bone': 36}, 'dragon_swift_sword'),
+    Recipe({'dragon_skull': 1, 'dragon_bow': 18}, 'dragon_bow'),
+    Recipe({'dragon_bone': 28}, 'dragon_flute'),
+
+    Recipe({'dragon_swift_sword': 1, 'fire_dragon_blood': 12}, 'fire_quench__dragon_sword'),
+    Recipe({'dragon_bow': 1, 'fire_dragon_blood': 12}, 'fire_quench__dragon_bow'),
+    Recipe({'dragon_swift_sword': 1, 'ice_dragon_blood': 12}, 'ice_quench__dragon_sword'),
+    Recipe({'dragon_bow': 1, 'ice_dragon_blood': 12}, 'ice_quench__dragon_bow'),
+    Recipe({'dragon_flute': 1, 'fire_dragon_blood': 6, 'ice_dragon_blood': 6}, 'the_song_of_ice_and_fire'),
 
     Recipe({'palladium_ingot': 6, 'mithrill_ingot': 6, 'titanium_ingot': 6,
             'note': 1, 'bible': 1, 'z': 1}, 'mechanical'),
     Recipe({'strength_ingot': 20, 'dark_substance': 3}, 'dark_skull'),
     Recipe({'sight_ingot': 20, 'colourful_substance': 3}, 'plastic_flower'),
+    Recipe({'phantom_ingot': 20, 'cold_substance': 3}, 'huge_snowball'),
+    Recipe({'chaos_ingot': 100, 'willpower_shard': 5}, 'dragon_horn'),
 
     Recipe({'the_final_soul': 15, 'murders_knife': 1, 'savior': 1}, 'finale__soul'),
 
+    Recipe({'wood': 10}, 'wooden_helmet'),
+    Recipe({'wood': 6}, 'wooden_mask'),
+    Recipe({'wood': 24}, 'wooden_chestplate'),
+    Recipe({'wood': 15}, 'wooden_greaves'),
+
+    Recipe({'copper_ingot': 15}, 'copper_helmet'),
+    Recipe({'copper_ingot': 9}, 'copper_mask'),
+    Recipe({'copper_ingot': 36}, 'copper_chestplate'),
+    Recipe({'copper_ingot': 23}, 'copper_greaves'),
+
+    Recipe({'iron_ingot': 12}, 'iron_helmet'), 
+    Recipe({'iron_ingot': 11}, 'iron_mask'),
+    Recipe({'iron_ingot': 29}, 'iron_chestplate'),
+    Recipe({'iron_ingot': 18}, 'iron_greaves'),
+
+    Recipe({'steel_ingot': 12}, 'steel_helmet'),
+    Recipe({'steel_ingot': 11}, 'steel_mask'),
+    Recipe({'steel_ingot': 27}, 'steel_chestplate'),
+    Recipe({'steel_ingot': 18}, 'steel_greaves'),
+
+    Recipe({'platinum_ingot': 11}, 'platinum_helmet'),
+    Recipe({'platinum_ingot': 7}, 'platinum_mask'),
+    Recipe({'platinum_ingot': 27}, 'platinum_chestplate'),
+    Recipe({'platinum_ingot': 18}, 'platinum_greaves'),
+
+    Recipe({'blood_ingot': 6}, 'bloody_helmet'),
+    Recipe({'blood_ingot': 5}, 'bloody_mask'),
+    Recipe({'blood_ingot': 27}, 'bloody_chestplate'),
+    Recipe({'blood_ingot': 14}, 'bloody_greaves'),
+
+    Recipe({'firite_ingot': 7}, 'firy_helmet'),
+    Recipe({'firite_ingot': 6}, 'firy_mask'),
+    Recipe({'firite_ingot': 26}, 'firy_chestplate'),
+    Recipe({'firite_ingot': 16}, 'firy_greaves'),
+
+    Recipe({'mysterious_ingot': 4}, 'mysterious_helmet'),
+    Recipe({'mysterious_ingot': 3}, 'mysterious_mask'),
+    Recipe({'mysterious_ingot': 11}, 'mysterious_chestplate'),
+    Recipe({'mysterious_ingot': 7}, 'mysterious_greaves'),
+
+    Recipe({'titanium_ingot': 7, 'palladium_ingot': 7}, 'merged_metal_helmet'),
+    Recipe({'palladium_ingot': 7, 'mithrill_ingot': 7}, 'merged_metal_mask'),
+    Recipe({'mithrill_ingot': 7, 'titanium_ingot': 7}, 'merged_metal_headgear'),
+    Recipe({'palladium_ingot': 16, 'mithrill_ingot': 16, 'titanium_ingot': 16}, 'merged_metal_chestplate'),
+    Recipe({'palladium_ingot': 5, 'mithrill_ingot': 5, 'titanium_ingot': 5}, 'merged_metal_greaves'),
+
+    Recipe({'chlorophyte_ingot': 8}, 'chloro_formal_hat'),
+    Recipe({'mysterious_ingot': 12}, 'chloro_chestplate'),
+    Recipe({'mysterious_ingot': 6}, 'chloro_leggings'),
+
+    Recipe({'chaos_ingot': 20}, 'chaos_hood'),
+    Recipe({'chaos_ingot': 30}, 'chaos_chestplate'),
+    Recipe({'chaos_ingot': 15}, 'chaos_leggings'),
+
+    Recipe({'chaos_ingot': 120, 'willpower_shard': 3}, 'godkiller_helmet'),
+    Recipe({'chaos_ingot': 180, 'willpower_shard': 5}, 'godkiller_chestplate'),
+    Recipe({'chaos_ingot': 100, 'willpower_shard': 2}, 'godkiller_leggings'),
+
+    Recipe({'the_final_ingot': 8, 'my_soul': 1}, 'karmic_helmet'),
+    Recipe({'the_final_ingot': 12, 'my_soul': 1}, 'karmic_chestplate'),
+    Recipe({'the_final_ingot': 6, 'my_soul': 1}, 'karmic_leggings'),
+
+    Recipe({'hallow_ingot': 12}, 'hallowed_helmet'),
+    Recipe({'hallow_ingot': 12}, 'hallowed_mask'),
+    Recipe({'hallow_ingot': 12}, 'hallowed_headgear'),
+    Recipe({'hallow_ingot': 16}, 'hallowed_plate_mail'),
+    Recipe({'hallow_ingot': 8}, 'hallowed_greaves'),
 
     Recipe({'cell_organization': 20}, 'suspicious_eye'),
     Recipe({'cell_organization': 2, 'flufffur': 12}, 'wild_fluffball'),
@@ -1842,6 +2096,7 @@ RECIPES = [
     Recipe({'mithrill_ingot': 2, 'soul_of_integrity': 12}, 'watch'),
     Recipe({'titanium_ingot': 2, 'soul_of_bravery': 12}, 'metal_food'),
     Recipe({'chlorophyte_ingot': 10, 'photon': 4}, 'joker'),
+    Recipe({'hallow_ingot': 10, 'strength_ingot': 4}, 'joker'),
     Recipe({'substance_essence': 50}, 'suspicious_substance'),
 
 ]

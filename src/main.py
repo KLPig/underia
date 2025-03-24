@@ -167,6 +167,10 @@ try:
             game.player.covered_items
         except AttributeError:
             game.player.covered_items = []
+        while len(game.player.accessories) < 9:
+            game.player.accessories.insert(0, 'null')
+        while len(game.player.accessories) < 10:
+            game.player.accessories.append('null')
         game.player.boot_footprints = []
         game.player.t_ntc_timer = 200
     else:
@@ -349,6 +353,9 @@ def update():
                                  rate=.9)
         if 5 > game.stage > 2:
             underia.entity_spawn(underia.Entities.CurseGhost, target_number=3, to_player_max=2000, to_player_min=1000,
+                                 rate=0.3)
+        if game.stage > 5:
+            underia.entity_spawn(underia.Entities.PolarSnowman, target_number=3, to_player_max=2000, to_player_min=1000,
                                  rate=0.3)
         underia.entity_spawn(underia.Entities.WhiteChest, target_number=1, to_player_max=5000, to_player_min=1000,
                              rate=50, number_factor=3.5)

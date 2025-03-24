@@ -19,7 +19,7 @@ class HPSystem:
     DAMAGE_RANDOMIZE_RANGE = 0.12
     DAMAGE_TEXT_INTERVAL = 0
 
-    PACIFY_TIME = 10
+    PACIFY_TIME = 36
 
     SOUND_HURT = None
 

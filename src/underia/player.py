@@ -133,6 +133,7 @@ class Player:
         self.z = 0
         self.boot_footprints = []
         self.covered_items = []
+        self.major_usage = 0.0
 
     def calculate_regeneration(self):
         ACCESSORY_REGEN = {}
@@ -199,12 +200,15 @@ class Player:
             val = 0.0
         for i in range(len(self.accessories)):
             if data_idx in inventory.ITEMS[self.accessories[i]].accessory_data.keys():
+                d_r = self.major_usage if not data_idx == 'armor' and inventory.TAGS['major_accessory'] in inventory.ITEMS[self.accessories[i]].tags else 1.0
+                if d_r != 1 and data_idx == 'touch_def':
+                    d_r = 1
                 if rate_plus:
-                    val += inventory.ITEMS[self.accessories[i]].accessory_data[data_idx] / 100
+                    val += inventory.ITEMS[self.accessories[i]].accessory_data[data_idx] * d_r / 100
                 elif rate_multiply:
-                    val *= (inventory.ITEMS[self.accessories[i]].accessory_data[data_idx] + 100) / 100
+                    val *= (inventory.ITEMS[self.accessories[i]].accessory_data[data_idx] * d_r + 100) / 100
                 else:
-                    val += inventory.ITEMS[self.accessories[i]].accessory_data[data_idx]
+                    val += inventory.ITEMS[self.accessories[i]].accessory_data[data_idx] * d_r
         for e in self.hp_sys.effects:
             if data_idx in e.datas.keys():
                 if rate_plus:
@@ -359,6 +363,13 @@ class Player:
         if self.tutorial_step == 2:
             if 1 in game.get_game().get_mouse_press():
                 self.tutorial_process += 10
+        maj_def = inventory.ITEMS[self.accessories[3]].accessory_data['touch_def'] / 2 \
+            if 'touch_def' in inventory.ITEMS[self.accessories[3]].accessory_data.keys()  else 0
+        arm = self.calculate_data('armor', rate_data=False)
+        self.major_usage = arm / maj_def if maj_def else 0
+        if self.major_usage > 1.5:
+            self.major_usage = 0
+        self.p_data.append(f'{arm} armor, usage of major accessory: {int(self.major_usage * 100)}%')
         self.talent = min(self.talent + 0.005 + math.sqrt(self.max_talent) / 2000 + (self.max_talent - self.talent) / 1000, self.max_talent)
         self.hp_sys.pos = self.obj.pos
         self.attack = math.sqrt(self.calculate_damage() * self.calculate_data('damage', rate_data=True, rate_multiply=True))
@@ -468,7 +479,7 @@ class Player:
             self.p_data.append(f'Good Karma: {int(self.good_karma)}')
         self.good_karma = max(0, self.good_karma - karma_reduce)
         self.inspiration = min(self.inspiration + ins_regen, self.max_inspiration + max_ins)
-        self.hp_sys.defenses[damages.DamageTypes.TOUCHING] = self.calculate_data('touch_def', False)
+        self.hp_sys.defenses[damages.DamageTypes.TOUCHING] = self.calculate_data('touch_def', False) + arm * 2
         self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = self.calculate_data('phys_def', False)
         self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = self.calculate_data('mag_def', False)
         self.p_data.append(f'Magical Defense: {int(self.hp_sys.defenses[damages.DamageTypes.MAGICAL])}')
@@ -1253,6 +1264,16 @@ class Player:
                             if self.tutorial_step == 4:
                                 self.tutorial_process += 15
                             self.inventory.remove_item(item)
+                            if inventory.TAGS['major_accessory'] in item.tags:
+                                self.sel_accessory = 3
+                            elif inventory.TAGS['head'] in item.tags:
+                                self.sel_accessory = 0
+                            elif inventory.TAGS['body'] in item.tags:
+                                self.sel_accessory = 1
+                            elif inventory.TAGS['leg'] in item.tags:
+                                self.sel_accessory = 2
+                            elif inventory.TAGS['wings'] in item.tags:
+                                self.sel_accessory = 4
                             if self.accessories[self.sel_accessory] != 'null':
                                 self.inventory.add_item(inventory.ITEMS[self.accessories[self.sel_accessory]])
                             self.accessories[self.sel_accessory] = item.id
@@ -1288,6 +1309,13 @@ class Player:
                                 self.max_talent = 50
                                 self.inventory.remove_item(item)
                                 self.profile.add_point(2)
+                        elif item.id == 'saint_apple':
+                            if self.hp_sys.max_hp >= 600 and self.max_mana >= 300:
+                                self.hp_sys.max_hp = 1500
+                                self.max_mana = 1000
+                                self.max_talent = 30
+                                self.inventory.remove_item(item)
+                                self.profile.add_point(7)
                         elif item.id == 'soul_of_determination':
                             if self.hp_sys.max_hp == 1000 and self.max_mana == 800 and self.max_talent == 50 and \
                                 random.randint(0, 4) == 0:
@@ -1438,13 +1466,18 @@ class Player:
                                 entity.entity_spawn(entity.Entities.DevilPython, 2000, 2000, 0, 1145, 100000)
                                 self.inventory.remove_item(item)
                         elif item.id == 'joker':
-                            if not len([1 for e in game.get_game().player.hp_sys.effects if
+                            if len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.MetalAltar]):
-                                game.get_game().dialog.dialog('Unable to summon Jevil.',
-                                                              'There is no Metal Altar nearby.')
-                            else:
                                 entity.entity_spawn(entity.Entities.Jevil, 2000, 2000, 0, 1145, 100000)
                                 self.inventory.remove_item(item)
+                            elif len([1 for e in game.get_game().player.hp_sys.effects if
+                                        type(e) is effects.ScarlettAltar]):
+                                entity.entity_spawn(entity.Entities.Jevil2, 2000, 2000, 0, 1145, 100000)
+                                self.inventory.remove_item(item)
+                            else:
+                                game.get_game().dialog.dialog('Unable to summon Jevil.',
+                                                              'There is no Metal Altar nearby.')
+
                         elif item.id == 'plantera_bulb':
                             self.inventory.remove_item(item)
                             entity.entity_spawn(entity.Entities.Plantera, 2000, 2000, 0, 1145, 100000)
@@ -1481,6 +1514,21 @@ class Player:
                             else:
                                 entity.entity_spawn(entity.Entities.LifeWatcher, 2000, 2000, 0, 1145, 100000)
                                 self.inventory.remove_item(item)
+                        elif item.id == 'huge_snowball':
+                            if not len([1 for e in game.get_game().player.hp_sys.effects if
+                                        type(e) is effects.ScarlettAltar]):
+                                game.get_game().dialog.dialog('Unable to summon the Polar Cube.',
+                                                               'There is no Scarlett Altar nearby.')
+                            else:
+                                entity.entity_spawn(entity.Entities.PolarCube, 2000, 2000, 0, 1145, 100000)
+                                self.inventory.remove_item(item)
+                        elif item.id == 'dragon_horn':
+                            if game.get_game().get_biome() == 'hell':
+                                entity.entity_spawn(entity.Entities.Ignis, 2000, 2000, 0, 1145, 100000)
+                            elif game.get_game().get_biome() == 'snowland':
+                                entity.entity_spawn(entity.Entities.Northrend, 2000, 2000, 0, 1145, 100000)
+                            else:
+                                game.get_game().dialog.dialog('...', 'But nothing happened.')
                         elif item.id == 'my_soul':
                             self.profile.add_point(4)
                             if sum([v for _, v in self.hp_sys.shields]) + self.hp_sys.hp > self.hp_sys.max_hp:

@@ -13,7 +13,7 @@ def show_legend():
     music = pg.mixer.Sound(os.path.join(path.get_path('assets/musics'), 'the_legend.ogg'))
     dialogger = dialog.Dialogger(48, pg.Rect(0, window.get_height() - 180, window.get_width(), 180), target_surface=window, speed=12)
     texts = [[f'UNDERIA version {version.VERSION[0]}.{version.VERSION[1]}.{version.VERSION[2]}',
-              'All left reserved.', 'by KLPIG\n', 'Released in 25/2/2025',
+              'Copyright © 2025 KLPIG,\nlicensed under BCM-2 license.', 'by KLPIG\n', 'Released in 24/3/2025',
               'Press [C] to continue.', 'Press [ESC] to quit.', 'Assets:', 'Music from Undertale OST, Deltarune OST,\nand Terraria OST.',
               'Image drawn by KLPIG'],
              ['Once upon a time, the world was full in chaos.',

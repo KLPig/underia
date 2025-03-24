@@ -3,6 +3,7 @@ import math
 import random
 
 import pygame as pg
+
 import constants
 from physics import vector
 from resources import position, tone
@@ -1586,6 +1587,34 @@ class RuneBlade(AutoSweepWeapon):
         super().on_attack()
         self.cutting_effect(4, (0, 0, 200), (0, 200, 200))
 
+class FireQuenchSword(Blade):
+    def on_attack(self):
+        super().on_attack()
+        self.cutting_effect(8, (255, 0, 0), (255, 255, 0))
+        game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position((self.x + game.get_game().player.obj.pos[0],
+                                                                                              self.y + game.get_game().player.obj.pos[1])),
+                                                                n=6, sp=30 / game.get_game().player.get_screen_scale(),
+                                                                t=20, col=(255, 0, 0)))
+        for e in game.get_game().entities:
+            if vector.distance(e.obj.pos[0] - self.x - game.get_game().player.obj.pos[0],
+                               e.obj.pos[1] - self.y - game.get_game().player.obj.pos[1]) < 600:
+                e.hp_sys.effect(effects.Burning(10, self.damages[dmg.DamageTypes.PHYSICAL] // 20))
+
+class IceQuenchSword(Blade):
+    def on_attack(self):
+        super().on_attack()
+        self.cutting_effect(8, (0, 100, 255), (0, 255, 255))
+        game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position((self.x + game.get_game().player.obj.pos[0],
+                                                                                              self.y + game.get_game().player.obj.pos[1])),
+                                                                n=6, sp=30 / game.get_game().player.get_screen_scale(),
+                                                                t=20, col=(0, 255, 255)))
+        for e in game.get_game().entities:
+            if vector.distance(e.obj.pos[0] - self.x - game.get_game().player.obj.pos[0],
+                               e.obj.pos[1] - self.y - game.get_game().player.obj.pos[1]) < 600 and random.randint(0, 15) == 0:
+                e.hp_sys.effect(effects.Frozen(2, self.damages[dmg.DamageTypes.PHYSICAL] // 20))
+
+
+
 class MagicWeapon(Weapon):
     ATTACK_SOUND = 'attack_magic'
 
@@ -1644,7 +1673,9 @@ class PoetWeapon(MagicWeapon):
                    ('E5', 6)],
         'apple_smells_good': [('A4', 2), ('A4', 2), ('A4', 1), ('C5', 1), ('B4', 2), ('A4', 2), ('A4', 1), ('C5', 1),
                               ('E4', 8),
-                              ('D5', 1), ('E5', 1), ('E5', 2), ('E5', 2), ('C6', 1), ('B5', 1), ('A5', 8)]
+                              ('D5', 1), ('E5', 1), ('E5', 2), ('E5', 2), ('C6', 1), ('B5', 1), ('A5', 8)],
+        'quiet': [('A4', 2), ('D5', 2), ('F#5', 2), ('D5', 2), ('E5', 1), ('F#5', 1), ('G#5', 1), ('D5', 1),
+                  ('F5', 4)]
     }
     SONGS_S = {
         'his_theme_s': [[('F4', 16)]] + [[]] * 6 +
@@ -1661,7 +1692,8 @@ class PoetWeapon(MagicWeapon):
                        [[('C5', 2), ('E4', 2), ('C4', 2)], [('B4', 2)], [('G4', 2)]],
         'beat_s': [[]] * 21,
         'legend_s': [[]] * 27,
-        'apple_smells_good_s': [[]] * 16
+        'apple_smells_good_s': [[]] * 16,
+        'quiet_s': [[]] * 9,
     }
 
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int,
@@ -1773,10 +1805,18 @@ class PacifistWeapon(Weapon):
         super().on_end_attack()
 
     def damage(self):
+        mx, my = position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
+        self.set_rotation(vector.coordinate_rotation(mx, my))
         game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position((self.x + game.get_game().player.obj.pos[0],
                                                                                              self.y + game.get_game().player.obj.pos[1])),
-                                                                sp=self.attack_distance * game.get_game().player.get_screen_scale() / 6, t=6,
-                                                                col=self.ccol, n=4))
+                                                                sp=self.attack_distance / game.get_game().player.get_screen_scale() / 30, t=30,
+                                                                col=self.ccol, n=8))
+        ax, ay = vector.rotation_coordinate(self.rot)
+        game.get_game().displayer.effect(
+            pef.p_particle_effects(*position.displayed_position((self.x + game.get_game().player.obj.pos[0] + ax * self.attack_distance / 2,
+                                                                 self.y + game.get_game().player.obj.pos[1] + ay * self.attack_distance / 2)),
+                                   sp=self.attack_distance / game.get_game().player.get_screen_scale() / 60, t=30,
+                                   col=self.ccol, n=8))
         for e in game.get_game().entities:
             dps = e.obj.pos
             px = dps[0] - self.x - game.get_game().player.obj.pos[0]
@@ -1784,7 +1824,6 @@ class PacifistWeapon(Weapon):
             if vector.distance(px, py) < self.attack_distance + (
             (e.img.get_width() + e.img.get_height()) // 2 if e.img is not None else 10):
                 for t, d in self.damages.items():
-                    print(t, d, e)
                     e.hp_sys.damage(d * game.get_game().player.attack * game.get_game().player.attacks[self.DMG_AS_IDX], t)
                 if not e.hp_sys.is_immune:
                     rf = vector.coordinate_rotation(px + self.x, py + self.y)
@@ -2381,11 +2420,12 @@ class EarthWall(MagicWeapon):
 
 class Bow(Weapon):
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, projectile_speed: int,
-                 auto_fire: bool = False, tail_col: tuple[int, int, int] | None = None, ammo_save_chance: float = 0.0):
+                 auto_fire: bool = False, tail_col: tuple[int, int, int] | None = None, ammo_save_chance: float = 0.0, precision: float = 0.0):
         super().__init__(name, damages, kb, img, speed, at_time, auto_fire)
         self.spd = projectile_speed
         self.tail_col = tail_col
         self.ammo_save_chance = ammo_save_chance
+        self.precision = precision
 
     def on_start_attack(self):
         self.face_to(
@@ -2397,7 +2437,7 @@ class Bow(Weapon):
             game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
         pj = projectiles.AMMOS[game.get_game().player.ammo[0]]((self.x + game.get_game().player.obj.pos[0],
                                                                self.y + game.get_game().player.obj.pos[1]),
-                                                              self.rot, self.spd,
+                                                              self.rot + random.randint(-self.precision, self.precision), self.spd,
                                                               self.damages[dmg.DamageTypes.PIERCING])
         if self.tail_col is not None:
             pj.TAIL_COLOR = self.tail_col
@@ -2516,6 +2556,44 @@ class Accelerationism(Bow):
             x, y = (self.x + game.get_game().player.obj.pos[0] + sax * 20 * i,
                     self.y + game.get_game().player.obj.pos[1] + say * 20 * i)
             p = projectiles.Projectiles.Accelerationism((x, y), self.rot,
+                                                        self.spd + projectiles.AMMOS[game.get_game().player.ammo[0]].SPEED,
+                                                        self.damages[dmg.DamageTypes.PIERCING] +
+                                                        projectiles.AMMOS[game.get_game().player.ammo[0]].DAMAGES)
+            game.get_game().projectiles.append(p)
+
+class FireQuenchBow(Bow):
+    def on_start_attack(self):
+        self.face_to(
+            *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+        if game.get_game().player.ammo[0] not in projectiles.AMMOS or not game.get_game().player.ammo[1]:
+            self.timer = 0
+            return
+        if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
+            game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
+        sax, say = vector.rotation_coordinate(self.rot + 90)
+        for i in [0]:
+            x, y = (self.x + game.get_game().player.obj.pos[0] + sax * 20 * i,
+                    self.y + game.get_game().player.obj.pos[1] + say * 20 * i)
+            p = projectiles.Projectiles.FireQuenchArrow((x, y), self.rot,
+                                                        self.spd + projectiles.AMMOS[game.get_game().player.ammo[0]].SPEED,
+                                                        self.damages[dmg.DamageTypes.PIERCING] +
+                                                        projectiles.AMMOS[game.get_game().player.ammo[0]].DAMAGES)
+            game.get_game().projectiles.append(p)
+
+class IceQuenchBow(Bow):
+    def on_start_attack(self):
+        self.face_to(
+            *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+        if game.get_game().player.ammo[0] not in projectiles.AMMOS or not game.get_game().player.ammo[1]:
+            self.timer = 0
+            return
+        if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
+            game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
+        sax, say = vector.rotation_coordinate(self.rot + 90)
+        for i in [0]:
+            x, y = (self.x + game.get_game().player.obj.pos[0] + sax * 20 * i,
+                    self.y + game.get_game().player.obj.pos[1] + say * 20 * i)
+            p = projectiles.Projectiles.IceQuenchArrow((x, y), self.rot,
                                                         self.spd + projectiles.AMMOS[game.get_game().player.ammo[0]].SPEED,
                                                         self.damages[dmg.DamageTypes.PIERCING] +
                                                         projectiles.AMMOS[game.get_game().player.ammo[0]].DAMAGES)
@@ -2745,7 +2823,7 @@ class Climax(Gun):
         sz = int(4 - math.floor(math.sqrt(random.randint(1, 9))))
         game.get_game().displayer.effect(fc.p_fade_circle(*position.displayed_position((game.get_game().player.obj.pos[0] + self.x,
                                                                                         game.get_game().player.obj.pos[1] + self.y)),
-                                                          col=self.cols[0], sp=sz * 10 * game.get_game().player.get_screen_scale(),
+                                                          col=self.cols[0], sp=sz * 10,
                                                           t=6))
         self.face_to(mx, my)
         for i in range(sz):
@@ -3485,6 +3563,18 @@ def set_weapons():
                                                                              effects.OctSpeedII, effects.OctSpeedIII, effects.OctStrengthI, effects.OctStrengthII,
                                                                                 effects.OctStrengthIII],
                                    1, 40, auto_fire=True, back_rate=0.3, song='beat'),
+        'wither_oboe': PoetWeapon('wither oboe', {dmg.DamageTypes.OCTAVE: 325}, 1, 'items_weapons_wither_oboe',
+                                  0, 6, projectiles.Projectiles.WitherOboe, [effects.OctStrengthI, effects.OctLuckyII,
+                                                                             effects.OctLimitlessII],
+                                  7, 250, auto_fire=True, back_rate=0.06, song='quiet', instrument='oboe'),
+
+        'dragon_flute': PoetWeapon('dragon flute', {dmg.DamageTypes.OCTAVE: 488}, 1, 'items_weapons_dragon_flute',
+                                   0, 5, projectiles.Projectiles.DragonFlute, [effects.OctLuckyI, effects.OctLuckyII, effects.OctSpeedI,
+                                                                             effects.OctStrengthI, effects.OctStrengthII, effects.OctStrengthIII, effects.OctLimitlessII],
+                                   5, 180, auto_fire=True, instrument='flute', back_rate=0.5, song='beat'),
+        'the_song_of_ice_and_fire': PoetWeapon('the song of ice and fire', {dmg.DamageTypes.OCTAVE: 488}, 1, 'items_weapons_the_song_of_ice_and_fire',
+                                                0, 8, projectiles.Projectiles.TheSongOfIceAndFire, [effects.OctLimitlessIII, effects.OctStrengthIII],
+                                                8, 240, auto_fire=True, back_rate=0.5, song='beat'),
 
         'saint_healer': PriestHealer('saint healer', 50, 1, 'items_weapons_saint_healer',
                                     9, 1, 15, 80,
@@ -3506,13 +3596,29 @@ def set_weapons():
                                               'items_weapons_the_true_gods_penalty', 49, 1,
                                               projectiles.Projectiles.TheTrueGodsPenalty, 80, 25,
                                               True, 'The True God\'s Penalty'),
+        'holy_light': PriestWeapon('holy light', {dmg.DamageTypes.HALLOW: 128}, 1,
+                                   'items_weapons_holy_light', 9, 1,
+                                   projectiles.Projectiles.HolyLight, 25, 3,
+                                   True, 'Holy Light'),
 
         'mystery_watch': PacifistWeapon('mystery watch', {dmg.DamageTypes.PACIFY: 188}, 1,
                                        'items_weapons_mystery_watch', 8, 3,
                                         40, 200, True),
-        'hand_of_pacify': PacifistWeapon('hand of pacify', {dmg.DamageTypes.PACIFY: 88}, 1,
+        'hand_of_pacify': PacifistWeapon('hand of pacify', {dmg.DamageTypes.PACIFY: 255}, 1,
                                         'items_weapons_hand_of_pacify', 15, 5,
-                                        60, 300, True, col=(255, 255, 100)),
+                                        60, 600, True, col=(255, 255, 100)),
+        'sleep_splint': PacifistWeapon('sleep splint', {dmg.DamageTypes.PACIFY: 180}, 1,
+                                       'items_weapons_sleep_splint', 4, 3,
+                                       20, 400, True, (100, 100, 255)),
+        'sleep_eye': PacifistWeapon('sleep eye', {dmg.DamageTypes.PACIFY: 180}, 1,
+                                       'items_weapons_sleep_eye', 2, 3,
+                                       10, 1600, True, (100, 100, 255)),
+        'good_dream': PacifistWeapon('good dream', {dmg.DamageTypes.PACIFY: 440}, 1,
+                                     'items_weapons_good_dream', 5, 5,
+                                     90, 1200, True, (50, 255, 255)),
+        'nightmare': PacifistWeapon('nightmare', {dmg.DamageTypes.PACIFY: 640}, 1,
+                                    'items_weapons_nightmare', 8, 12,
+                                    50, 800, True, (50, 0, 0)),
 
 
         'wooden_pickaxe': Pickaxe('wooden pickaxe', {dmg.DamageTypes.MINE_POWER: 1}, 0.1,
@@ -3560,6 +3666,23 @@ def set_weapons():
         'empty_gun': Gun('empty gun', {dmg.DamageTypes.PIERCING: 200}, 0.1,
                          'items_weapons_empty_gun', 1, 4, 800, auto_fire=True,
                          ammo_save_chance=1.0),
+
+        'dragon_swift_sword': Blade('dragon swift sword', {dmg.DamageTypes.PHYSICAL: 450}, 0.1,
+                                     'items_weapons_dragon_swift_sword', 1, 6, 70, 240),
+        'dragon_bow': Bow('dragon bow', {dmg.DamageTypes.PIERCING: 300}, 0.1, 'items_weapons_dragon_bow',
+                          0, 1, 1200, auto_fire=True, ammo_save_chance=0.6, precision=4),
+
+        'fire_quench__dragon_sword': FireQuenchSword('fire quench  dragon sword', {dmg.DamageTypes.PHYSICAL: 450}, 0.1,
+                                                      'items_weapons_fire_quench__dragon_sword', 1, 6, 70, 240),
+        'ice_quench__dragon_sword': IceQuenchSword('ice quench  dragon sword', {dmg.DamageTypes.PHYSICAL: 450}, 0.1,
+                                                    'items_weapons_ice_quench__dragon_sword', 1, 6, 70, 240),
+
+        'fire_quench__dragon_bow': FireQuenchBow('fire quench  dragon bow', {dmg.DamageTypes.PIERCING: 300}, 0.1,
+                                                'items_weapons_fire_quench__dragon_bow', 0, 1, 200,
+                                                 auto_fire=True, ammo_save_chance=0.4, precision=0),
+        'ice_quench__dragon_bow': IceQuenchBow('ice quench  dragon bow', {dmg.DamageTypes.PIERCING: 300}, 0.1,
+                                               'items_weapons_ice_quench__dragon_bow', 0, 1, 200,
+                                               auto_fire=True, ammo_save_chance=0.4, precision=0),
 
         'murders_knife': MurderersKnife('murders knife', {}, 0, 'items_weapons_murders_knife',
                               0, 12, 30, 180, auto_fire=True),

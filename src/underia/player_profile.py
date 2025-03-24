@@ -252,7 +252,9 @@ class PlayerProfile:
             ['[AFTER YOU\'VE RESET THE TIMELINE, \nEVERYTHING WILL BE GONE.]', '[PLEASE STOP AND THINK BEFORE IT ALL ENDS.]',
              '[...]', 'This expression...', 'Are you here, again?', 'Alright.', 'Lets move on.'],
             ['...', 'It\'s you.', 'Let\'s move on.', '..?', 'Wait,', 'I\'ve observed that the world is changing.',
-             'The holy and the evil are coming.', '...', 'You must save this world.']
+             'The holy and the evil are coming.', '...', 'You must save this world.'],
+            ['...', 'This is the \'adventure\'.', 'In a story, we will have the adventurer and the evil dragon.',
+             '...', 'And also, get enough power from that flower.', 'You know what I\'m talking about.', '...anyway.']
         ]
         if not t:
             self.point_wisdom = 0

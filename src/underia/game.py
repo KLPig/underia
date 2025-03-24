@@ -82,6 +82,7 @@ class Game:
         self.client = None
         self.bl_bg = None
         self.lp = (100, 100)
+        self.major_rate = 0
 
     def get_night_color(self, time_days: float):
         if len([1 for e in self.entities if type(e) is entity.Entities.AbyssEye]):
@@ -225,7 +226,7 @@ class Game:
             return 'none'
         if len([1 for e in self.entities if type(e) is entity.Entities.AbyssEye]):
             return 'heaven'
-        if len([1 for e in self.entities if type(e) in [entity.Entities.Jevil]]) or \
+        if len([1 for e in self.entities if type(e) in [entity.Entities.Jevil, entity.Entities.Jevil2]]) or \
                 self.player.inventory.is_enough(inventory.ITEMS['chaos_heart']):
             return 'inner'
         if pos is None:
@@ -352,7 +353,7 @@ class Game:
             if len([1 for e in self.entities if e.IS_MENACE]):
                 self.cur_music = None
                 self.channel.stop()
-                if len([1 for e in self.entities if type(e) is entity.Entities.Jevil]):
+                if len([1 for e in self.entities if type(e) in [entity.Entities.Jevil, entity.Entities.Jevil2]]):
                     self.prepared_music = 'worlds_revolving'
                 elif len([1 for e in self.entities if type(e) is entity.Entities.Plantera]):
                     self.prepared_music = 'plantera'
@@ -443,28 +444,37 @@ class Game:
                     c_phase = len(menace.PHASE_SEGMENTS) - j - 1
             for i in range(len(menace.PHASE_SEGMENTS) + 1):
                 if i >= c_phase:
-                    pg.draw.circle(self.displayer.canvas, (0, 255, 0), (x - 380 + 50 * i, y - 100), 20)
+                    pg.draw.circle(self.displayer.canvas, (207, 255, 112), (x - 380 + 50 * i, y - 100), 20)
                 else:
-                    pg.draw.circle(self.displayer.canvas, (255, 0, 0), (x - 380 + 50 * i, y - 100), 20)
+                    pg.draw.circle(self.displayer.canvas, (227, 105, 86), (x - 380 + 50 * i, y - 100), 20)
+                pg.draw.circle(self.displayer.canvas, (242, 166, 94), (x - 380 + 50 * i, y - 100), 20, width=8)
                 t_p = menace.hp_sys.hp / menace.hp_sys.max_hp
+                pc_p = menace.hp_sys.pacify / menace.hp_sys.max_hp
+                pp_p = menace.hp_sys.pacify / (menace.hp_sys.max_hp - menace.hp_sys.hp) if menace.hp_sys.hp < menace.hp_sys.max_hp else 0
                 t_l = 800 - 50 * len(menace.PHASE_SEGMENTS) - 80
                 sp = [0] + menace.PHASE_SEGMENTS + [1]
                 sp_e = sp[-c_phase - 1]
                 sp_s = sp[-c_phase - 2]
                 r_p = ((menace.hp_sys.hp - sp_s * menace.hp_sys.max_hp) /
                        (sp_e * menace.hp_sys.max_hp - sp_s * menace.hp_sys.max_hp))
-                pg.draw.rect(self.displayer.canvas, (255, 0, 0),
+                pg.draw.rect(self.displayer.canvas, (227, 105, 86),
                                  (x + 400 - t_l, y - 120, t_l, 40))
-                pg.draw.rect(self.displayer.canvas, (0, 255, 0),
+                pg.draw.rect(self.displayer.canvas, (207, 255, 112),
                                  (x + 400 - t_l, y - 120, int(t_l * t_p), 40))
+                pg.draw.rect(self.displayer.canvas, (0, 255, 255),
+                             (x + 400 - int(t_l * pc_p), y - 120, int(t_l * pc_p), 40))
+                pg.draw.rect(self.displayer.canvas, (242, 166, 94),
+                                 (x + 400 - t_l, y - 120, t_l, 40), width=8, border_radius=3)
                 tf = self.displayer.font.render(str(int(t_p * 100)) + '%', True, (0, 0, 0))
                 tf = pg.transform.scale_by(tf, 2.4)
                 tfr = tf.get_rect(midright=(x + 400 - 10, y - 100))
                 self.displayer.canvas.blit(tf, tfr)
-                pg.draw.rect(self.displayer.canvas, (255, 0, 0),
+                pg.draw.rect(self.displayer.canvas, (227, 105, 86),
                                  (x - 400, y - 50, 800, 60))
-                pg.draw.rect(self.displayer.canvas, (0, 255, 0),
+                pg.draw.rect(self.displayer.canvas, (207, 255, 112),
                                  (x - 400, y - 50, int(800 * r_p), 60))
+                pg.draw.rect(self.displayer.canvas, (242, 166, 94),
+                                 (x - 400, y - 50, 800, 60), width=8, border_radius=3)
                 ft = self.displayer.font.render(f'{menace.NAME}({int(menace.hp_sys.hp)}/{int(menace.hp_sys.max_hp)})',
                                                 True, (0, 0, 0))
                 ftr = ft.get_rect(midright=(x + 360, y - 20))

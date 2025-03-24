@@ -77,7 +77,7 @@ class Aberration(Effect):
     def on_update(self, entity: hp_system.HPSystem):
         super().on_update(entity)
         if time.time_interval(time.get_time(self.tick), 1, 0):
-            entity.damage(self.level + 2,
+            entity.damage(min(self.level + 2, max(entity.max_hp / 200, 200.0)),
                           getattr(damages.DamageTypes, 'ELEMENT_' + elements.NAMES[self.CORRESPONDED_ELEMENT].upper()))
 
 
@@ -86,6 +86,18 @@ class Burning(Aberration):
     NAME = 'Burning'
     DESC = 'Continuously dealing damage'
     CORRESPONDED_ELEMENT = elements.ElementTypes.FIRE
+
+class Freezing(Effect):
+    IMG = 'freezing'
+    NAME = 'Freezing'
+    DESC = '-60% speed'
+    CORRESPONDED_ELEMENT = elements.ElementTypes.WATER
+
+class Frozen(Effect):
+    IMG = 'freezing'
+    NAME = 'Frozen'
+    DESC = 'Unable to move(for other mobs)'
+    CORRESPONDED_ELEMENT = elements.ElementTypes.WATER
 
 class StoneAltar(Effect):
     IMG = 'stone_altar'
