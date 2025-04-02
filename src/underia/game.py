@@ -170,7 +170,7 @@ class Game:
         self.gcnt = 0
         self.decors = []
         self.get_chunked_images.cache_clear()
-        self.dialog = dialog.Dialogger(144, pg.Rect(0, 1980, 4800, 720), with_border=True, speed=.5,
+        self.dialog = dialog.Dialogger(32, pg.Rect(0, pg.display.get_surface().get_height() * 3 // 4, pg.display.get_surface().get_width(), pg.display.get_surface().get_height() // 4), with_border=True, speed=1.6,
                                        target_surface=pg.display.get_surface())
         self.noise = perlin_noise.PerlinNoise(1.2, self.seed)
         self.weather_noise = perlin_noise.PerlinNoise(1.2, self.seed + 1)
@@ -411,7 +411,7 @@ class Game:
                                                                          monster.obj.pos[1] + random.randint(-10, 10)),
                                                                         item, amount // k + (i < amount % k)))
             for monster2 in self.entities:
-                monster.obj.object_gravitational(monster2.obj)
+                #monster.obj.object_gravitational(monster2.obj)
                 monster.obj.object_collision(monster2.obj,
                                              (monster2.img.get_width() + monster2.img.get_height()) // 4 + (
                                                          monster.img.get_width() + monster.img.get_height()) // 4)

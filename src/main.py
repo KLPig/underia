@@ -31,7 +31,7 @@ pg.init()
 random.seed(time.time())
 pg.display.set_mode((1600, 900), constants.FLAGS)
 pg.display.set_caption(f'Underia - {random.choice(good_words.WORDS)}')
-pg.display.set_icon(pg.image.load(resources.get_path('assets/graphics/items/jade_grenade.png')))
+pg.display.set_icon(pg.image.load(resources.get_path('assets/graphics/items/the_ruling_sword.png')))
 
 if not constants.WEB_DEPLOY:
     legend.show_legend()
@@ -210,6 +210,27 @@ game.player.profile.point_ranged = 0
 game.player.profile.point_magic = 0
 print('Presets...')
 
+for item in underia.ITEMS.values():
+    for __ in range(5):
+        mat = {}
+        for _ in range(item.rarity + 1):
+            mat[f'magic_shard_{random.randint(0, 127)}'] = 1
+        underia.RECIPES.append(underia.Recipe(mat, item.id))
+    underia.RECIPES.append(underia.Recipe({item.id: 1}, f'magic_shard_{random.randint(0, 127)}', item.rarity))
+
+for i in range(128):
+    it_s = pg.Surface((5, 5))
+    r = random.randint(0, 240)
+    g = random.randint(max(0, 105 - r), min(360 - r, 255))
+    b = 360 - r - g
+    for x, y in [(1, 1), (1, 2), (2, 2), (2, 3), (3, 1), (3, 2)]:
+        it_s.set_at((x, y), (r, g, b))
+    game.graphics['items_magic_shard_' + str(i)] = it_s
+    underia.ITEMS['magic_shard_' + str(i)] = underia.Inventory.Item(f'Magic Shard(#{i})',
+                                                                     'Magic Shard #' + str(i), 'magic_shard_' + str(i),
+                                                                    12, [underia.TAGS['item']])
+    underia.RECIPES.append(underia.Recipe({'magic_shard_' + str(i): 2}, 'magic_shard_' + str((i + 1) % 128)))
+
 for s in setups:
     exec(s)
 
@@ -225,9 +246,9 @@ def update():
         exec(u)
     bm = 'blood moon' in game.world_events
     if game.stage > 5:
-        if len(game.hallow_points) > 6:
+        if len(game.hallow_points) > 5:
             game.hallow_points.pop(0)
-        if len(game.wither_points) > 6:
+        if len(game.wither_points) > 5:
             game.wither_points.pop(0)
         f = 0
         for pp, r in game.hallow_points:
@@ -255,101 +276,101 @@ def update():
             del entity
     for entity in game.drop_items:
         d = physics.distance(entity.obj.pos[0] - game.player.obj.pos[0], entity.obj.pos[1] - game.player.obj.pos[1])
-        if d > 2000:
+        if d > 2000 + entity.rarity * 1000:
             game.drop_items.remove(entity)
             del entity
     if game.get_biome() == 'forest':
         if 5 > game.stage > 1:
-            underia.entity_spawn(underia.Entities.Tree, target_number=20, to_player_max=5000, to_player_min=800, rate=2.5)
-            underia.entity_spawn(underia.Entities.TreeMonster, target_number=5, to_player_max=5000, to_player_min=800,
+            underia.entity_spawn(underia.Entities.Tree, target_number=20, to_player_max=2500, to_player_min=800, rate=2.5)
+            underia.entity_spawn(underia.Entities.TreeMonster, target_number=15, to_player_max=2500, to_player_min=800,
                                  rate=2.5)
-            underia.entity_spawn(underia.Entities.LifeTree, target_number=20, to_player_max=5000, to_player_min=2000,
+            underia.entity_spawn(underia.Entities.LifeTree, target_number=32, to_player_max=2500, to_player_min=2000,
                                  rate=1.5)
         else:
-            underia.entity_spawn(underia.Entities.Tree, target_number=40, to_player_max=5000, to_player_min=800, rate=5)
-            underia.entity_spawn(underia.Entities.TreeMonster, target_number=10, to_player_max=5000, to_player_min=800,
+            underia.entity_spawn(underia.Entities.Tree, target_number=40, to_player_max=2500, to_player_min=800, rate=5)
+            underia.entity_spawn(underia.Entities.TreeMonster, target_number=20, to_player_max=2500, to_player_min=800,
                                  rate=5)
-        underia.entity_spawn(underia.Entities.ClosedBloodflower, target_number=22, to_player_max=5000,
-                             to_player_min=800, rate=1)
+        underia.entity_spawn(underia.Entities.ClosedBloodflower, target_number=30, to_player_max=2500,
+                             to_player_min=800, rate=3.5)
         if 5 > game.stage > 0:
-            underia.entity_spawn(underia.Entities.SoulFlower, target_number=42 + bm * 36, to_player_max=5000, to_player_min=800,
-                                 rate=1)
-        underia.entity_spawn(underia.Entities.GreenChest, target_number=1, to_player_max=5000, to_player_min=1000,
+            underia.entity_spawn(underia.Entities.SoulFlower, target_number=42 + bm * 36, to_player_max=2500, to_player_min=800,
+                                 rate=3.5)
+        underia.entity_spawn(underia.Entities.GreenChest, target_number=1, to_player_max=2500, to_player_min=1000,
                              rate=50, number_factor=4)
     elif game.get_biome() == 'rainforest':
         if 5 > game.stage > 1:
-            underia.entity_spawn(underia.Entities.Tree, target_number=5, to_player_max=5000, to_player_min=1000, rate=2.5)
-            underia.entity_spawn(underia.Entities.HugeTree, target_number=20, to_player_max=5000, to_player_min=1000,
+            underia.entity_spawn(underia.Entities.Tree, target_number=5, to_player_max=2500, to_player_min=1000, rate=2.5)
+            underia.entity_spawn(underia.Entities.HugeTree, target_number=20, to_player_max=2500, to_player_min=1000,
                                  rate=.5)
-            underia.entity_spawn(underia.Entities.TreeMonster, target_number=5, to_player_max=5000, to_player_min=1000,
+            underia.entity_spawn(underia.Entities.TreeMonster, target_number=15, to_player_max=2500, to_player_min=1000,
                                  rate=2.5)
-            underia.entity_spawn(underia.Entities.LifeTree, target_number=25, to_player_max=5000, to_player_min=2500,
+            underia.entity_spawn(underia.Entities.LifeTree, target_number=25, to_player_max=2500, to_player_min=2500,
                                  rate=1.5)
         else:
-            underia.entity_spawn(underia.Entities.Tree, target_number=10, to_player_max=5000, to_player_min=1000, rate=5)
-            underia.entity_spawn(underia.Entities.HugeTree, target_number=40, to_player_max=5000, to_player_min=1000,
+            underia.entity_spawn(underia.Entities.Tree, target_number=10, to_player_max=2500, to_player_min=1000, rate=5)
+            underia.entity_spawn(underia.Entities.HugeTree, target_number=40, to_player_max=2500, to_player_min=1000,
                                  rate=1)
-            underia.entity_spawn(underia.Entities.TreeMonster, target_number=10, to_player_max=5000, to_player_min=1000,
+            underia.entity_spawn(underia.Entities.TreeMonster, target_number=20, to_player_max=2500, to_player_min=1000,
                                  rate=5)
-        underia.entity_spawn(underia.Entities.ClosedBloodflower, target_number=35, to_player_max=5000,
+        underia.entity_spawn(underia.Entities.ClosedBloodflower, target_number=35, to_player_max=2500,
                              to_player_min=800, rate=1)
         if 5 != game.stage > 0:
             if game.stage < 5:
-                underia.entity_spawn(underia.Entities.SoulFlower, target_number=45 + bm * 40, to_player_max=5000, to_player_min=800,
-                                     rate=1)
-            underia.entity_spawn(underia.Entities.Leaf, target_number=50, to_player_max=5000, to_player_min=1000,
-                                 rate=2)
-        underia.entity_spawn(underia.Entities.GreenChest, target_number=1, to_player_max=5000, to_player_min=1000,
+                underia.entity_spawn(underia.Entities.SoulFlower, target_number=45 + bm * 40, to_player_max=2500, to_player_min=800,
+                                     rate=3.5)
+            underia.entity_spawn(underia.Entities.Leaf, target_number=50, to_player_max=2500, to_player_min=1000,
+                                 rate=5.5)
+        underia.entity_spawn(underia.Entities.GreenChest, target_number=1, to_player_max=2500, to_player_min=1000,
                              rate=50, number_factor=3.5)
     elif game.get_biome() == 'desert':
-        underia.entity_spawn(underia.Entities.Cactus, target_number=15, to_player_max=5000, to_player_min=1000, rate=5)
+        underia.entity_spawn(underia.Entities.Cactus, target_number=25, to_player_max=2500, to_player_min=1000, rate=5)
         if game.player.hp_sys.max_hp >= 500:
-            underia.entity_spawn(underia.Entities.RuneRock, target_number=12, to_player_max=2000, to_player_min=1000,
-                                 rate=0.8)
-        underia.entity_spawn(underia.Entities.OrangeChest, target_number=1, to_player_max=5000, to_player_min=1000,
+            underia.entity_spawn(underia.Entities.RuneRock, target_number=28, to_player_max=2000, to_player_min=1000,
+                                 rate=2.8)
+        underia.entity_spawn(underia.Entities.OrangeChest, target_number=1, to_player_max=2500, to_player_min=1000,
                              rate=50, number_factor=3.5)
         if 5 > game.stage > 2:
-            underia.entity_spawn(underia.Entities.AncientDebris, target_number=3, to_player_max=2000, to_player_min=1000,
-                                 rate=0.3)
+            underia.entity_spawn(underia.Entities.AncientDebris, target_number=5, to_player_max=2000, to_player_min=1000,
+                                 rate=1.3)
     elif game.get_biome() == 'hallow':
-        underia.entity_spawn(underia.Entities.UniSaur, target_number=15, to_player_max=5000, to_player_min=1000, rate=5)
-        underia.entity_spawn(underia.Entities.LightFly, target_number=24, to_player_max=5000, to_player_min=1000, rate=4)
-        underia.entity_spawn(underia.Entities.GreenChest, target_number=1, to_player_max=5000, to_player_min=4000,
+        underia.entity_spawn(underia.Entities.UniSaur, target_number=15, to_player_max=2500, to_player_min=1000, rate=5)
+        underia.entity_spawn(underia.Entities.LightFly, target_number=24, to_player_max=2500, to_player_min=1000, rate=4)
+        underia.entity_spawn(underia.Entities.GreenChest, target_number=1, to_player_max=2500, to_player_min=2000,
                              rate=50, number_factor=3.5)
     elif game.get_biome() == 'wither':
-        underia.entity_spawn(underia.Entities.RedCorruption, target_number=20, to_player_max=5000, to_player_min=1000, rate=4.5)
-        underia.entity_spawn(underia.Entities.PurpleCorruption, target_number=20, to_player_max=5000, to_player_min=1000, rate=4.5)
-        underia.entity_spawn(underia.Entities.GreenChest, target_number=1, to_player_max=5000, to_player_min=4000,
+        underia.entity_spawn(underia.Entities.RedCorruption, target_number=30, to_player_max=2500, to_player_min=1000, rate=4.5)
+        underia.entity_spawn(underia.Entities.PurpleCorruption, target_number=30, to_player_max=2500, to_player_min=1000, rate=4.5)
+        underia.entity_spawn(underia.Entities.GreenChest, target_number=1, to_player_max=2500, to_player_min=2000,
                              rate=50, number_factor=3.5)
     elif game.get_biome() == 'hell':
-        underia.entity_spawn(underia.Entities.MagmaCube, target_number=12, to_player_max=2000, to_player_min=1000,
-                             rate=0.8)
-        underia.entity_spawn(underia.Entities.RedChest, target_number=1, to_player_max=5000, to_player_min=1000,
+        underia.entity_spawn(underia.Entities.MagmaCube, target_number=25, to_player_max=2000, to_player_min=1000,
+                             rate=2.8)
+        underia.entity_spawn(underia.Entities.RedChest, target_number=1, to_player_max=2500, to_player_min=1000,
                              rate=50, number_factor=4.5)
         if 5 > game.stage > 3:
-            underia.entity_spawn(underia.Entities.ScarlettPillar, target_number=2, to_player_max=5000, to_player_min=4000,
+            underia.entity_spawn(underia.Entities.ScarlettPillar, target_number=2, to_player_max=2500, to_player_min=2000,
                                  rate=50, number_factor=1.9)
     elif game.get_biome() == 'heaven':
-        underia.entity_spawn(underia.Entities.HeavenGuard, target_number=7 + bm * 12, to_player_max=2000, to_player_min=1000,
+        underia.entity_spawn(underia.Entities.HeavenGuard, target_number=9 + bm * 24, to_player_max=2000, to_player_min=1000,
                              rate=0.4 + bm * 2)
         if 5 != game.stage > 0:
-            underia.entity_spawn(underia.Entities.Cells, target_number=6, to_player_max=2000, to_player_min=1500,
-                                 rate=0.8)
-        underia.entity_spawn(underia.Entities.BlueChest, target_number=1, to_player_max=5000, to_player_min=1000,
+            underia.entity_spawn(underia.Entities.Cells, target_number=15, to_player_max=2000, to_player_min=1500,
+                                 rate=2.8)
+        underia.entity_spawn(underia.Entities.BlueChest, target_number=1, to_player_max=2500, to_player_min=1000,
                              rate=50, number_factor=4.5)
         if 5 > game.stage > 3:
-            underia.entity_spawn(underia.Entities.HolyPillar, target_number=2, to_player_max=5000, to_player_min=4000,
+            underia.entity_spawn(underia.Entities.HolyPillar, target_number=2, to_player_max=2500, to_player_min=2000,
                                  rate=50, number_factor=1.9)
     elif game.get_biome() == 'snowland':
-        underia.entity_spawn(underia.Entities.ConiferousTree, target_number=15, to_player_max=5000, to_player_min=1000, rate=5)
-        underia.entity_spawn(underia.Entities.FluffBall, target_number=5, to_player_max=5000, to_player_min=1000, rate=.8)
+        underia.entity_spawn(underia.Entities.ConiferousTree, target_number=25, to_player_max=2500, to_player_min=1000, rate=5)
+        underia.entity_spawn(underia.Entities.FluffBall, target_number=15, to_player_max=2500, to_player_min=1000, rate=.8)
         if 5 != game.stage > 0:
-            underia.entity_spawn(underia.Entities.SnowDrake, target_number=12, to_player_max=5000, to_player_min=1000,
+            underia.entity_spawn(underia.Entities.SnowDrake, target_number=12, to_player_max=2500, to_player_min=1000,
                                  rate=.9)
-            underia.entity_spawn(underia.Entities.IceCap, target_number=15, to_player_max=5000, to_player_min=1000,
+            underia.entity_spawn(underia.Entities.IceCap, target_number=15, to_player_max=2500, to_player_min=1000,
                                  rate=.2)
         if 5 > game.stage > 1:
-            underia.entity_spawn(underia.Entities.IceThorn, target_number=18, to_player_max=5000, to_player_min=1000,
+            underia.entity_spawn(underia.Entities.IceThorn, target_number=18, to_player_max=2500, to_player_min=1000,
                                  rate=.9)
         if 5 > game.stage > 2:
             underia.entity_spawn(underia.Entities.CurseGhost, target_number=3, to_player_max=2000, to_player_min=1000,
@@ -357,60 +378,60 @@ def update():
         if game.stage > 5:
             underia.entity_spawn(underia.Entities.PolarSnowman, target_number=3, to_player_max=2000, to_player_min=1000,
                                  rate=0.3)
-        underia.entity_spawn(underia.Entities.WhiteChest, target_number=1, to_player_max=5000, to_player_min=1000,
+        underia.entity_spawn(underia.Entities.WhiteChest, target_number=1, to_player_max=2500, to_player_min=1000,
                              rate=50, number_factor=3.5)
-    underia.entity_spawn(underia.Entities.SwordInTheStone, target_number=1, to_player_max=5000, to_player_min=4000,
+    underia.entity_spawn(underia.Entities.SwordInTheStone, target_number=1, to_player_max=2500, to_player_min=2000,
                          rate=50, number_factor=3)
-    underia.entity_spawn(underia.Entities.StoneAltar, target_number=3, to_player_max=5000, to_player_min=4000,
+    underia.entity_spawn(underia.Entities.StoneAltar, target_number=3, to_player_max=2500, to_player_min=2000,
                          rate=50, number_factor=3)
     underia.entity_spawn(underia.Entities.RawOre, target_number=6, to_player_max=3000, to_player_min=1000,
                          rate=1.5, number_factor=300)
     if 5 > game.stage > 0:
-        underia.entity_spawn(underia.Entities.MetalAltar, target_number=3, to_player_max=5000, to_player_min=4000,
+        underia.entity_spawn(underia.Entities.MetalAltar, target_number=3, to_player_max=2500, to_player_min=2000,
                              rate=50, number_factor=3)
     if game.stage > 5:
-        underia.entity_spawn(underia.Entities.ScarlettAltar, target_number=3, to_player_max=5000, to_player_min=4000,
+        underia.entity_spawn(underia.Entities.ScarlettAltar, target_number=3, to_player_max=2500, to_player_min=2000,
                              rate=50, number_factor=3)
     if game.get_biome() not in ['inner']:
         if 5 > game.stage > 0:
-            underia.entity_spawn(underia.Entities.EvilMark, target_number=3, to_player_max=5000, to_player_min=4000,
+            underia.entity_spawn(underia.Entities.EvilMark, target_number=3, to_player_max=2500, to_player_min=2000,
                                  rate=50, number_factor=1.9)
         if game.day_time > 0.75 or game.day_time < 0.2:
-            underia.entity_spawn(underia.Entities.Eye, target_number=4 + bm * 12, to_player_max=2000, to_player_min=1500,
-                                 rate=0.4 + bm * 0.8)
-            underia.entity_spawn(underia.Entities.Bloodflower, target_number=5 + bm * 24, to_player_max=2000, to_player_min=1500,
-                                 rate=0.5 + bm * 1.2)
-            underia.entity_spawn(underia.Entities.RedWatcher, target_number=2 + bm * 17, to_player_max=2000, to_player_min=1800,
-                                 rate=0.2 + bm * 0.7)
+            underia.entity_spawn(underia.Entities.Eye, target_number=8 + bm * 12, to_player_max=2000, to_player_min=1500,
+                                 rate=1.4 + bm * 2.8)
+            underia.entity_spawn(underia.Entities.Bloodflower, target_number=10 + bm * 24, to_player_max=2000, to_player_min=1500,
+                                 rate=1.5 + bm * 1.2)
+            underia.entity_spawn(underia.Entities.RedWatcher, target_number=7 + bm * 17, to_player_max=2000, to_player_min=1800,
+                                 rate=.8 + bm * 1.7)
 
             if game.stage == 1:
-                underia.entity_spawn(underia.Entities.MechanicEye, target_number=1 + bm * 8, to_player_max=2000, to_player_min=1500,
-                                     rate=0.2 + bm * 0.9)
+                underia.entity_spawn(underia.Entities.MechanicEye, target_number=9 + bm * 8, to_player_max=2000, to_player_min=1500,
+                                     rate=0.5 + bm * 0.9)
 
-                underia.entity_spawn(underia.Entities.Destroyer, target_number=1, to_player_max=6000, to_player_min=5000,
+                underia.entity_spawn(underia.Entities.Destroyer, target_number=1, to_player_max=3500, to_player_min=1000,
                                      rate=0.001 + bm * 0.06, number_factor=1.5)
-                underia.entity_spawn(underia.Entities.TheCPU, target_number=1, to_player_max=6000, to_player_min=5000,
+                underia.entity_spawn(underia.Entities.TheCPU, target_number=1, to_player_max=3500, to_player_min=1000,
                                      rate=0.001 + bm * 0.06, number_factor=1.5)
-                underia.entity_spawn(underia.Entities.TruthlessEye, target_number=1, to_player_max=6000, to_player_min=5000,
+                underia.entity_spawn(underia.Entities.TruthlessEye, target_number=1, to_player_max=3500, to_player_min=1000,
                                      rate=0.0005 + bm * 0.03, number_factor=1.5)
-                underia.entity_spawn(underia.Entities.FaithlessEye, target_number=1, to_player_max=6000, to_player_min=5000,
+                underia.entity_spawn(underia.Entities.FaithlessEye, target_number=1, to_player_max=3500, to_player_min=1000,
                                      rate=0.0005 + bm * 0.03, number_factor=1.5)
             elif game.stage == 0:
-                underia.entity_spawn(underia.Entities.TrueEye, target_number=1, to_player_max=6000, to_player_min=5000,
+                underia.entity_spawn(underia.Entities.TrueEye, target_number=1, to_player_max=3500, to_player_min=1000,
                                      rate=0.0008 + bm * 0.02, number_factor=1.5)
         underia.entity_spawn(underia.Entities.Star, target_number=12 + bm * 10, to_player_max=2000, to_player_min=1500, rate=0.7)
     elif game.get_biome() == 'inner':
-        underia.entity_spawn(underia.Entities.PlanteraBulb, target_number=5, to_player_max=5000, to_player_min=1000, rate=5)
+        underia.entity_spawn(underia.Entities.PlanteraBulb, target_number=5, to_player_max=2500, to_player_min=1000, rate=5)
         if 5 > game.stage > 2:
-            underia.entity_spawn(underia.Entities.GhostFace, target_number=5, to_player_max=5000, to_player_min=2000, rate=0.3)
-            underia.entity_spawn(underia.Entities.SadFace, target_number=5, to_player_max=5000, to_player_min=2000, rate=0.3)
-            underia.entity_spawn(underia.Entities.AngryFace, target_number=5, to_player_max=5000, to_player_min=2000, rate=0.3)
-            underia.entity_spawn(underia.Entities.TimeTrap, target_number=5, to_player_max=5000, to_player_min=2000, rate=0.4)
-            underia.entity_spawn(underia.Entities.TimeFlower, target_number=5, to_player_max=5000, to_player_min=2000, rate=0.4)
-            underia.entity_spawn(underia.Entities.Molecules, target_number=5, to_player_max=5000, to_player_min=2000, rate=0.4)
-            underia.entity_spawn(underia.Entities.TitaniumIngot, target_number=5, to_player_max=5000, to_player_min=2000, rate=0.4)
-            underia.entity_spawn(underia.Entities.Spark, target_number=5, to_player_max=5000, to_player_min=2000, rate=0.4)
-            underia.entity_spawn(underia.Entities.Holyfire, target_number=5, to_player_max=5000, to_player_min=2000, rate=0.4)
+            underia.entity_spawn(underia.Entities.GhostFace, target_number=5, to_player_max=2500, to_player_min=2000, rate=0.3)
+            underia.entity_spawn(underia.Entities.SadFace, target_number=5, to_player_max=2500, to_player_min=2000, rate=0.3)
+            underia.entity_spawn(underia.Entities.AngryFace, target_number=5, to_player_max=2500, to_player_min=2000, rate=0.3)
+            underia.entity_spawn(underia.Entities.TimeTrap, target_number=5, to_player_max=2500, to_player_min=2000, rate=0.4)
+            underia.entity_spawn(underia.Entities.TimeFlower, target_number=5, to_player_max=2500, to_player_min=2000, rate=0.4)
+            underia.entity_spawn(underia.Entities.Molecules, target_number=5, to_player_max=2500, to_player_min=2000, rate=0.4)
+            underia.entity_spawn(underia.Entities.TitaniumIngot, target_number=5, to_player_max=2500, to_player_min=2000, rate=0.4)
+            underia.entity_spawn(underia.Entities.Spark, target_number=5, to_player_max=2500, to_player_min=2000, rate=0.4)
+            underia.entity_spawn(underia.Entities.Holyfire, target_number=5, to_player_max=2500, to_player_min=2000, rate=0.4)
         if 5 > game.stage > 3:
             underia.entity_spawn(underia.Entities.HolyPillar, target_number=2, to_player_max=3000, to_player_min=1000,
                                  rate=50, number_factor=1.9)
@@ -423,7 +444,6 @@ if constants.WEB_DEPLOY:
         while True:
             game.update()
             await asyncio.sleep(0)
-
     asyncio.run(run())
 else:
     try:

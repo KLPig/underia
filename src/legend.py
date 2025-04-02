@@ -3,7 +3,6 @@ from resources import path
 import constants
 import pygame as pg
 import os
-import asyncio
 
 pt = path.get_path('assets/graphics/legend')
 image = {l: pg.image.load(os.path.join(pt, l)) for l in os.listdir(pt)}
@@ -11,36 +10,16 @@ image = {l: pg.image.load(os.path.join(pt, l)) for l in os.listdir(pt)}
 def show_legend():
     window = pg.display.get_surface()
     music = pg.mixer.Sound(os.path.join(path.get_path('assets/musics'), 'the_legend.ogg'))
-    dialogger = dialog.Dialogger(48, pg.Rect(0, window.get_height() - 180, window.get_width(), 180), target_surface=window, speed=12)
+    dialogger = dialog.Dialogger(48, pg.Rect(0, window.get_height() - 180, window.get_width(), 180), target_surface=window, speed=.3)#12)
     texts = [[f'UNDERIA version {version.VERSION[0]}.{version.VERSION[1]}.{version.VERSION[2]}',
-              'Copyright © 2025 KLPIG,\nlicensed under BCM-2 license.', 'by KLPIG\n', 'Released in 24/3/2025',
+              'Copyright © 2025 KLPIG,\nlicensed under BSD 2-clause license.', 'by KLPIG\n',
+              'Released in 32/3/2025, \nwhich isn\'t the april fools day.',
               'Press [C] to continue.', 'Press [ESC] to quit.', 'Assets:', 'Music from Undertale OST, Deltarune OST,\nand Terraria OST.',
-              'Image drawn by KLPIG'],
-             ['Once upon a time, the world was full in chaos.',
-              'Everything\'s both dark and light,\neither good or evil.',
-              'Only the original chaos creature can live \nin this world.'],
-             ['However, after a second, or a millennium, \nor even FOREVER, as there was no TIME here,',
-              'There was a tree seedling, and a cross.',
-              'They are the GOD.',
-              'World starts to have a direction, a law.'],
-             ['Soon, the seedling has grown into a tree,\nwe call it the WORLD\'S TREE, has formed the LAND.',
-              'Also, the cross formed the sky,\nwe call it the FAITH.'],
-             ['The WORLD\'S TREE SAID, "There should be a law."\nSo he created MATTERS and CLOCK,',
-              'which controlled the substance and the current \nof time of the world.',
-              'The FAITH SAID, "There should be LIGHT."\nSO he created the GODS EYE.\n',
-              'They spin around the world, \nstaring for the day and night.',
-              'But they didn\'t notice that, \nthere was something staring at him.'],
-             ['The gods should stand up to find for \nthe ABYSS CREATURE,',
-              'MATTERS and CLOCK together, \ncreated 3 mechanical and 3 biological being.'],
-             ['With the 6 being and 2 gods, the WORLD\'S TREE\ntoiled for ages to fight for the ABYSS CREATURE.'],
-             ['Knowing they might die, the WORLDS TREE created\nthe human\'s and monsters.',
-              'Those clever creatures knew use tools and magics\nand these 2 races rule the world.'],
-             ['The world tree has dead.', 'He left the world, his leaf became the rain,\nmaking millions of life.',
-              'Also, one bulb-shaped flower became a\ndeformed plant in the rainforest.',
-              'The ABYSS CREATURE has been destroyed,\nonly leaving its eye'],
-             ['Dear traveller, can you save this world?']
-             ]
+              'Image drawn by KLPIG']]
+
+    texts += [['What happened?', 'I forgot.'] for _ in range(9)]
     for t in texts:
+        print(t)
         dialogger.push_dialog(*t)
     dialogger.update([])
     while True:
@@ -83,3 +62,30 @@ def show_legend():
         if dialogger.curr_text == '':
             break
     music.stop()
+
+
+"""
+             ['Once upon a time, the world was full in chaos.',
+              'Everything\'s both dark and light,\neither good or evil.',
+              'Only the original chaos creature can live \nin this world.'],
+             ['However, after a second, or a millennium, \nor even FOREVER, as there was no TIME here,',
+              'There was a tree seedling, and a cross.',
+              'They are the GOD.',
+              'World starts to have a direction, a law.'],
+             ['Soon, the seedling has grown into a tree,\nwe call it the WORLD\'S TREE, has formed the LAND.',
+              'Also, the cross formed the sky,\nwe call it the FAITH.'],
+             ['The WORLD\'S TREE SAID, "There should be a law."\nSo he created MATTERS and CLOCK,',
+              'which controlled the substance and the current \nof time of the world.',
+              'The FAITH SAID, "There should be LIGHT."\nSO he created the GODS EYE.\n',
+              'They spin around the world, \nstaring for the day and night.',
+              'But they didn\'t notice that, \nthere was something staring at him.'],
+             ['The gods should stand up to find for \nthe ABYSS CREATURE,',
+              'MATTERS and CLOCK together, \ncreated 3 mechanical and 3 biological being.'],
+             ['With the 6 being and 2 gods, the WORLD\'S TREE\ntoiled for ages to fight for the ABYSS CREATURE.'],
+             ['Knowing they might die, the WORLDS TREE created\nthe human\'s and monsters.',
+              'Those clever creatures knew use tools and magics\nand these 2 races rule the world.'],
+             ['The world tree has dead.', 'He left the world, his leaf became the rain,\nmaking millions of life.',
+              'Also, one bulb-shaped flower became a\ndeformed plant in the rainforest.',
+              'The ABYSS CREATURE has been destroyed,\nonly leaving its eye'],
+             ['Dear traveller, can you save this world?']
+"""

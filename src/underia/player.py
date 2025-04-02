@@ -10,6 +10,7 @@ from values import hp_system, damages, effects
 import constants
 from visual import draw
 
+status = []
 
 class PlayerObject(mover.Mover):
     MASS = 20
@@ -217,6 +218,30 @@ class Player:
                     val *= (e.datas[data_idx] + 100) / 100
                 else:
                     val += e.datas[data_idx]
+        if 'shield' in status:
+            if data_idx.endswith('def'):
+                val += val // 5
+        if 'un-shield' in status:
+            if data_idx.endswith('def'):
+                val -= 9999
+        if 'strength' in data_idx:
+            if data_idx == 'damage':
+                val *= 5
+        if 'critical' in data_idx:
+            if data_idx == 'crit':
+                val += 1000
+        if 'un-strength' in data_idx:
+            if data_idx == 'damage':
+                val = 0
+        if 'un-mana' in data_idx:
+            if data_idx == 'max_mana':
+                val = -self.max_mana + 1
+        if 'mana-regen' in data_idx:
+            if data_idx == 'mana_regen':
+                val = self.max_mana
+        if 'un-mana-regen' in data_idx:
+            if data_idx == 'mana_regen':
+                val = -self.max_mana
         return val
 
     def get_max_screen_scale(self):
@@ -1489,7 +1514,6 @@ class Player:
                                 entity.entity_spawn(entity.Entities.GodsEye, 2000, 2000, 0, 1145, 100000)
                             elif self.inventory.is_enough(inventory.ITEMS['suspicious_substance']):
                                 entity.entity_spawn(entity.Entities.MATTER, 2000, 2000, 0, 1145, 100000)
-
                         elif item.id == 'mechanical':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.ScarlettAltar]):
@@ -1527,6 +1551,14 @@ class Player:
                                 entity.entity_spawn(entity.Entities.Ignis, 2000, 2000, 0, 1145, 100000)
                             elif game.get_game().get_biome() == 'snowland':
                                 entity.entity_spawn(entity.Entities.Northrend, 2000, 2000, 0, 1145, 100000)
+                            elif game.get_game().get_biome() == 'wither':
+                                entity.entity_spawn(entity.Entities.Nefarian, 2000, 2000, 0, 1145, 100000)
+                            elif game.get_game().get_biome() == 'hallow':
+                                entity.entity_spawn(entity.Entities.Olivia, 2000, 2000, 0, 1145, 100000)
+                            elif game.get_game().get_biome() == 'desert':
+                                entity.entity_spawn(entity.Entities.Cybress, 2000, 2000, 0, 1145, 100000)
+                            elif game.get_game().get_biome() == 'heaven':
+                                entity.entity_spawn(entity.Entities.Eonar, 2000, 2000, 0, 1145, 100000)
                             else:
                                 game.get_game().dialog.dialog('...', 'But nothing happened.')
                         elif item.id == 'my_soul':
@@ -1657,6 +1689,61 @@ class Player:
                                 pg.display.update()
                             game.get_game().pressed_keys = []
                             game.get_game().pressed_mouse = []
+
+                        if len(status) >= 10:
+                            game.get_game().dialog.dialog('Ten status in row!', 'Status clear!')
+                            status.clear()
+
+                        if random.random() < 0.8:
+                            game.get_game().dialog.dialog('A lucky selection!', 'You get the effect...')
+                            s = random.randint(1, 6)
+                            if s == 1:
+                                game.get_game().dialog.push_dialog('Shielded!')
+                                ef = random.choices(['shield', 'un-shield', 'more_hp'], [.5, .3, .2])[0]
+                                if ef == 'more_hp':
+                                    self.hp_sys.shields.append(('April Fool', self.hp_sys.max_hp // 2))
+                                status.append(ef)
+                            elif s == 2:
+                                game.get_game().dialog.push_dialog('Strength!')
+                                ef = random.choices(['strength', 'critical', 'un-strength'], [.3, .3, .4])[0]
+                                status.append(ef)
+                            elif s == 3:
+                                game.get_game().dialog.push_dialog('Unlimited mana!')
+                                ef = random.choices(['un-mana', 'mana-regen', 'un-mana-regen'], [.6, .1, .3])[0]
+                                status.append(ef)
+                            elif s == 4:
+                                game.get_game().dialog.push_dialog('Random Item!')
+                                if random.random() < 0.6:
+                                    self.inventory.add_item(inventory.ITEMS[random.choice(['wood', 'leaf'])])
+                                elif random.random() < 0.5:
+                                    self.inventory.add_item(inventory.ITEMS['magic_shard_' + str(random.randint(1, 127))])
+                                else:
+                                    self.inventory.add_item(random.choice(inventory.ITEMS.values()))
+                                status.append('random_item')
+                            elif s == 5:
+                                game.get_game().dialog.push_dialog('Text-ture!')
+                                graphics = game.get_game().graphics
+
+                                font = pg.font.SysFont('papyrus', 180)
+
+                                for k, v in graphics.graphics.items():
+                                    if random.random() > .05:
+                                        continue
+                                    sx, sy = 128, 128
+                                    fr = font.render(k.split('_')[-1], True, (255, 255, 255), (0, 0, 0))
+                                    fr = pg.transform.scale(fr, (sx, fr.get_height() * sx / fr.get_width()))
+                                    surf = pg.Surface((sx, sy), pg.SRCALPHA)
+                                    frr = fr.get_rect()
+                                    frr.center = surf.get_rect().center
+                                    surf.blit(fr, frr)
+                                    graphics.graphics[k] = surf
+
+                                status.append('text-ture')
+                            else:
+                                game.get_game().dialog.push_dialog('Computer crash!')
+                                constants.FPS = min(30, constants.FPS - 6)
+                                status.append('crash')
+                            print(status)
                         self.in_ui = True
             for i in range(len(self.accessories)):
                 styles.item_mouse(10 + i * 90, game.get_game().displayer.SCREEN_HEIGHT - 90,

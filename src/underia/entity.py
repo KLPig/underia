@@ -520,7 +520,7 @@ class TrueEyeAI(MonsterAI):
             self.apply_force(vector.Vector(self.trt, 2000 - self.phase * 200))
 
 class DragonAI(MonsterAI):
-    MASS = 5600
+    MASS = 8800
     FRICTION = 0.8
     SIGHT_DISTANCE = 99999
     TOUCHING_DAMAGE = 640
@@ -2281,24 +2281,26 @@ class Entities:
             if self.img.get_width() < 64:
                 self.img = pg.transform.scale(self.img, (64, 64))
                 self.d_img = self.img
-            self.NAME = item_id.replace('_', '').title()
+            self.NAME = item_id.replace('_', ' ').title()
             self.item_id = item_id
+            self.rarity = inventory.ITEMS[item_id].rarity
             self.hp_sys(op='config', immune=True)
             self.obj.FRICTION = 0.9
-            self.obj.velocity.add(vector.Vector(random.randint(0, 360), random.randint(2, 40)))
+            self.obj.velocity.add(vector.Vector(random.randint(0, 360),
+                                                random.randint(2, 40)))
 
         def on_update(self):
             super().on_update()
             px, py = game.get_game().player.obj.pos
-            if vector.distance(self.obj.pos[0] - px, self.obj.pos[1] - py) < 60 and \
+            if vector.distance(self.obj.pos[0] - px, self.obj.pos[1] - py) < 60 + self.rarity * 25 and \
                     (len(game.get_game().player.inventory.items) < 48 or
                             game.get_game().player.inventory.is_enough(inventory.ITEMS[self.item_id])):
                 game.get_game().player.inventory.add_item(inventory.ITEMS[self.item_id], self.amount)
                 self.hp_sys.hp = 0
-            elif vector.distance(self.obj.pos[0] - px, self.obj.pos[1] - py) < 120:
+            elif vector.distance(self.obj.pos[0] - px, self.obj.pos[1] - py) < 120 + self.rarity * 50:
                 self.obj.apply_force(
                     vector.Vector(vector.coordinate_rotation(px - self.obj.pos[0], py - self.obj.pos[1]), 24000))
-            elif vector.distance(self.obj.pos[0] - px, self.obj.pos[1] - py) < 240:
+            elif vector.distance(self.obj.pos[0] - px, self.obj.pos[1] - py) < 240 + self.rarity * 100:
                 self.obj.apply_force(
                     vector.Vector(vector.coordinate_rotation(px - self.obj.pos[0], py - self.obj.pos[1]), 12000))
 
@@ -2933,14 +2935,14 @@ class Entities:
             if self.tick > 10:
                 game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(self.obj.pos),
                                                                          col=(255, 0, 0), sp=20 / game.get_game().player.get_screen_scale(),
-                                                                        t=30, n=6, g=-0.1))
+                                                                        t=30, n=5, g=-0.1))
             else:
                 pg.draw.circle(game.get_game().displayer.canvas, (255, 0, 0), position.displayed_position(self.obj.pos),
                                20 / game.get_game().player.get_screen_scale())
                 game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(self.obj.pos),
                                                                         col=(255, 0, 0),
                                                                         sp=10 / game.get_game().player.get_screen_scale(),
-                                                                        t=15, n=2))
+                                                                        t=15, n=6))
 
         def on_update(self):
             super().on_update()
@@ -2979,7 +2981,7 @@ class Entities:
                 game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(self.obj.pos),
                                                                         col=(200, 255, 255),
                                                                         sp=20 / game.get_game().player.get_screen_scale(),
-                                                                        t=30, n=6, g=-0.1))
+                                                                        t=30, n=5, g=-0.1))
             else:
                 pg.draw.circle(game.get_game().displayer.canvas, (200, 255, 255),
                                position.displayed_position(self.obj.pos),
@@ -2987,7 +2989,7 @@ class Entities:
                 game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(self.obj.pos),
                                                                         col=(200, 255, 255),
                                                                         sp=10 / game.get_game().player.get_screen_scale(),
-                                                                        t=15, n=2))
+                                                                        t=15, n=6))
 
         def on_update(self):
             super().on_update()
@@ -3010,6 +3012,197 @@ class Entities:
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < r:
                 game.get_game().player.hp_sys.damage(680, damages.DamageTypes.MAGICAL)
                 game.get_game().player.hp_sys.effect(effects.Freezing(7, 3))
+                game.get_game().player.hp_sys.enable_immume()
+
+    class DarkBreath(Entity):
+        NAME = 'Dragon Breath: Dark'
+
+        def __init__(self, pos, rot, target):
+            super().__init__(pos, game.get_game().graphics['entity_dark_breath'], MonsterAI, 500000)
+            self.obj.rot = rot
+            self.target = target
+            self.tick = 0
+
+        def t_draw(self):
+            if self.tick > 10:
+                game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(self.obj.pos),
+                                                                        col=(50, 0, 50),
+                                                                        sp=20 / game.get_game().player.get_screen_scale(),
+                                                                        t=30, n=5, g=-0.1))
+            else:
+                pg.draw.circle(game.get_game().displayer.canvas, (0, 0, 0),
+                               position.displayed_position(self.obj.pos),
+                               20 / game.get_game().player.get_screen_scale())
+                game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(self.obj.pos),
+                                                                         col=(50, 0, 50),
+                                                                         sp=10 / game.get_game().player.get_screen_scale(),
+                                                                         t=15, n=6))
+
+        def on_update(self):
+            super().on_update()
+            self.tick += 1
+            if self.tick < 10:
+                self.obj.pos = ((self.obj.pos[0] * 2 + self.target[0]) / 3,
+                                (self.obj.pos[1] * 2 + self.target[1]) / 3)
+            if vector.distance(self.obj.pos[0] - self.target[0],
+                               self.obj.pos[1] - self.target[1]) < 50:
+                self.tick = max(10, self.tick)
+            self.hp_sys.hp -= 5000
+            self.damage()
+
+        def damage(self):
+            if self.tick > 10:
+                r = 600
+            else:
+                r = 20
+            if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
+                               self.obj.pos[1] - game.get_game().player.obj.pos[1]) < r:
+                game.get_game().player.hp_sys.damage(750, damages.DamageTypes.MAGICAL)
+                game.get_game().player.hp_sys.effect(effects.Darkened(5, 3))
+                game.get_game().player.hp_sys.enable_immume()
+
+    class LightBreath(Entity):
+        NAME = 'Dragon Breath: Light'
+
+        def __init__(self, pos, rot, target):
+            super().__init__(pos, game.get_game().graphics['entity_light_breath'],
+                             MonsterAI, 500000)
+            self.obj.rot = rot
+            self.target = target
+            self.tick = 0
+
+        def t_draw(self):
+            if self.tick > 10:
+                game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(self.obj.pos),
+                                                                        col=(255, 255, 200),
+                                                                        sp=20 / game.get_game().player.get_screen_scale(),
+                                                                        t=30, n=5, g=-0.1))
+            else:
+                pg.draw.circle(game.get_game().displayer.canvas, (0, 0, 0),
+                               position.displayed_position(self.obj.pos),
+                               20 / game.get_game().player.get_screen_scale())
+                game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(self.obj.pos),
+                                                                        col=(255, 200, 200),
+                                                                        sp=10 / game.get_game().player.get_screen_scale(),
+                                                                        t=15, n=6))
+
+        def on_update(self):
+            super().on_update()
+            self.tick += 1
+            if self.tick < 10:
+                self.obj.pos = ((self.obj.pos[0] * 2 + self.target[0]) / 3,
+                                (self.obj.pos[1] * 2 + self.target[1]) / 3)
+            if vector.distance(self.obj.pos[0] - self.target[0],
+                               self.obj.pos[1] - self.target[1]) < 50:
+                self.tick = max(10, self.tick)
+            self.hp_sys.hp -= 5000
+            self.damage()
+
+        def damage(self):
+            if self.tick > 10:
+                r = 600
+            else:
+                r = 20
+            if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
+                               self.obj.pos[1] - game.get_game().player.obj.pos[1]) < r:
+                game.get_game().player.hp_sys.damage(960, damages.DamageTypes.MAGICAL)
+                game.get_game().player.hp_sys.effect(effects.Enlightened(7, 3))
+                game.get_game().player.hp_sys.enable_immume()
+
+    class MechanicBreath(Entity):
+        NAME = 'Dragon Breath: Mechanic'
+
+        def __init__(self, pos, rot, target):
+            super().__init__(pos, game.get_game().graphics['entity_light_breath'], MonsterAI, 500000)
+            self.obj.rot = rot
+            self.target = target
+            self.tick = 0
+
+        def t_draw(self):
+            if self.tick > 10:
+                if self.tick % 10 == 0:
+                    rot = random.randint(0, 360)
+                    ax, ay = vector.rotation_coordinate(rot)
+                    game.get_game().entities.append(Entities.CyberBreath(self.obj.pos, rot,
+                                                                         (self.obj.pos[0] + ax * 1200, self.obj.pos[1] + ay * 1200)))
+                game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(self.obj.pos),
+                                                                        col=(100, 100, 100),
+                                                                        sp=20 / game.get_game().player.get_screen_scale(),
+                                                                        t=30, n=5, g=-0.1))
+            else:
+                pg.draw.circle(game.get_game().displayer.canvas, (100, 100, 100),
+                               position.displayed_position(self.obj.pos),
+                               20 / game.get_game().player.get_screen_scale())
+                game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(self.obj.pos),
+                                                                        col=(100, 100, 100),
+                                                                        sp=10 / game.get_game().player.get_screen_scale(),
+                                                                        t=15, n=6))
+
+        def on_update(self):
+            super().on_update()
+            self.tick += 1
+            if self.tick < 10:
+                self.obj.pos = ((self.obj.pos[0] * 2 + self.target[0]) / 3,
+                                (self.obj.pos[1] * 2 + self.target[1]) / 3)
+            if vector.distance(self.obj.pos[0] - self.target[0], self.obj.pos[1] - self.target[1]) < 50:
+                self.tick = max(10, self.tick)
+            self.hp_sys.hp -= 5000
+            self.damage()
+
+        def damage(self):
+            if self.tick > 10:
+                r = 600
+            else:
+                r = 20
+            if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
+                               self.obj.pos[1] - game.get_game().player.obj.pos[1]) < r:
+                game.get_game().player.hp_sys.damage(1280, damages.DamageTypes.MAGICAL)
+                game.get_game().player.hp_sys.enable_immume()
+
+    class CyberBreath(Entity):
+        NAME = 'Dragon Breath: Cyber'
+
+        def __init__(self, pos, rot, target):
+            super().__init__(pos, game.get_game().graphics['entity_light_breath'], MonsterAI, 500000)
+            self.obj.rot = rot
+            self.target = target
+            self.tick = 0
+
+        def t_draw(self):
+            if self.tick > 10:
+                game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(self.obj.pos),
+                                                                        col=(227, 255, 200),
+                                                                        sp=20 / game.get_game().player.get_screen_scale(),
+                                                                        t=10, n=2, g=-0.1))
+            else:
+                pg.draw.circle(game.get_game().displayer.canvas, (227, 255, 200),
+                               position.displayed_position(self.obj.pos),
+                               20 / game.get_game().player.get_screen_scale())
+                game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(self.obj.pos),
+                                                                        col=(227, 255, 200),
+                                                                        sp=10 / game.get_game().player.get_screen_scale(),
+                                                                        t=15, n=2))
+
+        def on_update(self):
+            super().on_update()
+            self.tick += 1
+            if self.tick < 10:
+                self.obj.pos = ((self.obj.pos[0] * 2 + self.target[0]) / 3,
+                                (self.obj.pos[1] * 2 + self.target[1]) / 3)
+            if vector.distance(self.obj.pos[0] - self.target[0],
+                               self.obj.pos[1] - self.target[1]) < 50:
+                self.tick = max(10, self.tick)
+            self.hp_sys.hp -= 5000
+            self.damage()
+
+        def damage(self):
+            if self.tick > 10:
+                r = 200
+            else:
+                r = 20
+            if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
+                               self.obj.pos[1] - game.get_game().player.obj.pos[1]) < r:
+                game.get_game().player.hp_sys.damage(1140, damages.DamageTypes.MAGICAL)
                 game.get_game().player.hp_sys.enable_immume()
 
     class UniSpike(Lazer):
@@ -3623,21 +3816,41 @@ class Entities:
             self.tail.NAME = self.NAME
             self.tick = 0
             self.phase = 0
+            self.limit_pt = pos
 
         def t_draw(self):
+            if 'limit_pt' not in dir(self):
+                self.limit_pt = self.obj.pos
+            self.tail.obj.pos = self.obj.pos
+            self.tail.t_draw()
+            super().t_draw()
+            self.head.obj.pos = self.obj.pos
+            self.head.t_draw()
+            pg.draw.circle(game.get_game().displayer.canvas, (255, 255, 255),
+                            position.displayed_position(self.limit_pt),
+                           8000 / game.get_game().player.get_screen_scale(), 5)
+            px, py = game.get_game().player.obj.pos
+            px -= self.limit_pt[0]
+            py -= self.limit_pt[1]
+            if vector.distance(px, py) > 8000:
+                px *= 8000 / vector.distance(px, py)
+                py *= 8000 / vector.distance(px, py)
+                game.get_game().player.obj.pos = (px + self.limit_pt[0], py + self.limit_pt[1])
+            sx, sy = self.obj.pos
+            sx -= self.limit_pt[0]
+            sy -= self.limit_pt[1]
+            if vector.distance(sx, sy) > 8000:
+                sx *= 8000 / vector.distance(sx, sy)
+                sy *= 8000 / vector.distance(sx, sy)
+                self.obj.pos = (sx + self.limit_pt[0], sy + self.limit_pt[1])
+
+        def on_update(self):
             if self.phase == 0 and self.hp_sys.hp < self.hp_sys.max_hp * .7:
                 self.phase = 1
                 self.obj.SPEED *= 1.2
             if self.phase == 1 and self.hp_sys.hp < self.hp_sys.max_hp * .4:
                 self.phase = 2
                 self.obj.SPEED *= 1.5
-            self.tail.obj.pos = self.obj.pos
-            self.tail.t_draw()
-            super().t_draw()
-            self.head.obj.pos = self.obj.pos
-            self.head.t_draw()
-
-        def on_update(self):
             super().on_update()
             dr = self.obj.d_rot / 30
             self.set_rotation(-self.obj.velocity.get_net_rotation())
@@ -3655,14 +3868,19 @@ class Entities:
                 fq = 4
             fq //= (self.phase + 1)
             if self.tick % fq == 1:
-                game.get_game().entities.append(Entities.FireBreath(self.obj.pos, self.rot, (game.get_game().player.obj.pos[0] + random.randint(-500 - self.phase * 200, 500 + self.phase * 200),
-                                                                                              game.get_game().player.obj.pos[1] + random.randint(-500 - self.phase * 200, 500 + self.phase * 200))))
+                for _ in range( 1):
+                    game.get_game().entities.append(Entities.FireBreath(self.obj.pos, self.rot, (game.get_game().player.obj.pos[0] + random.randint(-500 - self.phase * 200, 500 + self.phase * 200),
+                                                                                                  game.get_game().player.obj.pos[1] + random.randint(-500 - self.phase * 200, 500 + self.phase * 200))))
 
     class Northrend(Ignis):
         NAME = 'The Frost Breath: Northrend'
         DISPLAY_MODE = 1
         IS_MENACE = True
         LOOT_TABLE = LootTable([
+            IndividualLoot('dragon_bone', 1, 50, 60),
+            IndividualLoot('dragon_skull', 1, 1, 1),
+            SelectionLoot([('ice_dragon_blood', 5, 15), ('dragon_scale_blue', 10, 20)], 1, 2),
+            IndividualLoot('ice_dragon_heart', 1, 1, 1),
         ])
         PHASE_SEGMENTS = [0.4, 0.7]
 
@@ -3693,6 +3911,12 @@ class Entities:
             self.phase = 0
 
         def on_update(self):
+            if self.phase == 0 and self.hp_sys.hp < self.hp_sys.max_hp * .7:
+                self.phase = 1
+                self.obj.SPEED *= 1.2
+            if self.phase == 1 and self.hp_sys.hp < self.hp_sys.max_hp * .4:
+                self.phase = 2
+                self.obj.SPEED *= 1.5
             dr = self.obj.d_rot / 30
             self.set_rotation(-self.obj.velocity.get_net_rotation())
             self.head.set_rotation(self.rot + dr)
@@ -3709,9 +3933,299 @@ class Entities:
                 fq = 3
             fq //= (self.phase + 1)
             if self.tick % fq == 1:
-                game.get_game().entities.append(Entities.IceBreath(self.obj.pos, self.rot, (game.get_game().player.obj.pos[0] + random.randint(-600 - self.phase * 300, 600 + self.phase * 300),
-                                                                                              game.get_game().player.obj.pos[1] + random.randint(-600 - self.phase * 300, 600 + self.phase * 300))))
+                for _ in range(1):
+                    game.get_game().entities.append(Entities.IceBreath(self.obj.pos, self.rot, (game.get_game().player.obj.pos[0] + random.randint(-600 - self.phase * 300, 600 + self.phase * 300),
+                                                                                                  game.get_game().player.obj.pos[1] + random.randint(-600 - self.phase * 300, 600 + self.phase * 300))))
 
+    class Nefarian(Ignis):
+        NAME = 'The Embrace of the Shadow: Nefarian'
+        DISPLAY_MODE = 1
+        IS_MENACE = True
+        LOOT_TABLE = LootTable([
+            IndividualLoot('dragon_bone', 1, 50, 60),
+            IndividualLoot('dragon_skull', .8, 1, 1),
+            SelectionLoot([('dark_dragon_blood', 5, 15), ('dragon_scale_black', 10, 20)], 1, 2),
+            IndividualLoot('dark_dragon_heart', .8, 1, 1),
+        ])
+        PHASE_SEGMENTS = [0.55]
+
+        def __init__(self, pos):
+            super().ssuper().__init__(pos, pg.transform.scale2x(game.get_game().graphics['entity_nefarian_body']),
+                                      DragonAI, 540000)
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 60
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 70
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 60
+            self.hp_sys.defenses[damages.DamageTypes.OCTAVE] = 40
+            self.hp_sys.defenses[damages.DamageTypes.HALLOW] = 50
+            self.hp_sys.defenses[damages.DamageTypes.PACIFY] = 30
+            self.head = Entities.Entity(pos, pg.transform.scale2x(game.get_game().graphics['entity_nefarian_head']),
+                                        MonsterAI, hp_sys=self.hp_sys)
+            self.tail = Entities.Entity(pos, pg.transform.scale2x(game.get_game().graphics['entity_nefarian_tail']),
+                                        MonsterAI, hp_sys=self.hp_sys)
+            self.head.obj.IS_OBJECT = False
+            self.tail.obj.IS_OBJECT = False
+            self.head.IS_MENACE = False
+            self.head.IS_MENACE = False
+            self.head.show_bar = False
+            self.tail.show_bar = False
+            self.head.DISPLAY_MODE = 1
+            self.tail.DISPLAY_MODE = 1
+            self.head.NAME = self.NAME
+            self.tail.NAME = self.NAME
+            self.tick = 0
+            self.phase = 0
+
+        def on_update(self):
+            if self.hp_sys.hp < .55 * self.hp_sys.max_hp and self.phase == 0:
+                self.phase = 1
+                self.obj.SPEED *= 1.2
+            dr = self.obj.d_rot / 30
+            self.set_rotation(-self.obj.velocity.get_net_rotation())
+            self.head.set_rotation(self.rot + dr)
+            self.tail.set_rotation(self.rot - dr)
+            self.tick += 1
+            if self.tick % 300 < 180:
+                self.obj.state = 0
+                fq = 15
+                fq2 = 8
+            elif self.tick % 30 < 18:
+                self.obj.state = 1
+                fq = 12
+                fq2 = 18
+            else:
+                self.obj.state = 2
+                fq = 8
+                fq2 = 20
+            fq *= 2
+            fq2 *= 3
+            fq //= (self.phase + 1)
+            fq2 //= (self.phase + 1)
+            if self.tick % fq == 1:
+                for _ in range(2):
+                    game.get_game().entities.append(Entities.DarkBreath(self.obj.pos, self.rot, (game.get_game().player.obj.pos[0] + random.randint(-800 - self.phase * 300, 800 + self.phase * 300),
+                                                                                                  game.get_game().player.obj.pos[1] + random.randint(-800 - self.phase * 300, 800 + self.phase * 300))))
+            if self.tick % fq2 == 1:
+                for _ in range(self.phase + 1):
+                    pp = (self.obj.pos[0] + random.randint(-1000 - self.phase * 500, 1000 + self.phase * 500),
+                          self.obj.pos[1] + random.randint(-1000 - self.phase * 500, 1000 + self.phase * 500))
+                    tp = (game.get_game().player.obj.pos[0] + random.randint(-1000 - self.phase * 500, 1000 + self.phase * 500),
+                            game.get_game().player.obj.pos[1] + random.randint(-1000 - self.phase * 500, 1000 + self.phase * 500))
+                    game.get_game().entities.append(Entities.DarkBreath(pp, random.randint(0, 360), tp))
+                    game.get_game().displayer.effect(fc.p_fade_circle(*position.displayed_position(tp),
+                                                                      col=(50, 0, 50), sp=15, t=10))
+
+    class Olivia(Ignis):
+        NAME = 'The Radiance of Light: Olivia'
+        DISPLAY_MODE = 1
+        IS_MENACE = True
+        LOOT_TABLE = LootTable([
+            IndividualLoot('dragon_bone', 1, 50, 60),
+            IndividualLoot('dragon_skull', 1, 1, 1),
+            SelectionLoot([('light_dragon_blood', 5, 15), ('dragon_scale_yellow', 10, 20)], 1, 2),
+            IndividualLoot('light_dragon_heart', 1, 1, 1),
+        ])
+        PHASE_SEGMENTS = [0.55]
+
+        def __init__(self, pos):
+            super().ssuper().__init__(pos, pg.transform.scale2x(game.get_game().graphics['entity_olivia_body']),
+                                      DragonAI, 480000)
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 250
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 280
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 250
+            self.hp_sys.defenses[damages.DamageTypes.OCTAVE] = 200
+            self.hp_sys.defenses[damages.DamageTypes.HALLOW] = 220
+            self.hp_sys.defenses[damages.DamageTypes.PACIFY] = 150
+            self.head = Entities.Entity(pos, pg.transform.scale2x(game.get_game().graphics['entity_olivia_head']),
+                                        MonsterAI, hp_sys=self.hp_sys)
+            self.tail = Entities.Entity(pos, pg.transform.scale2x(game.get_game().graphics['entity_olivia_tail']),
+                                        MonsterAI, hp_sys=self.hp_sys)
+            self.head.obj.IS_OBJECT = False
+            self.tail.obj.IS_OBJECT = False
+            self.head.IS_MENACE = False
+            self.head.IS_MENACE = False
+            self.head.show_bar = False
+            self.tail.show_bar = False
+            self.head.DISPLAY_MODE = 1
+            self.tail.DISPLAY_MODE = 1
+            self.head.NAME = self.NAME
+            self.tail.NAME = self.NAME
+            self.tick = 0
+            self.phase = 0
+
+        def on_update(self):
+            if self.hp_sys.hp < .55 * self.hp_sys.max_hp and self.phase == 0:
+                self.phase = 1
+                self.obj.SPEED *= 1.2
+            dr = self.obj.d_rot / 30
+            self.set_rotation(-self.obj.velocity.get_net_rotation())
+            self.head.set_rotation(self.rot + dr)
+            self.tail.set_rotation(self.rot - dr)
+            self.tick += 1
+            if self.tick % 300 < 180:
+                self.obj.state = 0
+                fq = 15
+                fq2 = 7
+            elif self.tick % 30 < 18:
+                self.obj.state = 1
+                fq = 12
+                fq2 = 16
+            else:
+                self.obj.state = 2
+                fq = 8
+                fq2 = 19
+            fq *= 2
+            fq2 *= 3
+            fq //= (self.phase + 1)
+            fq2 //= (self.phase + 1)
+            if self.tick % fq == 1:
+                for _ in range(2):
+                    game.get_game().entities.append(Entities.LightBreath(self.obj.pos, self.rot, (
+                    game.get_game().player.obj.pos[0] + random.randint(-1200 - self.phase * 300, 1200 + self.phase * 300),
+                    game.get_game().player.obj.pos[1] + random.randint(-1200 - self.phase * 300,
+                                                                       1200 + self.phase * 300))))
+            if self.tick % fq2 == 1:
+                for _ in range(self.phase + 1):
+                    pp = (self.obj.pos[0] + random.randint(-1500 - self.phase * 500, 1500 + self.phase * 500),
+                          self.obj.pos[1] + random.randint(-1500 - self.phase * 500, 1500 + self.phase * 500))
+                    tp = (game.get_game().player.obj.pos[0] + random.randint(-1500 - self.phase * 500,
+                                                                             1500 + self.phase * 500),
+                          game.get_game().player.obj.pos[1] + random.randint(-1500 - self.phase * 500,
+                                                                             1500 + self.phase * 500))
+                    game.get_game().entities.append(Entities.LightBreath(pp, random.randint(0, 360), tp))
+                    game.get_game().displayer.effect(fc.p_fade_circle(*position.displayed_position(tp),
+                                                                      col=(255, 255, 200), sp=20, t=10))
+
+    class Cybress(Ignis):
+        NAME = 'The Heart of Iron: Cybress'
+        DISPLAY_MODE = 1
+        IS_MENACE = True
+        LOOT_TABLE = LootTable([
+            IndividualLoot('dragon_bone', 1, 50, 60),
+            IndividualLoot('dragon_skull', 1, 1, 1),
+            SelectionLoot([('mechanic_dragon_blood', 5, 15), ('dragon_scale_gray', 10, 20)], 1, 2),
+            IndividualLoot('mechanic_dragon_heart', 1, 1, 1),
+        ])
+
+        def __init__(self, pos):
+            self.ssuper().__init__(pos, pg.transform.scale2x(game.get_game().graphics['entity_cybress_body']),
+                                      DragonAI, 320000)
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 350
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 380
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 350
+            self.hp_sys.defenses[damages.DamageTypes.OCTAVE] = 220
+            self.hp_sys.defenses[damages.DamageTypes.HALLOW] = 240
+            self.hp_sys.defenses[damages.DamageTypes.PACIFY] = 200
+            self.head = Entities.Entity(pos, pg.transform.scale2x(game.get_game().graphics['entity_cybress_head']),
+                                        MonsterAI, hp_sys=self.hp_sys)
+            self.tail = Entities.Entity(pos, pg.transform.scale2x(game.get_game().graphics['entity_cybress_tail']),
+                                        MonsterAI, hp_sys=self.hp_sys)
+            self.head.obj.IS_OBJECT = False
+            self.tail.obj.IS_OBJECT = False
+            self.head.IS_MENACE = False
+            self.head.IS_MENACE = False
+            self.head.show_bar = False
+            self.tail.show_bar = False
+            self.head.DISPLAY_MODE = 1
+            self.tail.DISPLAY_MODE = 1
+            self.head.NAME = self.NAME
+            self.tail.NAME = self.NAME
+            self.tick = 0
+            self.phase = 0
+            self.obj.SPEED *= 2.5
+            self.obj.MASS *= 1.5
+            self.obj.TOUCHING_DAMAGE += 100
+
+        def on_update(self):
+            dr = self.obj.d_rot / 30
+            self.set_rotation(-self.obj.velocity.get_net_rotation())
+            self.head.set_rotation(self.rot + dr)
+            self.tail.set_rotation(self.rot - dr)
+            self.tick += 1
+            if self.tick % 250 < 200:
+                self.obj.state = 0
+                fq = 15
+            elif self.tick % 25 < 18:
+                self.obj.state = 1
+                fq = 12
+            else:
+                self.obj.state = 2
+                fq = 8
+            fq *= 2
+            if self.tick % fq == 1:
+                for _ in range(2):
+                    game.get_game().entities.append(Entities.MechanicBreath(self.obj.pos, self.rot, (
+                        game.get_game().player.obj.pos[0] + random.randint(-1500, 1500),
+                        game.get_game().player.obj.pos[1] + random.randint(-1500, 1500))))
+
+    class Eonar(Ignis):
+        NAME = 'The Whisper of Mind: Eonar'
+        DISPLAY_MODE = 1
+        IS_MENACE = True
+        LOOT_TABLE = LootTable([
+            IndividualLoot('dragon_bone', 1, 50, 60),
+            IndividualLoot('dragon_skull', 1, 1, 1),
+            SelectionLoot([('mind_dragon_blood', 5, 15), ('dragon_scale_green', 10, 20)], 1, 2),
+            IndividualLoot('mind_dragon_heart', 1, 1, 1),
+        ])
+        def __init__(self, pos):
+            self.ssuper().__init__(pos, pg.transform.scale2x(game.get_game().graphics['entity_eonar_body']),
+                                      DragonAI, 180000)
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 100
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 150
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 100
+            self.hp_sys.defenses[damages.DamageTypes.OCTAVE] = 50
+            self.hp_sys.defenses[damages.DamageTypes.HALLOW] = 70
+            self.hp_sys.defenses[damages.DamageTypes.PACIFY] = 20
+            for k in self.hp_sys.resistances.resistances.keys():
+                self.hp_sys.resistances[k] *= .4
+            self.head = Entities.Entity(pos, pg.transform.scale2x(game.get_game().graphics['entity_eonar_head']),
+                                        MonsterAI, hp_sys=self.hp_sys)
+            self.tail = Entities.Entity(pos, pg.transform.scale2x(game.get_game().graphics['entity_eonar_tail']),
+                                        MonsterAI, hp_sys=self.hp_sys)
+            self.head.obj.IS_OBJECT = False
+            self.tail.obj.IS_OBJECT = False
+            self.head.IS_MENACE = False
+            self.head.IS_MENACE = False
+            self.head.show_bar = False
+            self.tail.show_bar = False
+            self.head.DISPLAY_MODE = 1
+            self.tail.DISPLAY_MODE = 1
+            self.head.NAME = self.NAME
+            self.tail.NAME = self.NAME
+            self.tick = 0
+            self.phase = 0
+            self.obj.TOUCHING_DAMAGE += 200
+            self.obj.MASS *= .5
+
+        def on_update(self):
+            dr = self.obj.d_rot / 30
+            self.set_rotation(-self.obj.velocity.get_net_rotation())
+            self.head.set_rotation(self.rot + dr)
+            self.tail.set_rotation(self.rot - dr)
+            self.tick += 1
+            if self.tick % 250 < 200:
+                self.obj.state = 0
+                fq = 15
+            elif self.tick % 25 < 18:
+                self.obj.state = 1
+                fq = 12
+            else:
+                self.obj.state = 2
+                fq = 8
+            if self.tick % fq == 1:
+                if random.randint(0, 2) == 0:
+                    v = self.obj.velocity.get_net_value()
+                    self.obj.velocity.clear()
+                    self.obj.velocity.add(vector.Vector(random.randint(0, 360), v * random.uniform(1, 3)))
+                elif random.randint(0, 1):
+                    game.get_game().displayer.effect(fc.p_fade_circle(*position.displayed_position(self.obj.pos),
+                                                                      col=(227, 255, 200), sp=80, t=10))
+                    if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
+                                        self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 800:
+                        game.get_game().player.hp_sys.damage(self.obj.TOUCHING_DAMAGE, damages.DamageTypes.MAGICAL)
+                else:
+                    self.obj.pos = (game.get_game().player.obj.pos[0] + random.randint(-500, 500),
+                                     game.get_game().player.obj.pos[1] + random.randint(-500, 500))
 
     class Cells(Entity):
         NAME = 'Cells'
@@ -4917,9 +5431,9 @@ class Entities:
             pg.draw.circle(game.get_game().displayer.canvas, (127, 255, 0), position.displayed_position(self.obj.pos),
                            radius=800 / game.get_game().player.get_screen_scale(), width=5)
             if vector.distance(px, py) < 800:
-                entity_spawn(Entities.GhostFace, target_number=1, to_player_max=5000, to_player_min=2000, rate=0.2)
-                entity_spawn(Entities.AngryFace, target_number=1, to_player_max=5000, to_player_min=2000, rate=0.2)
-                entity_spawn(Entities.SadFace, target_number=1, to_player_max=5000, to_player_min=2000, rate=0.2)
+                entity_spawn(Entities.GhostFace, target_number=1, to_player_max=2500, to_player_min=2000, rate=0.2)
+                entity_spawn(Entities.AngryFace, target_number=1, to_player_max=2500, to_player_min=2000, rate=0.2)
+                entity_spawn(Entities.SadFace, target_number=1, to_player_max=2500, to_player_min=2000, rate=0.2)
 
     class TimeTrap(Entity):
         NAME = 'Timetrap'
@@ -5006,7 +5520,7 @@ class Entities:
             pg.draw.circle(game.get_game().displayer.canvas,(0, 255, 255), position.displayed_position(self.obj.pos),
                            radius=800 / game.get_game().player.get_screen_scale(), width=5)
             if vector.distance(px, py) < 800:
-                entity_spawn(Entities.TimeTrapGuard, target_number=3, to_player_max=5000, to_player_min=2000, rate=0.2)
+                entity_spawn(Entities.TimeTrapGuard, target_number=3, to_player_max=2500, to_player_min=2000, rate=0.2)
 
     class Molecules(Entity):
         NAME = 'Molecules'
@@ -6862,8 +7376,8 @@ def entity_spawn(entity: type(Entities.Entity), to_player_min=1500, to_player_ma
                  target_number=5, rate=0.5):
     game_obj = game.get_game()
     if (random.random() < max(0.0, len([e for e in game_obj.entities if type(e) is entity]) - target_number
-                                   * number_factor / 10) - rate / 50 + max(0, len(game_obj.entities) - constants.ENTITY_NUMBER)
-            * target_number / 45 * (not entity.IS_MENACE) + 1):
+                                   * number_factor / 10) - rate / 60 + max(0, len(game_obj.entities) - constants.ENTITY_NUMBER)
+            / 8 * (not entity.IS_MENACE) + 1):
         return
     player = game_obj.player
     dist = random.randint(to_player_min, to_player_max)

@@ -66,6 +66,8 @@ class Mover:
             return False
         if not self.IS_OBJECT or not other.IS_OBJECT:
             return False
+        if not self.FRICTION and not other.FRICTION:
+            return False
         r = (other.pos[0] - self.pos[0]) ** 2 + (other.pos[1] - self.pos[1]) ** 2
         d = math.sqrt(r)
         rot = vector.coordinate_rotation(other.pos[0] - self.pos[0], other.pos[1] - self.pos[1])

@@ -26,8 +26,8 @@ class FadeCircle(effects.Effect):
             xx, yy = position.real_position((0, 0))
             nax = -xx
             nay = -yy
-            self.x += nax - self.ax
-            self.y += nay - self.ay
+            self.x += (nax - self.ax) / game.get_game().player.get_screen_scale()
+            self.y += (nay - self.ay) / game.get_game().player.get_screen_scale()
             self.ax = nax
             self.ay = nay
         scale = game.get_game().player.get_screen_scale()

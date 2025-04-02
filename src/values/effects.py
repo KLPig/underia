@@ -93,6 +93,18 @@ class Freezing(Effect):
     DESC = '-60% speed'
     CORRESPONDED_ELEMENT = elements.ElementTypes.WATER
 
+class Darkened(Effect):
+    IMG = 'darkened'
+    NAME = 'Darkened'
+    DESC = '-50% damage'
+    CORRESPONDED_ELEMENT = elements.ElementTypes.DARK
+
+class Enlightened(Effect):
+    IMG = 'enlightened'
+    NAME = 'Enlightened'
+    DESC = '-100 touching defense\n-100 magic defense\n+20/sec regeneration'
+    CORRESPONDED_ELEMENT = elements.ElementTypes.LIGHT
+
 class Frozen(Effect):
     IMG = 'freezing'
     NAME = 'Frozen'
