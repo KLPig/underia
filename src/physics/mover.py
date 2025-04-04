@@ -62,8 +62,6 @@ class Mover:
     def object_collision(self, other: 'Mover', required_distance: float):
         if other is self:
             return False
-        if self.MASS > other.MASS:
-            return False
         if not self.IS_OBJECT or not other.IS_OBJECT:
             return False
         if not self.FRICTION and not other.FRICTION:
@@ -86,4 +84,4 @@ class Mover:
                 v1 = (u1 * (m1 - m2) + 2 * m2 * u2) / (m1 + m2)
             self.velocity.add(vector.Vector(rot, v1))
             return True
-        return False
+        return d <= required_distance * 1.5

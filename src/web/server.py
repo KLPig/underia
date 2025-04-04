@@ -1,41 +1,59 @@
 from web import game_pack_data
+from underia import game
 import socket
-import threading
 import pickle
+import asyncio
 
 
 class SocketServer:
-    pack_data = game_pack_data.FirstConnectData()
 
     def __init__(self):
         self.port = 1145
         self.host = socket.gethostname()
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.bind((self.host, self.port))
-        self.sock.listen(1)
-        print(f'Server started on {self.host}:{self.port}')
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.player_count = 1
+        self.players: dict[int, game_pack_data.SinglePlayerData] = {0: game_pack_data.SinglePlayerData(0, game.get_game().player)}
 
-    @staticmethod
-    def command_handler(recv_data: bytes) -> bytes:
-        return f'Decoded {recv_data.decode()}'.encode()
+    def command_handler(self, recv_data: bytes) -> bytes:
+        data = pickle.loads(recv_data)
+        if type(data) is game_pack_data.SinglePlayerData:
+            self.players[data.player_id] = data
+            return pickle.dumps(self.players)
+        return b'gotten'
 
-    @staticmethod
-    def socket_handle(conn: socket.socket):
-        conn.send(pickle.dumps(SocketServer.pack_data))
+    async def socket_handle(self, client: socket.socket):
+        loop = asyncio.get_event_loop()
+        print(self.host, self.port)
+        pack_data = game_pack_data.FirstConnectData(self.player_count, game.get_game().player.profile.dump())
+        await loop.sock_sendall(client, pickle.dumps(pack_data))
+        self.player_count += 1
+        await loop.sock_sendall(client, pickle.dumps(self.players))
         while True:
-            recv = conn.recv(1024)
-            response = SocketServer.command_handler(recv)
-            conn.send(response)
+            recv = await loop.sock_recv(client, 32767)
             if not recv:
                 break
-        conn.close()
+            response = self.command_handler(recv)
+            await loop.sock_sendall(client, response)
+            await asyncio.sleep(0.05)
+        client.close()
 
-    def listen(self):
-        conn, addr = self.sock.accept()
-        threading.Thread(target=self.socket_handle, args=(conn,)).start()
+    async def start_server(self):
+        loop = asyncio.get_event_loop()
+        print('Server started')
+        self.sock.bind((self.host, self.port))
+        self.sock.setblocking(False)
+        self.sock.listen(8)
+
+        print(f'Server started on {self.host}:{self.port}')
+        while True:
+            client, _ = await loop.sock_accept(self.sock)
+            loop.create_task(self.socket_handle(client))
+
+    def update(self):
+        self.players[0].pos = game.get_game().player.obj.pos
 
 
 if __name__ == '__main__':
     server = SocketServer()
-    while True:
-        server.listen()
+    asyncio.run(server.start_server())

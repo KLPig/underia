@@ -225,6 +225,15 @@ class PlayerProfile:
                                          mps[1] - 36 * l + p_y))
         window.blit(t, tr)
 
+    def dump(self):
+        return {'points': [self.point_wisdom, self.point_strength, self.point_agility, self.point_melee, self.point_ranged, self.point_magic],
+                'skills': [self.select_skill], 'stage': self.stage}
+
+    def load(self, data):
+        self.point_wisdom, self.point_strength, self.point_agility, self.point_melee, self.point_ranged, self.point_magic = data['points']
+        self.select_skill = data['skills']
+        self.stage = data['stage']
+
     def add_point(self, t = 0):
         self.font = pg.font.Font(path.get_path('assets/dtm-mono.otf'), 36)
         self.font_s = pg.font.Font(path.get_path('assets/dtm-mono.otf'), 18)

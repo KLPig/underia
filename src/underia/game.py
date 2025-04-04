@@ -5,8 +5,8 @@ from functools import lru_cache
 import asyncio
 import pygame as pg
 
-import resources, visual, constants, physics
-from underia import player, entity, projectiles, weapons, inventory, dialog
+import resources, visual, constants, physics, web
+from underia import player, entity, projectiles, weapons, inventory, dialog, styles
 import perlin_noise
 
 MUSICS = {
@@ -186,20 +186,21 @@ class Game:
         weapons.set_weapons()
         self.map = pg.PixelArray(self.graphics['background_map'])
         cnt = 0
+        formats = ['.ogg', '.wav']
         for m in os.listdir(resources.get_path('assets/musics')):
-            if m[-4:] in ['.ogg']:
+            if m[-4:] in formats:
                 cnt += 1
         for s in os.listdir(resources.get_path('assets/sounds')):
-            if s[-4:] in ['.ogg']:
+            if s[-4:] in formats:
                 cnt += 1
         self.gcnt = 0
         for m in os.listdir(resources.get_path('assets/musics')):
-            if m[-4:] in ['.ogg']:
+            if m[-4:] in formats:
                 self.gcnt += 1
                 self._display_progress(self.gcnt / cnt)
                 self.musics[m.split('.')[0]] = pg.mixer.Sound(resources.get_path('assets/musics/' + m))
         for s in os.listdir(resources.get_path('assets/sounds')):
-            if s[-4:] in ['.ogg']:
+            if s[-4:] in formats:
                 self.gcnt += 1
                 self._display_progress(self.gcnt / cnt)
                 self.sounds[s.split('.')[0]] = pg.mixer.Sound(resources.get_path('assets/sounds/' + s))
@@ -209,10 +210,13 @@ class Game:
             if x % 40 == 0:
                 self._display_progress((x + 200) / 400, 0)
 
-    def play_sound(self, sound: str, vol=1.0):
+    def play_sound(self, sound: str, vol=1.0, stop_if_need=False):
         self.sounds[sound].set_volume(vol)
         if self.sounds[sound].get_num_channels():
-            return
+            if stop_if_need:
+                self.sounds[sound].stop()
+            else:
+                return
         self.sounds[sound].play()
 
     def on_update(self):
@@ -345,6 +349,9 @@ class Game:
         self.update_map()
 
     def update(self):
+        if self.client is not None and not self.client.started:
+            loop = asyncio.get_event_loop()
+            loop.create_task(self.client.start())
         if (self.prepared_music is None and self.channel.get_busy() == 0) or \
                 (self.cur_music is not None and (self.get_biome() + str(int(0.3 < self.day_time < 0.7))) not in
                  self.MUSICS[self.cur_music] and not len([1 for e in self.entities if e.IS_MENACE])) \
@@ -415,6 +422,18 @@ class Game:
                 monster.obj.object_collision(monster2.obj,
                                              (monster2.img.get_width() + monster2.img.get_height()) // 4 + (
                                                          monster.img.get_width() + monster.img.get_height()) // 4)
+        if self.client is not None or self.server is not None:
+            players = self.client.player_datas.values() if self.client is not None else self.server.players.values()
+            for p in players:
+                p_data: web.SinglePlayerData = p
+                sf = self.player.profile.get_surface(*p_data.col)
+                sf = pg.transform.scale(sf, (int(40 / self.player.get_screen_scale()),
+                                             int(40 / self.player.get_screen_scale())))
+                sfr = sf.get_rect(center=resources.displayed_position(p_data.pos))
+                self.displayer.canvas.blit(sf, sfr)
+                styles.hp_bar(p_data.hp_sys, resources.displayed_position((p_data.pos[0], p_data.pos[1] - 30)), 40)
+        if self.server is not None:
+            self.server.update()
         self.player.update()
         for drop_item in self.drop_items:
             drop_item.update()
@@ -428,8 +447,8 @@ class Game:
                 del proj
         self.damage_texts = [(dmg, tick + 1, pos) for dmg, tick, pos in self.damage_texts if tick < 80]
         for dmg, tick, pos in self.damage_texts:
-            f = self.displayer.font.render(str(dmg), True, (255, 0, 0))
-            fr = f.get_rect(center=resources.displayed_position((pos[0], pos[1] + (80 - tick) ** 2 // 100)))
+            f = self.displayer.font_mono.render(str(dmg), True, (255, 0, 0))
+            fr = f.get_rect(center=resources.displayed_position((pos[0], pos[1] + (80 - tick) ** 3 // 4000)))
             self.displayer.canvas.blit(f, fr)
         self.displayer.night_darkness_color = self.get_night_color(self.day_time % 1.0)
         self.displayer.night_darkness()
@@ -541,6 +560,10 @@ class Game:
                     text_rect = text.get_rect(center=(window.get_rect().centerx,
                                                       window.get_rect().centery))
                     window.blit(text, text_rect)
+                    text = font.render('[W] to start server', True, (255, 255, 255))
+                    text_rect = text.get_rect(center=(window.get_rect().centerx,
+                                                      window.get_rect().centery + 80))
+                    window.blit(text, text_rect)
                     pg.display.flip()
                     paused = True
                     while paused:
@@ -555,6 +578,11 @@ class Game:
                                 elif ev.key == pg.K_F4:
                                     constants.FULLSCREEN = not constants.FULLSCREEN
                                     pg.display.set_mode(pg.display.get_window_size(), (pg.FULLSCREEN if constants.FULLSCREEN else 0) | constants.FLAGS)
+                                elif ev.key == pg.K_w:
+                                    if self.server is None:
+                                        self.server = web.SocketServer()
+                                        loop = asyncio.get_event_loop()
+                                        loop.create_task(self.server.start_server())
                         pg.display.update()
                     self.pressed_mouse = []
                     self.pressed_keys = []

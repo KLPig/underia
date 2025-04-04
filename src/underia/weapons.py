@@ -55,7 +55,7 @@ class Weapon:
     def attack(self):
         if self.ATTACK_SOUND is not None:
             d = vector.distance(self.x, self.y)
-            game.get_game().play_sound(self.ATTACK_SOUND, 0.99 ** int(d / 10))
+            game.get_game().play_sound(self.ATTACK_SOUND, 0.99 ** int(d / 10), True)
         self.timer = self.at_time + 1
         self.on_start_attack()
 
@@ -1671,7 +1671,10 @@ class MagicWeapon(Weapon):
     ATTACK_SOUND = 'attack_magic'
 
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int,
-                 projectile: type(projectiles.Projectiles.Projectile), mana_cost: int, auto_fire: bool = False, spell_name = ''):
+                 projectile: type(projectiles.Projectiles.Projectile), mana_cost: int, auto_fire: bool = False, spell_name = '',
+                 arcane_sound=0):
+        if arcane_sound:
+            self.ATTACK_SOUND = 'attack_arcane'
         if speed + at_time > 3:
             super().__init__(name, damages, kb, img, 0, at_time, auto_fire)
         else:
@@ -1727,7 +1730,8 @@ class PoetWeapon(MagicWeapon):
                               ('E4', 8),
                               ('D5', 1), ('E5', 1), ('E5', 2), ('E5', 2), ('C6', 1), ('B5', 1), ('A5', 8)],
         'quiet': [('A4', 2), ('D5', 2), ('F#5', 2), ('D5', 2), ('E5', 1), ('F#5', 1), ('G#5', 1), ('D5', 1),
-                  ('F5', 4)]
+                  ('F5', 4)],
+        'spear_of_justice': [('D5', 3), ('D5', 2), ('F5', 1), ('E5', 2), ('B5', 2), ('D5', 2)],
     }
     SONGS_S = {
         'his_theme_s': [[('F4', 16)]] + [[]] * 6 +
@@ -1746,6 +1750,7 @@ class PoetWeapon(MagicWeapon):
         'legend_s': [[]] * 27,
         'apple_smells_good_s': [[]] * 16,
         'quiet_s': [[]] * 9,
+        'spear_of_justice_s': [[]] * 7,
     }
 
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int,
@@ -2083,6 +2088,8 @@ class MagicSet(Weapon):
 
 
 class ArcaneWeapon(MagicWeapon):
+    ATTACK_SOUND = 'attack_arcane'
+
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int,
                  projectile: type(projectiles.Projectiles.Projectile), mana_cost: int, talent_cost: float,
                  auto_fire: bool = False, spell_name = ''):
@@ -2471,6 +2478,8 @@ class EarthWall(MagicWeapon):
                                                                           self.y + game.get_game().player.obj.pos[1] + ay * w)))
 
 class Bow(Weapon):
+    ATTACK_SOUND = 'attack_bow'
+
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, projectile_speed: int,
                  auto_fire: bool = False, tail_col: tuple[int, int, int] | None = None, ammo_save_chance: float = 0.0, precision: float = 0.0):
         super().__init__(name, damages, kb, img, speed, at_time, auto_fire)
@@ -2489,7 +2498,7 @@ class Bow(Weapon):
             game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
         pj = projectiles.AMMOS[game.get_game().player.ammo[0]]((self.x + game.get_game().player.obj.pos[0],
                                                                self.y + game.get_game().player.obj.pos[1]),
-                                                              self.rot + random.randint(-self.precision, self.precision), self.spd,
+                                                              self.rot + random.uniform(-self.precision, self.precision), self.spd,
                                                               self.damages[dmg.DamageTypes.PIERCING])
         if self.tail_col is not None:
             pj.TAIL_COLOR = self.tail_col
@@ -3557,17 +3566,17 @@ def set_weapons():
                                               10, projectiles.Projectiles.AcidRain, 500, 10, True,
                                                'Acid Rain'),
         'storm': MagicWeapon('storm', {dmg.DamageTypes.MAGICAL: 200}, 1, 'items_weapons_storm',
-                             9, 1, projectiles.Projectiles.Storm, 120, True, 'Storm'),
+                             9, 1, projectiles.Projectiles.Storm, 120, True, 'Storm', 1),
         'earth_wall': EarthWall('earth_wall', {}, 1, 'items_weapons_earth_wall',
-                                12, 1, projectiles.Projectiles.Projectile, 600, False, 'Earth Wall'),
+                                12, 1, projectiles.Projectiles.Projectile, 600, False, 'Earth Wall', 1),
         'lifebringer': MagicWeapon('lifebringer', {}, 1, 'items_weapons_lifebringer',
-                                   110, 10, projectiles.Projectiles.LifeBringer, 500, True, 'Life Bringer'),
+                                   110, 10, projectiles.Projectiles.LifeBringer, 500, True, 'Life Bringer', 1),
         'target_dummy': TargetDummy('target_dummy', {}, 1, 'items_weapons_target_dummy',
                                      0, 10, projectiles.Projectiles.Projectile, 15, True, 'Target Dummy'),
         'judgement_light': MagicWeapon('judgement light', {dmg.DamageTypes.MAGICAL: 450}, 1, 'items_weapons_judgement_light',
-                                       220, 10, projectiles.Projectiles.JudgementLight, 800, True, 'Judgement Light'),
+                                       220, 10, projectiles.Projectiles.JudgementLight, 800, True, 'Judgement Light', 1),
         'dark_restrict': MagicWeapon('dark restrict', {}, 1, 'items_weapons_dark_restrict',
-                                      1, 14, projectiles.Projectiles.DarkRestrict, 200, True, 'Dark Restrict'),
+                                      1, 14, projectiles.Projectiles.DarkRestrict, 200, True, 'Dark Restrict', 1),
         'death_note': ArcaneWeapon('death note', {dmg.DamageTypes.ARCANE: 45}, 1, 'items_weapons_death_note',
                                    10, 10, projectiles.Projectiles.DeathNote, 120, 8, True, 'Death Note'),
         'great_forbidden_curse__dark': ArcaneWeapon('great forbidden curse  dark', {dmg.DamageTypes.ARCANE: 24}, 0.8,
@@ -3577,17 +3586,17 @@ def set_weapons():
         'great_forbidden_curse__evil': ArcaneWeapon('great forbidden curse  evil', {dmg.DamageTypes.ARCANE: 12}, 0.8,
                                                'items_weapons_forbidden_curse__blood_moon', 590,
                                               10, projectiles.Projectiles.ForbiddenCurseBloodMoon, 800, 32, True,
-                                               'Blood Moon'),
+                                               'Blood Moon',),
         'stop': MagicWeapon('stop', {}, 1, 'items_weapons_stop', 240, 1,
-                            projectiles.Projectiles.Stop, 800, True, 'Stop'),
+                            projectiles.Projectiles.Stop, 800, True, 'Stop', 1),
         'sun_pearl': MagicWeapon('sun pearl', {dmg.DamageTypes.MAGICAL: 660}, 1, 'items_weapons_sun_pearl',
-                                  8, 8, projectiles.Projectiles.SunPearl, 88, True, 'Sun Guard'),
+                                  8, 8, projectiles.Projectiles.SunPearl, 88, True, 'Sun Guard', 1),
         'falling_action': MagicWeapon('falling action', {dmg.DamageTypes.MAGICAL: 400, dmg.DamageTypes.THINKING: 400}, 1, 'items_weapons_falling_action',
-                                       1, 1, projectiles.Projectiles.FallingAction, 25, True, 'Falling Action'),
+                                       1, 1, projectiles.Projectiles.FallingAction, 25, True, 'Falling Action', 1),
         'rising_action': MagicWeapon('rising action', {dmg.DamageTypes.MAGICAL: 360, dmg.DamageTypes.THINKING: 800}, 1, 'items_weapons_rising_action',
-                                       1, 8, projectiles.Projectiles.RisingAction, 188, True, 'Rising Action'),
+                                       1, 8, projectiles.Projectiles.RisingAction, 188, True, 'Rising Action', 1),
         'relevation_of_cycles': MagicWeapon('relevation of cycles', {dmg.DamageTypes.MAGICAL: 60, dmg.DamageTypes.THINKING: 500}, 1, 'items_weapons_relevation_of_cycles',
-                                             1, 2, projectiles.Projectiles.RelevationOfCycles, 64, True, 'Relevation of Cycles'),
+                                             1, 2, projectiles.Projectiles.RelevationOfCycles, 64, True, 'Relevation of Cycles', 1),
 
         'primal__winds_wand': MagicSet('primal  winds wand', 'items_weapons_primal__winds_wand',
                                        lambda w: w.name in [' circulates domain', ' wd circulate clockwise',
@@ -3688,10 +3697,28 @@ def set_weapons():
         'dragon_flute': PoetWeapon('dragon flute', {dmg.DamageTypes.OCTAVE: 488}, 1, 'items_weapons_dragon_flute',
                                    0, 5, projectiles.Projectiles.DragonFlute, [effects.OctLuckyI, effects.OctLuckyII, effects.OctSpeedI,
                                                                              effects.OctStrengthI, effects.OctStrengthII, effects.OctStrengthIII, effects.OctLimitlessII],
-                                   5, 180, auto_fire=True, instrument='flute', back_rate=0.5, song='beat'),
+                                   12, 180, auto_fire=True, instrument='flute', back_rate=0.5, song='beat'),
         'the_song_of_ice_and_fire': PoetWeapon('the song of ice and fire', {dmg.DamageTypes.OCTAVE: 488}, 1, 'items_weapons_the_song_of_ice_and_fire',
                                                 0, 8, projectiles.Projectiles.TheSongOfIceAndFire, [effects.OctLimitlessIII, effects.OctStrengthIII],
-                                                8, 240, auto_fire=True, back_rate=0.5, song='beat'),
+                                                32, 240, auto_fire=True, back_rate=0.5, song='beat'),
+        'dance_of_fire': PoetWeapon('dance of fire', {dmg.DamageTypes.OCTAVE: 488}, 1, 'items_weapons_dance_of_fire',
+                                    0, 2, projectiles.Projectiles.DanceOfFire, [effects.OctStrengthI, effects.OctStrengthII, effects.OctStrengthIII,
+                                                                                effects.OctStrengthIV],
+                                    25, 200, auto_fire=True, back_rate=0.8, song='spear_of_justice', instrument='flute'),
+        'dance_of_frost': PoetWeapon('dance of frost', {dmg.DamageTypes.OCTAVE: 488}, 1, 'items_weapons_dance_of_frost',
+                                     0, 2, projectiles.Projectiles.DanceOfFrost, [effects.OctLimitlessI, effects.OctLimitlessII, effects.OctLimitlessIII,],
+                                     25, 200, auto_fire=True, back_rate=0.8, song='spear_of_justice', instrument='flute'),
+        'dance_of_shadow': PoetWeapon('dance of shadow', {dmg.DamageTypes.OCTAVE: 488}, 1, 'items_weapons_dance_of_shadow',
+                                      0, 2, projectiles.Projectiles.DanceOfShadow, [effects.OctToughnessI, effects.OctToughnessII, effects.OctToughnessIII,
+                                                                                    effects.OctToughnessIV, effects.OctToughnessV],
+                                      25, 200, auto_fire=True, back_rate=0.8, song='spear_of_justice', instrument='flute'),
+        'dance_of_shine': PoetWeapon('dance of shine', {dmg.DamageTypes.OCTAVE: 488}, 1, 'items_weapons_dance_of_shine',
+                                     0, 2, projectiles.Projectiles.DanceOfShine, [effects.OctLuckyI, effects.OctLuckyII, effects.OctLuckyIII,],
+                                     25, 200, auto_fire=True, back_rate=0.8, song='spear_of_justice', instrument='flute'),
+        'the_godfall_poem': PoetWeapon('the godfall poem', {dmg.DamageTypes.OCTAVE: 888}, 1, 'items_weapons_the_godfall_poem',
+                                       0, 1, projectiles.Projectiles.TheGodfallPoem, [effects.OctStrengthIV,  effects.OctLuckyIII,  effects.OctSpeedV, effects.OctToughnessIV,
+                                                                                       effects.OctLimitlessIII, effects.OctWisdomIII], 30,
+                                       3200, auto_fire=True, back_rate=0.9, song='his_theme', instrument='flute'),
 
         'saint_healer': PriestHealer('saint healer', 50, 1, 'items_weapons_saint_healer',
                                     9, 1, 15, 80,
@@ -3820,11 +3847,11 @@ def set_weapons():
         'fire_dragon_breath_wand': MagicWeapon('fire dragon breath wand', {dmg.DamageTypes.MAGICAL: 600}, 0.1,
                                                'items_weapons_fire_dragon_breath_wand', 0, 1,
                                                projectiles.Projectiles.FireDragonBreath, 18, True,
-                                               'Fire Dragon\'s Breath'),
+                                               'Fire Dragon\'s Breath', 1),
         'ice_dragon_breath_wand': MagicWeapon('ice dragon breath wand', {dmg.DamageTypes.MAGICAL: 600}, 0.1,
                                                'items_weapons_ice_dragon_breath_wand', 0, 1,
                                                projectiles.Projectiles.IceDragonBreath, 18, True,
-                                               'Ice Dragon\'s Breath'),
+                                               'Ice Dragon\'s Breath', 1),
         'dark_dragon_breath_wand': ArcaneWeapon('dark dragon breath wand', {dmg.DamageTypes.MAGICAL: 600}, 0.1,
                                                  'items_weapons_dark_dragon_breath_wand', 0, 1,
                                                  projectiles.Projectiles.DarkDragonBreath, 24, .15,  True,

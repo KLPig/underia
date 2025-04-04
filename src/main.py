@@ -22,7 +22,7 @@ import random
 import time
 import asyncio
 
-import resources, visual, physics, underia, mods, legend, constants
+import resources, visual, physics, underia, mods, legend, constants, web
 if not constants.WEB_DEPLOY:
     import saves_chooser, modloader
 from underia import good_words
@@ -58,12 +58,17 @@ if not constants.WEB_DEPLOY:
     pg.display.get_surface().fill((0, 0, 0))
     underia.inventory.setup()
 
-    _, file = saves_chooser.choose_save()
+    cmds, file = saves_chooser.choose_save()
 else:
-    _, file = '', None
+    cmds, file = '', None
     load_mods = []
     setups = []
     updates = []
+
+if 'client' in cmds:
+    addr = input('Enter server address: ')
+else:
+    addr = None
 
 try:
     if file is not None and os.path.exists(resources.get_save_path(file)):
@@ -210,26 +215,27 @@ game.player.profile.point_ranged = 0
 game.player.profile.point_magic = 0
 print('Presets...')
 
-for item in underia.ITEMS.values():
-    for __ in range(5):
-        mat = {}
-        for _ in range(item.rarity + 1):
-            mat[f'magic_shard_{random.randint(0, 127)}'] = 1
-        underia.RECIPES.append(underia.Recipe(mat, item.id))
-    underia.RECIPES.append(underia.Recipe({item.id: 1}, f'magic_shard_{random.randint(0, 127)}', item.rarity))
+if constants.APRIL_FOOL:
+    for item in underia.ITEMS.values():
+        for __ in range(5):
+            mat = {}
+            for _ in range(item.rarity + 1):
+                mat[f'magic_shard_{random.randint(0, 127)}'] = 1
+            underia.RECIPES.append(underia.Recipe(mat, item.id))
+        underia.RECIPES.append(underia.Recipe({item.id: 1}, f'magic_shard_{random.randint(0, 127)}', item.rarity))
 
-for i in range(128):
-    it_s = pg.Surface((5, 5))
-    r = random.randint(0, 240)
-    g = random.randint(max(0, 105 - r), min(360 - r, 255))
-    b = 360 - r - g
-    for x, y in [(1, 1), (1, 2), (2, 2), (2, 3), (3, 1), (3, 2)]:
-        it_s.set_at((x, y), (r, g, b))
-    game.graphics['items_magic_shard_' + str(i)] = it_s
-    underia.ITEMS['magic_shard_' + str(i)] = underia.Inventory.Item(f'Magic Shard(#{i})',
-                                                                     'Magic Shard #' + str(i), 'magic_shard_' + str(i),
-                                                                    12, [underia.TAGS['item']])
-    underia.RECIPES.append(underia.Recipe({'magic_shard_' + str(i): 2}, 'magic_shard_' + str((i + 1) % 128)))
+    for i in range(128):
+        it_s = pg.Surface((5, 5))
+        r = random.randint(0, 240)
+        g = random.randint(max(0, 105 - r), min(360 - r, 255))
+        b = 360 - r - g
+        for x, y in [(1, 1), (1, 2), (2, 2), (2, 3), (3, 1), (3, 2)]:
+            it_s.set_at((x, y), (r, g, b))
+        game.graphics['items_magic_shard_' + str(i)] = it_s
+        underia.ITEMS['magic_shard_' + str(i)] = underia.Inventory.Item(f'Magic Shard(#{i})',
+                                                                         'Magic Shard #' + str(i), 'magic_shard_' + str(i),
+                                                                        12, [underia.TAGS['item']])
+        underia.RECIPES.append(underia.Recipe({'magic_shard_' + str(i): 2}, 'magic_shard_' + str((i + 1) % 128)))
 
 for s in setups:
     exec(s)
@@ -238,6 +244,8 @@ fpss = []
 
 @game.update_function
 def update():
+    if addr is not None:
+        return
     fpss.append(round(1000 / game.clock.last_tick, 2))
     if game.player.inventory.is_enough(underia.ITEMS['star']):
         game.player.inventory.remove_item(underia.ITEMS['star'])
@@ -438,6 +446,19 @@ def update():
             underia.entity_spawn(underia.Entities.ScarlettPillar, target_number=2, to_player_max=3000, to_player_min=1000,
                                  rate=50, number_factor=1.9)
 
+if addr is not None:
+    game.client = web.Client(addr, 1145)
+    print('Connected: ', addr, game.client)
+    start_data: web.FirstConnectData = pickle.loads(game.client.recv())
+    game.seed = start_data.seed
+    game.hallow_points = start_data.hallow
+    game.wither_points = start_data.wither
+    game.player.profile.load(start_data.profile)
+    r = random.randint(0, 240)
+    g = random.randint(max(0, 105 - r), min(360 - r, 255))
+    b = 360 - r - g
+    game.client.player_id = start_data.pid
+
 if constants.WEB_DEPLOY:
     import asyncio
     async def run():
@@ -478,6 +499,8 @@ else:
             for w in game.player.weapons:
                 game.player.inventory.add_item(underia.ITEMS[w.name.replace(" ", "_")])
             game.player.weapons = []
+            del game.server
+            del game.client
             game_pickle = pickle.dumps(game)
             with open(resources.get_save_path(game.save), 'wb') as w:
                 w.write(game_pickle)

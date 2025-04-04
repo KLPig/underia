@@ -1264,6 +1264,7 @@ class Entities:
                 self.obj.TOUCHING_DAMAGE += _atk_a
             self.hp_sys.max_hp *= 0.9 + 0.2 * random.random()
             self.hp_sys.hp = self.hp_sys.max_hp
+            self.o_atk = 0
 
         def set_rotation(self, rot):
             if self.img.get_width() < 5:
@@ -1366,6 +1367,8 @@ class Entities:
                                                                             t=50))
 
         def draw(self):
+            if 'o_atk' not in dir(self) or (self.obj.TOUCHING_DAMAGE and not self.o_atk):
+                self.o_atk = self.obj.TOUCHING_DAMAGE
             displayer = game.get_game().displayer
             if self.DISPLAY_MODE == Entities.DisplayModes.NO_IMAGE:
                 pg.draw.circle(displayer.canvas, (0, 0, 255), position.displayed_position(self.obj.pos), 10)
@@ -1379,10 +1382,18 @@ class Entities:
                     styles.hp_bar(self.hp_sys, position.displayed_position(
                         (self.obj.pos[0], self.obj.pos[1] - self.d_img.get_height() // 2 - 10)),
                                   self.img.get_width() * 2)
-                if r.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
-                    f = displayer.font.render(f'{self.adj} {self.NAME}({int(self.hp_sys.hp)}/{int(self.hp_sys.max_hp)})', True,
-                                              (255, 255, 255), (0, 0, 0))
-                    displayer.canvas.blit(f, game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+                if r.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())) and self.show_bar:
+                    mx, my = game.get_game().displayer.reflect(*pg.mouse.get_pos())
+                    f = displayer.font.render(f'{self.adj}: {self.NAME}', True, (255, 255, 255))
+                    f_bg = displayer.font.render(f'{self.adj}: {self.NAME}', True, (0, 0, 0))
+                    displayer.canvas.blit(f_bg, (mx + 2, my + 2))
+                    displayer.canvas.blit(f, (mx, my))
+                    f = displayer.font.render(f'{round(self.hp_sys.hp / self.hp_sys.max_hp * 100, 1)}% HP '
+                                              f'{self.obj.TOUCHING_DAMAGE / self.o_atk  * 100 if self.o_atk else 0:.2f}% AT', True, (255, 255, 255))
+                    f_bg = displayer.font.render(f'{round(self.hp_sys.hp / self.hp_sys.max_hp * 100, 1)}% HP '
+                                              f'{self.obj.TOUCHING_DAMAGE / self.o_atk * 100 if self.o_atk else 0:.2f}% AT', True, (0, 0, 0))
+                    displayer.canvas.blit(f_bg, (mx + 2, my + 2 + f.get_height()))
+                    displayer.canvas.blit(f, (mx, my + f.get_height()))
 
     class Ore(Entity):
         IMG = 'entity_ore'
@@ -1390,6 +1401,8 @@ class Entities:
         NAME = 'Ore'
         TOUGHNESS = 0
         HP = 10
+        SOUND_HURT = 'ore'
+        SOUND_DEATH = 'ore'
 
         def __init__(self, pos, hp=0):
             super().__init__(pos, game.get_game().graphics[self.IMG], BuildingAI, self.HP if not hp else hp)
@@ -1866,6 +1879,7 @@ class Entities:
         ])
 
         SOUND_HURT = 'sticky'
+        SOUND_DEATH = 'sticky'
 
         @staticmethod
         def is_suitable(biome: str):
@@ -1902,6 +1916,9 @@ class Entities:
             IndividualLoot('cell_organization', 0.8, 1, 3),
         ])
 
+        SOUND_HURT = 'dragon'
+        SOUND_DEATH = 'sticky'
+
         @staticmethod
         def is_suitable(biome: str):
             return True
@@ -1936,6 +1953,9 @@ class Entities:
             SelectionLoot([('swwwword', 1, 1), ('kuangkuangkuang', 1, 1)], 1, 1),
         ])
         IS_MENACE = True
+
+        SOUND_HURT = 'dragon'
+        SOUND_DEATH = 'sticky'
 
         def __init__(self, pos):
             super().__init__(pos, 12, game.get_game().graphics['entity_fluffball'],
@@ -2056,6 +2076,7 @@ class Entities:
             IndividualLoot('red_apple', 0.04, 1, 1),
         ])
 
+        SOUND_HURT = 'monster'
         SOUND_DEATH = 'monster'
 
         @staticmethod
@@ -2148,6 +2169,7 @@ class Entities:
             SelectionLoot([('purple_ring', 1, 1), ('cyan_ring', 1, 1), ('yellow_ring', 1, 1)], 1, 2),
         ])
 
+        SOUND_HURT = 'corrupt'
         SOUND_DEATH = 'monster'
 
         def __init__(self, pos):
@@ -2178,6 +2200,7 @@ class Entities:
             IndividualLoot('red_apple', 0.04, 1, 1),
         ])
 
+        SOUND_HURT = 'monster'
         SOUND_DEATH = 'monster'
 
         @staticmethod
@@ -2207,6 +2230,7 @@ class Entities:
             IndividualLoot('red_apple', 0.06, 1, 1),
         ])
 
+        SOUND_HURT = 'monster'
         SOUND_DEATH = 'monster'
 
         @staticmethod
@@ -2297,6 +2321,7 @@ class Entities:
                             game.get_game().player.inventory.is_enough(inventory.ITEMS[self.item_id])):
                 game.get_game().player.inventory.add_item(inventory.ITEMS[self.item_id], self.amount)
                 self.hp_sys.hp = 0
+                self.play_sound('grab')
             elif vector.distance(self.obj.pos[0] - px, self.obj.pos[1] - py) < 120 + self.rarity * 50:
                 self.obj.apply_force(
                     vector.Vector(vector.coordinate_rotation(px - self.obj.pos[0], py - self.obj.pos[1]), 24000))
@@ -2314,7 +2339,7 @@ class Entities:
             IndividualLoot('star_amulet', 0.4, 1, 1),
         ])
 
-        SOUND_HURT = 'corrupt'
+        SOUND_HURT = 'crystal'
 
         def __init__(self, pos):
             super().__init__(pos, game.get_game().graphics['entity_star'], StarAI, 820)
@@ -2348,7 +2373,8 @@ class Entities:
         NAME = 'Apple'
         DISPLAY_MODE = 3
         LOOT_TABLE = LootTable([])
-        SOUND_HURT = 'sticky'
+        SOUND_HURT = 'ore'
+        SOUND_DEATH = 'ore'
 
         def __init__(self, pos):
             super().__init__(pos, game.get_game().graphics['entity_apple'], AppleProtectionAI, 330)
@@ -2360,7 +2386,8 @@ class Entities:
         NAME = 'Apple'
         DISPLAY_MODE = 3
         LOOT_TABLE = LootTable([])
-        SOUND_HURT = 'sticky'
+        SOUND_HURT = 'ore'
+        SOUND_DEATH = 'ore'
 
         def __init__(self, pos):
             super().__init__(pos, game.get_game().graphics['entity_apple'], AppleAttackAI, 330)
@@ -2375,7 +2402,7 @@ class Entities:
             SelectionLoot([('doctor_expeller', 1, 1), ('apple_knife', 1, 1), ('fruit_wand', 1, 1)], 1, 2),
             ])
         SOUND_SPAWN = 'boss'
-        SOUND_HURT = 'sticky'
+        SOUND_HURT = 'ore'
         SOUND_DEATH = 'huge_monster'
         IS_MENACE = True
         PHASE_SEGMENTS = []
@@ -2565,6 +2592,7 @@ class Entities:
         ])
 
         SOUND_SPAWN = 'boss'
+        SOUND_HURT = 'skeleton'
         SOUND_DEATH = 'huge_monster'
 
         def __init__(self, pos, hp_sys=None, rot=0, ss=True):
@@ -2609,7 +2637,7 @@ class Entities:
             IndividualLoot('mysterious_substance', 0.8, 10, 12),
         ])
 
-        SOUND_HURT = 'metal'
+        SOUND_HURT = 'skeleton'
         SOUND_DEATH = 'explosive'
 
         @staticmethod
@@ -3250,6 +3278,7 @@ class Entities:
     class WitherSkull(Lazer):
         NAME = 'Wither Skull'
         SOUND_SPAWN = None
+        SOUND_DEATH = 'explosion'
 
         def __init__(self, pos, rot):
             super(Entities.Lazer, self).__init__(pos, game.get_game().graphics['entity_wither_skull'], AbyssRuneShootAI, 500000)
@@ -3391,7 +3420,7 @@ class Entities:
         ])
 
         SOUND_SPAWN = 'boss'
-        SOUND_HURT = 'corrupt'
+        SOUND_HURT = 'monster'
         SOUND_DEATH = 'huge_monster'
 
         @staticmethod
@@ -3465,7 +3494,6 @@ class Entities:
         ])
         TOUGHNESS = 50
         IMG = 'entity_evil_mark'
-        SOUND_HURT = 'corrupt'
 
         def __init__(self, pos):
             super().__init__(pos, 80)
@@ -3479,6 +3507,9 @@ class Entities:
             IndividualLoot('evil_ingot', 0.6, 1, 3),
             SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 0, 1)
         ])
+
+        SOUND_HURT = 'monster'
+        SOUND_DEATH = 'sticky'
 
         def __init__(self, pos):
             super().__init__(pos, game.get_game().graphics['entity_soul_flower'], SoulFlowerAI, 2600)
@@ -3495,6 +3526,9 @@ class Entities:
             IndividualLoot('colourful_substance', 0.2, 1, 2),
             SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 0, 1)
         ])
+
+        SOUND_HURT = 'dragon'
+        SOUND_DEATH = 'monster'
 
         def __init__(self, pos):
             super().__init__(pos, game.get_game().graphics['entity_uni_saur'], SoulFlowerAI, 4800)
@@ -3527,6 +3561,8 @@ class Entities:
             SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 0, 1)
         ])
 
+        SOUND_HURT = 'crystal'
+
         def __init__(self, pos):
             super().__init__(pos, game.get_game().graphics['entity_night_fly'], SoulFlowerAI, 2200)
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 100
@@ -3551,6 +3587,9 @@ class Entities:
             IndividualLoot('dark_substance', 0.2, 1, 2),
             SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 0, 1)
         ])
+
+        SOUND_HURT = 'corrupt'
+        SOUND_DEATH = 'sticky'
 
         def __init__(self, pos):
             super().__init__(pos, game.get_game().graphics['entity_red_corruption'], SlowMoverAI, 8800)
@@ -3581,6 +3620,9 @@ class Entities:
             SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 0, 1)
         ])
 
+        SOUND_HURT = 'corrupt'
+        SOUND_DEATH = 'sticky'
+
         def __init__(self, pos):
             super().__init__(pos, game.get_game().graphics['entity_purple_corruption'], SlowMoverAI, 4800)
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 150
@@ -3609,6 +3651,8 @@ class Entities:
             IndividualLoot('cold_substance', 0.2, 1, 2),
             ])
 
+        SOUND_HURT = 'ore'
+
         def __init__(self, pos):
             super().__init__(pos, game.get_game().graphics['entity_polar_snowman'], RangedAI, 2500)
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 180
@@ -3631,7 +3675,7 @@ class Entities:
             IndividualLoot('starlight_shard', 0.3, 1, 1),
         ])
 
-        SOUND_HURT = 'corrupt'
+        SOUND_HURT = 'skeleton'
         SOUND_DEATH = 'huge_monster'
 
         def __init__(self, pos):
@@ -3689,6 +3733,9 @@ class Entities:
             IndividualLoot('starlight_shard', 0.3, 1, 1),
         ])
 
+        SOUND_HURT = 'monster'
+        SOUND_DEATH = 'huge_monster'
+
         def __init__(self, pos):
             super().__init__(pos, game.get_game().graphics['entity_life_watcher'], LifeWatcherAI, 48000)
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 40
@@ -3729,6 +3776,9 @@ class Entities:
             IndividualLoot('evil_ingot', 0.6, 12, 35),
             IndividualLoot('cold_substance', 0.2, 1, 2),
             ])
+
+        SOUND_HURT = 'crystal'
+        SOUND_DEATH = 'huge_monster'
 
         def __init__(self, pos, hp_sys=None, t=5):
             if hp_sys is None:
@@ -3787,6 +3837,9 @@ class Entities:
             IndividualLoot('fire_dragon_heart', 1, 1, 1),
             ])
         PHASE_SEGMENTS = [0.4, 0.7]
+
+        SOUND_HURT = 'dragon'
+        SOUND_DEATH = 'dragon'
 
         def ssuper(self):
             return super()
@@ -4251,7 +4304,7 @@ class Entities:
             IndividualLoot('shotgun', 0.12, 1, 1)
             ])
 
-        SOUND_HURT = 'sticky'
+        SOUND_HURT = 'goblin'
         SOUND_DEATH = 'monster'
 
         def __init__(self, pos):
@@ -4276,7 +4329,7 @@ class Entities:
             IndividualLoot('spikeball', 0.09, 1, 1),
             ])
 
-        SOUND_HURT = 'sticky'
+        SOUND_HURT = 'goblin'
         SOUND_DEATH = 'monster'
 
         def __init__(self, pos):
@@ -4302,7 +4355,7 @@ class Entities:
             IndividualLoot('shotgun', 0.12, 1, 1)
             ])
 
-        SOUND_HURT = 'sticky'
+        SOUND_HURT = 'goblin'
         SOUND_DEATH = 'monster'
 
         def __init__(self, pos):
@@ -4332,7 +4385,7 @@ class Entities:
         LOOT_TABLE = LootTable([
             ])
 
-        SOUND_HURT = 'sticky'
+        SOUND_HURT = 'goblin'
         SOUND_DEATH = 'monster'
 
         def __init__(self, pos):
@@ -4364,7 +4417,7 @@ class Entities:
         LOOT_TABLE = LootTable([
             ])
 
-        SOUND_HURT = 'sticky'
+        SOUND_HURT = 'goblin'
         SOUND_DEATH = 'monster'
 
         def __init__(self, pos):
@@ -4402,7 +4455,7 @@ class Entities:
             ])
 
         SOUND_SPAWN = 'boss'
-        SOUND_HURT = 'sticky'
+        SOUND_HURT = 'goblin'
         SOUND_DEATH = 'huge_monster'
         IS_MENACE = True
 

@@ -530,6 +530,8 @@ class Player:
             self.MAGIC_REGEN = 0
             self.REGENERATION = 0
             self.ntcs.append(f'Low Talent: Disable Regen.')
+        if game.get_game().server is not None:
+            self.ntcs.append(f'Server on {game.get_game().server.host}, port {game.get_game().server.port}.')
         self.hp_sys.heal(self.REGENERATION)
         self.mana = min(self.mana + self.MAGIC_REGEN, self.max_mana + max_mana)
         displayer = game.get_game().displayer
@@ -984,8 +986,19 @@ class Player:
                 _entity.obj.touched_player = True
                 _entity.on_damage_player()
                 if _entity.obj.TOUCHING_DAMAGE and not self.hp_sys.is_immune:
+                    s_hp = self.hp_sys.hp
                     self.hp_sys.damage(_entity.obj.TOUCHING_DAMAGE, damages.DamageTypes.TOUCHING)
+                    e_hp = self.hp_sys.hp
+                    print(e_hp, s_hp)
                     self.hp_sys.enable_immume()
+                    px, py = _entity.obj.pos
+                    px -= self.obj.pos[0]
+                    py -= self.obj.pos[1]
+                    if e_hp - s_hp < -1:
+                        game.get_game().play_sound('player_hit_1', stop_if_need=True)
+                    elif e_hp - s_hp < -self.hp_sys.max_hp / 5:
+                        game.get_game().play_sound('player_hit_2', stop_if_need=True)
+                    self.obj.velocity.add(vector.Vector(vector.coordinate_rotation(px, py), min(0.0, e_hp - s_hp) / self.hp_sys.max_hp * 250))
             self.obj.object_gravitational(_entity.obj)
             _entity.obj.object_gravitational(self.obj)
         nx = 10 + 30 + 10
@@ -1694,7 +1707,7 @@ class Player:
                             game.get_game().dialog.dialog('Ten status in row!', 'Status clear!')
                             status.clear()
 
-                        if random.random() < 0.8:
+                        if random.random() < 0.8 and constants.APRIL_FOOL:
                             game.get_game().dialog.dialog('A lucky selection!', 'You get the effect...')
                             s = random.randint(1, 6)
                             if s == 1:
@@ -1739,7 +1752,7 @@ class Player:
                                     graphics.graphics[k] = surf
 
                                 status.append('text-ture')
-                            else:
+                            elif s == 6:
                                 game.get_game().dialog.push_dialog('Computer crash!')
                                 constants.FPS = min(30, constants.FPS - 6)
                                 status.append('crash')
@@ -1815,6 +1828,10 @@ class Player:
                         *pg.mouse.get_pos())) and 1 in game.get_game().get_mouse_press():
                     rc = cur_recipe
                     cur_recipe.make(self.inventory)
+                    game.get_game().play_sound('grab')
+                    if len(self.inventory.items) > 48:
+                        k, v = self.inventory.items.popitem()
+                        game.get_game().entities.append(entity.Entities.DropItem(self.obj.pos, k, v))
                     self.recipes = [r for r in inventory.RECIPES if r.is_valid(self.inventory)]
                     res = [i for i, r in enumerate(self.recipes) if r is rc]
                     self.sel_recipe = res[0] if res else 0
@@ -1824,9 +1841,8 @@ class Player:
                     for i in range(-10, 10):
                         s = (self.sel_recipe + i + len(self.recipes)) % len(self.recipes)
                         cur_recipe = self.recipes[s]
-                        sz = 0.97 ** abs(i) * (1 if i else 1.2)
-                        styles.item_display(displayer.SCREEN_WIDTH - 10 - int(sz * 80), displayer.SCREEN_HEIGHT // 2 + i * 90 - int(sz * 40),
-                                            cur_recipe.result, str(s + 1), str(cur_recipe.crafted_amount), sz)
+                        styles.item_display(displayer.SCREEN_WIDTH - 10 - 80, displayer.SCREEN_HEIGHT // 2 + i * 90 - 40,
+                                            cur_recipe.result, str(s + 1), str(cur_recipe.crafted_amount), 1 if i else 1.2)
                         i += 1
                 cur_recipe = self.recipes[self.sel_recipe]
                 styles.item_mouse(game.get_game().displayer.SCREEN_WIDTH - 260,

@@ -696,6 +696,148 @@ class Projectiles:
                     game.get_game().player.inspiration += int(weapons.WEAPONS[self.DAMAGE_AS].back_rate *
                                                            weapons.WEAPONS[self.DAMAGE_AS].inspiration_cost)
 
+    class DanceOfFire(Projectile):
+        DAMAGE_AS = 'dance_of_fire'
+        IMG = 'projectiles_dance_of_fire'
+        ROT_SPEED = 1
+        ALPHA = 80
+        DURATION = 200
+        AUTO_FOLLOW = True
+        ENABLE_IMMUNE = True
+
+        def __init__(self, pos, rotation):
+            self.obj = mover.Mover(pos)
+            self.img = game.get_game().graphics[self.IMG]
+            if constants.USE_ALPHA:
+                self.img = copy.copy(self.img)
+                self.img.set_alpha(self.ALPHA)
+            self.d_img = self.img
+            self.rot = rotation
+            self.set_rotation(rotation)
+            self.dead = False
+            self.tick = 0
+            self.ttx = position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+            self.hit = False
+
+        def update(self):
+            mx, my = self.ttx
+            if self.AUTO_FOLLOW:
+                self.obj.pos = ((mx + self.obj.pos[0]) // 2, (my + self.obj.pos[1]) // 2)
+            else:
+                self.obj.pos = game.get_game().player.obj.pos
+            self.tick += 1
+            if self.tick < 5:
+                self.img = copy.copy(game.get_game().graphics[self.IMG])
+                self.img = pg.transform.scale_by(self.img, self.tick ** 2 / 25)
+                if constants.USE_ALPHA:
+                    self.img.set_alpha(self.ALPHA * self.tick ** 2 // 25)
+                self.d_img = self.img
+            elif self.tick > self.DURATION - 5:
+                self.img = copy.copy(game.get_game().graphics[self.IMG])
+                self.img = pg.transform.scale_by(self.img, (self.DURATION - self.tick) ** 2 / 25)
+                if constants.USE_ALPHA:
+                    self.img.set_alpha(self.ALPHA * (self.DURATION - self.tick) ** 2 // 25)
+                self.d_img = self.img
+            else:
+                self.img = copy.copy(game.get_game().graphics[self.IMG])
+                if constants.USE_ALPHA:
+                    self.img.set_alpha(self.ALPHA)
+                self.d_img = self.img
+            if self.tick > self.DURATION:
+                self.dead = True
+            displayer = game.get_game().displayer
+            self.set_rotation(self.ROT_SPEED * self.tick)
+            imr = self.d_img.get_rect(center=position.displayed_position((self.obj.pos[0], self.obj.pos[1])))
+            displayer.canvas.blit(self.d_img, imr)
+            self.damage()
+
+        def effect(self, e):
+            e.hp_sys.effect(effects.Burning(3, 1000))
+
+        def damage(self):
+            for entity in game.get_game().entities:
+                if (vector.distance(entity.obj.pos[0] - self.obj.pos[0], entity.obj.pos[1] - self.obj.pos[1]) <
+                        self.d_img.get_width() + (entity.d_img.get_width() + self.d_img.get_height()) / 4):
+                    if entity.hp_sys.is_immune and self.ENABLE_IMMUNE:
+                        continue
+                    entity.hp_sys.damage(weapons.WEAPONS[self.DAMAGE_AS].damages[
+                                             damages.DamageTypes.OCTAVE] * game.get_game().player.attack *
+                                         game.get_game().player.attacks[3], damages.DamageTypes.OCTAVE,
+                                         )
+                    if self.ENABLE_IMMUNE:
+                        entity.hp_sys.enable_immume()
+                    if not self.hit:
+                        self.hit = True
+                    else:
+                        continue
+                    self.effect(entity)
+                    if len(weapons.WEAPONS[self.DAMAGE_AS].gains):
+                        gain = random.choice(weapons.WEAPONS[self.DAMAGE_AS].gains)
+                        game.get_game().player.hp_sys.effect(
+                            gain(3 + game.get_game().player.calculate_data('gain_duration', rate_data=False), 3))
+                    game.get_game().player.inspiration += int(weapons.WEAPONS[self.DAMAGE_AS].back_rate *
+                                                              weapons.WEAPONS[self.DAMAGE_AS].inspiration_cost)
+
+    class DanceOfFrost(DanceOfFire):
+        DAMAGE_AS = 'dance_of_frost'
+        IMG = 'projectiles_dance_of_frost'
+
+        def effect(self, e):
+            if random.randint(0, 3) == 0:
+                e.hp_sys.effect(effects.Frozen(2, 1000))
+
+    class DanceOfShadow(DanceOfFire):
+        DAMAGE_AS = 'dance_of_shadow'
+        IMG = 'projectiles_dance_of_shadow'
+
+        def effect(self, e):
+            e.obj.TOUCHING_DAMAGE *= .995
+
+    class DanceOfShine(DanceOfFire):
+        DAMAGE_AS = 'dance_of_shine'
+        IMG = 'projectiles_dance_of_shine'
+
+        def effect(self, e):
+            e.hp_sys.defenses[damages.DamageTypes.OCTAVE] -= 2
+
+    class TheGodfallPoem(Projectile):
+        def __init__(self, pos, rotation):
+            self.circles = [Projectiles.DanceOfFire(pos, rotation),
+                             Projectiles.DanceOfFrost(pos, rotation),
+                             Projectiles.DanceOfShadow(pos, rotation),
+                             Projectiles.DanceOfShine(pos, rotation)]
+            self.dead = False
+            super().__init__(pos, rotation)
+            for c in self.circles:
+                game.get_game().projectiles.append(c)
+            self.tick = 0
+            self.obj.pos = position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+
+        def update(self):
+            self.tick += 1
+            self.dead = self.circles[0].dead
+            dt = math.sin(self.tick * 2 * math.pi / 80) * 1200
+            for i, c in enumerate(self.circles):
+                c.hit = False
+                rt = math.radians(i * 90 - self.tick * 3)
+                c.obj.pos = (self.obj.pos[0] + dt * math.cos(rt),
+                             self.obj.pos[1] + dt * math.sin(rt))
+            for entity in game.get_game().entities:
+                if (vector.distance(entity.obj.pos[0] - self.obj.pos[0], entity.obj.pos[1] - self.obj.pos[1]) <
+                        dt + (entity.d_img.get_width() + entity.d_img.get_height()) / 4):
+                    entity.hp_sys.damage(weapons.WEAPONS['the_godfall_poem'].damages[
+                                             damages.DamageTypes.OCTAVE] * game.get_game().player.attack *
+                                         game.get_game().player.attacks[3], damages.DamageTypes.OCTAVE,
+                                         )
+                    if len(weapons.WEAPONS['the_godfall_poem'].gains):
+                        gain = random.choice(weapons.WEAPONS['the_godfall_poem'].gains)
+                        game.get_game().player.hp_sys.effect(
+                            gain(3 + game.get_game().player.calculate_data('gain_duration', rate_data=False), 3))
+                    game.get_game().player.inspiration += int(weapons.WEAPONS['the_godfall_poem'].back_rate *
+                                                              weapons.WEAPONS['the_godfall_poem'].inspiration_cost)
+
+
+
     class WatcherBell(Projectile):
         DAMAGE_AS = 'watcher_bell'
         ENABLE_IMMUNE = True

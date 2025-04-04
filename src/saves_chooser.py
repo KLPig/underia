@@ -88,6 +88,19 @@ def choose_save():
                                 screen.blit(cv, (0, 0))
                                 pg.display.update()
                         return cmds, f".save{n + 1}.pkl"
+                elif event.key in [pg.K_w]:
+                    if n != -1:
+                        cmds.append('client')
+                        cv = pg.Surface(screen.get_size(), pg.SRCALPHA)
+                        cv.blit(screen, (0, 0))
+                        if constants.USE_ALPHA:
+                            for i in range(255):
+                                pg.event.get()
+                                screen.fill((0, 0, 0))
+                                cv.set_alpha(255 - i)
+                                screen.blit(cv, (0, 0))
+                                pg.display.update()
+                        return cmds, f".save{n + 1}.pkl"
                 elif event.key in [pg.K_BACKSPACE, pg.K_x]:
                     if os.path.exists(path.get_save_path(f".save{n + 1}.pkl")):
                         os.remove(path.get_save_path(f".save{n + 1}.pkl"))

@@ -109,6 +109,8 @@ class Inventory:
                             self.accessory_data['max_ins'] = int(desc.removesuffix('additionalmaximuminspiration'))
                         elif desc.endswith('grenadescattering'):
                             self.accessory_data['grenade_scat'] = 1
+                        elif desc.endswith('spoetbonustime'):
+                            self.accessory_data['gain_duration'] = int(desc.removesuffix('spoetbonustime'))
                         elif desc[0] in ['+', '-']:
                             print(f"Unknown accessory data: {desc}")
                     except ValueError:
@@ -989,12 +991,21 @@ items_dict: dict[str, Inventory.Item] = {
     'cold_substance': Inventory.Item('Cold Substance', 'It\'s too cold', 'cold_substance', 5,
                                      [TAGS['item']]),
 
-    'visual_resonancer': Inventory.Item('Visual Resonancer', '+22% ranged damage\n+6% critical\n+200 maximum additional inspiration\n+15 maximum additional mana',
+    'visual_resonancer': Inventory.Item('Visual Resonancer', '+22% ranged damage\n+6% critical\n+200 additional maximum inspiration\n+150 additional maximum mana',
                                         'visual_resonancer', 5, [TAGS['item'], TAGS['accessory']]),
     'strength_resonancer': Inventory.Item('Strength Resonancer', '+14% damage\n+12% melee damage\n+10% critical\n+20% karma reduce\n+36% hallow damage\n+10/sec regeneration',
                                           'strength_resonancer', 5, [TAGS['item'], TAGS['accessory']]),
     'photon_resonancer': Inventory.Item('Photon Resonancer', '+25% magic damage\n+5% critical\n+40/sec mana regeneration\n+50% pacify time\n-15% karma reduce\n-10% damage',
                                         'photon_resonancer', 5, [TAGS['item'], TAGS['accessory']]),
+    'hallow_resonancer': Inventory.Item('Hallow Resonancer', '+15% hallow damage\n+10% critical\n-10% karma reduce\n+20 magic defense',
+                                         'hallow_resonancer', 7, [TAGS['item'], TAGS['accessory']]),
+    'life_resonancer': Inventory.Item('Life Resonancer', '+30/sec regeneration\n+10/sec mentality regeneration\n+5% critical',
+                                       'life_resonancer', 5, [TAGS['item'], TAGS['accessory']]),
+
+    'worldsaver_necklace': Inventory.Item('WorldSaver Necklace', 'It can save the world.\n+22% ranged damage\n+6% critical\n+200 additional maximum inspiration\n+500 additional maximum mana\n'
+                                                                 '+14% damage\n+18% melee damage\n+45% critical\n-10% karma reduce\n+42% hallow damage\n+40/sec regeneration\n'
+                                                                 '+25% magic damage\n+100/sec mana regeneration\n+50% pacify time\n+10/sec mentality regeneration\n+5s poet bonus time',
+                                          'worldsaver_necklace', 10, [TAGS['item'], TAGS['accessory']]),
 
     'wooden_helmet': Inventory.Item('Wooden Helmet', '2 armor', 'wooden_helmet', 0, [TAGS['item'], TAGS['accessory'], TAGS['head']]),
     'wooden_mask': Inventory.Item('Wooden Mask', '0 armor\n+1% speed', 'wooden_mask', 0, [TAGS['item'], TAGS['accessory'], TAGS['head']]),
@@ -1079,12 +1090,67 @@ items_dict: dict[str, Inventory.Item] = {
                                         [TAGS['item'], TAGS['accessory'], TAGS['head']]),
     'hallowed_mask': Inventory.Item('Hallowed Mask', '13 armor\n+100/sec inspiration regeneration\n+10% critical', 'hallowed_mask', 7,
                                         [TAGS['item'], TAGS['accessory'], TAGS['head']]),
-    'hallowed_headgear': Inventory.Item('Hallowed Mask', '7 armor\n-10% karma reduce\n+100 maximum additional mana', 'hallowed_headgear', 7,
+    'hallowed_headgear': Inventory.Item('Hallowed Mask', '7 armor\n-10% karma reduce\n+100 additional maximum mana', 'hallowed_headgear', 7,
                                         [TAGS['item'], TAGS['accessory'], TAGS['head']]),
     'hallowed_plate_mail': Inventory.Item('Hallowed Plate Mail', '23 armor\n10kg\n+10% damage', 'hallowed_plate_mail', 7,
                                         [TAGS['item'], TAGS['accessory'], TAGS['body']]),
     'hallowed_greaves': Inventory.Item('Hallowed Greaves', '13 armor\n+10% speed\n-10% air resistance', 'hallowed_greaves', 7,
                                         [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
+
+    'worldsaver_hood': Inventory.Item('WorldSaver Hood', '14 armor\n+20 touching defense\n+10/sec regeneration', 'worldsaver_hood', 10,
+                                        [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'worldsaver_chestplate': Inventory.Item('WorldSaver Chestplate', '21 armor\n+30 touching defense\n+15/sec regeneration', 'worldsaver_chestplate', 10,
+                                            [TAGS['item'], TAGS['accessory'], TAGS['body']]),
+    'worldsaver_leggings': Inventory.Item('WorldSaver Leggings', '11 armor\n+15 touching defense\n+7.5/sec regeneration', 'worldsaver_leggings', 10,
+                                           [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
+
+    #300 2:3:1
+    'dragon_helmet_red': Inventory.Item('Dragon Helmet (Red)', '100 armor\n+100 magic defense\n+10% melee damage', 'dragon_helmet_red', 10,
+                                          [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'dragon_chestplate_red': Inventory.Item('Dragon Chestplate (Red)', '150 armor\n+150 magic defense\n+15% melee damage', 'dragon_chestplate_red', 10,
+                                             [TAGS['item'], TAGS['accessory'], TAGS['body']]),
+    'dragon_leggings_red': Inventory.Item('Dragon Leggings (Red)', '50 armor\n+50 magic defense\n+5% melee damage', 'dragon_leggings_red', 10,
+                                            [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
+
+    #150 2:3:1
+    'dragon_helmet_blue': Inventory.Item('Dragon Helmet (Blue)', '50 armor\n+50 magic defense\n+10% critical', 'dragon_helmet_blue', 10,
+                                           [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'dragon_chestplate_blue': Inventory.Item('Dragon Chestplate (Blue)', '75 armor\n+75 magic defense\n+15% critical', 'dragon_chestplate_blue', 10,
+                                              [TAGS['item'], TAGS['accessory'], TAGS['body']]),
+    'dragon_leggings_blue': Inventory.Item('Dragon Leggings (Blue)', '25 armor\n+25 magic defense\n+5% critical', 'dragon_leggings_blue', 10,
+                                             [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
+
+    #200 7:10:3
+    'dragon_helmet_black': Inventory.Item('Dragon Helmet (Black)', '70 armor\n+70 magic defense\n+300 additional maximum mana', 'dragon_helmet_black', 10,
+                                            [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'dragon_chestplate_black': Inventory.Item('Dragon Chestplate (Black)', '90 armor\n+90 magic defense\n+450 additional maximum mana', 'dragon_chestplate_black', 10,
+                                               [TAGS['item'], TAGS['accessory'], TAGS['body']]),
+    'dragon_leggings_black': Inventory.Item('Dragon Leggings (Black)', '30 armor\n+30 magic defense\n+150 additional maximum mana', 'dragon_leggings_black', 10,
+                                              [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
+
+    #150 2:3:1
+    'dragon_helmet_yellow': Inventory.Item('Dragon Helmet (Yellow)', '50 armor\n+50 magic defense\n+50% pacify time', 'dragon_helmet_yellow', 10,
+                                             [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'dragon_chestplate_yellow': Inventory.Item('Dragon Chestplate (Yellow)', '75 armor\n+75 magic defense\n+75% pacify time', 'dragon_chestplate_yellow', 10,
+                                                [TAGS['item'], TAGS['accessory'], TAGS['body']]),
+    'dragon_leggings_yellow': Inventory.Item('Dragon Leggings (Yellow)', '25 armor\n+25 magic defense\n+25% pacify time', 'dragon_leggings_yellow', 10,
+                                               [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
+
+    #100 7:10:3
+    'dragon_helmet_gray': Inventory.Item('Dragon Helmet (Gray)', '35 armor\n+35 magic defense\n+1050 additional maximum inspiration', 'dragon_helmet_gray', 10,
+                                           [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'dragon_chestplate_gray': Inventory.Item('Dragon Chestplate (Gray)', '50 armor\n+50 magic defense\n+1500 additional maximum inspiration', 'dragon_chestplate_gray', 10,
+                                              [TAGS['item'], TAGS['accessory'], TAGS['body']]),
+    'dragon_leggings_gray': Inventory.Item('Dragon Leggings (Gray)', '15 armor\n+15 magic defense\n+450 additional maximum inspiration', 'dragon_leggings_gray', 10,
+                                             [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
+
+    #50 9:11:5
+    'dragon_helmet_green': Inventory.Item('Dragon Helmet (Green)', '18 armor\n+18 magic defense\n-10% karma reduce', 'dragon_helmet_green', 10,
+                                            [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'dragon_chestplate_green': Inventory.Item('Dragon Chestplate (Green)', '22 armor\n+22 magic defense\n-15% karma reduce', 'dragon_chestplate_green', 10,
+                                               [TAGS['item'], TAGS['accessory'], TAGS['body']]),
+    'dragon_leggings_green': Inventory.Item('Dragon Leggings (Green)', '10 armor\n+10 magic defense\n-5% karma reduce', 'dragon_leggings_green', 10,
+                                              [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
 
 'natural_necklace': Inventory.Item('Natural Necklace', '0.2kg\n+4/sec mana regeneration', 'natural_necklace', 0,
                                        [TAGS['item'], TAGS['accessory']]),
@@ -1281,7 +1347,7 @@ items_dict: dict[str, Inventory.Item] = {
                                                                      '+80% domain size\n+20/sec mentality regeneration', 'great_magicians_hat', 8, [TAGS['item'], TAGS['accessory'],
                                                                                            TAGS['night_vision'], TAGS['major_accessory']]),
     'the_chaos_flower_vase': Inventory.Item('The Chaos Flower Vase', '120kg\n+200 additipnal maximum mana\n+270% speed\n-38% air resistance\n+32% magic damage\n+80/sec mana regeneration\n+20% domain size\n+20 touching defense',
-                                             'the_chaos_flower_vase', 8, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
+                                             'the_chaos_flower_vase', 8, [TAGS['item'], TAGS['accessory']]),
     'gods_necklace': Inventory.Item('God\'s Necklace', '+50% domain size\n+6/sec talent regeneration', 'gods_necklace', 9, [TAGS['item'], TAGS['accessory']]),
     'chaos_sheath': Inventory.Item('Chaos Sheath', '150kg\n+88% melee damage\n+28% critical\n+440 touching defense\n+420 magic defense'
                                                    '\n+30/sec regeneration\n+70/sec mana regeneration\n+120% speed', 'chaos_sheath',
@@ -1477,6 +1543,10 @@ items_dict: dict[str, Inventory.Item] = {
     'ice_dragon_breath_wand': Inventory.Item('Ice Dragon Breath Wand', '', 'ice_dragon_breath_wand', 10, [TAGS['item'], TAGS['weapon'], TAGS['magic_weapon'], TAGS['magic_element_water'], TAGS['magic_lv_7']]),
     'dark_dragon_breath_wand': Inventory.Item('Dark Dragon Breath Wand', '', 'dark_dragon_breath_wand', 10, [TAGS['item'], TAGS['weapon'], TAGS['magic_weapon'], TAGS['magic_element_dark'], TAGS['magic_lv_7']]),
     'light_dragon_breath_wand': Inventory.Item('Light Dragon Breath Wand', '', 'light_dragon_breath_wand', 10, [TAGS['item'], TAGS['weapon'], TAGS['magic_weapon'], TAGS['magic_element_light'], TAGS['magic_lv_7']]),
+    'dance_of_fire': Inventory.Item('Dance of Fire', '', 'dance_of_fire', 10, [TAGS['item'], TAGS['weapon'], TAGS['poet_weapon']]),
+    'dance_of_frost': Inventory.Item('Dance of Frost', '', 'dance_of_frost', 10, [TAGS['item'], TAGS['weapon'], TAGS['poet_weapon']]),
+    'dance_of_shadow': Inventory.Item('Dance of Shadow', '', 'dance_of_shadow', 10, [TAGS['item'], TAGS['weapon'], TAGS['poet_weapon']]),
+    'dance_of_shine': Inventory.Item('Dance of Shine', '', 'dance_of_shine', 10, [TAGS['item'], TAGS['weapon'], TAGS['poet_weapon']]),
 
     'dragon_reactor': Inventory.Item('Dragon Reactor', 'A reactor that is tough enough and resistant to dragon breaths.', 'dragon_reactor', 10, [TAGS['item'], TAGS['workstation']]),
     'fire_heating_unit': Inventory.Item('Fire Heating Unit', 'A unit that can heat up fire.', 'fire_heating_unit', 10, [TAGS['item'], TAGS['workstation']]),
@@ -1495,6 +1565,25 @@ items_dict: dict[str, Inventory.Item] = {
     'the_magisters_wand': Inventory.Item('The Magister\'s Wand', 'A wand that can control the elements.', 'the_magisters_wand', 12,
                                          [TAGS['item'], TAGS['weapon'], TAGS['magic_weapon'], TAGS['magic_element_fire'], TAGS['magic_element_water'], TAGS['magic_element_dark'], TAGS['magic_element_light'],
                                          TAGS['magic_lv_forbidden_curse']]),
+    'the_godfall_poem': Inventory.Item('The Godfall Poem', 'A line\'s start, a god\'s fall.', 'the_godfall_poem', 12, [TAGS['item'], TAGS['weapon'], TAGS['poet_weapon']]),
+
+
+    'fire_dragon_cross': Inventory.Item('Fire Dragon Cross', '+400 touching defense\n+300 magic defense\n+120% melee damage\n+20/sec regeneration\n+5% critical', 'fire_dragon_cross', 11, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
+    'ice_dragon_cross': Inventory.Item('Ice Dragon Cross', '+200 touching defense\n+200 magic defense\n+100% ranged damage\n+30/sec regeneration\n+25% critical\n+50% speed', 'ice_dragon_cross', 11, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
+    'dark_dragon_cross': Inventory.Item('Dark Dragon Cross', '+150 touching defense\n+250 magic defense\n+80% magic damage\n+45/sec regeneration\n+800/sec mana regeneration\n+10/sec mentality regeneration\n+50% domain size\n+400 additional maximum mana', 'dark_dragon_cross', 11, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
+    'light_dragon_cross': Inventory.Item('Light Dragon Cross', '+300 touching defense\n+100 magic defense\n+150% pacify damage\n+120% pacify time', 'light_dragon_cross', 11, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
+    'true_cyber_dragon_cross': Inventory.Item('True: Cyber Dragon Cross', '+200 touching defense\n+200 magic defense\n+100% octave damage\n+2000 additional maximum inspiration\n+600/sec inspiration regeneration\n+5s poet bonus time', 'true_cyber_dragon_cross', 12, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']], 'cyber_dragon_cross'),
+    'true_mind_dragon_cross': Inventory.Item('True: Mind Dragon Cross', '+50 touching defense\n+30 magic defense\n+150% hallow damage\n+200/sec mana regeneration\n-50% karma reduce', 'true_mind_dragon_cross', 12, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']], 'mind_dragon_cross'),
+    # true +20%
+    'true_fire_dragon_cross': Inventory.Item('True: Fire Dragon Cross', '+480 touching defense\n+360 magic defense\n+140% melee damage\n+28/sec regeneration\n+6% critical',
+                                             'true_fire_dragon_cross', 12, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']], 'fire_dragon_cross'),
+    'true_ice_dragon_cross': Inventory.Item('True: Ice Dragon Cross', '+240 touching defense\n+240 magic defense\n+120% ranged damage\n+36/sec regeneration\n+30% critical\n+50% speed',
+                                            'true_ice_dragon_cross', 12, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']], 'ice_dragon_cross'),
+    'true_dark_dragon_cross': Inventory.Item('True: Dark Dragon Cross', '+180 touching defense\n+300 magic defense\n+100% magic damage\n+52/sec regeneration\n+220/sec mana regeneration\n'
+                                                                        '+12/sec mentality regeneration\n+50% domain size\n+480 additional maximum mana', 'true_dark_dragon_cross', 12,
+                                             [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']], 'dark_dragon_cross'),
+    'true_light_dragon_cross': Inventory.Item('True: Light Dragon Cross', '+360 touching defense\n+120 magic defense\n+180% pacify damage\n+140% pacify time',
+                                              'true_light_dragon_cross', 12, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']], 'light_dragon_cross'),
 
     'nice_cream': Inventory.Item('Nice Cream', 'Increase your speed.\nDuration: 36s', 'nice_cream', 4, [TAGS['item']]),
     'iron_donut': Inventory.Item('Iron Donut', 'Increase your defense by 32.\nDuration: 54s', 'iron_donut', 4, [TAGS['item']]),
@@ -2031,6 +2120,13 @@ RECIPES = [
             'strength_ingot': 5, 'sight_ingot': 5, 'phantom_ingot': 5}, 'hallow_ingot', 5),
     Recipe({'hallow_ingot': 12}, 'saint_apple'),
 
+    Recipe({'hallow_ingot': 3, 'chlorophyll': 1}, 'chlorophyte_ingot', 2),
+    Recipe({'soul_resonancer': 1, 'hallow_ingot': 12}, 'hallow_resonancer'),
+    Recipe({'soul_resonancer': 1, 'chlorophyte_ingot': 12}, 'life_resonancer'),
+
+    Recipe({'vision_resonancer': 1, 'strength_resonancer': 1, 'photon_resonancer': 1,
+            'hallow_resonancer': 1, 'life_resonancer': 1, 'willpower_shard': 6}, 'worldsaver_necklace', 4),
+
     Recipe({'dragon_bone': 36}, 'dragon_swift_sword'),
     Recipe({'dragon_skull': 1, 'dragon_bow': 18}, 'dragon_bow'),
     Recipe({'dragon_bone': 28}, 'dragon_flute'),
@@ -2052,12 +2148,27 @@ RECIPES = [
     Recipe({'dragon_bow': 1, 'dark_dragon_blood': 12}, 'dark_quench__dragon_bow'),
     Recipe({'dragon_swift_sword': 1, 'light_dragon_blood': 12}, 'light_quench__dragon_sword'),
     Recipe({'dragon_bow': 1, 'light_dragon_blood': 12}, 'light_quench__dragon_bow'),
+    Recipe({'dragon_flute': 1, 'fire_dragon_blood': 15}, 'dance_of_fire'),
+    Recipe({'dragon_flute': 1, 'ice_dragon_blood': 15}, 'dance_of_frost'),
+    Recipe({'dragon_flute': 1, 'dark_dragon_blood': 15}, 'dance_of_shadow'),
+    Recipe({'dragon_flute': 1, 'light_dragon_blood': 15}, 'dance_of_shine'),
     Recipe({'dragon_flute': 1, 'fire_dragon_blood': 6, 'ice_dragon_blood': 6}, 'the_song_of_ice_and_fire'),
 
     Recipe({'fire_dragon_heart': 1, 'fire_dragon_blood': 4, 'dragon_bone': 20}, 'fire_dragon_breath_wand'),
     Recipe({'ice_dragon_heart': 1, 'ice_dragon_blood': 4, 'dragon_bone': 20}, 'ice_dragon_breath_wand'),
     Recipe({'dark_dragon_heart': 1, 'dark_dragon_blood': 4, 'dragon_bone': 20}, 'dark_dragon_breath_wand'),
     Recipe({'light_dragon_heart': 1, 'light_dragon_blood': 4, 'dragon_bone': 20}, 'light_dragon_breath_wand'),
+
+    Recipe({'fire_dragon_heart': 1, 'dragon_bone': 50, 'fire_dragon_blood': 8}, 'fire_dragon_cross'),
+    Recipe({'ice_dragon_heart': 1, 'dragon_bone': 50, 'ice_dragon_blood': 8}, 'ice_dragon_cross'),
+    Recipe({'dark_dragon_heart': 1, 'dragon_bone': 50, 'dark_dragon_blood': 8}, 'dark_dragon_cross'),
+    Recipe({'light_dragon_heart': 1, 'dragon_bone': 50, 'light_dragon_blood': 8}, 'light_dragon_cross'),
+    Recipe({'mechanic_dragon_heart': 1, 'dragon_bone': 50, 'mechanic_dragon_blood': 8}, 'true_cyber_dragon_cross'),
+    Recipe({'mind_dragon_heart': 1, 'dragon_bone': 50,'mind_dragon_blood': 8}, 'true_mind_dragon_cross'),
+    Recipe({'fire_dragon_cross': 1, 'fire_dragon_ingot': 12}, 'true_fire_dragon_cross'),
+    Recipe({'ice_dragon_cross': 1, 'ice_dragon_ingot': 12}, 'true_ice_dragon_cross'),
+    Recipe({'dark_dragon_cross': 1, 'dark_dragon_ingot': 12}, 'true_dark_dragon_cross'),
+    Recipe({'light_dragon_cross': 1, 'light_dragon_ingot': 12}, 'true_light_dragon_cross'),
 
     Recipe({'dragon_reactor': 1, 'fire_heating_unit': 1, 'mind_cooling_unit': 1, 'chaos_ingot': 1, 'hallow_ingot': 1, 'fire_dragon_blood': 1},
            'fire_dragon_ingot'),
@@ -2074,6 +2185,8 @@ RECIPES = [
            'the_fairy_bow'),
     Recipe({'fire_dragon_ingot': 4, 'ice_dragon_ingot': 4, 'dark_dragon_ingot': 4, 'light_dragon_ingot': 4, 'dragon_bone': 400},
            'the_magisters_wand'),
+    Recipe({'fire_dragon_ingot': 4, 'ice_dragon_ingot': 4, 'dark_dragon_ingot': 4, 'light_dragon_ingot': 4, 'dragon_bone': 400},
+           'the_godfall_poem'),
 
     Recipe({'palladium_ingot': 6, 'mithrill_ingot': 6, 'titanium_ingot': 6,
             'note': 1, 'bible': 1, 'z': 1}, 'mechanical'),
@@ -2151,6 +2264,34 @@ RECIPES = [
     Recipe({'hallow_ingot': 12}, 'hallowed_headgear'),
     Recipe({'hallow_ingot': 16}, 'hallowed_plate_mail'),
     Recipe({'hallow_ingot': 8}, 'hallowed_greaves'),
+
+    Recipe({'worldsaver_necklace': 1, 'hallow_ingot': 8, 'chaos_ingot': 100, 'willpower_shard': 2}, 'worldsaver_hood'),
+    Recipe({'worldsaver_necklace': 1, 'hallow_ingot': 12, 'chaos_ingot': 150, 'willpower_shard': 3}, 'worldsaver_chestplate'),
+    Recipe({'worldsaver_necklace': 1, 'hallow_ingot': 6, 'chaos_ingot': 80, 'willpower_shard': 1}, 'worldsaver_leggings'),
+
+    Recipe({'dragon_scale_red': 16}, 'dragon_helmet_red'),
+    Recipe({'dragon_scale_red': 24}, 'dragon_chestplate_red'),
+    Recipe({'dragon_scale_red': 8}, 'dragon_leggings_red'),
+
+    Recipe({'dragon_scale_blue': 16}, 'dragon_helmet_blue'),
+    Recipe({'dragon_scale_blue': 24}, 'dragon_chestplate_blue'),
+    Recipe({'dragon_scale_blue': 8}, 'dragon_leggings_blue'),
+
+    Recipe({'dragon_scale_black': 16}, 'dragon_helmet_black'),
+    Recipe({'dragon_scale_black': 24}, 'dragon_chestplate_black'),
+    Recipe({'dragon_scale_black': 8}, 'dragon_leggings_black'),
+
+    Recipe({'dragon_scale_yellow': 16}, 'dragon_helmet_yellow'),
+    Recipe({'dragon_scale_yellow': 24}, 'dragon_chestplate_yellow'),
+    Recipe({'dragon_scale_yellow': 8}, 'dragon_leggings_yellow'),
+
+    Recipe({'dragon_scale_gray': 16}, 'dragon_helmet_gray'),
+    Recipe({'dragon_scale_gray': 24}, 'dragon_chestplate_gray'),
+    Recipe({'dragon_scale_gray': 8}, 'dragon_leggings_gray'),
+
+    Recipe({'dragon_scale_green': 16}, 'dragon_helmet_green'),
+    Recipe({'dragon_scale_green': 24}, 'dragon_chestplate_green'),
+    Recipe({'dragon_scale_green': 8}, 'dragon_leggings_green'),
 
     Recipe({'cell_organization': 20}, 'suspicious_eye'),
     Recipe({'cell_organization': 2, 'flufffur': 12}, 'wild_fluffball'),

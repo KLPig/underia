@@ -26,6 +26,7 @@ class Displayer:
         self.effects: list[effects.Effect] = []
         font = path.get_path('assets/dtm-sans.otf')
         self.font = pg.font.Font(font, 32)
+        self.font_mono = pg.font.Font('assets/dtm-mono.otf', 36)
         self.font_s = pg.font.Font(font, 20)
         self.night_darkness_color = (127, 127, 0)
         self.lsw, self.lsh = 1600, 900
