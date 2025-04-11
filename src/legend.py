@@ -13,13 +13,63 @@ def show_legend():
     dialogger = dialog.Dialogger(48, pg.Rect(0, window.get_height() - 180, window.get_width(), 180), target_surface=window, speed=.3)#12)
     texts = [[f'UNDERIA version {version.VERSION[0]}.{version.VERSION[1]}.{version.VERSION[2]}',
               'Copyright © 2025 KLPIG,\nlicensed under BSD 2-clause license.', 'by KLPIG\n',
-              'Released in 32/3/2025, \nwhich isn\'t the april fools day.',
+              'Released in 411/2025, \nis it a celebration?',
               'Press [C] to continue.', 'Press [ESC] to quit.', 'Assets:', 'Music from Undertale OST, Deltarune OST,\nand Terraria OST.',
-              'Image drawn by KLPIG']]
+              'Image drawn by KLPIG'],
+             ['Once upon a time, the world was full in chaos.',
+              'Everything\'s both dark and light,\neither good or evil.',
+              'Only the original chaos creature can live \nin this world.'],
+             ['However, after a second, or a millennium, \nor even FOREVER, as there was no TIME here,',
+              'There was a tree seedling, and a cross.',
+              'They are the GOD.',
+              'World starts to have a direction, a law.'],
+             ['Soon, the seedling has grown into a tree,\nwe call it the WORLD\'S TREE, has formed the LAND.',
+              'Also, the cross formed the sky,\nwe call it the FAITH.'],
+             ['The WORLD\'S TREE SAID, "There should be a law."\nSo he created MATTERS and CLOCK,',
+              'which controlled the substance and the current \nof time of the world.',
+              'The FAITH SAID, "There should be LIGHT."\nSO he created the GODS EYE.\n',
+              'They spin around the world, \nstaring for the day and night.',
+              'But they didn\'t notice that, \nthere was something staring at him.'],
+             ['The gods should stand up to find for \nthe ABYSS CREATURE,',
+              'MATTERS and CLOCK together, \ncreated 3 mechanical and 3 biological being.'],
+             ['With the 6 being and 2 gods, the WORLD\'S TREE\ntoiled for ages to fight for the ABYSS CREATURE.'],
+             ['Knowing they might die, the WORLDS TREE created\nthe human\'s and monsters.',
+              'Those clever creatures knew use tools and magics\nand these 2 races rule the world.'],
+             ['The world tree has dead.', 'He left the world, his leaf became the rain,\nmaking millions of life.',
+              'Also, one bulb-shaped flower became a\ndeformed plant in the rainforest.',
+              'The ABYSS CREATURE has been destroyed,\nonly leaving its eye'],
+             ['Dear traveller, can you save this world?']]
+    if constants.LANG == 'zh':
+        dialogger.speed *= 8
+        texts = [[f'UNDERIA, v.{version.VERSION[0]}.{version.VERSION[1]}.{version.VERSION[2]}',
+                  '版权所有 © 2025 KLPIG，\n采用 BSD-2 Simplified 许可证授权。', '由 KLPIG 制作\n',
+                  '于 2025 年 4 月 1 日发布，\n好像是个节日。',
+                  '按 [C] 继续。', '按 [ESC] 退出。',
+                  '音乐来自 Undertale(传说之下), Deltarune(三角符文), \nTerraria(泰拉瑞亚) 原声带。',
+                  '图像由 KLPIG 绘制', 'si人翻译，勿喷。'],
+                 ['很久很久以前，世界充满了混沌。',
+                  '一切既黑暗而光明，\n非善亦非恶。',
+                  '只有原初的混沌生物能在此中生存。'],
+                 ['然而，或许是片刻之后，还是万万年之后，甚至是永恒，\n诞生了一株树苗和一块十字。',
+                  '他们，是神。',
+                  '世界开始有了方向和法则。'],
+                 ['不久，树苗长成了大树，人称「世界之树」，创造了大地。',
+                  '同时，十字架构成了天空，人称「信」。'],
+                 ['世界之树说：“这里应该有法则。”\n于是他创造了「物」和「时」，',
+                  '以控制世界中的实体和时间流。',
+                  '信仰说：“这个世界应该有光明。”\n于是他创造了「神之眼」。\n',
+                  '它们围绕世界旋转，\n日夜注视着世界。',],
+                 ['「神」们发现了来自「深渊」的生物，',
+                  '「物」和「时」一起，\n创造了 3 个机械和3 个血肉生物。'],
+                 ['有了这 6 个生物和 2 个神，世界之树\n用了无数年与深渊生物战斗。'],
+                 ['作为「遗产」，世界之树创造了人类和怪物。',
+                  '这些聪明的生物懂得使用工具和魔法，\n这两个种族统治了世界。'],
+                 ['「世界之树」死了。', '他离开了世界，他的叶子化作了雨水，\n滋润万物。',
+                  '同时，一株球形花成为了雨林中\n一种畸形植物。',
+                  '深渊生物已被摧毁，\n其眼却留在了人间。'],
+                 ['亲爱的人儿啊，你能拯救这个世界吗？']]
 
-    texts += [['What happened?', 'I forgot.'] for _ in range(9)]
     for t in texts:
-        print(t)
         dialogger.push_dialog(*t)
     dialogger.update([])
     while True:

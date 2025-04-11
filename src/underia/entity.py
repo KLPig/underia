@@ -1229,6 +1229,8 @@ class Entities:
         SOUND_HURT = None
         SOUND_DEATH = None
 
+        BOSS_NAME = ''
+
         def __init__(self, pos, img=None, ai: type(MonsterAI) = MonsterAI, hp=120,
                      hp_sys: hp_system.HPSystem | None = None):
             self.obj: MonsterAI | mover.Mover = ai(pos)
@@ -1239,6 +1241,11 @@ class Entities:
                 self.hp_sys = hp_system.SubHPSystem(hp_sys)
                 self.show_bar = False
             self.img: pg.Surface | None = img
+            self.img_idx = [k for k, v in game.get_game().graphics.graphics.items() if k.startswith('entity') and v == self.img]
+            if len(self.img_idx):
+                self.img_idx = self.img_idx[0]
+            else:
+                self.img_idx = 'entity_null'
             self.d_img = self.img
             self.rot = 0
             self.add_star = False
@@ -1265,6 +1272,7 @@ class Entities:
             self.hp_sys.max_hp *= 0.9 + 0.2 * random.random()
             self.hp_sys.hp = self.hp_sys.max_hp
             self.o_atk = 0
+            self.show_boss = False
 
         def set_rotation(self, rot):
             if self.img.get_width() < 5:
@@ -1284,6 +1292,9 @@ class Entities:
         @staticmethod
         def is_playing(sound):
             return game.get_game().sounds[sound].get_num_channels() > 0
+
+        def dump_display(self):
+            return {'pos': self.obj.pos, 'rot': self.rot, 'img_idx': self.img_idx, 'display_mode': self.DISPLAY_MODE, 'hp_sys': self.hp_sys}
 
         @staticmethod
         def is_suitable(biome: str):
@@ -1312,6 +1323,29 @@ class Entities:
             self.t_draw()
 
         def t_update(self):
+            if not self.show_boss and self.IS_MENACE and len(self.BOSS_NAME):
+                self.show_boss = True
+                window = pg.display.get_surface()
+                sf = copy.copy(window)
+                for i in range(240):
+                    if i < 30:
+                        w = i ** 2 / 900
+                    elif i > 210:
+                        w = (240 - i) ** 2 / 900
+                    else:
+                        w = 1.0
+                    window.blit(sf, (0, 0))
+                    pg.draw.rect(window, (255, 181, 112),
+                                 (window.get_width() * (1 - w) / 2, 100, window.get_width() * w, 160))
+                    pg.draw.rect(window, (242, 166, 94),
+                                 (window.get_width() * (1 - w) / 2, 100, window.get_width() * w, 160), 15)
+                    t = game.get_game().displayer.font.render(styles.text(self.BOSS_NAME), True, (182, 106, 34))
+                    window.blit(t, (window.get_width() / 2 - t.get_width() / 2, 150))
+                    t = game.get_game().displayer.font.render(styles.text(self.NAME), True, (182, 106, 34))
+                    window.blit(t, (window.get_width() / 2 - t.get_width() / 2, 200))
+                    pg.display.flip()
+                    game.get_game().handle_events()
+                    game.get_game().clock.update()
             p = position.displayed_position((self.obj.pos[0], self.obj.pos[1]))
             if p[0] < -100 or p[0] > game.get_game().displayer.SCREEN_WIDTH + 100 or p[1] < -100 or p[
                 1] > game.get_game().displayer.SCREEN_HEIGHT + 100:
@@ -1384,14 +1418,19 @@ class Entities:
                                   self.img.get_width() * 2)
                 if r.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())) and self.show_bar:
                     mx, my = game.get_game().displayer.reflect(*pg.mouse.get_pos())
-                    f = displayer.font.render(f'{self.adj}: {self.NAME}', True, (255, 255, 255))
-                    f_bg = displayer.font.render(f'{self.adj}: {self.NAME}', True, (0, 0, 0))
+                    f = displayer.font.render(f'{styles.text(self.adj)}: {styles.text(self.NAME)}', True, (255, 255, 255))
+                    f_bg = displayer.font.render(f'{styles.text(self.adj)}: {styles.text(self.NAME)}', True, (0, 0, 0))
                     displayer.canvas.blit(f_bg, (mx + 2, my + 2))
                     displayer.canvas.blit(f, (mx, my))
-                    f = displayer.font.render(f'{round(self.hp_sys.hp / self.hp_sys.max_hp * 100, 1)}% HP '
-                                              f'{self.obj.TOUCHING_DAMAGE / self.o_atk  * 100 if self.o_atk else 0:.2f}% AT', True, (255, 255, 255))
-                    f_bg = displayer.font.render(f'{round(self.hp_sys.hp / self.hp_sys.max_hp * 100, 1)}% HP '
-                                              f'{self.obj.TOUCHING_DAMAGE / self.o_atk * 100 if self.o_atk else 0:.2f}% AT', True, (0, 0, 0))
+                    dm, df = 0, 0
+                    for dt, d in game.get_game().player.weapons[game.get_game().player.sel_weapon].damages.items():
+                        dm += d
+                        df += self.hp_sys.defenses[dt]
+                    txt = (f'{round(self.hp_sys.hp / self.hp_sys.max_hp * 100, 1)}% HP '
+                           f'{self.obj.TOUCHING_DAMAGE / self.o_atk  * 100 if self.o_atk else 0:.2f}% AT '
+                           f'{df / dm * 100 if dm else 0:.2f}% DF')
+                    f = displayer.font.render(txt, True, (255, 255, 255))
+                    f_bg = displayer.font.render(txt, True, (0, 0, 0))
                     displayer.canvas.blit(f_bg, (mx + 2, my + 2 + f.get_height()))
                     displayer.canvas.blit(f, (mx, my + f.get_height()))
 
@@ -1946,6 +1985,7 @@ class Entities:
     class Fluffff(WormEntity):
         NAME = 'Fluffff'
         DISPLAY_MODE = 1
+        BOSS_NAME = 'The Fluffy Worm'
         LOOT_TABLE = LootTable([
             IndividualLoot('platinum', 1, 20, 30),
             IndividualLoot('flufffur', 1, 5, 8),
@@ -1972,6 +2012,7 @@ class Entities:
             IndividualLoot('aimer', 1, 1, 1),
             IndividualLoot('tip2', 1, 1, 1),
         ])
+        BOSS_NAME = 'The Watcher of Terror'
         IS_MENACE = True
 
         SOUND_SPAWN = 'boss'
@@ -2404,6 +2445,7 @@ class Entities:
         SOUND_SPAWN = 'boss'
         SOUND_HURT = 'ore'
         SOUND_DEATH = 'huge_monster'
+        BOSS_NAME = 'The God\'s Heritage'
         IS_MENACE = True
         PHASE_SEGMENTS = []
 
@@ -2545,6 +2587,7 @@ class Entities:
         SOUND_SPAWN = 'boss'
         SOUND_HURT = 'sticky'
         SOUND_DEATH = 'huge_monster'
+        BOSS_NAME = 'The Fire Monster'
 
         PHASE_SEGMENTS = [0.1, 0.2, 0.3, 0.6, 0.7]
 
@@ -2584,6 +2627,7 @@ class Entities:
         NAME = 'Sandstorm'
         DISPLAY_MODE = 3
         IS_MENACE = True
+        BOSS_NAME = 'The Ghost of Desert'
         LOOT_TABLE = LootTable([
             IndividualLoot('mysterious_ingot', 1, 15, 35),
             IndividualLoot('storm_core', 1, 2, 4),
@@ -3411,6 +3455,7 @@ class Entities:
         NAME = 'Abyss Eye'
         DISPLAY_MODE = 3
         IS_MENACE = True
+        BOSS_NAME = 'The Dimensional Intruder'
         LOOT_TABLE = LootTable([
             IndividualLoot('soul', 1, 100, 200),
             SelectionLoot([('spiritual_stabber', 1, 1), ('spiritual_piercer', 1, 1), ('spiritual_destroyer', 1, 1)], 1,
@@ -3669,6 +3714,7 @@ class Entities:
         NAME = 'The Wither'
         DISPLAY_MODE = 3
         IS_MENACE = True
+        BOSS_NAME = 'The Contanminated Destroyer'
         PHASE_SEGMENTS = [0.4, 0.7]
         LOOT_TABLE = LootTable([
             IndividualLoot('evil_ingot', 0.9, 2, 5),
@@ -3727,6 +3773,7 @@ class Entities:
         NAME = 'Life Watcher'
         DISPLAY_MODE = 1
         IS_MENACE = True
+        BOSS_NAME = 'The Cursed Fairy'
         PHASE_SEGMENTS = [0.4, 0.7]
         LOOT_TABLE = LootTable([
             IndividualLoot('evil_ingot', 0.9, 2, 5),
@@ -3772,6 +3819,7 @@ class Entities:
         NAME = 'Polar Cube'
         DISPLAY_MODE = 1
         IS_MENACE = False
+        BOSS_NAME = 'The Ghost of the Snowland'
         LOOT_TABLE = LootTable([
             IndividualLoot('evil_ingot', 0.6, 12, 35),
             IndividualLoot('cold_substance', 0.2, 1, 2),
@@ -3830,6 +3878,7 @@ class Entities:
         NAME = 'The Scorching Wing: Ignis'
         DISPLAY_MODE = 1
         IS_MENACE = True
+        BOSS_NAME = 'The Fire Dragon'
         LOOT_TABLE = LootTable([
             IndividualLoot('dragon_bone', 1, 50, 60),
             IndividualLoot('dragon_skull', 1, 1, 1),
@@ -3929,6 +3978,7 @@ class Entities:
         NAME = 'The Frost Breath: Northrend'
         DISPLAY_MODE = 1
         IS_MENACE = True
+        BOSS_NAME = 'The Ice Dragon'
         LOOT_TABLE = LootTable([
             IndividualLoot('dragon_bone', 1, 50, 60),
             IndividualLoot('dragon_skull', 1, 1, 1),
@@ -3991,9 +4041,10 @@ class Entities:
                                                                                                   game.get_game().player.obj.pos[1] + random.randint(-600 - self.phase * 300, 600 + self.phase * 300))))
 
     class Nefarian(Ignis):
-        NAME = 'The Embrace of the Shadow: Nefarian'
+        NAME = 'the Shadow Embrace: Nefarian'
         DISPLAY_MODE = 1
         IS_MENACE = True
+        BOSS_NAME = 'The Dark Dragon'
         LOOT_TABLE = LootTable([
             IndividualLoot('dragon_bone', 1, 50, 60),
             IndividualLoot('dragon_skull', .8, 1, 1),
@@ -4071,6 +4122,7 @@ class Entities:
         NAME = 'The Radiance of Light: Olivia'
         DISPLAY_MODE = 1
         IS_MENACE = True
+        BOSS_NAME = 'The Light Dragon'
         LOOT_TABLE = LootTable([
             IndividualLoot('dragon_bone', 1, 50, 60),
             IndividualLoot('dragon_skull', 1, 1, 1),
@@ -4152,6 +4204,7 @@ class Entities:
         NAME = 'The Heart of Iron: Cybress'
         DISPLAY_MODE = 1
         IS_MENACE = True
+        BOSS_NAME = 'The Mechanic Dragon'
         LOOT_TABLE = LootTable([
             IndividualLoot('dragon_bone', 1, 50, 60),
             IndividualLoot('dragon_skull', 1, 1, 1),
@@ -4214,6 +4267,7 @@ class Entities:
         NAME = 'The Whisper of Mind: Eonar'
         DISPLAY_MODE = 1
         IS_MENACE = True
+        BOSS_NAME = 'The Mind Dragon'
         LOOT_TABLE = LootTable([
             IndividualLoot('dragon_bone', 1, 50, 60),
             IndividualLoot('dragon_skull', 1, 1, 1),
@@ -4483,6 +4537,7 @@ class Entities:
         LOOT_TABLE = LootTable([
             ])
         IS_MENACE = True
+        BOSS_NAME = 'The Heaven Intruder'
 
         NUMBERS = [20, 30, 30, 40, 60]
 
@@ -4530,6 +4585,7 @@ class Entities:
         LOOT_TABLE = LootTable([
             ])
         IS_MENACE = True
+        BOSS_NAME = 'The Heaven Intruder'
 
         def __init__(self, pos):
             super().__init__(pos, game.get_game().graphics['entity_goblin_wave'], BuildingAI, 120)
@@ -4624,6 +4680,7 @@ class Entities:
         NAME = 'Faithless Eye'
         DISPLAY_MODE = 1
         IS_MENACE = True
+        BOSS_NAME = 'The Non-Believer'
         LOOT_TABLE = LootTable([
             SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 1, 3),
             IndividualLoot('soul_of_integrity', 1, 10, 22),
@@ -4674,6 +4731,7 @@ class Entities:
         NAME = 'Truthless Eye'
         DISPLAY_MODE = 1
         IS_MENACE = True
+        BOSS_NAME = 'The Dishonester'
         LOOT_TABLE = LootTable([
             SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 1, 3),
             IndividualLoot('soul_of_integrity', 1, 10, 22),
@@ -4811,6 +4869,7 @@ class Entities:
         NAME = 'Destroyer'
         DISPLAY_MODE = 1
         IS_MENACE = True
+        BOSS_NAME = 'The Metal Worm of Strength'
         LOOT_TABLE = LootTable([
             SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 1, 3),
             IndividualLoot('soul_of_bravery', 1, 10, 22),
@@ -4843,6 +4902,7 @@ class Entities:
         NAME = 'The CPU'
         DISPLAY_MODE = 1
         IS_MENACE = True
+        BOSS_NAME = 'The Electric Lier'
         LOOT_TABLE = LootTable([
             SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 1, 3),
             IndividualLoot('soul_of_kindness', 1, 10, 22),
@@ -4899,6 +4959,7 @@ class Entities:
         NAME = 'Mechanical Medusa'
         DISPLAY_MODE = 1
         IS_MENACE = True
+        BOSS_NAME = 'The Final Mechanic'
         LOOT_TABLE = LootTable([
             SelectionLoot([('strength_ingot', 20, 30),
                            ('sight_ingot', 20, 30),
@@ -4992,6 +5053,7 @@ class Entities:
         NAME = 'Greed'
         DISPLAY_MODE = 1
         IS_MENACE = True
+        BOSS_NAME = 'The Greedy Biter'
         LOOT_TABLE = LootTable([
             SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 1, 3),
             IndividualLoot('saint_steel_ingot', 1, 5, 8),
@@ -5038,6 +5100,7 @@ class Entities:
         NAME = 'Eye of Time'
         DISPLAY_MODE = 1
         IS_MENACE = True
+        BOSS_NAME = 'Follower of the Truth'
         LOOT_TABLE = LootTable([
             SelectionLoot([('palladium', 2, 3), ('mithrill', 2, 3), ('titanium', 2, 3)], 1, 3),
             IndividualLoot('dark_ingot', 1, 5, 8),
@@ -5112,6 +5175,7 @@ class Entities:
         NAME = 'Devil Python'
         DISPLAY_MODE = 1
         IS_MENACE = True
+        BOSS_NAME = 'The World\'s Devourer'
         LOOT_TABLE = LootTable([
             SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 1, 3),
             IndividualLoot('daedalus_ingot', 1, 5, 8),
@@ -5221,6 +5285,7 @@ class Entities:
             SelectionLoot([('jevil_knife', 1, 1), ('jevils_tail', 1, 1)], 1, 1),
             ])
         IS_MENACE = True
+        BOSS_NAME = 'The Chaos Laughter'
         PHASE_SEGMENTS = [0.5, 0.7, 0.9]
 
         SOUND_HURT = 'haha'
@@ -5291,6 +5356,7 @@ class Entities:
             SelectionLoot([('jevil_knife', 1, 1), ('jevils_tail', 1, 1)], 1, 1),
             ])
         IS_MENACE = True
+        BOSS_NAME = 'The Chaos Laughter'
         PHASE_SEGMENTS = [0.5, 0.7, 0.9]
 
         SOUND_HURT = 'haha'
@@ -5378,6 +5444,7 @@ class Entities:
             IndividualLoot('willpower_shard', 1, 10, 30)
         ])
         IS_MENACE = True
+        BOSS_NAME = 'The Semi-god'
         PHASE_SEGMENTS = [0.6]
 
         def __init__(self, pos):
@@ -5837,6 +5904,7 @@ class Entities:
             IndividualLoot('patience_amulet', .5, 1, 1),
             ])
         IS_MENACE = True
+        BOSS_NAME = 'The Watcher of Ages'
         PHASE_SEGMENTS = [i / 12 for i in range(1, 12)]
 
         def __init__(self, pos):
@@ -5975,6 +6043,7 @@ class Entities:
             IndividualLoot('integrity_amulet', .5, 1, 1),
             ])
         IS_MENACE = True
+        BOSS_NAME = 'The Constructor'
         PHASE_SEGMENTS = [i / 9 for i in range(1, 9)]
 
         def __init__(self, pos):
@@ -6214,6 +6283,7 @@ class Entities:
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([])
         IS_MENACE = True
+        BOSS_NAME = 'Sun and Moon'
 
         PHASE_SEGMENTS = [0.08, 0.13, 0.18, 0.24, 0.30, 0.38, 0.46, 0.55, 0.64, 0.76, 0.88, 0.94, 0.98]
 
@@ -6458,13 +6528,14 @@ class Entities:
                 self.hp_sys.hp = 10 ** 8
 
     class ReincarnationTheWorldsTree(Entity):
-        NAME = 'Reincarnation: World\'s Tree'
+        NAME = 'Reincarnation: The World\'s Tree'
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([
             IndividualLoot('death_fountain', 1, 1, 1),
             IndividualLoot('kindness_amulet', .5, 1, 1),
         ])
         IS_MENACE = True
+        BOSS_NAME = 'The Unwill of the Supreme'
         PHASE_SEGMENTS = [0.1, 0.22, 0.34, 0.46, 0.58, 0.7, 0.8, 0.9]
         PHASES = ['none', 'born', 'growth', 'huge', 'fruit', 'death', 'gone', 'recovery', 'rebirth']
 
@@ -6601,6 +6672,7 @@ class Entities:
             IndividualLoot('justice_amulet', .5, 1, 1),
         ])
         IS_MENACE = True
+        BOSS_NAME = 'The End of Shapeless'
         PHASE_SEGMENTS = []
         PHASES = []
 
@@ -6677,6 +6749,114 @@ class Entities:
                                                                           self))
                     self.interval = max(7, self.interval - 4)
                     self.tick += self.interval - self.tick % self.interval + 1
+
+    class BurstBall(Entity):
+        NAME = 'Burst Ball'
+        DISPLAY_MODE = 1
+        LOOT_TABLE = LootTable([])
+
+        SOUND_HURT = 'crystal'
+        SOUND_DEATH = 'explosion'
+
+        def __init__(self, pos):
+            super().__init__(pos, game.get_game().graphics['entity_burst_ball'], DragonAI, 1000)
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 1000
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 1000
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 1000
+            self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 1000
+            self.hp_sys.defenses[damages.DamageTypes.OCTAVE] = 1000
+            self.hp_sys.defenses[damages.DamageTypes.PACIFY] = 1000
+            self.hp_sys.defenses[damages.DamageTypes.HALLOW] = 1000
+            self.obj.TOUCHING_DAMAGE = 1000
+            game.get_game().displayer.effect(fc.p_fade_circle(*position.displayed_position(self.obj.pos),
+                                                              col=(255, 255, 255), sp=30, t=20))
+
+        def on_update(self):
+            super().on_update()
+            self.set_rotation(self.rot + 6)
+
+    class CrushBall(BurstBall):
+        NAME = 'Crush Ball'
+
+        def __init__(self, pos):
+            super().__init__(pos)
+            self.obj.TOUCHING_DAMAGE += 200
+            self.obj.MASS -= 100
+
+    class OblivionAnnihilator(Entity):
+        NAME = 'Oblivion: Annihilator'
+        DISPLAY_MODE = 1
+        LOOT_TABLE = LootTable([])
+        IS_MENACE = True
+        BOSS_NAME = 'The Void and Chaos'
+        PHASE_SEGMENTS = [0.6, 0.85]
+
+        SOUND_HURT = 'corrupt'
+        SOUND_DEATH = 'haha'
+
+        def __init__(self, pos):
+            super().__init__(pos, game.get_game().graphics['entity_oblivion_annihilator'], BuildingAI, 4000000)
+            self.obj.MASS = 10 ** 8
+            self.obj.TOUCHING_DAMAGE = 2500
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 2000
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 2000
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 2000
+            self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 2000
+            self.hp_sys.defenses[damages.DamageTypes.OCTAVE] = 2000
+            self.hp_sys.defenses[damages.DamageTypes.PACIFY] = 2000
+            self.hp_sys.defenses[damages.DamageTypes.HALLOW] = 2000
+            game.get_game().dialog.push_dialog('The Annihilator is awoken!', '* The nightmare begins...')
+            self.tick = 0
+            self.phase = 0
+            game.get_game().decors.clear()
+
+        def t_draw(self):
+            super().t_draw()
+            if len([1 for e in self.hp_sys.effects if type(e) is effects.Frozen]) and random.randint(0, 100) < self.phase * 18 + 7:
+                self.hp_sys.effects = [e for e in self.hp_sys.effects if type(e) is not effects.Frozen]
+
+        def on_update(self):
+            super().on_update()
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] += .1
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] += .1
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] += .1
+            self.hp_sys.defenses[damages.DamageTypes.ARCANE] += .1
+            self.hp_sys.defenses[damages.DamageTypes.OCTAVE] += .1
+            self.hp_sys.defenses[damages.DamageTypes.PACIFY] += .1
+            self.hp_sys.defenses[damages.DamageTypes.HALLOW] += .1
+            self.obj.TOUCHING_DAMAGE += 2
+            self.tick += 1
+            if self.hp_sys.hp < self.hp_sys.max_hp * .85 and self.phase == 0:
+                self.phase = 1
+                dragon = Entities.Eonar((self.obj.pos[0] + random.randint(-1000, 1000),
+                                         self.obj.pos[1] + random.randint(-1000, 1000)))
+                dragon.NAME = 'Crush of Mind: ???'
+                dragon.hp_sys(op='config', immune=True)
+                dragon.obj.TOUCHING_DAMAGE = 1600
+                game.get_game().entities.append(dragon)
+                self.hp_sys.heal(self.hp_sys.max_hp)
+            elif self.hp_sys.hp < self.hp_sys.max_hp * .6 and self.phase == 1:
+                self.phase = 2
+            if self.phase == 0:
+                if self.tick % 28 == 0:
+                    game.get_game().entities.append(Entities.BurstBall((self.obj.pos[0] + random.randint(-1000, 1000),
+                                                                        self.obj.pos[1] + random.randint(-1000, 1000))))
+            elif self.phase == 1:
+                if self.tick % 44 == 0:
+                    game.get_game().entities.append(Entities.BurstBall((self.obj.pos[0] + random.randint(-1000, 1000),
+                                                                        self.obj.pos[1] + random.randint(-1000, 1000))))
+                elif self.tick % 44 == 22:
+                    game.get_game().entities.append(Entities.CrushBall((self.obj.pos[0] + random.randint(-1000, 1000),
+                                                                        self.obj.pos[1] + random.randint(-1000, 1000))))
+            else:
+                if self.tick % 54 == 0:
+                    for _ in range(6):
+                        game.get_game().entities.append(Entities.BurstBall((self.obj.pos[0] + random.randint(-1000, 1000),
+                                                                            self.obj.pos[1] + random.randint(-1000, 1000))))
+                        game.get_game().entities.append(Entities.CrushBall((self.obj.pos[0] + random.randint(-1000, 1000),
+                                                                            self.obj.pos[1] + random.randint(-1000, 1000))))
+
+
 
     class OmegaFlowery(Entity):
         NAME = 'Omega Flowey'
@@ -6756,7 +6936,7 @@ class Entities:
                     self.NAME = 'Finale'
                     self.hp_sys(op='config', maximum_damage=self.hp_sys.hp - 1)
                 elif self.state == -1:
-                    txt = game.get_game().displayer.font.render('WARNING!', True, (255, 0, 0), (0, 0, 0))
+                    txt = game.get_game().displayer.font.render(styles.text('WARNING!'), True, (255, 0, 0), (0, 0, 0))
                     tr = txt.get_rect(center=(game.get_game().displayer.SCREEN_WIDTH // 2, 100))
                     game.get_game().displayer.canvas.blit(txt, tr)
                     self.NAME = 'WARNING!'

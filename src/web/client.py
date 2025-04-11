@@ -12,6 +12,7 @@ class Client:
         self.player_datas = {}
         self.started = False
         self.player_id = 0
+        self.displays = {}
 
     def recv(self):
         s = None
@@ -28,9 +29,13 @@ class Client:
             if not data:
                 continue
             data = pickle.loads(data)
-            players: dict[int, game_pack_data.SinglePlayerData] = data
-            for player in players.values():
-                self.player_datas[player.player_id] = player
+            t, data = data
+            if t == 'player':
+                players: dict[int, game_pack_data.SinglePlayerData] = data
+                for player in players.values():
+                    self.player_datas[player.player_id] = player
+            elif t == 'display':
+                self.displays = data.display
             res = game_pack_data.SinglePlayerData(self.player_id, game.get_game().player)
             await loop.sock_sendall(self.client_socket, pickle.dumps(res))
             await asyncio.sleep(0.05)

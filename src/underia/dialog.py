@@ -1,11 +1,12 @@
 import pygame as pg
 import underia
 import resources
+import constants
 
 class Dialogger:
     def __init__(self, font_size: int = 64, rect: pg.Rect = None, with_border: bool = False,
                  target_surface: pg.Surface = None, speed: float = 10):
-        self.font = pg.font.Font(resources.get_path('assets/dtm-mono.otf'), font_size)
+        self.font = pg.font.Font(resources.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), font_size)
         self.word_queue = []
         self.curr_text = ''
         self.curr_idx = 0
@@ -39,7 +40,7 @@ class Dialogger:
                     self.curr_text = ''
                 self.curr_idx = 0
         if self.auto_skip and len(self.curr_text) <= self.curr_idx:
-            if self.s_timer < int(len(self.curr_text) * self.speed * .9):
+            if self.s_timer < int(self.speed * 45):
                 self.s_timer += 1
             else:
                 if len(self.word_queue):
@@ -57,9 +58,9 @@ class Dialogger:
             c = self.curr_text[self.curr_idx - 1]
             if c == ' ':
                 self.s_timer = int(self.speed * 3)
-            elif c == '\n' or c == '\r' or c == '.':
+            elif c in ['\n', '\r', '.', '。', '!', '?', '！', '？']:
                 self.s_timer = int(self.speed * 10)
-            elif c == ',':
+            elif c in [',', '，', ';', '；', ':', '：', '、']:
                 self.s_timer = int(self.speed * 5)
             else:
                 self.s_timer = int(self.speed)

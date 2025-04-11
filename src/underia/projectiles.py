@@ -69,6 +69,15 @@ class Projectiles:
             self.d_img = self.img
             self.rot = 0
             self.dead = False
+            self.img_idx = [k for k, v in game.get_game().graphics.graphics.items() if
+                            k.startswith('entity') and v == self.img]
+            if len(self.img_idx):
+                self.img_idx = self.img_idx[0]
+            else:
+                self.img_idx = 'entity_null'
+
+        def dump_display(self):
+            return {'pos': self.obj.pos, 'rot': self.rot, 'img_idx': self.img_idx}
 
         def set_rotation(self, rot):
             if self.img.get_width() < 5:
@@ -2538,6 +2547,76 @@ class Projectiles:
                     else:
                         cd.append(ee)
             return cd
+
+    class RocketRed(Bullet):
+        DAMAGES = 10
+        SPEED = 500
+        IMG = 'rk_red'
+        COL = (255, 0, 0)
+        TAIL_WIDTH = 5
+        TAIL_SIZE = 3
+
+        def damage(self, pos, cd):
+            b = False
+            for ee in game.get_game().entities:
+                if (vector.distance(ee.obj.pos[0] - self.obj.pos[0], ee.obj.pos[1] - self.obj.pos[1]) <
+                        200 + (ee.d_img.get_width() + ee.d_img.get_height()) // 4):
+                    b = True
+            if not b and random.uniform(0, self.tick * self.obj.velocity.get_net_value()) > 2000:
+                b = True
+            if b:
+                self.dead = True
+                for d in range(10, 40):
+                    game.get_game().displayer.effect(particle_effects.p_particle_effects(*position.displayed_position(self.obj.pos),
+                                                                                col=self.COL, t=25, n=d * 4 * self.r // 600 // 71, r=10,
+                                                                               sp=d * self.r / 1000 / game.get_game().player.get_screen_scale()))
+                for e2 in game.get_game().entities:
+                    if (vector.distance(e2.obj.pos[0] - self.obj.pos[0], e2.obj.pos[1] - self.obj.pos[1]) <
+                            self.r + (e2.d_img.get_width() + e2.d_img.get_height()) // 4):
+                        e2.hp_sys.damage(self.dmg, damages.DamageTypes.PIERCING)
+                        if self.DELETE:
+                            self.dead = True
+                        else:
+                            cd.append(ee)
+            return cd
+
+        def __init__(self, pos, rotation, speed, damage, r=600):
+            super().__init__(pos, rotation, speed, damage)
+            self.obj.FRICTION = .99
+            self.obj.MASS *= .8
+            self.obj.velocity.reset(3)
+            self.r = r
+
+        def update(self):
+            super().update()
+            mx, my = position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+            mx -= self.obj.pos[0]
+            my -= self.obj.pos[1]
+            self.obj.rotation = vector.coordinate_rotation(mx, my)
+
+    class RocketOrange(RocketRed):
+        IMG = 'rk_orange'
+        COL = (255, 127, 0)
+
+    class RocketYellow(RocketRed):
+        IMG = 'rk_yellow'
+        COL = (255, 255, 0)
+
+    class RocketGreen(RocketRed):
+        IMG = 'rk_green'
+        COL = (0, 255, 0)
+
+    class RocketCyan(RocketRed):
+        IMG = 'rk_cyan'
+        COL = (0, 255, 255)
+
+    class RocketBlue(RocketRed):
+        IMG = 'rk_blue'
+        COL = (0, 0, 255)
+
+    class RocketPurple(RocketRed):
+        IMG = 'rk_purple'
+        COL = (255, 0, 255)
 
     class FireQuenchArrow(Arrow):
         DAMAGES = 200

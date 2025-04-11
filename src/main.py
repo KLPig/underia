@@ -449,7 +449,7 @@ def update():
 if addr is not None:
     game.client = web.Client(addr, 1145)
     print('Connected: ', addr, game.client)
-    start_data: web.FirstConnectData = pickle.loads(game.client.recv())
+    t, start_data = pickle.loads(game.client.recv())
     game.seed = start_data.seed
     game.hallow_points = start_data.hallow
     game.wither_points = start_data.wither
@@ -458,6 +458,7 @@ if addr is not None:
     g = random.randint(max(0, 105 - r), min(360 - r, 255))
     b = 360 - r - g
     game.client.player_id = start_data.pid
+
 
 if constants.WEB_DEPLOY:
     import asyncio

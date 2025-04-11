@@ -83,6 +83,8 @@ class Inventory:
                             self.accessory_data['ranged_damage'] = int(desc.removesuffix('%rangeddamage'))
                         elif desc.endswith('%magicdamage') or desc.endswith('%magicaldamage'):
                             self.accessory_data['magic_damage'] = int(desc.split('%magic')[0])
+                        elif desc.endswith('%octavedamage'):
+                            self.accessory_data['octave_damage'] = int(desc.removesuffix('%octavedamage'))
                         elif desc.endswith('%hallowdamage'):
                             self.accessory_data['hallow_damage'] = int(desc.removesuffix('%hallowdamage'))
                         elif desc.endswith('%pacifydamage'):
@@ -609,6 +611,23 @@ items_dict: dict[str, Inventory.Item] = {
     'matter_disintegrator': Inventory.Item('Matter Disintegrator', 'Matter came, matter gone.', 'matter_disintegrator', 9,
                                             [TAGS['item'], TAGS['weapon'], TAGS['gun'], TAGS['lazer_gun']]),
 
+    'rocket_launcher': Inventory.Item('Rocket Launcher', '', 'rocket_launcher', 2,
+                                      [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
+    'rapid_rocket_launcher': Inventory.Item('Rapid Rocket Launcher', '', 'rapid_rocket_launcher', 4,
+                                            [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
+    'rocket_launcher_v2': Inventory.Item('Rocket Launcher v2.0', '', 'rocket_launcher_v2', 5,
+                                          [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
+    'rapid_rocket_launcher_v2': Inventory.Item('Rapid Rocket Launcher v2.0', '', 'rapid_rocket_launcher_v2', 5,
+                                                [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
+    'rocket_launcher_v3': Inventory.Item('Rocket Launcher v3.0', '', 'rocket_launcher_v3', 7,
+                                          [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
+    'rapid_rocket_launcher_v3': Inventory.Item('Rapid Rocket Launcher v3.0', '', 'rapid_rocket_launcher_v3', 8,
+                                                [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
+    'rocket_launcher_v4': Inventory.Item('Rocket Launcher v4.0', '', 'rocket_launcher_v4', 10,
+                                          [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
+    'rapid_rocket_launcher_max': Inventory.Item('Rapid Rocket Launcher v4.0 pro max', '', 'rapid_rocket_launcher_max', 12,
+                                                [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
+
     'copper_knife': Inventory.Item('Copper Knife', '', 'copper_knife', 0,
                                    [TAGS['item'], TAGS['weapon'], TAGS['knife']]),
     'dagger': Inventory.Item('Dagger', '', 'dagger', 1, [TAGS['item'], TAGS['weapon'], TAGS['knife']]),
@@ -1120,12 +1139,12 @@ items_dict: dict[str, Inventory.Item] = {
     'dragon_leggings_blue': Inventory.Item('Dragon Leggings (Blue)', '25 armor\n+25 magic defense\n+5% critical', 'dragon_leggings_blue', 10,
                                              [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
 
-    #200 7:10:3
-    'dragon_helmet_black': Inventory.Item('Dragon Helmet (Black)', '70 armor\n+70 magic defense\n+300 additional maximum mana', 'dragon_helmet_black', 10,
+    #100 7:10:3
+    'dragon_helmet_black': Inventory.Item('Dragon Helmet (Black)', '35 armor\n+35 magic defense\n+300 additional maximum mana', 'dragon_helmet_black', 10,
                                             [TAGS['item'], TAGS['accessory'], TAGS['head']]),
-    'dragon_chestplate_black': Inventory.Item('Dragon Chestplate (Black)', '90 armor\n+90 magic defense\n+450 additional maximum mana', 'dragon_chestplate_black', 10,
+    'dragon_chestplate_black': Inventory.Item('Dragon Chestplate (Black)', '50 armor\n+50 magic defense\n+450 additional maximum mana', 'dragon_chestplate_black', 10,
                                                [TAGS['item'], TAGS['accessory'], TAGS['body']]),
-    'dragon_leggings_black': Inventory.Item('Dragon Leggings (Black)', '30 armor\n+30 magic defense\n+150 additional maximum mana', 'dragon_leggings_black', 10,
+    'dragon_leggings_black': Inventory.Item('Dragon Leggings (Black)', '15 armor\n+15 magic defense\n+150 additional maximum mana', 'dragon_leggings_black', 10,
                                               [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
 
     #150 2:3:1
@@ -1567,6 +1586,10 @@ items_dict: dict[str, Inventory.Item] = {
                                          TAGS['magic_lv_forbidden_curse']]),
     'the_godfall_poem': Inventory.Item('The Godfall Poem', 'A line\'s start, a god\'s fall.', 'the_godfall_poem', 12, [TAGS['item'], TAGS['weapon'], TAGS['poet_weapon']]),
 
+    'eternal_hush': Inventory.Item('Eternal Hush', '-80% air resistance\n+100% wing control\nYour move cause your surrounding will be frozen.', 'eternal_hush', 12, [TAGS['item'], TAGS['accessory'], TAGS['wings']]),
+    'voidstride_treads': Inventory.Item('Voidstride Treads', '+200% speed\n+5% critical\n+80 magic defense\n+120/sec mana regeneration\n+10% domain size\n+1s poet bonus time\nYour footprint weakens the enemies.', 'voidstride_treads', 12, [TAGS['item'], TAGS['accessory']]),
+    'vermillion_sigil_palms': Inventory.Item('Vermillion Sigil Palms', '+80% damage\n+15% critical\n+50/sec regeneration\n+100% pacify time\nYour attack will be with fire.', 'vermillion_sigil_palms', 12, [TAGS['item'], TAGS['accessory']]),
+    'aurora_dawn': Inventory.Item('Aurora Dawn', '+600/sec mana regeneration\n+10/sec mentality regeneration\n+50% domain size\n+1000 additional maximum mana.\n+200/sec inspiration regeneration\n-50% karma reduce.\nYour body protects you from death.', 'aurora_dawn', 12, [TAGS['item'], TAGS['accessory']]),
 
     'fire_dragon_cross': Inventory.Item('Fire Dragon Cross', '+400 touching defense\n+300 magic defense\n+120% melee damage\n+20/sec regeneration\n+5% critical', 'fire_dragon_cross', 11, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
     'ice_dragon_cross': Inventory.Item('Ice Dragon Cross', '+200 touching defense\n+200 magic defense\n+100% ranged damage\n+30/sec regeneration\n+25% critical\n+50% speed', 'ice_dragon_cross', 11, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
@@ -1612,6 +1635,8 @@ items_dict: dict[str, Inventory.Item] = {
                                  [TAGS['item']]),
     'saint_apple': Inventory.Item('Life Fruit', '+900 maximum HP\n700 maximum MP\n+20 maximum talent', 'saint_apple', 7,
                                  [TAGS['item']]),
+    'mind_ball': Inventory.Item('Mind Ball', '+1500 maximum HP\n+50 maximum mentality', 'mind_ball', 10,
+                                 [TAGS['item']]),
 
     'ballet_shoes': Inventory.Item('Ballet Shoes', '', 'ballet_shoes', 6,
                                    [TAGS['item'], TAGS['weapon'], TAGS['magic_weapon'], TAGS['magic_element_water'], TAGS['magic_lv_3']]),
@@ -1641,13 +1666,15 @@ items_dict: dict[str, Inventory.Item] = {
     'plantera_bulb': Inventory.Item('Plantera Bulb', 'Summon Plantera', 'plantera_bulb', 0, [TAGS['item']]),
     'yellow_flower': Inventory.Item('Yellow Flower', 'Final.', 'yellow_flower', 12, [TAGS['item']]),
 
+    'mechanical': Inventory.Item('Mechanical',
+                                 'This is just made by metals combining together.\nSummon the mechanic medusa.',
+                                 'mechanical', 0, [TAGS['item']]),
     'dark_skull': Inventory.Item('Dark Skull', 'Summon the Wither', 'dark_skull', 0, [TAGS['item']]),
     'plastic_flower': Inventory.Item('Plastic Flower', 'Summon the Life Watcher', 'plastic_flower', 0, [TAGS['item']]),
     'huge_snowball': Inventory.Item('Huge Snowball', 'Summon the Polar Cube', 'huge_snowball', 0, [TAGS['item']]),
 
     'dragon_horn': Inventory.Item('Dragon Horn', 'Summon dragons around the world.', 'dragon_horn', 8, [TAGS['item']]),
-
-    'mechanical': Inventory.Item('Mechanical', 'This is just made by metals combining together.\nSummon the mechanic medusa.', 'mechanical', 0, [TAGS['item']]),
+    'ends_sphere': Inventory.Item('End\'s Sphere', 'Final', 'ends_sphere', 12, [TAGS['item']]),
 
     'finale__soul': Inventory.Item('Finale: Soul', 'The finale is the the start.\nStart Chapter 2.', 'finale__soul', 13, [TAGS['item']]),
 
@@ -2169,6 +2196,7 @@ RECIPES = [
     Recipe({'ice_dragon_cross': 1, 'ice_dragon_ingot': 12}, 'true_ice_dragon_cross'),
     Recipe({'dark_dragon_cross': 1, 'dark_dragon_ingot': 12}, 'true_dark_dragon_cross'),
     Recipe({'light_dragon_cross': 1, 'light_dragon_ingot': 12}, 'true_light_dragon_cross'),
+    Recipe({'mind_dragon_blood': 2}, 'mind_ball'),
 
     Recipe({'dragon_reactor': 1, 'fire_heating_unit': 1, 'mind_cooling_unit': 1, 'chaos_ingot': 1, 'hallow_ingot': 1, 'fire_dragon_blood': 1},
            'fire_dragon_ingot'),
@@ -2179,14 +2207,21 @@ RECIPES = [
     Recipe({'dragon_reactor': 1, 'light_heating_unit': 1, 'mind_cooling_unit': 1, 'chaos_ingot': 1, 'hallow_ingot': 1, 'light_dragon_blood': 1},
            'light_dragon_ingot'),
 
-    Recipe({'fire_dragon_ingot': 4, 'ice_dragon_ingot': 4, 'dark_dragon_ingot': 4, 'light_dragon_ingot': 4, 'dragon_bone': 400},
+    Recipe({'fire_dragon_ingot': 8, 'ice_dragon_ingot': 8, 'dark_dragon_ingot': 8, 'light_dragon_ingot': 8, 'dragon_bone': 400},
            'the_ruling_sword'),
-    Recipe({'fire_dragon_ingot': 4, 'ice_dragon_ingot': 4, 'dark_dragon_ingot': 4, 'light_dragon_ingot': 4, 'dragon_bone': 400},
+    Recipe({'fire_dragon_ingot': 8, 'ice_dragon_ingot': 8, 'dark_dragon_ingot': 8, 'light_dragon_ingot': 8, 'dragon_bone': 400},
            'the_fairy_bow'),
-    Recipe({'fire_dragon_ingot': 4, 'ice_dragon_ingot': 4, 'dark_dragon_ingot': 4, 'light_dragon_ingot': 4, 'dragon_bone': 400},
+    Recipe({'fire_dragon_ingot': 8, 'ice_dragon_ingot': 8, 'dark_dragon_ingot': 8, 'light_dragon_ingot': 8, 'dragon_bone': 400},
            'the_magisters_wand'),
-    Recipe({'fire_dragon_ingot': 4, 'ice_dragon_ingot': 4, 'dark_dragon_ingot': 4, 'light_dragon_ingot': 4, 'dragon_bone': 400},
+    Recipe({'fire_dragon_ingot': 8, 'ice_dragon_ingot': 8, 'dark_dragon_ingot': 8, 'light_dragon_ingot': 8, 'dragon_bone': 400},
            'the_godfall_poem'),
+
+    Recipe({'ice_dragon_ingot': 18}, 'eternal_hush'),
+    Recipe({'dark_dragon_ingot': 18}, 'voidstride_treads'),
+    Recipe({'fire_dragon_ingot': 18}, 'vermillion_sigil_palms'),
+    Recipe({'light_dragon_ingot': 18}, 'aurora_dawn'),
+
+    Recipe({'fire_dragon_ingot': 3, 'ice_dragon_ingot': 3, 'dark_dragon_ingot': 3, 'light_dragon_ingot': 3}, 'ends_sphere'),
 
     Recipe({'palladium_ingot': 6, 'mithrill_ingot': 6, 'titanium_ingot': 6,
             'note': 1, 'bible': 1, 'z': 1}, 'mechanical'),
@@ -2196,6 +2231,20 @@ RECIPES = [
     Recipe({'chaos_ingot': 100, 'willpower_shard': 5}, 'dragon_horn'),
 
     Recipe({'the_final_soul': 15, 'murders_knife': 1, 'savior': 1}, 'finale__soul'),
+
+    Recipe({'platinum_ingot': 36, 'mana_crystal': 1, 'anvil': 1}, 'rocket_launcher'),
+    Recipe({'mysterious_ingot': 18, 'storm_core': 1}, 'rapid_rocket_launcher'),
+    Recipe({'soul': 16, 'mithrill_ingot': 24, 'mithrill_anvil': 1}, 'rocket_launcher_v2'),
+    Recipe({'note': 1, 'mithrill_ingot': 24, 'mithrill_anvil': 1}, 'rocket_launcher_v2'),
+    Recipe({'soul_of_integrity': 12, 'daedalus_ingot': 24, 'mithrill_anvil': 1}, 'rapid_rocket_launcher_v2'),
+    Recipe({'strength_ingot': 24, 'mithrill_anvil': 1}, 'rapid_rocket_launcher_v2'),
+    Recipe({'hallow_ingot': 24}, 'rocket_launcher_v3'),
+    Recipe({'daedalus_ingot': 20, 'soul_of_justice': 8}, 'rocket_launcher_v3'),
+    Recipe({'chlorophyte_ingot': 18, 'shotgun': 1}, 'rapid_rocket_launcher_v3'),
+    Recipe({'chaos_ingot': 120, 'willpower_shard': 12}, 'rocket_launcher_v4'),
+    Recipe({'the_final_ingot': 15}, 'rapid_rocket_launcher_max'),
+    Recipe({'fire_dragon_ingot': 6, 'ice_dragon_ingot': 6, 'dark_dragon_ingot': 6, 'light_dragon_ingot': 6, 'dragon_bone': 200},
+           'rapid_rocket_launcher_max'),
 
     Recipe({'wood': 10}, 'wooden_helmet'),
     Recipe({'wood': 6}, 'wooden_mask'),

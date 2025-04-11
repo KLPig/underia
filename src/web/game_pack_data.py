@@ -14,3 +14,9 @@ class SinglePlayerData:
         self.pos = p.obj.pos
         self.hp_sys = p.hp_sys
         self.col = p.profile.get_color()
+
+class EntityDisplays:
+    def __init__(self):
+        self.display = []
+        for e in game.get_game().entities:
+            self.display.append(e.dump_display())

@@ -5,7 +5,7 @@ import pygame as pg
 
 from physics import mover, vector
 from resources import position, cursors, errors, path
-from underia import game, styles, inventory, weapons, entity, projectiles, player_profile
+from underia import game, styles, inventory, weapons, entity, projectiles, player_profile, notebook
 from values import hp_system, damages, effects
 import constants
 from visual import draw
@@ -439,11 +439,17 @@ class Player:
                                           1000))
                         e.hp_sys.enable_immume()
 
-        self.attack *= 1 + (random.random() < self.strike) * (1 + self.strike ** 2)
+        self.attack *= 1 + (random.random() < self.strike) * (1 + self.strike) ** 2
         self.p_data.append(f'{1000 / game.get_game().clock.last_tick:.2f}fps')
         self.p_data.append(f'Magic Damage: {int(self.attacks[2] * self.attack * 100) / 100}x')
         self.p_data.append(f'Ranged Damage: {int(self.attacks[1] * self.attack * 100) / 100}x')
         self.p_data.append(f'Melee Damage: {int(self.attacks[0] * self.attack * 100) / 100}x')
+        if game.get_game().chapter >= 1:
+            self.p_data.append(f'Octave Damage: {int(self.attacks[3] * self.attack * 100) / 100}x')
+            self.p_data.append(f'Hallow Damage: {int(self.attacks[4] * self.attack * 100) / 100}x')
+            self.p_data.append(f'Pacify Damage: {int(self.attacks[5] * self.attack * 100) / 100}x')
+        self.p_data.append(f'Attack: {int(self.attack * 100) / 100}x')
+        self.p_data.append(f'Critical: {int(self.strike * 10000) / 100}%, {int((1 + (1 + self.strike) ** 2) * 10000) / 100}% damage')
         self.obj.SPEED = self.calculate_data('speed', rate_data=True, rate_multiply=True) * 80 * self.calculate_speed()
         self.obj.FRICTION = max(0, 1 - 0.2 * self.calculate_data('air_res', rate_data=True, rate_multiply=True) * (1 + self.z))
         self.obj.MASS = max(40, 80 + self.calculate_data('mass', False))
@@ -960,9 +966,9 @@ class Player:
             if imr.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
                 self.in_ui = True
                 mouse_text = True
-                f = displayer.font.render(f"{eff[i].NAME} ({int(eff[i].timer)}s)", True,
+                f = displayer.font.render(f"{styles.text(eff[i].NAME)} ({int(eff[i].timer)}s)", True,
                                           (255, 255, 255))
-                fb = displayer.font.render(f"{eff[i].NAME} ({int(eff[i].timer)}s)", True,
+                fb = displayer.font.render(f"{styles.text(eff[i].NAME)} ({int(eff[i].timer)}s)", True,
                                                (0, 0, 0))
                 ffr = f.get_rect(topright=game.get_game().displayer.reflect(*pg.mouse.get_pos()))
                 ffr.y += 3
@@ -989,7 +995,6 @@ class Player:
                     s_hp = self.hp_sys.hp
                     self.hp_sys.damage(_entity.obj.TOUCHING_DAMAGE, damages.DamageTypes.TOUCHING)
                     e_hp = self.hp_sys.hp
-                    print(e_hp, s_hp)
                     self.hp_sys.enable_immume()
                     px, py = _entity.obj.pos
                     px -= self.obj.pos[0]
@@ -1027,16 +1032,16 @@ class Player:
             mouse_text = True
             if 1 in game.get_game().get_mouse_press():
                 self.ui_tasks = not self.ui_tasks
-            f = displayer.font.render(f"Task & Event", True, (255, 255, 255))
-            fb = displayer.font.render(f"Task & Event", True, (0, 0, 0))
+            f = displayer.font.render(styles.text(f"Task & Event"), True, (255, 255, 255))
+            fb = displayer.font.render(styles.text(f"Task & Event"), True, (0, 0, 0))
             mx, my = game.get_game().displayer.reflect(*pg.mouse.get_pos())
             game.get_game().displayer.canvas.blit(fb, (mx + 3, my + 3))
             game.get_game().displayer.canvas.blit(f, (mx, my))
         if att_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
             if 1 in game.get_game().get_mouse_press():
                 self.ui_attributes = not self.ui_attributes
-            f = displayer.font.render(f"Player Attributes", True, (255, 255, 255))
-            fb = displayer.font.render(f"Player Attributes", True, (0, 0, 0))
+            f = displayer.font.render(styles.text(f"Player Attributes"), True, (255, 255, 255))
+            fb = displayer.font.render(styles.text(f"Player Attributes"), True, (0, 0, 0))
             mx, my = game.get_game().displayer.reflect(*pg.mouse.get_pos())
             game.get_game().displayer.canvas.blit(fb, (mx + 3, my + 3))
             game.get_game().displayer.canvas.blit(f, (mx, my))
@@ -1045,8 +1050,8 @@ class Player:
         if inv_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
             if 1 in game.get_game().get_mouse_press():
                 self.open_inventory = not self.open_inventory
-            f = displayer.font.render(f"Inventory", True, (255, 255, 255))
-            fb = displayer.font.render(f"Inventory", True, (0, 0, 0))
+            f = displayer.font.render(styles.text(f"Inventory"), True, (255, 255, 255))
+            fb = displayer.font.render(styles.text(f"Inventory"), True, (0, 0, 0))
             mx, my = game.get_game().displayer.reflect(*pg.mouse.get_pos())
             game.get_game().displayer.canvas.blit(fb, (mx + 3, my + 3))
             game.get_game().displayer.canvas.blit(f, (mx, my))
@@ -1354,6 +1359,12 @@ class Player:
                                 self.max_talent = 30
                                 self.inventory.remove_item(item)
                                 self.profile.add_point(7)
+                        elif item.id == 'mind_ball':
+                            if self.hp_sys.max_hp >= 1500 and self.max_mana >= 1000 and self.max_talent >= 30:
+                                self.hp_sys.max_hp = 3000
+                                self.max_talent = 100
+                                self.inventory.remove_item(item)
+                                self.profile.add_point(8)
                         elif item.id == 'soul_of_determination':
                             if self.hp_sys.max_hp == 1000 and self.max_mana == 800 and self.max_talent == 50 and \
                                 random.randint(0, 4) == 0:
@@ -1574,6 +1585,9 @@ class Player:
                                 entity.entity_spawn(entity.Entities.Eonar, 2000, 2000, 0, 1145, 100000)
                             else:
                                 game.get_game().dialog.dialog('...', 'But nothing happened.')
+                        elif item.id == 'ends_sphere':
+                            entity.entity_spawn(entity.Entities.OblivionAnnihilator, 2000, 2000, 0, 1145, 100000)
+                            self.inventory.remove_item(item)
                         elif item.id == 'my_soul':
                             self.profile.add_point(4)
                             if sum([v for _, v in self.hp_sys.shields]) + self.hp_sys.hp > self.hp_sys.max_hp:
@@ -1628,8 +1642,8 @@ class Player:
                                 self.inventory.add_item(inventory.ITEMS['tip0'])
                             if not self.inventory.is_enough(inventory.ITEMS['tip1']):
                                 self.inventory.add_item(inventory.ITEMS['tip1'])
-                            lft = pg.font.Font(path.get_path('assets/dtm-mono.otf'), 45)
-                            lss = pg.font.Font(path.get_path('assets/dtm-mono.otf'), 24)
+                            lft = pg.font.Font(path.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 45)
+                            lss = pg.font.Font(path.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 24)
                             while window_opened:
                                 for event in pg.event.get():
                                     if event.type == pg.QUIT:
@@ -1663,7 +1677,7 @@ class Player:
                                 tt = lft.render(inventory.ITEMS[cr.result].name if len(inventory.ITEMS[cr.result].name) < 20 \
                                                     else inventory.ITEMS[cr.result].name[:16] + '...',True, (0, 0, 0))
                                 window.blit(tt, (wx - 448, wy - 264))
-                                tr = lft.render(f"Materials: ", True, (0, 0, 0))
+                                tr = lft.render(styles.text(f"Materials: "), True, (0, 0, 0))
                                 window.blit(tr, (wx + 32, wy - 264))
                                 desc = inventory.ITEMS[cr.result].get_full_desc().split('\n')
                                 for ii in range(len(desc)):
@@ -1674,7 +1688,7 @@ class Player:
                                         desc.insert(ii, s[:30] + '-')
                                         ii -= 1
                                 for j, d in enumerate(desc):
-                                    td = lss.render(d, True, (0, 0, 0))
+                                    td = lss.render(styles.text(d), True, (0, 0, 0))
                                     window.blit(td, (wx - 448, wy - 40 + 24 * j))
                                 j = 0
                                 for it, qt in cr.material.items():
@@ -1694,7 +1708,7 @@ class Player:
                                                 desc.insert(ii, s[:30] + '-')
                                                 ii -= 1
                                         for j, d in enumerate(desc):
-                                            td = lss.render(d, True, (0, 0, 0))
+                                            td = lss.render(styles.text(d), True, (0, 0, 0))
                                             window.blit(td, (wx + 32, wy - 40 + 24 * j + \
                                                              max(0, len(cr.material) // ml - 1) * 68))
                                         break
@@ -1756,7 +1770,6 @@ class Player:
                                 game.get_game().dialog.push_dialog('Computer crash!')
                                 constants.FPS = min(30, constants.FPS - 6)
                                 status.append('crash')
-                            print(status)
                         self.in_ui = True
             for i in range(len(self.accessories)):
                 styles.item_mouse(10 + i * 90, game.get_game().displayer.SCREEN_HEIGHT - 90,
@@ -1766,8 +1779,33 @@ class Player:
                         *pg.mouse.get_pos())) and 1 in game.get_game().get_mouse_press():
                     self.sel_accessory = i
 
+
             nx = displayer.canvas.get_width() - 180
             ny = displayer.canvas.get_height() / 2
+
+            note_rect = pg.Rect(nx - 100, ny - 180, 60, 60)
+            for i in range(game.get_game().chapter + 1):
+                im = game.get_game().graphics['background_ui_note']
+                if not note_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
+                    im = pg.transform.scale(im, (54, 54))
+                imr = im.get_rect(center=note_rect.center)
+                displayer.canvas.blit(im, imr)
+                if note_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
+                    t = f'Notebook {"ABCDEF"[i]}'
+                    f = displayer.font.render(styles.text(t), True, (255, 255, 255))
+                    fb = displayer.font.render(styles.text(t), True, (0, 0, 0))
+                    mx, my = game.get_game().displayer.reflect(*pg.mouse.get_pos())
+                    mx -= f.get_width()
+                    game.get_game().displayer.canvas.blit(fb, (mx + 3, my + 3))
+                    game.get_game().displayer.canvas.blit(f, (mx, my))
+                    if 1 in game.get_game().get_mouse_press():
+                        game.get_game().play_sound('grab')
+                        notebook.show_notebook(i)
+                note_rect.y += 60
+
+            nx = displayer.canvas.get_width() - 180
+            ny = displayer.canvas.get_height() / 2
+
             rec_rect = pg.Rect(nx - 30, ny - 30, 60, 60)
             im = game.get_game().graphics['background_ui_recipes']
             if not rec_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
@@ -1789,8 +1827,8 @@ class Player:
                     self.ui_recipes = not self.ui_recipes
                     if not self.ui_recipes:
                         self.ui_recipe_overlook = False
-                f = displayer.font.render(f"Crafting", True, (255, 255, 255))
-                fb = displayer.font.render(f"Crafting", True, (0, 0, 0))
+                f = displayer.font.render(styles.text(f"Crafting"), True, (255, 255, 255))
+                fb = displayer.font.render(styles.text(f"Crafting"), True, (0, 0, 0))
                 mx, my = game.get_game().displayer.reflect(*pg.mouse.get_pos())
                 mx -= f.get_width()
                 game.get_game().displayer.canvas.blit(fb, (mx + 3, my + 3))
@@ -1800,8 +1838,8 @@ class Player:
                 mouse_text = True
                 if 1 in game.get_game().get_mouse_press():
                     self.ui_recipe_overlook = not self.ui_recipe_overlook
-                f = displayer.font.render(f"Recipes", True, (255, 255, 255))
-                fb = displayer.font.render(f"Recipes", True, (0, 0, 0))
+                f = displayer.font.render(styles.text(f"Recipes"), True, (255, 255, 255))
+                fb = displayer.font.render(styles.text(f"Recipes"), True, (0, 0, 0))
                 mx, my = game.get_game().displayer.reflect(*pg.mouse.get_pos())
                 mx -= f.get_width()
                 game.get_game().displayer.canvas.blit(fb, (mx + 3, my + 3))
@@ -1902,20 +1940,20 @@ class Player:
             self.ntcs.append(f"{int(t // 60)}:{'0' if int(t % 60) < 10 else ''}{int(t % 60)}")
             if self.ui_tasks:
                 for i in range(len(self.ntcs)):
-                    t = game.get_game().displayer.font.render(self.ntcs[-i - 1], True, (255, 255, 255))
-                    tb = game.get_game().displayer.font.render(self.ntcs[-i - 1], True, (0, 0, 0))
+                    t = game.get_game().displayer.font.render(styles.text(self.ntcs[-i - 1]), True, (255, 255, 255))
+                    tb = game.get_game().displayer.font.render(styles.text(self.ntcs[-i - 1]), True, (0, 0, 0))
                     game.get_game().displayer.canvas.blit(tb, (13, game.get_game().displayer.SCREEN_HEIGHT - 50 - i * 30))
                     game.get_game().displayer.canvas.blit(t, (10, game.get_game().displayer.SCREEN_HEIGHT - 53 - i * 30))
             if self.ui_attributes:
                 for i in range(len(self.p_data)):
-                    t = game.get_game().displayer.font.render(self.p_data[i], True, (255, 255, 255))
-                    tb = game.get_game().displayer.font.render(self.p_data[i], True, (0, 0, 0))
+                    t = game.get_game().displayer.font.render(styles.text(self.p_data[i]), True, (255, 255, 255))
+                    tb = game.get_game().displayer.font.render(styles.text(self.p_data[i]), True, (0, 0, 0))
                     game.get_game().displayer.canvas.blit(tb, (game.get_game().displayer.SCREEN_WIDTH - 7 - tb.get_width(),
                                                                game.get_game().displayer.SCREEN_HEIGHT - 50 - i * 30))
                     game.get_game().displayer.canvas.blit(t, (game.get_game().displayer.SCREEN_WIDTH - 10 - t.get_width(),
                                                               game.get_game().displayer.SCREEN_HEIGHT - 53 - i * 30))
         if len(self.top_notice) and self.t_ntc_timer > 0:
-            nt = game.get_game().displayer.font.render(self.top_notice, True, (255, 255, 0))
+            nt = game.get_game().displayer.font.render(styles.text(self.top_notice), True, (255, 255, 0))
             nt = pg.transform.scale(nt, (game.get_game().displayer.SCREEN_WIDTH // 2,
                                          game.get_game().displayer.SCREEN_WIDTH // 2 / nt.get_width() * nt.get_height()))
             game.get_game().displayer.canvas.blit(nt, (game.get_game().displayer.SCREEN_WIDTH // 2 - nt.get_width() // 2,

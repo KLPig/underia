@@ -235,8 +235,8 @@ class PlayerProfile:
         self.stage = data['stage']
 
     def add_point(self, t = 0):
-        self.font = pg.font.Font(path.get_path('assets/dtm-mono.otf'), 36)
-        self.font_s = pg.font.Font(path.get_path('assets/dtm-mono.otf'), 18)
+        self.font = pg.font.Font(path.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 36)
+        self.font_s = pg.font.Font(path.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 18)
         self.dialogger = dialog.Dialogger(36, pg.Rect(0, 0, 1600, 300), target_surface=pg.Surface((1, 1)))
         self.dialogger.target_surface = pg.display.get_surface()
         if t != self.stage:
@@ -263,7 +263,8 @@ class PlayerProfile:
             ['...', 'It\'s you.', 'Let\'s move on.', '..?', 'Wait,', 'I\'ve observed that the world is changing.',
              'The holy and the evil are coming.', '...', 'You must save this world.'],
             ['...', 'This is the \'adventure\'.', 'In a story, we will have the adventurer and the evil dragon.',
-             '...', 'And also, get enough power from that flower.', 'You know what I\'m talking about.', '...anyway.']
+             '...', 'And also, get enough power from that flower.', 'You know what I\'m talking about.', '...anyway.'],
+            ['...', '...anyway.'],
         ]
         if not t:
             self.point_wisdom = 0
@@ -408,8 +409,8 @@ class PlayerProfile:
 
     def skill_tree(self, point: int):
         window = pg.display.get_surface()
-        self.font = pg.font.Font(path.get_path('assets/dtm-mono.otf'), 36)
-        self.font_s = pg.font.Font(path.get_path('assets/dtm-mono.otf'), 18)
+        self.font = pg.font.Font(path.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 36)
+        self.font_s = pg.font.Font(path.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 18)
         skills = [
             [
                 ['melee_demand'],

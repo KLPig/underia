@@ -9,7 +9,6 @@ surf = pg.Surface((240, 240))
 
 lvs = [(255, 41, 0), (255, 127, 0), (0, 255, 0), (0, 127, 0), (255, 255, 255), (127, 127, 127)]
 
-print(m_min, m_max)
 
 for x in range(240):
     for y in range(240):

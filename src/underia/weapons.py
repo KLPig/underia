@@ -2829,6 +2829,42 @@ class Gun(Bow):
             pj.TAIL_WIDTH = max(pj.TAIL_WIDTH, 6)
         game.get_game().projectiles.append(pj)
 
+class RocketLauncher(Gun):
+    def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, projectile_speed: int,
+                 auto_fire: bool = False, precision: int = 0, ammo_save_chance: float = 0.0, m_range: int = 0, mode=0):
+        super().__init__(name, damages, kb, img, speed, at_time, projectile_speed, auto_fire, precision,
+                         ammo_save_chance=ammo_save_chance)
+        self.mode = mode
+        self.mr = 600 - m_range
+
+    def on_start_attack(self):
+        self.face_to(
+            *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+        if game.get_game().player.ammo_bullet[0] not in projectiles.AMMOS or game.get_game().player.ammo_bullet[1] < 4:
+            self.timer = 0
+            return
+        if game.get_game().player.ammo_bullet[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
+            game.get_game().player.ammo_bullet = (
+            game.get_game().player.ammo_bullet[0], game.get_game().player.ammo_bullet[1] - 4)
+        if self.mode == 0:
+            k = 1
+        elif self.mode == 2:
+            k = max(4, random.randint(2, 13))
+        elif self.mode == 3:
+            k = random.randint(8, 16)
+        else:
+            k = max(1, random.randint(-2, 6))
+        for _ in range(k):
+            ammo = random.choice([projectiles.Projectiles.RocketRed, projectiles.Projectiles.RocketOrange,
+                                   projectiles.Projectiles.RocketYellow, projectiles.Projectiles.RocketGreen,
+                                  projectiles.Projectiles.RocketCyan, projectiles.Projectiles.RocketBlue,
+                                  projectiles.Projectiles.RocketPurple])
+            pj = ammo((self.x + game.get_game().player.obj.pos[0], self.y + game.get_game().player.obj.pos[1]),
+                      self.rot + random.randint(-self.precision, self.precision), self.spd,
+                      self.damages[dmg.DamageTypes.PIERCING], self.mr)
+            pj.TAIL_COLOR = pj.COL
+            game.get_game().projectiles.append(pj)
+
 class DarkExploder(Gun):
     def on_start_attack(self):
         self.face_to(
@@ -3353,6 +3389,33 @@ def set_weapons():
                                           'items_weapons_matter_disintegrator',
                                           3, 7, 1000, lazer_len=5, auto_fire=True, lazer_width=120,
                                          lazer_col=(180, 255, 150)),
+
+        'rocket_launcher': RocketLauncher('rocket launcher', {dmg.DamageTypes.PIERCING: 24}, 0.5,
+                                          'items_weapons_rocket_launcher', 12, 6, 200,
+                                          auto_fire=True, ammo_save_chance=1 / 10, precision=15),
+        'rapid_rocket_launcher': RocketLauncher('rapid rocket launcher', {dmg.DamageTypes.PIERCING: 45}, 0.5,
+                                                'items_weapons_rapid_rocket_launcher', 2, 3, 150,
+                                                 auto_fire=True, ammo_save_chance=1 / 8, precision=10, m_range=300),
+        'rocket_launcher_v2': RocketLauncher('rocket launcher v2', {dmg.DamageTypes.PIERCING: 144}, 0.5,
+                                             'items_weapons_rocket_launcher_v2', 4, 6, 500,
+                                             auto_fire=True, ammo_save_chance=1 / 10, precision=5, m_range=-200),
+        'rapid_rocket_launcher_v2': RocketLauncher('rapid rocket launcher v2', {dmg.DamageTypes.PIERCING: 125}, 0.5,
+                                                    'items_weapons_rapid_rocket_launcher_v2', 1, 3, 720,
+                                                     auto_fire=True, ammo_save_chance=1 / 5, precision=8, m_range=100),
+        'rocket_launcher_v3': RocketLauncher('rocket launcher v3', {dmg.DamageTypes.PIERCING: 648}, 0.5,
+                                             'items_weapons_rocket_launcher_v3', 3, 8, 1000,
+                                             auto_fire=True, precision=2, m_range=-900, mode=1),
+        'rapid_rocket_launcher_v3': RocketLauncher('rapid rocket launcher v3', {dmg.DamageTypes.PIERCING: 288}, 0.5,
+                                                    'items_weapons_rapid_rocket_launcher_v3', 0, 2, 1500,
+                                                     auto_fire=True, ammo_save_chance=1 / 4, precision=9, m_range=-100, mode=1),
+        'rocket_launcher_v4': RocketLauncher('rocket launcher v4', {dmg.DamageTypes.PIERCING: 1024}, 0.5,
+                                             'items_weapons_rocket_launcher_v4', 3, 8, 2000,
+                                             auto_fire=True, precision=0, m_range=-1900, mode=2),
+        'rapid_rocket_launcher_max': RocketLauncher('rapid rocket launcher max', {dmg.DamageTypes.PIERCING: 880}, 0.5,
+                                                    'items_weapons_rapid_rocket_launcher_max', 0, 1, 4000,
+                                                    auto_fire=True, precision=2, ammo_save_chance=4 / 5, m_range=-1000, mode=2),
+
+
 
         'copper_knife': ThiefWeapon('copper knife', {dmg.DamageTypes.PIERCING: 9}, 0.3, 'items_weapons_copper_knife',
                                      5, 10, 18, 72, 20, 240),

@@ -19,23 +19,31 @@ class SocketServer:
         data = pickle.loads(recv_data)
         if type(data) is game_pack_data.SinglePlayerData:
             self.players[data.player_id] = data
-            return pickle.dumps(self.players)
+            return pickle.dumps(('player', self.players))
         return b'gotten'
+
+    async def send_displays(self, client: socket.socket):
+        loop = asyncio.get_event_loop()
+        print(self.host, self.port)
+        while True:
+            await loop.sock_sendall(client, pickle.dumps(('display', game_pack_data.EntityDisplays())))
+            await asyncio.sleep(0.06)
 
     async def socket_handle(self, client: socket.socket):
         loop = asyncio.get_event_loop()
         print(self.host, self.port)
         pack_data = game_pack_data.FirstConnectData(self.player_count, game.get_game().player.profile.dump())
-        await loop.sock_sendall(client, pickle.dumps(pack_data))
+        await loop.sock_sendall(client, pickle.dumps(('first', pack_data)))
         self.player_count += 1
-        await loop.sock_sendall(client, pickle.dumps(self.players))
+        await loop.sock_sendall(client, pickle.dumps(('player', self.players)))
+        loop.create_task(self.send_displays(client))
         while True:
             recv = await loop.sock_recv(client, 32767)
             if not recv:
                 break
             response = self.command_handler(recv)
             await loop.sock_sendall(client, response)
-            await asyncio.sleep(0.05)
+            await asyncio.sleep(0.04)
         client.close()
 
     async def start_server(self):

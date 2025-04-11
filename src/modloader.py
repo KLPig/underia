@@ -43,7 +43,7 @@ def load_mod():
     global anchor, cmds, cb, mod_datas, icos, scr, ds
     clk = pg.time.Clock()
     screen = pg.display.get_surface()
-    font = pg.font.Font(path.get_path('assets/dtm-mono.otf'), 32)
+    font = pg.font.Font(path.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 32)
     btn_t = ['Open Mod Folder', 'Reload Mods', 'Done']
     btn_r = [pg.Rect(300, 50, 320, 80), pg.Rect(640, 50, 320, 80), pg.Rect(980, 50, 320, 80)]
 

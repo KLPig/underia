@@ -13,6 +13,8 @@ INFINITY = 2 ** 31 - 1
 
 APRIL_FOOL = False
 
+LANG = 'zh'
+
 DEBUG = True
 OS = "OSX"
 TONE = True
@@ -20,7 +22,7 @@ ENTITY_NUMBER = 25
 WEB_DEPLOY = False
 
 if not WEB_DEPLOY:
-    FLAGS = pg.HWSURFACE | pg.DOUBLEBUF | pg.SRCALPHA
+    FLAGS = pg.HWSURFACE | pg.DOUBLEBUF | pg.SRCALPHA | pg.RESIZABLE
     FULLSCREEN = False
 else:
     FLAGS = 0

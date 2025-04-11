@@ -79,7 +79,7 @@ class Game:
         self.wither_points: list[tuple[tuple[int, int], int]] = []
         self.role = ''
         self.server = None
-        self.client = None
+        self.client: web.Client | None = None
         self.bl_bg = None
         self.lp = (100, 100)
         self.major_rate = 0
@@ -230,7 +230,7 @@ class Game:
             return 'none'
         if len([1 for e in self.entities if type(e) is entity.Entities.AbyssEye]):
             return 'heaven'
-        if len([1 for e in self.entities if type(e) in [entity.Entities.Jevil, entity.Entities.Jevil2]]) or \
+        if len([1 for e in self.entities if type(e) in [entity.Entities.Jevil, entity.Entities.Jevil2, entity.Entities.OblivionAnnihilator]]) or \
                 self.player.inventory.is_enough(inventory.ITEMS['chaos_heart']):
             return 'inner'
         if pos is None:
@@ -434,6 +434,23 @@ class Game:
                 styles.hp_bar(p_data.hp_sys, resources.displayed_position((p_data.pos[0], p_data.pos[1] - 30)), 40)
         if self.server is not None:
             self.server.update()
+        if self.client is not None:
+            for d in self.client.displays:
+                pos = d['pos']
+                dx, dy = resources.displayed_position(pos)
+                if not self.displayer.canvas.get_rect().collidepoint(dx, dy):
+                    continue
+                rot = d['rot']
+                img_idx = d['img_idx']
+                display_mode = d['display_mode']
+                if display_mode == entity.Entities.DisplayModes.NO_DIRECTION:
+                    rot = 0
+                else:
+                    rot = round(rot / 3) * 3
+                img = entity.entity_get_surface(display_mode, rot, 1 / self.player.get_screen_scale(),
+                                                self.graphics[img_idx])
+                imr = img.get_rect(center=resources.displayed_position(pos))
+                self.displayer.canvas.blit(img, imr)
         self.player.update()
         for drop_item in self.drop_items:
             drop_item.update()
@@ -494,7 +511,7 @@ class Game:
                                  (x - 400, y - 50, int(800 * r_p), 60))
                 pg.draw.rect(self.displayer.canvas, (242, 166, 94),
                                  (x - 400, y - 50, 800, 60), width=8, border_radius=3)
-                ft = self.displayer.font.render(f'{menace.NAME}({int(menace.hp_sys.hp)}/{int(menace.hp_sys.max_hp)})',
+                ft = self.displayer.font.render(f'{styles.text(menace.NAME)}({int(menace.hp_sys.hp)}/{int(menace.hp_sys.max_hp)})',
                                                 True, (0, 0, 0))
                 ftr = ft.get_rect(midright=(x + 360, y - 20))
                 self.displayer.canvas.blit(ft, ftr)
@@ -543,7 +560,7 @@ class Game:
                     mask.fill((0, 0, 0))
                     mask.set_alpha(200)
                     window.blit(mask, (0, 0))
-                    font = pg.font.Font(resources.get_path('assets/dtm-sans.otf'), 30)
+                    font = pg.font.Font(resources.get_path('assets/dtm-sans.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 30)
                     text = font.render('Underia', True, (255, 255, 255))
                     text_rect = text.get_rect(center=(window.get_rect().centerx,
                                                       window.get_rect().centery - 300))

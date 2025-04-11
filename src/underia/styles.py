@@ -1,5 +1,4 @@
 import pygame as pg
-
 from underia import game, inventory, word_dict
 from values import hp_system
 import constants
@@ -40,14 +39,18 @@ def hp_bar(hp: hp_system.HPSystem, midtop: tuple, size: float):
         pg.draw.rect(displayer.canvas, (255, 255, 255), rect, 2, border_radius=5)
 
 
-LANG = 'en'
 Dictionary = word_dict.en_cn
+
+un_trans = []
 
 
 def text(txt: str) -> str:
     word = txt
-    if LANG != 'zh-cn':
+    if constants.LANG != 'zh':
         return word
+    for i, c in enumerate(word):
+        if str.isdecimal(c):
+            return text(word[:i]) + c + text(word[i + 1:])
     s = ''
     word = str.lower(word)
     if word in Dictionary.keys():
@@ -55,6 +58,7 @@ def text(txt: str) -> str:
     i = 0
     items = list(Dictionary.items())
     items.sort(key=lambda x: len(x[0]), reverse=True)
+    wc = ''
     while i < len(word):
         f = False
         for k, v in items:
@@ -69,8 +73,18 @@ def text(txt: str) -> str:
                 f = True
                 break
         if not f:
+            if str.isalpha(word[i]) or wc in [' ', '-', ]:
+                wc += word[i]
             s += word[i]
             i += 1
+        else:
+            if wc not in un_trans and wc:
+                un_trans.append(wc)
+                print(f"Untranslated word: {wc}")
+                wc = ''
+    if wc not in un_trans and wc:
+        un_trans.append(wc)
+        print(f"Untranslated word: {wc}")
     if word not in Dictionary.keys() and len(word) < 50:
         Dictionary[word] = s
     return s

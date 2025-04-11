@@ -16,7 +16,7 @@ class Displayer:
             if constants.WEB_DEPLOY:
                 pg.display.set_mode((4800, 2700))
             else:
-                pg.display.set_mode((4800, 2700), pg.RESIZABLE | pg.HWSURFACE | pg.DOUBLEBUF | pg.SCALED | pg.FULLSCREEN)
+                pg.display.set_mode((4800, 2700), pg.RESIZABLE | pg.HWSURFACE | pg.DOUBLEBUF | pg.SCALED)
         except pg.error:
             pass
         self.canvas = pg.Surface((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pg.SRCALPHA | pg.HWACCEL)
@@ -24,9 +24,9 @@ class Displayer:
         self.alpha_masks: list[tuple[int, int, int, int]] = []
         self.shake_x, self.shake_y = 0, 0
         self.effects: list[effects.Effect] = []
-        font = path.get_path('assets/dtm-sans.otf')
+        font = path.get_path('assets/dtm-sans.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf')
         self.font = pg.font.Font(font, 32)
-        self.font_mono = pg.font.Font('assets/dtm-mono.otf', 36)
+        self.font_mono = pg.font.Font('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf', 36)
         self.font_s = pg.font.Font(font, 20)
         self.night_darkness_color = (127, 127, 0)
         self.lsw, self.lsh = 1600, 900

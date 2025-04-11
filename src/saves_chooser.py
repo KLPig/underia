@@ -41,9 +41,9 @@ t = 0
 def choose_save():
     global n, selects, anchor, cmds, cb, t
     clk = pg.time.Clock()
-    font_s = pg.font.Font(path.get_path('assets/dtm-mono.otf'), 30)
-    font = pg.font.Font(path.get_path('assets/dtm-mono.otf'), 48)
-    font_large = pg.font.Font(path.get_path('assets/dtm-mono.otf'), 72)
+    font_s = pg.font.Font(path.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 30)
+    font = pg.font.Font(path.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 48)
+    font_large = pg.font.Font(path.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 72)
     screen = pg.display.get_surface()
     mask = pg.Surface(screen.get_size(), pg.SRCALPHA)
     mask.fill((0, 0, 0, 255))

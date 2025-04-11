@@ -39,7 +39,6 @@ ets = [
 
 # ets = dir(underia.Entities)
 
-print(ets)
 
 for entity in ets:
     try:
