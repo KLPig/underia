@@ -973,7 +973,7 @@ class JevilKnifeAI(SlowMoverAI):
 class TheCPUAI(SlowMoverAI):
     MASS = 10000
     FRICTION = 0.95
-    TOUCHING_DAMAGE = 150
+    TOUCHING_DAMAGE = 180
     SIGHT_DISTANCE = 99999
 
     def __init__(self, pos):
@@ -1195,9 +1195,6 @@ def entity_get_surface(display_mode, rot, scale, img):
         return pg.Surface((img.get_width() / scale, img.get_height() / scale))
 
 class Entities:
-
-    class Tag(inventory.Inventory.Item.Tag):
-        pass
 
     class DisplayModes:
         NO_IMAGE = 0
@@ -1850,9 +1847,11 @@ class Entities:
             self.obj = self.body[0].obj
             for i in range(1, self.length):
                 game.get_game().entities.append(self.body[i])
-                self.body[i].obj.IS_OBJECT = False
+                self.body[i].obj.IS_OBJECT = i % 2 == 0
                 self.body[i].obj.TOUCHING_DAMAGE = body_touching_damage
                 # self.body[i].obj.IS_OBJECT = False
+            for b in self.body:
+                b.VITAL = True
             self.d_img = self.body[0].d_img
             self.img = self.body[0].img
             self.rot = self.body[0].rot
@@ -1874,6 +1873,8 @@ class Entities:
 
         def on_update(self):
             self.body[0].on_update()
+
+        def t_draw(self):
             self.body[0].set_rotation(-self.obj.velocity.get_net_rotation())
             for i in range(1, self.length):
                 ox, oy = self.body[i - 1].obj.pos
@@ -1885,13 +1886,12 @@ class Entities:
                 if not i and self.body[i].obj.velocity.get_net_value() > 0:
                     self.body[0].obj.velocity.add(self.body[i].obj.velocity.get_net_vector())
                     self.body[i].obj.velocity.clear()
-                self.body[i].obj.object_collision(self.body[i - 1].obj, self.body_length + 1)
-                self.body[i - 1].obj.object_collision(self.body[i].obj, self.body_length + 1)
-                self.body[i].obj.object_collision(game.get_game().player.obj, self.body_length // 2 + 1 + 50)
                 # self.body[i].obj.apply_force(vector.Vector(vector.coordinate_rotation(tx - nx, ty - ny), vector.distance(tx - nx, ty - ny) * 8))
-
-        def t_draw(self):
             self.body[0].t_draw()
+
+        def t_update(self):
+            self.body[0].t_update()
+            self.on_update()
 
         def set_rotation(self, rot):
             self.body[0].set_rotation(rot)
@@ -3874,6 +3874,27 @@ class Entities:
                     for ar in range(0, 360, 30):
                         game.get_game().entities.append(Entities.IceShard(self.obj.pos, sr + ar))
 
+    class Naga(WormEntity):
+        BOSS_NAME = 'The Poison Python'
+        NAME = 'Noxious Fangs: Naga'
+        IS_MENACE = True
+        LOOT_TABLE = LootTable([
+            IndividualLoot('naga_scale', 1, 50, 60),
+            ])
+        SOUND_HURT = 'dragon'
+        SOUND_DEATH = 'dragon'
+
+        def __init__(self, pos):
+            super().__init__(pos, 24, game.get_game().graphics['entity_naga_head'], game.get_game().graphics['entity_naga_body'],
+                             DragonAI, 3600000, body_length=250, body_touching_damage=1500)
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 800
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 1000
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 800
+            self.hp_sys.defenses[damages.DamageTypes.OCTAVE] = 500
+            self.hp_sys.defenses[damages.DamageTypes.HALLOW] = 600
+            self.hp_sys.defenses[damages.DamageTypes.PACIFY] = 550
+            self.obj.SPEED *= 1.5
+
     class Ignis(Entity):
         NAME = 'The Scorching Wing: Ignis'
         DISPLAY_MODE = 1
@@ -4883,10 +4904,12 @@ class Entities:
 
         def __init__(self, pos):
             super().__init__(pos, 54, game.get_game().graphics['entity_destroyer_head'],
-                             game.get_game().graphics['entity_destroyer_body'], DestroyerAI, 240000, body_length=90)
+                             game.get_game().graphics['entity_destroyer_body'], DestroyerAI, 240000, body_length=120,
+                             body_touching_damage=280)
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 80
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 60
             self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 90
+            self.obj.SPEED *= 2
 
         def on_update(self):
             super().on_update()
@@ -4895,7 +4918,7 @@ class Entities:
                     rot = vector.coordinate_rotation(game.get_game().player.obj.pos[0] - b.obj.pos[0],
                                                      game.get_game().player.obj.pos[1] - b.obj.pos[1])
                     l = Entities.Lazer(b.obj.pos, rot)
-                    l.obj.apply_force(vector.Vector(rot, 3000))
+                    l.obj.apply_force(vector.Vector(rot, 5000))
                     game.get_game().entities.append(l)
 
     class TheCPU(Entity):
@@ -4929,6 +4952,9 @@ class Entities:
                 self.img = game.get_game().graphics['entity_the_cpu_phase2']
                 self.set_rotation(self.rot)
                 self.obj.tick = -200
+
+        def t_draw(self):
+            super().t_draw()
             px, py = game.get_game().player.obj.pos
             aax, aay = self.obj.pos[0] - game.get_game().player.obj.pos[0], self.obj.pos[1] - \
                        game.get_game().player.obj.pos[1]
@@ -4975,7 +5001,7 @@ class Entities:
         def __init__(self, pos):
             super().__init__(pos, 54, game.get_game().graphics['entity_the_cpu'],
                              game.get_game().graphics['entity_destroyer_body'], MechanicMedusaAI,
-                             320000, body_length=90)
+                             440000, body_length=90)
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 60
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 80
             self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 60
@@ -5009,6 +5035,24 @@ class Entities:
                     game.get_game().entities.append(e)
             if self.phase == 2 and self.hp_sys.hp < self.hp_sys.max_hp * 0.3:
                 self.phase = 3
+            for b in self.body:
+                if random.randint(0, 1100 - self.phase * 220) == 0:
+                    rot = vector.coordinate_rotation(game.get_game().player.obj.pos[0] - b.obj.pos[0],
+                                                     game.get_game().player.obj.pos[1] - b.obj.pos[1])
+                    l = Entities.Lazer(b.obj.pos, rot)
+                    l.obj.apply_force(vector.Vector(rot, 8000))
+                    game.get_game().entities.append(l)
+            if self.obj.state == 2 and self.tick % 10 == 0:
+                px, py = game.get_game().player.obj.pos
+                px -= self.obj.pos[0]
+                py -= self.obj.pos[1]
+                rot = vector.coordinate_rotation(px, py)
+                for ar in range(-30, 31, 10):
+                    game.get_game().entities.append(Entities.Lazer(self.obj.pos, rot + ar))
+
+        def t_draw(self):
+            super().t_draw()
+
             if self.phase == 3:
                 px, py = game.get_game().player.obj.pos
                 for b in self.body:
@@ -5034,20 +5078,6 @@ class Entities:
                     displayer.canvas.blit(b.d_img, r)
                     r.center = position.displayed_position((px - aay, py + aax))
                     displayer.canvas.blit(b.d_img, r)
-            for b in self.body:
-                if random.randint(0, 1100 - self.phase * 220) == 0:
-                    rot = vector.coordinate_rotation(game.get_game().player.obj.pos[0] - b.obj.pos[0],
-                                                     game.get_game().player.obj.pos[1] - b.obj.pos[1])
-                    l = Entities.Lazer(b.obj.pos, rot)
-                    l.obj.apply_force(vector.Vector(rot, 8000))
-                    game.get_game().entities.append(l)
-            if self.obj.state == 2 and self.tick % 10 == 0:
-                px, py = game.get_game().player.obj.pos
-                px -= self.obj.pos[0]
-                py -= self.obj.pos[1]
-                rot = vector.coordinate_rotation(px, py)
-                for ar in range(-30, 31, 10):
-                    game.get_game().entities.append(Entities.Lazer(self.obj.pos, rot + ar))
 
     class Greed(Entity):
         NAME = 'Greed'
@@ -5066,7 +5096,7 @@ class Entities:
         PHASE_SEGMENTS = [0.2, 0.4, 0.6, 0.8]
 
         def __init__(self, pos, d=False):
-            super().__init__(pos, game.get_game().graphics['entity_greed'], GreedAI, 64000)
+            super().__init__(pos, game.get_game().graphics['entity_greed'], GreedAI, 108000)
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 20
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 30
             self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 20
@@ -5117,7 +5147,7 @@ class Entities:
             _p = (game.get_game().player.obj.pos[0] + random.randint(-5000, 5000),
                   game.get_game().player.obj.pos[1] + random.randint(-5000, 5000))
             if not d:
-                hp_sys = hp_system.HPSystem(104000)
+                hp_sys = hp_system.HPSystem(320000)
                 for i in range(9):
                     game.get_game().entities.append(Entities.EyeOfTime(pos, True, hp_sys, i + 1))
                 super().__init__(_p, game.get_game().graphics['entity_eye_of_time'], BuildingAI, hp_sys=hp_sys)
@@ -5188,8 +5218,8 @@ class Entities:
 
         def __init__(self, pos):
             super().__init__(pos, 60, game.get_game().graphics['entity_devil_python_head'],
-                             game.get_game().graphics['entity_devil_python_body'], DevilPythonAI, 84000,
-                             body_length=90, body_touching_damage=100)
+                             game.get_game().graphics['entity_devil_python_body'], DevilPythonAI, 360000,
+                             body_length=90, body_touching_damage=320)
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 25
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 30
             self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 15
@@ -6809,6 +6839,7 @@ class Entities:
             self.tick = 0
             self.phase = 0
             game.get_game().decors.clear()
+            self.dd = None
 
         def t_draw(self):
             super().t_draw()
@@ -6833,10 +6864,12 @@ class Entities:
                 dragon.NAME = 'Crush of Mind: ???'
                 dragon.hp_sys(op='config', immune=True)
                 dragon.obj.TOUCHING_DAMAGE = 1600
+                self.dd = dragon
                 game.get_game().entities.append(dragon)
                 self.hp_sys.heal(self.hp_sys.max_hp)
             elif self.hp_sys.hp < self.hp_sys.max_hp * .6 and self.phase == 1:
                 self.phase = 2
+                self.dd.hp_sys.hp = 0
             if self.phase == 0:
                 if self.tick % 28 == 0:
                     game.get_game().entities.append(Entities.BurstBall((self.obj.pos[0] + random.randint(-1000, 1000),

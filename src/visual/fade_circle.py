@@ -1,8 +1,6 @@
-import math
-
 import pygame as pg
 
-from visual import effects
+from visual import effects, particle_effects
 from resources import position
 from underia import game
 
@@ -41,4 +39,4 @@ class FadeCircle(effects.Effect):
 
 
 def p_fade_circle(x, y, col=(255, 0, 0), sp=6, t=10, follow_map=True):
-    return [FadeCircle(x, y, sp, t, col, follow_map)]
+    return [FadeCircle(x, y, sp, t, col, follow_map), particle_effects.CircularLighter(x, y, sp, col, 20, t)]

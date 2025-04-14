@@ -1585,6 +1585,11 @@ class Player:
                                 entity.entity_spawn(entity.Entities.Eonar, 2000, 2000, 0, 1145, 100000)
                             else:
                                 game.get_game().dialog.dialog('...', 'But nothing happened.')
+                        elif item.id == 'poison_horn':
+                            if game.get_game().get_biome() == 'rainforest':
+                                entity.entity_spawn(entity.Entities.Naga, 2000, 2000, 0, 1145, 100000)
+                            else:
+                                game.get_game().dialog.dialog('...', 'But nothing happened.')
                         elif item.id == 'ends_sphere':
                             entity.entity_spawn(entity.Entities.OblivionAnnihilator, 2000, 2000, 0, 1145, 100000)
                             self.inventory.remove_item(item)

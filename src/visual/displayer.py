@@ -1,9 +1,8 @@
 import pygame as pg
 
-import pygame_lights
 from resources import position, path
 from underia import game, weapons
-from visual import effects
+from visual import effects, lighting
 import constants
 
 
@@ -31,6 +30,7 @@ class Displayer:
         self.night_darkness_color = (127, 127, 0)
         self.lsw, self.lsh = 1600, 900
         self.blit_pos = (0, 0)
+        self.light_engine = lighting.LightingEngine(*self.canvas.get_size(), resolution_factor=.1)
 
     def update(self):
         window = pg.display.get_surface()
@@ -51,11 +51,10 @@ class Displayer:
         window.fill((0, 0, 0))
         window.blit(blit_surface, rect)
         self.canvas.fill((255, 255, 255))
-        # self.SCREEN_WIDTH = int(1600 * game.get_game().player.get_screen_scale())
-        # self.SCREEN_HEIGHT = int(900 * game.get_game().player.get_screen_scale())
         if self.lsw != self.SCREEN_WIDTH or self.lsh != self.SCREEN_HEIGHT:
             self.lsw, self.lsh = self.SCREEN_WIDTH, self.SCREEN_HEIGHT
             self.canvas = pg.Surface((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pg.SRCALPHA)
+        pg.display.flip()
 
     def reflect(self, window_x: float, window_y: float) -> tuple[int, int]:
         window = pg.display.get_surface()
@@ -71,33 +70,23 @@ class Displayer:
         if not constants.LIGHTING:
             pg.display.update()
             return
-        filter = pg.Surface((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pg.SRCALPHA)
-        player = game.get_game().player
-        if player.weapons[player.sel_weapon] is not weapons.WEAPONS['true_nights_edge']:
-            filter.fill(self.night_darkness_color)
-        else:
-            filter.fill((50, 0, 50))
-        if game.get_game().day_time > 0.75 or game.get_game().day_time < 0.4:
-            lv = game.get_game().player.get_light_level()
-            px, py = position.displayed_position(game.get_game().player.obj.pos)
-            if lv:
-                filter.blit(
-                    pygame_lights.global_light(filter.get_size(), 50 + game.get_game().player.get_night_vision()),
-                    (0, 0))
+        self.light_engine.point_light(game.get_game().player.profile.get_color(),
+                                      position.displayed_position(game.get_game().player.obj.pos),
+                                      300 / game.get_game().player.get_screen_scale(),
+                                      0.5)
+        self.light_engine.update(self.canvas)
+        self.light_engine.clear()
+        self.light_engine.ambient_light = self.night_darkness_color
 
-                light = pygame_lights.LIGHT(lv * 150, pygame_lights.pixel_shader(lv * 150,
-                                                                                 (255, 127, 0) if player.weapons[
-                                                                                                      player.sel_weapon] is not
-                                                                                                  weapons.WEAPONS[
-                                                                                                      'nights_edge'] and
-                                                                                                  player.weapons[
-                                                                                                      player.sel_weapon] is not
-                                                                                                  weapons.WEAPONS[
-                                                                                                      'true_nights_edge'] else (
-                                                                                 127, 0, 127), 1, False))
-                light.main([], filter, px, py)
-        self.canvas.blit(filter, (0, 0), special_flags=pg.BLEND_RGBA_MULT)
-        pg.display.update()
+    def add_blocking(self, rect: pg.Rect):
+        if not constants.LIGHTING:
+            return
+        self.light_engine.hull(rect)
+
+    def point_light(self, color, pos, power, size=5):
+        if not constants.LIGHTING:
+            return
+        self.light_engine.point_light(color, pos, size * 2, power / 5)
 
     def effect(self, effect_list):
         self.effects.extend(effect_list)

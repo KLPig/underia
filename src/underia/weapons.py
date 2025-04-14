@@ -140,6 +140,13 @@ class Weapon:
             sfr = sf.get_rect(center=position.displayed_position((self.x + game.get_game().player.obj.pos[0],
                                                                   self.y + game.get_game().player.obj.pos[1])))
             game.get_game().displayer.canvas.blit(sf, sfr)
+        game.get_game().displayer.point_light(col1, position.displayed_position((self.x + game.get_game().player.obj.pos[0],
+                                                                                    self.y + game.get_game().player.obj.pos[1])),
+                                              1.5, size * 30 / game.get_game().player.get_screen_scale())
+        game.get_game().displayer.point_light(col2,
+                                              position.displayed_position((self.x + game.get_game().player.obj.pos[0],
+                                                                           self.y + game.get_game().player.obj.pos[1])),
+                                              1.5, size * 30 / game.get_game().player.get_screen_scale())
 
     @staticmethod
     @functools.lru_cache(maxsize=None)
@@ -1639,12 +1646,58 @@ class LightQuenchSword(Blade):
                                e.obj.pos[1] - self.y - game.get_game().player.obj.pos[1]) < 600:
                 e.hp_sys.defenses[DamageTypes.PHYSICAL] -= 3.5
 
+class EFireRulingSword(FireQuenchSword):
+    def on_attack(self):
+        self.x += self.ax * self.timer ** 2 / 15
+        self.y += self.ay * self.timer ** 2 / 15
+        super().on_attack()
+
+class EIceRulingSword(IceQuenchSword):
+    def on_attack(self):
+        self.x += self.ax * self.timer ** 2 / 15
+        self.y += self.ay * self.timer ** 2 / 15
+        super().on_attack()
+
+class EDarkRulingSword(DarkQuenchSword):
+    def on_attack(self):
+        self.x += self.ax * self.timer ** 2 / 15
+        self.y += self.ay * self.timer ** 2 / 15
+        super().on_attack()
+
+class ELightRulingSword(LightQuenchSword):
+    def on_attack(self):
+        self.x += self.ax * self.timer ** 2 / 15
+        self.y += self.ay * self.timer ** 2 / 15
+        super().on_attack()
+
 class TheRulingSword(Blade):
     counter = 0
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.effs = []
 
     def on_start_attack(self):
         self.counter = (self.counter + 1) % 4
         super().on_start_attack()
+        e = [EFireRulingSword, EIceRulingSword, EDarkRulingSword, ELightRulingSword][self.counter]
+        en = ['img_weapons_fire_ruling_sword', 'img_weapons_ice_ruling_sword', 'img_weapons_dark_ruling_sword', 'img_weapons_light_ruling_sword'][self.counter]
+        r = vector.coordinate_rotation(*position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+
+        for ar in range(-30, 31, 30):
+            ax, ay = vector.rotation_coordinate(r + ar)
+            ee = e(self.name, self.damages, self.knock_back, en, self.cd, self.at_time, self.rot_speed, self.st_pos, self.auto_fire)
+            ee.ax = ax
+            ee.ay = ay
+            ee.keys = []
+            ee.attack()
+            self.effs.append(ee)
+
+    def update(self):
+        super().update()
+        self.effs = [e for e in self.effs if e.timer > 0]
+        for e in self.effs:
+            e.update()
 
     def on_attack(self):
         super().on_attack()

@@ -1530,6 +1530,7 @@ items_dict: dict[str, Inventory.Item] = {
     'dragon_scale_yellow': Inventory.Item('Dragon Scale (Yellow)', 'A yellow dragon\'s scales.\nEspecially resistant to magic attacks.', 'dragon_scale_yellow', 9, [TAGS['item']]),
     'dragon_scale_gray': Inventory.Item('Dragon Scale (Gray)', 'A gray dragon\'s scales.\nEspecially resistant to magic attacks.', 'dragon_scale_gray', 9, [TAGS['item']]),
     'dragon_scale_green': Inventory.Item('Dragon Scale (Green)', 'A green dragon\'s scales.\nEspecially resistant to magic attacks.', 'dragon_scale_green', 9, [TAGS['item']]),
+    'naga_scale': Inventory.Item('Naga Scale', 'A naga\'s scales.\nEspecially resistant to magic attacks.', 'naga_scale', 9, [TAGS['item']]),
 
     'fire_dragon_blood': Inventory.Item('Fire Dragon Blood', 'What an essence of a dragon of fire is.', 'fire_dragon_blood', 9, [TAGS['item']]),
     'ice_dragon_blood': Inventory.Item('Ice Dragon Blood', 'What an essence of a dragon of ice is.', 'ice_dragon_blood', 9, [TAGS['item']]),
@@ -1674,6 +1675,7 @@ items_dict: dict[str, Inventory.Item] = {
     'huge_snowball': Inventory.Item('Huge Snowball', 'Summon the Polar Cube', 'huge_snowball', 0, [TAGS['item']]),
 
     'dragon_horn': Inventory.Item('Dragon Horn', 'Summon dragons around the world.', 'dragon_horn', 8, [TAGS['item']]),
+    'poison_horn': Inventory.Item('Poison Horn', 'Summon the naga', 'poison_horn', 9, [TAGS['item']]),
     'ends_sphere': Inventory.Item('End\'s Sphere', 'Final', 'ends_sphere', 12, [TAGS['item']]),
 
     'finale__soul': Inventory.Item('Finale: Soul', 'The finale is the the start.\nStart Chapter 2.', 'finale__soul', 13, [TAGS['item']]),
@@ -2229,6 +2231,7 @@ RECIPES = [
     Recipe({'sight_ingot': 20, 'colourful_substance': 3}, 'plastic_flower'),
     Recipe({'phantom_ingot': 20, 'cold_substance': 3}, 'huge_snowball'),
     Recipe({'chaos_ingot': 100, 'willpower_shard': 5}, 'dragon_horn'),
+    Recipe({'dragon_horn': 1, 'origin': 1}, 'poison_horn'),
 
     Recipe({'the_final_soul': 15, 'murders_knife': 1, 'savior': 1}, 'finale__soul'),
 
