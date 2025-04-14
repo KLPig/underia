@@ -1,3 +1,3 @@
-from .client import *
-from .server import *
-from .game_pack_data import *
+from web.client import *
+from web.server import *
+from web.game_pack_data import *

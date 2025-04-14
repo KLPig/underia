@@ -401,27 +401,36 @@ class Game:
                 self.displayer.canvas.blit(pg.transform.scale_by(self.graphics.get_graphics(img),
                                                                      1 / self.player.get_screen_scale()),
                                            resources.displayed_position((x, y)))
-        for monster in self.entities:
-            monster.t_draw()
-            if monster.hp_sys.hp <= 0:
-                self.entities.remove(monster)
-                if monster.obj.IS_OBJECT:
-                    if monster.SOUND_DEATH is not None:
-                        monster.play_sound('killed_' + monster.SOUND_DEATH)
+        chunk_entities = {}
+        for i, e in enumerate(self.entities):
+            e.t_draw()
+            px, py = resources.relative_position(e.obj.pos)
+            cp = (round(px / 200), round(py / 200))
+            if cp not in chunk_entities:
+                chunk_entities[cp] = [i]
+            else:
+                chunk_entities[cp].append(i)
+        for cp, entities in chunk_entities.items():
+            for i, e1 in enumerate(entities):
+                for e2 in entities[i + 1:]:
+                    self.entities[e1].obj.object_collision(self.entities[e2].obj,
+                                                           (self.entities[e1].d_img.get_width() + self.entities[e2].d_img.get_width() +
+                                                            self.entities[e1].d_img.get_height() + self.entities[e2].d_img.get_height()) / 4)
+        for e in self.entities:
+            if e.hp_sys.hp <= 0:
+                self.entities.remove(e)
+                if e.obj.IS_OBJECT:
+                    if e.SOUND_DEATH is not None:
+                        e.play_sound('killed_' + e.SOUND_DEATH)
                     else:
-                        monster.play_sound('enemydust')
-                loots = monster.LOOT_TABLE()
+                        e.play_sound('enemydust')
+                loots = e.LOOT_TABLE()
                 for item, amount in loots:
                     k = random.randint(self.ITEM_SPLIT_MIN, min(self.ITEM_SPLIT_MAX, amount))
                     for i in range(k):
-                        self.drop_items.append(entity.Entities.DropItem((monster.obj.pos[0] + random.randint(-10, 10),
-                                                                         monster.obj.pos[1] + random.randint(-10, 10)),
+                        self.drop_items.append(entity.Entities.DropItem((e.obj.pos[0] + random.randint(-10, 10),
+                                                                         e.obj.pos[1] + random.randint(-10, 10)),
                                                                         item, amount // k + (i < amount % k)))
-            for monster2 in self.entities:
-                #monster.obj.object_gravitational(monster2.obj)
-                monster.obj.object_collision(monster2.obj,
-                                             (monster2.img.get_width() + monster2.img.get_height()) // 4 + (
-                                                         monster.img.get_width() + monster.img.get_height()) // 4)
         if self.client is not None or self.server is not None:
             players = self.client.player_datas.values() if self.client is not None else self.server.players.values()
             for p in players:

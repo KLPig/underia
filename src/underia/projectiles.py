@@ -928,6 +928,8 @@ class Projectiles:
             self.ttx = position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
 
         def update(self):
+            game.get_game().displayer.point_light((255, 255, 255), position.displayed_position(self.obj.pos), 1.5,
+                                                  self.d_img.get_width() // 2)
             mx, my = self.ttx
             if self.AUTO_FOLLOW:
                 self.obj.pos = ((mx + self.obj.pos[0]) // 2, (my + self.obj.pos[1]) // 2)
@@ -1212,6 +1214,13 @@ class Projectiles:
             self.obj.pos = self.pos
             self.start_pos = self.pos[0] + ax * 50 + self.WIDTH / 2 * ax, self.pos[1] + ay * 50 + self.WIDTH / 2 * ay
             self.end_pos = self.start_pos[0] + ax * self.LENGTH, self.start_pos[1] + ay * self.LENGTH
+            if ax == 0:
+                ax = 10 ** -9
+            for x in range(int(self.start_pos[0]), int(self.end_pos[0]), int(self.WIDTH * ax)):
+                y = (x - self.start_pos[0]) / ax * ay + self.start_pos[1]
+                dx, dy = position.displayed_position((x, y))
+                game.get_game().displayer.point_light(self.COLOR, (dx, dy), 1.2,
+                                                      self.WIDTH / game.get_game().player.get_screen_scale())
             for entity in game.get_game().entities:
                 ex = entity.obj.pos[0] - game.get_game().player.obj.pos[0]
                 ey = entity.obj.pos[1] - game.get_game().player.obj.pos[1]

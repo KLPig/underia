@@ -274,7 +274,7 @@ class PlayerProfile:
             self.point_ranged = 0
             self.point_magic = 0
         clock = pg.time.Clock()
-        if t in [0, 5]:
+        if t in [0, 5, 9]:
             if t:
                 game.get_game().chapter += 1
             self.chapter_select()
@@ -286,7 +286,6 @@ class PlayerProfile:
             game.get_game().player.inventory.items = {}
             game.get_game().player.accessories = 6 * ['null']
             game.get_game().player.weapons = 4 * [weapons.WEAPONS['null']]
-            game.get_game().seed = random.randint(0, 1000000)
             game.get_game().decors.clear()
             game.get_game().entities.clear()
             game.get_game().projectiles.clear()
@@ -440,6 +439,8 @@ class PlayerProfile:
         colours = [(255, 0, 255), (255, 255, 0), (0, 255, 255)]
         clock = pg.time.Clock()
         self.point_left += point
+        sr = 0
+        sl = 3 if game.get_game().chapter == 0 else 6
         while True:
             keys = []
             mouse = []
