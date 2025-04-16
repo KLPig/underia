@@ -14,7 +14,7 @@
 #  "saves_chooser",
 # ]
 # ///
-
+import copy
 import os
 import pickle
 import pygame as pg
@@ -66,7 +66,29 @@ else:
     updates = []
 
 if 'client' in cmds:
-    addr = input('Enter server address: ')
+    addr = ''
+    inp = True
+    window = pg.display.get_surface()
+    font = pg.font.Font(resources.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 48)
+    while inp:
+        window.fill((0, 0, 0))
+        tx = f'Server address: {addr}'
+        txt = font.render(tx, True, (255, 255, 255))
+        window.blit(txt, (200, 200))
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
+                exit()
+            elif event.type == pg.KEYDOWN:
+                if event.key == pg.K_BACKSPACE:
+                    addr = addr[:-1]
+                elif '0' <= pg.key.name(event.key) <= '9' or event.key == pg.K_PERIOD:
+                    addr += pg.key.name(event.key)
+                elif event.key == pg.K_RETURN:
+                    inp = False
+                    break
+        pg.display.flip()
+
 else:
     addr = None
 
@@ -278,7 +300,7 @@ def update():
                                         game.player.obj.pos[1] + ay * td), random.randint(1600, 2000)))
     for entity in game.entities:
         d = physics.distance(entity.obj.pos[0] - game.player.obj.pos[0], entity.obj.pos[1] - game.player.obj.pos[1])
-        if d > 8000 + entity.IS_MENACE * 8000 or (d > 1200 + (entity.IS_MENACE or entity.VITAL) * 1200 and
+        if d > 8000 + (entity.VITAL or entity.IS_MENACE) * 8000 or (d > 1200 + (entity.IS_MENACE or entity.VITAL) * 1200 and
                                                   not entity.is_suitable(game.get_biome())):
             game.entities.remove(entity)
             del entity
@@ -506,12 +528,3 @@ else:
             with open(resources.get_save_path(game.save), 'wb') as w:
                 w.write(game_pickle)
                 w.close()
-            game_data = pickle.dumps(underia.GameData(game.player.profile))
-            with open(resources.get_save_path(sfd), 'wb') as w:
-                w.write(game_data)
-                w.close()
-            pg.quit()
-            if type(err) not in [resources.Interrupt, KeyboardInterrupt]:
-                raise resources.UnderiaError(f"An error occurred while running the game:\n{err}") from err
-    finally:
-        print('exit 0')

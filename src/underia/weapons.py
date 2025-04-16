@@ -260,7 +260,7 @@ class SweepWeapon(Weapon):
                     if 'matters_touch' in game.get_game().player.accessories:
                         e.obj.MASS *= 1.01
                     if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
-                        if not e.IS_MENACE:
+                        if not e.IS_MENACE and not e.VITAL:
                             e.hp_sys.damage(e.hp_sys.max_hp / 10, dmg.DamageTypes.THINKING)
                             if random.randint(0, 10) == 0:
                                 e.hp_sys.hp = 0
@@ -953,8 +953,6 @@ class Muramasa(Blade):
             self.cutting_effect(8, (0, 0, 90), (150, 150, 255))
         super().update()
         if pg.K_q in game.get_game().get_pressed_keys() and not f and not self.sk_cd:
-            self.damages[dmg.DamageTypes.PHYSICAL] *= 25
-            self.knock_back *= 10
             window = pg.display.get_surface()
             if constants.USE_ALPHA:
                 sf = pg.Surface((window.get_width(), window.get_height()))
@@ -966,8 +964,6 @@ class Muramasa(Blade):
                 self.attack()
                 for _ in range(self.at_time):
                     self.update(1)
-            self.damages[dmg.DamageTypes.PHYSICAL] /= 25
-            self.knock_back /= 10
             self.sk_cd = self.sk_mcd
 
     def on_idle(self):
@@ -1215,6 +1211,35 @@ class Lysis(Blade):
     def on_attack(self):
         super().on_attack()
         self.cutting_effect(8, (200, 200, 255), (0, 0, 255))
+
+class QuarkRusher(Blade):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.st = 0
+
+    def on_start_attack(self):
+        self.st = 0
+        super().on_start_attack()
+
+    def on_attack(self):
+        super().on_attack()
+        self.cutting_effect(8, (0, 255, 255), (127, 200, 200))
+        mx, my = position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+        mx -= game.get_game().player.obj.pos[0]
+        my -= game.get_game().player.obj.pos[1]
+        self.x = (self.x + mx) // 2
+        self.y = (self.y + my) // 2
+        if self.st < 10:
+            pass
+        elif self.st < 25:
+            self.rotate(self.rot_speed)
+        elif self.st == 25:
+            qb = projectiles.Projectiles.QuarkBeam(game.get_game().player.obj.pos, vector.coordinate_rotation(mx, my))
+            qb.LENGTH = vector.distance(mx, my)
+            game.get_game().projectiles.append(qb)
+            game.get_game().player.obj.pos = position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+            game.get_game().player.obj.velocity.add(vector.Vector(vector.coordinate_rotation(mx, my), 20))
+        self.st += 1
 
 class EHighlight(Spear):
     ENABLE_IMMUNE = False
@@ -3328,6 +3353,9 @@ def set_weapons():
         'star_of_devotion': StarOfDevotion('star of devotion', {dmg.DamageTypes.PHYSICAL: 2800, dmg.DamageTypes.THINKING: 2600}, 45,
                                              'items_weapons_star_of_devotion',
                                              0, 6, 60, 200),
+        'quark_rusher': QuarkRusher('quark rusher', {dmg.DamageTypes.PHYSICAL: 4800, dmg.DamageTypes.THINKING: 2400}, 15,
+                                       'items_weapons_quark_rusher',
+                                       5, 45, 30, 200),
 
         'highlight': Highlight('highlight', {dmg.DamageTypes.PHYSICAL: 800, dmg.DamageTypes.THINKING: 800}, 16, 'items_weapons_highlight',
                                0, 3, 30, 60, auto_fire=True),

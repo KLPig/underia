@@ -107,6 +107,14 @@ class Game:
             r = 0
             g = 0
             b = 0
+        if 'aimer' in self.player.accessories or 'photon_aimer' in self.player.accessories:
+            r = 255 - (255 - r) * 4 // 5
+            g = 255 - (255 - g) * 4 // 5
+            b = 255 - (255 - b) * 4 // 5
+        if 'chaos_evileye' in self.player.accessories or 'horizon_goggles' in self.player.accessories:
+            r = 255 - (255 - r) * 2 // 3
+            g = 255 - (255 - g) * 2 // 3
+            b = 255 - (255 - b) * 2 // 3
         return r, g, b
 
     def on_day_start(self):
