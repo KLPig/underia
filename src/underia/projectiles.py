@@ -1216,7 +1216,7 @@ class Projectiles:
             self.end_pos = self.start_pos[0] + ax * self.LENGTH, self.start_pos[1] + ay * self.LENGTH
             if ax == 0:
                 ax = 10 ** -9
-            for x in range(int(self.start_pos[0]), int(self.end_pos[0]), int(self.WIDTH * ax)):
+            for x in range(int(self.start_pos[0]), int(self.end_pos[0]), int(self.WIDTH * ax if abs(ax * self.WIDTH) > 1 else 1)):
                 y = (x - self.start_pos[0]) / ax * ay + self.start_pos[1]
                 dx, dy = position.displayed_position((x, y))
                 game.get_game().displayer.point_light(self.COLOR, (dx, dy), 1.2,
@@ -1273,6 +1273,14 @@ class Projectiles:
         DAMAGE_AS = 'the_blade'
         COLOR = (0, 150, 50)
         DURATION = 12
+        DMG_TYPE = damages.DamageTypes.PHYSICAL
+
+    class QuarkBeam(Beam):
+        WIDTH = 80
+        LENGTH = 3200
+        DAMAGE_AS = 'quark_rusher'
+        COLOR = (0, 255, 255)
+        DURATION = 15
         DMG_TYPE = damages.DamageTypes.PHYSICAL
 
     class BladeBeamSmall(BladeBeam):

@@ -1,4 +1,6 @@
 import os
+import sys
+
 from constants import DEBUG, OS
 from tkinter import messagebox
 
@@ -8,7 +10,7 @@ if not DEBUG:
     else:
         pt = '/Library/Underia'
 else:
-    pt = '.'
+    pt = os.path.dirname(sys.modules['__main__'].__file__)
 
 print("Discovering path...")
 print(pt)

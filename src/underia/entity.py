@@ -3,7 +3,6 @@ import math
 import random
 
 import pygame as pg
-from appscript.defaultterminology import elements
 
 from physics import mover, vector
 from resources import position
@@ -549,6 +548,31 @@ class DragonAI(MonsterAI):
                 self.IS_OBJECT = True
             else:
                 self.IS_OBJECT = True
+
+class QuarkGhostAI(MonsterAI):
+    MASS = 8800
+    FRICTION = 0.8
+    SIGHT_DISTANCE = 99999
+    TOUCHING_DAMAGE = 640
+    IS_OBJECT = False
+
+    def __init__(self, pos):
+        super().__init__(pos)
+        self.state = 0
+        self.d_rot = 0
+
+    def on_update(self):
+        player = self.cur_target
+        if player is not None:
+            px, py = player.pos[0] - self.pos[0], player.pos[1] - self.pos[1]
+            self.d_rot = vector.coordinate_rotation(px, py) - self.velocity.get_net_rotation()
+            if self.d_rot > 180:
+                self.d_rot -= 360
+            elif self.d_rot < -180:
+                self.d_rot += 360
+            self.apply_force(vector.Vector(self.velocity.get_net_rotation(), max(0, 150000 - self.d_rot * 300)))
+            self.apply_force(vector.Vector(self.velocity.get_net_rotation() + 90, self.d_rot * 300))
+            self.IS_OBJECT = True
 
 class LifeWatcherAI(MonsterAI):
     MASS = 2400
@@ -1151,7 +1175,7 @@ class GodsEyeAI(MonsterAI):
 class WorldsTreeAI(MonsterAI):
     MASS = 1000
     FRICTION = 0.95
-    TOUCHING_DAMAGE = 1200
+    TOUCHING_DAMAGE = 2400
     SIGHT_DISTANCE = 99999
 
     def __init__(self, pos):
@@ -1850,14 +1874,13 @@ class Entities:
                 self.body[i].obj.IS_OBJECT = i % 2 == 0
                 self.body[i].obj.TOUCHING_DAMAGE = body_touching_damage
                 # self.body[i].obj.IS_OBJECT = False
-            for b in self.body:
-                b.VITAL = True
             self.d_img = self.body[0].d_img
             self.img = self.body[0].img
             self.rot = self.body[0].rot
             for b in self.body:
                 b.DISPLAY_MODE = 1
                 b.NAME = self.NAME
+                b.VITAL = True
             try:
                 if self.SOUND_SPAWN is not None:
                     self.body[0].play_sound('spawn_' + self.SOUND_SPAWN)
@@ -1888,6 +1911,9 @@ class Entities:
                     self.body[i].obj.velocity.clear()
                 # self.body[i].obj.apply_force(vector.Vector(vector.coordinate_rotation(tx - nx, ty - ny), vector.distance(tx - nx, ty - ny) * 8))
             self.body[0].t_draw()
+
+        def draw(self):
+            self.body[0].draw()
 
         def t_update(self):
             self.body[0].t_update()
@@ -6482,7 +6508,7 @@ class Entities:
         def damage(self):
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 180:
-                game.get_game().player.hp_sys.damage(960, damages.DamageTypes.MAGICAL)
+                game.get_game().player.hp_sys.damage(2200, damages.DamageTypes.MAGICAL)
                 self.hp_sys.hp = 10 ** 8
 
     class FaithFire(Entity):
@@ -6532,9 +6558,93 @@ class Entities:
         def damage(self):
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 180:
-                game.get_game().player.hp_sys.damage(1000, damages.DamageTypes.MAGICAL)
+                game.get_game().player.hp_sys.damage(2000, damages.DamageTypes.MAGICAL)
+                game.get_game().player.hp_sys.effect(effects.Faith(4, 100))
+                self.hp_sys.hp = 10 ** 8
+
+    class QuarkFire(Entity):
+        NAME = 'Quark Fire'
+        DISPLAY_MODE = 1
+        LOOT_TABLE = LootTable([])
+
+        def __init__(self, pos, rot, follow_entity=None):
+            super().__init__(pos, game.get_game().graphics['items_null'], FastBulletAI, 10 ** 9)
+            self.obj.MASS = 1000
+            self.obj.rot = rot
+            self.obj.speed = 8800
+            self.tick = 0
+            if follow_entity is not None:
+                self.ax = self.obj.pos[0] - follow_entity.obj.pos[0]
+                self.ay = self.obj.pos[1] - follow_entity.obj.pos[1]
+                self.arot = rot + follow_entity.rot
+                self.follow_entity = follow_entity
+            else:
+                self.ax, self.ay, self.arot = 0, 0, 0
+                self.follow_entity = None
+
+        def t_draw(self):
+            if self.tick > 5:
+                self.obj.update()
+                game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(self.obj.pos),
+                                                                        col=(0, 255, 255), t=6, sp=8, n=2))
+            else:
+                if self.follow_entity is not None:
+                    self.obj.pos = (
+                    self.follow_entity.obj.pos[0] + self.ax, self.follow_entity.obj.pos[1] + self.ay)
+                    self.obj.rot = -self.follow_entity.rot + self.arot
+                ax, ay = vector.rotation_coordinate(self.obj.rot)
+                draw.line(game.get_game().displayer.canvas, (0, 255, 255),
+                             position.displayed_position(self.obj.pos),
+                             position.displayed_position(
+                                 (self.obj.pos[0] + ax * 3000, self.obj.pos[1] + ay * 3000)), 3)
+
+        def on_update(self):
+            self.tick += 1
+            if self.tick < 10:
+                pass
+            else:
+                self.damage()
+                self.hp_sys.hp -= 25 * 10 ** 6
+
+        def damage(self):
+            if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
+                               self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 180:
+                game.get_game().player.hp_sys.damage(1500, damages.DamageTypes.MAGICAL)
                 game.get_game().player.hp_sys.effect(effects.Faith(4, 24))
                 self.hp_sys.hp = 10 ** 8
+
+    class QuarkGhost(WormEntity):
+        BOSS_NAME = 'The Eternal Energy'
+        NAME = 'The Quark Ghost'
+        DISPLAY_MODE = 1
+        IS_MENACE = True
+        PHASE_SEGMENTS = [0.3, 0.6]
+        LOOT_TABLE = LootTable([
+            IndividualLoot('quark_rusher', 1, 1, 1),
+        ])
+
+        def __init__(self, pos):
+            super().__init__(pos, 64, game.get_game().graphics['entity_quark_ghost_head'],
+                             game.get_game().graphics['entity_quark_ghost_body'],
+                             QuarkGhostAI, 45000000, body_length=250, body_touching_damage=1500)
+
+            self.phase = 0
+
+        def on_update(self):
+            super().on_update()
+            if self.phase == 0 and self.hp_sys.hp < self.hp_sys.max_hp * .6:
+                self.phase = 1
+                self.obj.SPEED *= 1.5
+            if self.phase == 1 and self.hp_sys.hp < self.hp_sys.max_hp * .3:
+                self.phase = 2
+                self.obj.SPEED *= 1.5
+            for b in self.body:
+                if random.randint(0, 650 - self.phase * 180) == 114:
+                    px, py = game.get_game().player.obj.pos
+                    px -= b.obj.pos[0]
+                    py -= b.obj.pos[1]
+                    game.get_game().entities.append(Entities.QuarkFire(b.obj.pos, vector.coordinate_rotation(px, py), b))
+
 
     class ReincarnationTheWorldsTree(Entity):
         NAME = 'Reincarnation: The World\'s Tree'
@@ -6688,7 +6798,7 @@ class Entities:
         def __init__(self, pos):
             super().__init__(pos, game.get_game().graphics['entity_faith'], BuildingAI, 16000000)
             self.obj.MASS = 1800
-            self.obj.TOUCHING_DAMAGE = 1200
+            self.obj.TOUCHING_DAMAGE = 2400
             self.state = 0
             self.tick = 0
             self.interval = 30

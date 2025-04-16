@@ -454,6 +454,10 @@ class Player:
         self.obj.FRICTION = max(0, 1 - 0.2 * self.calculate_data('air_res', rate_data=True, rate_multiply=True) * (1 + self.z))
         self.obj.MASS = max(40, 80 + self.calculate_data('mass', False))
         self.p_data.append(f'Agility {int(self.obj.SPEED / 2) / 10}N')
+        if self.obj.velocity.get_net_value() / 20 > 500:
+            entity.entity_spawn(entity.Entities.QuarkGhost, 2000, 2000, 0, 1145, 100000)
+            self.obj.velocity.clear()
+            game.get_game().dialog.dialog('The Quark Ghost prevents you from accelerating!')
         self.splint_distance = self.calculate_data('splint', False)
         if self.splint_distance:
             self.p_data.append(f'Splint distance {self.splint_distance}')
@@ -2062,9 +2066,7 @@ class Player:
         if pg.K_4 in game.get_game().get_keys():
             self.sel_weapon = 3
         if self.in_ui:
-            pg.mouse.set_cursor(cursors.arrow_cursor_cursor)
             pg.mouse.set_visible(not mouse_text)
         else:
-            pg.mouse.set_cursor(cursors.arrow_cursor_cursor)
             pg.mouse.set_visible(self.weapons[self.sel_weapon].name in ['null', 'arrow_thrower'])
             self.weapons[self.sel_weapon].update()

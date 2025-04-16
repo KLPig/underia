@@ -75,7 +75,6 @@ class Displayer:
                                       300 / game.get_game().player.get_screen_scale(),
                                       0.5)
         self.light_engine.update(self.canvas)
-        print(len(self.light_engine.lights))
         self.light_engine.clear()
         self.light_engine.ambient_light = self.night_darkness_color
 
