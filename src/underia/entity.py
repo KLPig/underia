@@ -574,6 +574,35 @@ class QuarkGhostAI(MonsterAI):
             self.apply_force(vector.Vector(self.velocity.get_net_rotation() + 90, self.d_rot * 300))
             self.IS_OBJECT = True
 
+class NagaAI(MonsterAI):
+    MASS = 15000
+    FRICTION = 0.8
+    SIGHT_DISTANCE = 9999
+    TOUCHING_DAMAGE = 2200
+    IS_OBJECT = False
+
+    def __init__(self, pos):
+        super().__init__(pos)
+        self.state = 0
+        self.d_rot = 0
+
+    def on_update(self):
+        player = self.cur_target
+        if player is not None:
+            px, py = player.pos[0] - self.pos[0], player.pos[1] - self.pos[1]
+            self.d_rot = vector.coordinate_rotation(px, py) - self.velocity.get_net_rotation()
+            if self.d_rot > 180:
+                self.d_rot -= 360
+            elif self.d_rot < -180:
+                self.d_rot += 360
+            if self.state == 0:
+                self.apply_force(vector.Vector(self.velocity.get_net_rotation(), max(0, 320000 - self.d_rot * 640)))
+                self.apply_force(vector.Vector(self.velocity.get_net_rotation() + 90, self.d_rot * 880))
+            elif self.state == 1:
+                self.apply_force(vector.Vector(vector.coordinate_rotation(px, py), 3600000))
+            else:
+                pass
+
 class LifeWatcherAI(MonsterAI):
     MASS = 2400
     FRICTION = 0.97
@@ -1328,10 +1357,6 @@ class Entities:
             self.set_rotation((self.rot + angle) % 360)
 
         def update(self):
-            if not self.add_star:
-                self.add_star = True
-                if 'star_supporter' in game.get_game().player.profile.select_skill and type(self) is not Entities.DropItem and self.obj.IS_OBJECT:
-                    self.LOOT_TABLE.loot_list.append(IndividualLoot('star', 0.2, 1, 1))
             p = position.displayed_position((self.obj.pos[0], self.obj.pos[1]))
             if p[0] < -100 or p[0] > game.get_game().displayer.SCREEN_WIDTH + 100 or p[1] < -100 or p[
                 1] > game.get_game().displayer.SCREEN_HEIGHT + 100:
@@ -1344,6 +1369,10 @@ class Entities:
             self.t_draw()
 
         def t_update(self):
+            if not self.add_star:
+                self.add_star = True
+                if 'star_supporter' in game.get_game().player.profile.select_skill and type(self) is not Entities.DropItem and self.obj.IS_OBJECT:
+                    self.LOOT_TABLE.loot_list.append(IndividualLoot('star', 0.2, 1, 1))
             if not self.show_boss and self.IS_MENACE and len(self.BOSS_NAME):
                 self.show_boss = True
                 window = pg.display.get_surface()
@@ -1849,6 +1878,7 @@ class Entities:
 
     class WormEntity:
         NAME = 'Entity'
+        BOSS_NAME = ''
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([])
         ENTITY_TAGS = []
@@ -1887,6 +1917,7 @@ class Entities:
             except ValueError:
                 pass
             self.hp_sys.SOUND_HURT = self.SOUND_HURT
+            self.show_boss = False
 
         def play_sound(self, sound):
             self.body[0].play_sound(sound)
@@ -1916,6 +1947,29 @@ class Entities:
             self.body[0].draw()
 
         def t_update(self):
+            if not self.show_boss and self.IS_MENACE and len(self.BOSS_NAME):
+                self.show_boss = True
+                window = pg.display.get_surface()
+                sf = copy.copy(window)
+                for i in range(240):
+                    if i < 30:
+                        w = i ** 2 / 900
+                    elif i > 210:
+                        w = (240 - i) ** 2 / 900
+                    else:
+                        w = 1.0
+                    window.blit(sf, (0, 0))
+                    pg.draw.rect(window, (255, 181, 112),
+                                 (window.get_width() * (1 - w) / 2, 100, window.get_width() * w, 160))
+                    pg.draw.rect(window, (242, 166, 94),
+                                 (window.get_width() * (1 - w) / 2, 100, window.get_width() * w, 160), 15)
+                    t = game.get_game().displayer.font.render(styles.text(self.BOSS_NAME), True, (182, 106, 34))
+                    window.blit(t, (window.get_width() / 2 - t.get_width() / 2, 150))
+                    t = game.get_game().displayer.font.render(styles.text(self.NAME), True, (182, 106, 34))
+                    window.blit(t, (window.get_width() / 2 - t.get_width() / 2, 200))
+                    pg.display.flip()
+                    game.get_game().handle_events()
+                    game.get_game().clock.update()
             self.body[0].t_update()
             self.on_update()
 
@@ -3911,15 +3965,26 @@ class Entities:
         SOUND_DEATH = 'dragon'
 
         def __init__(self, pos):
-            super().__init__(pos, 24, game.get_game().graphics['entity_naga_head'], game.get_game().graphics['entity_naga_body'],
-                             DragonAI, 3600000, body_length=250, body_touching_damage=1500)
+            super().__init__(pos, 32, game.get_game().graphics['entity_naga_head'], game.get_game().graphics['entity_naga_body'],
+                             NagaAI, 3600000, body_length=250, body_touching_damage=1800)
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 800
             self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 1000
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 800
             self.hp_sys.defenses[damages.DamageTypes.OCTAVE] = 500
             self.hp_sys.defenses[damages.DamageTypes.HALLOW] = 600
             self.hp_sys.defenses[damages.DamageTypes.PACIFY] = 550
-            self.obj.SPEED *= 1.5
+            self.tick = 5
+
+        def on_update(self):
+            super().on_update()
+            self.tick += 1
+            if self.tick > 0 and random.randint(0, self.tick) > 120:
+                self.tick = -random.randint(25, 35)
+                self.obj.state = 1
+            else:
+                self.obj.state = 0
+            if 0 >= self.tick > -15:
+                self.obj.state = 2
 
     class Ignis(Entity):
         NAME = 'The Scorching Wing: Ignis'
