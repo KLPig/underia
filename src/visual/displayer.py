@@ -1,7 +1,7 @@
 import pygame as pg
 
 from resources import position, path
-from underia import game, weapons
+from underia import game
 from visual import effects, lighting
 import constants
 

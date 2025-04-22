@@ -25,8 +25,8 @@ def pointed_curve(colour: tuple[int, int, int], pts: list[tuple[int, int]], widt
     for i in range(num_points - 1):
         alpha = salpha
         current_colour = (colour[0], colour[1], colour[2], 255)
-        sx, sy = position.displayed_position(pts[i])
-        ex, ey = position.displayed_position(pts[i + 1])
+        sx, sy = position.displayed_position(pts[i]) if target is None else pts[i]
+        ex, ey = position.displayed_position(pts[i + 1]) if target is None else pts[i + 1]
         if (ex - sx) ** 2 + (ey - sy) ** 2 > 1000000:
             continue
         if constants.USE_ALPHA and alpha < 255:

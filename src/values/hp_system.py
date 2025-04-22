@@ -1,7 +1,7 @@
 import random
 
 import constants
-from physics import distance
+from physics import vector
 from underia import game
 from values import reduction, effects, damages
 
@@ -58,8 +58,8 @@ class HPSystem:
         if self.IMMUNE or self.is_immune:
             return
         try:
-            d = distance(self.pos[0] - game.get_game().player.obj.pos[0],
-                         self.pos[1] - game.get_game().player.obj.pos[1])
+            d = vector.distance(self.pos[0] - game.get_game().player.obj.pos[0],
+                                self.pos[1] - game.get_game().player.obj.pos[1])
             if self.SOUND_HURT is not None:
                 game.get_game().play_sound('hit_' + self.SOUND_HURT, vol=0.99 ** int(d / 10))
         except ValueError:
