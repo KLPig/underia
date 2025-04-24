@@ -13,10 +13,11 @@ INFINITY = 2 ** 31 - 1
 
 APRIL_FOOL = False
 
-LANG = 'zh'
+LANG = 'en'
 
 DEBUG = True
-OS = "Windows"
+
+OS = "OSX"
 TONE = True
 ENTITY_NUMBER = 18
 WEB_DEPLOY = False

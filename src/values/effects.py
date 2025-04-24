@@ -382,15 +382,30 @@ class FastThrow(Effect):
     NAME = 'Fast Throw'
     DESC = 'Sprinting\n+200% ranged damage'
 
+class StormThrow(Effect):
+    IMG = 'fast_throw'
+    NAME = 'Storm Throw'
+    DESC = 'Sprinting\n+400% ranged damage'
+
 class TheFury(Effect):
     IMG = 'the_fury'
     NAME = 'The Fury'
     DESC = '+50% melee damage\n+30 touching defense\n-50% speed'
 
+class TheWraith(Effect):
+    IMG = 'the_fury'
+    NAME = 'The Wraith'
+    DESC = '+80% melee damage\n+100 touching defense\n-100% speed'
+
 class WarriorShield(Effect):
     IMG = 'warrior_shield'
     NAME = 'Warrior Shield'
     DESC = 'Allows to summon a shield to absorb damage'
+
+class Guard(Effect):
+    IMG = 'warrior_shield'
+    NAME = 'Guard'
+    DESC = 'Allows to summon a shield to absorb 1000 damage'
 
 class Healer(Effect):
     IMG = 'healer'

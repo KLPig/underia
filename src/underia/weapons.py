@@ -170,8 +170,7 @@ class Weapon:
             rots = [vector.rotation_coordinate( -(dt + adt) * i / 9 + adt) for i in range(9, -1, -1)]
             eff.pointed_curve((int(col1[0] + (col2[0] - col1[0]) / sz * j),
                                int(col1[1] + (col2[1] - col1[1]) / sz * j),
-                               int(col1[2] + (col2[2] - col1[2]) / sz * j)), [position.real_position((vx * d + surf.get_width() // 2,
-                                                                                                     vy * d + surf.get_height() // 2))
+                               int(col1[2] + (col2[2] - col1[2]) / sz * j)), [(vx * d + surf.get_width() // 2, vy * d + surf.get_height() // 2)
                                                                               for vx, vy in rots],
                               3 * constants.BLADE_EFFECT_QUALITY, salpha=int(255 * (1 - j / sz / 6)),
                               target=surf)
@@ -718,8 +717,10 @@ class NightsEdge(Blade):
         super().__init__(name, damages, kb, img, speed, at_time, rot_speed, st_pos, double_sided)
         self.rots = []
         self.lrot = 0
+        self.sc = 0
 
     def on_start_attack(self):
+        self.sc = (self.sc + 1) % 4
         self.rots = []
         super().on_start_attack()
         if game.get_game().day_time > 0.75 or game.get_game().day_time < 0.2:
@@ -734,17 +735,21 @@ class NightsEdge(Blade):
             spd = 4000
             self.damages = {dmg.DamageTypes.PHYSICAL: 88, dmg.DamageTypes.MAGICAL: 48}
             self.img_index = 'items_weapons_nights_edge'
+        if self.sc == 3:
+            spd *= 1.5
         px, py = position.relative_position(
             position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
         r = -1 if px > 0 else 1
         vx, vy = vector.rotation_coordinate(self.rot - 100 * r)
-        n = projectiles.Projectiles.NightsEdge((self.x + game.get_game().player.obj.pos[0] + vx * 200,
-                                                self.y + game.get_game().player.obj.pos[1] + vy * 200),
-                                               self.rot - r * 100)
+        ne = projectiles.Projectiles.NightsEdge if self.sc != 3 else projectiles.Projectiles.BNightsEdge
+        n = ne((self.x + game.get_game().player.obj.pos[0] + vx * 200, self.y + game.get_game().player.obj.pos[1] + vy * 200),
+               self.rot - r * 100)
         n.obj.apply_force(vector.Vector(self.rot - 100 * r, spd))
         n.set_rotation(self.rot)
         game.get_game().projectiles.append(n)
         self.lrot = self.rot
+        if self.sc == 3:
+            self.timer *= 2
 
     def on_attack(self):
         self.rotate(int(-(self.timer - self.at_time / 2) * -5))
@@ -825,18 +830,18 @@ class Excalibur(Blade):
             position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
         r = -1 if px > 0 else 1
         vx, vy = vector.rotation_coordinate(self.rot - 180 * r)
+        for ar in range(-30, 31, 10 if not self.cnt else 30):
+            n = projectiles.Projectiles.Excalibur((self.x + game.get_game().player.obj.pos[0] + vx * 200,
+                                                   self.y + game.get_game().player.obj.pos[1] + vy * 200),
+                                                  self.rot - r * 180 + ar)
+            n.obj.apply_force(vector.Vector(self.rot - 180 * r + ar, 1500 if self.cnt else 2500))
+            n.set_rotation(self.rot)
+            game.get_game().projectiles.append(n)
         if self.cnt == 0:
             self.cnt = 2
         else:
             self.cnt -= 1
-            return
-        for ar in range(-30, 31, 10):
-            n = projectiles.Projectiles.Excalibur((self.x + game.get_game().player.obj.pos[0] + vx * 200,
-                                                   self.y + game.get_game().player.obj.pos[1] + vy * 200),
-                                                  self.rot - r * 180 + ar)
-            n.obj.apply_force(vector.Vector(self.rot - 180 * r + ar, 3000))
-            n.set_rotation(self.rot)
-            game.get_game().projectiles.append(n)
+            self.timer //= 2
 
     def on_attack(self):
         self.rotate(int(-(self.timer - self.at_time / 2) * -15))
@@ -863,12 +868,11 @@ class TrueExcalibur(Blade):
             self.cnt = 3
         else:
             self.cnt -= 1
-            return
-        for ar in range(-80, 81, 8):
+        for ar in range(-80, 81, 8 if not self.cnt else 20):
             n = projectiles.Projectiles.TrueExcalibur((self.x + game.get_game().player.obj.pos[0] + vx * 200,
                                                        self.y + game.get_game().player.obj.pos[1] + vy * 200),
                                                       self.rot - r * 180 + ar)
-            n.obj.apply_force(vector.Vector(self.rot - 180 * r + ar, 2000))
+            n.obj.apply_force(vector.Vector(self.rot - 180 * r + ar, 2000 if self.cnt else 3500))
             n.set_rotation(self.rot)
             game.get_game().projectiles.append(n)
 
@@ -3299,7 +3303,7 @@ def set_weapons():
                                             1, 7, 50, 150),
         'excalibur': Excalibur('excalibur', {dmg.DamageTypes.PHYSICAL: 136, dmg.DamageTypes.MAGICAL: 98}, 0.8,
                                'items_weapons_excalibur',
-                               1, 6, 59, 180),
+                               1, 12, 59, 180),
         'remote_sword': RemoteWeapon('remote sword', {dmg.DamageTypes.PHYSICAL: 144}, 0.8,
                                       'items_weapons_remote_sword',
                                       1, 5, 72, 180, auto_fire=True),

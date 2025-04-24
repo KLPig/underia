@@ -16,7 +16,7 @@ class PlayerProfile:
         'fast_throw': ('Fast Throw', 'Key: Z\nSprint for a distance, \nthrow 3 projectiles of 3x damage.'),
         'perfect_shot': ('Perfect Shot', 'Key: X\nShoot a energy ammo with 5x damage.'),
         'healer': ('Healer', 'Key: Z\nHeal 10% max hp & 25% max mana.'),
-        'multi_user': ('Multi-User', 'Key: X\nUse the current weapon all in once for the mana cost.'),
+        'multi_user': ('Multi-User', 'Key: X\nUse the current weapon all in once for 50% of the mana cost.'),
 
         'melee_reinforce_i': ('Melee Reinforce I', '+10% melee damage\n-5% ranged damage\n-5% magic damage'),
         'melee_reinforce_ii': ('Melee Reinforce II', '+12% damage\n+5/sec regeneration'),
@@ -37,8 +37,8 @@ class PlayerProfile:
         'direct_bullet': ('Direct Bullet', 'Shoots bullet aiming a random enemy in range.'),
         'star_supporter': ('Star Supporter', 'A chance to drop stars when defeating enemies.'),
 
-        'wraith': ('The Wraith', 'Key: Z\nContinue for 8s:\n+80% melee damage\n+100 touching defense\n-80% speed'),
-        'guard': ('The Guard', 'Key: X\nSummon a shield to absorb 200HP for 10s.'),
+        'the_wraith': ('The Wraith', 'Key: Z\nContinue for 8s:\n+80% melee damage\n+100 touching defense\n-100% speed'),
+        'guard': ('The Guard', 'Key: X\nSummon a shield to absorb 1000HP for 3s.'),
         'storm_throw': ('Storm Throw', 'Key: Z\nThrow 10 projectiles of 5x damage.'),
         'energy_shot': ('Energy Shot', 'Key: X\nShoot a energy ammo with 10x damage.'),
     }
@@ -417,7 +417,7 @@ class PlayerProfile:
                 ['melee_reinforce_i', 'melee_reinforce_ii'],
                 ['melee_reinforce_iii', 'melee_reinforce_iv'],
                 ['sweeper'],
-                ['wraith', 'guard']
+                ['the_wraith', 'guard']
             ],
             [
                 ['ranged_demand'],
@@ -436,10 +436,10 @@ class PlayerProfile:
             ]
         ]
         select_skill = []
+        sel_tree = 0
         colours = [(255, 0, 255), (255, 255, 0), (0, 255, 255)]
         clock = pg.time.Clock()
         self.point_left += point
-        sr = 0
         sl = 3 if game.get_game().chapter == 0 else 6
         while True:
             keys = []
@@ -459,10 +459,14 @@ class PlayerProfile:
                     elif event.key == pg.K_z:
                         self.select_skill.extend(select_skill)
                         return
+                    elif event.key == pg.K_UP:
+                        sel_tree = (sel_tree + sl - 1) % sl
+                    elif event.key == pg.K_DOWN:
+                        sel_tree = (sel_tree + 1) % sl
                 elif event.type == pg.MOUSEBUTTONDOWN:
                     mouse.append(event.button)
             window.fill((0, 0, 0))
-            for i, r_c in enumerate(skills):
+            for i, r_c in [[1, skills[sel_tree]]]:
                 sy = window.get_height() * (i + 1) / 4
                 for j, c in enumerate(r_c):
                     if not j or len([1 for s in r_c[j - 1] if s in select_skill or s in self.select_skill]):
@@ -474,7 +478,7 @@ class PlayerProfile:
                         for s in c:
                             if s in select_skill:
                                 select_skill.remove(s)
-            for i, r_c in enumerate(skills):
+            for i, r_c in [[1, skills[sel_tree]]]:
                 sy = window.get_height() * (i + 1) / 4
                 for j, c in enumerate(r_c):
                     if not j or len([1 for s in r_c[j - 1] if s in select_skill or s in self.select_skill]):

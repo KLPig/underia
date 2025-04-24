@@ -25,7 +25,10 @@ class Displayer:
         self.effects: list[effects.Effect] = []
         font = path.get_path('assets/dtm-sans.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf')
         self.font = pg.font.Font(font, 32)
+        self.ffont = pg.font.Font(font, 72)
+        self.ffont.set_italic(True)
         self.font_mono = pg.font.Font('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf', 36)
+        self.font_mono.set_italic(True)
         self.font_s = pg.font.Font(font, 20)
         self.night_darkness_color = (127, 127, 0)
         self.lsw, self.lsh = 1600, 900

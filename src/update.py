@@ -2,14 +2,11 @@ import os
 
 import pygame as pg
 
-os.chdir("src/assets/graphics/items")
-import src.assets.graphics.items.convert_weapon as convert_weapon
+import assets.graphics.items.convert_weapon as convert_weapon
 
-os.chdir("../../..")
-import src.item_html as item_html
-import src.recipe_html as recipe_html
-import src.entity_html as entity_html
-import src.magic_html as magic_html
+os.chdir('src')
+
+import item_html, recipe_html, entity_html, magic_html
 
 pg.quit()
 print(f"Done. Modules {convert_weapon, item_html, recipe_html, entity_html, magic_html} updated.")

@@ -1371,7 +1371,8 @@ class Entities:
         def t_update(self):
             if not self.add_star:
                 self.add_star = True
-                if 'star_supporter' in game.get_game().player.profile.select_skill and type(self) is not Entities.DropItem and self.obj.IS_OBJECT:
+                if 'star_supporter' in game.get_game().player.profile.select_skill and type(self) is not Entities.DropItem and self.obj.IS_OBJECT and \
+                    not len([1 for l in self.LOOT_TABLE.loot_list if type(l) is IndividualLoot and l.item == 'star']):
                     self.LOOT_TABLE.loot_list.append(IndividualLoot('star', 0.2, 1, 1))
             if not self.show_boss and self.IS_MENACE and len(self.BOSS_NAME):
                 self.show_boss = True
@@ -1577,20 +1578,20 @@ class Entities:
 
         def on_update(self):
             super().on_update()
-            rd = random.randint(1000, 2000)
-            self.hp_sys(op='config', minimum_damage=rd, maximum_damage=rd + 100)
+            rd = random.randint(1, 2)
+            self.hp_sys(op='config', minimum_damage=rd, maximum_damage=rd + 3)
 
     class GreenChest(Chest):
         IMG = 'entity_green_chest'
         LOOT_TABLE = LootTable([
-            SelectionLoot([('iron', 10, 12), ('steel', 10, 12)], 1, 2),
+            SelectionLoot([('iron', 10, 12), ('steel', 10, 12)], 0, 2),
             IndividualLoot('leaf', 1, 10, 12),
-            IndividualLoot('platinum', 0.5, 20, 30),
-            SelectionLoot([('mana_flower', 1, 1), ('life_flower', 1, 1), ('star_amulet', 1, 1)], 0, 1),
-            SelectionLoot([('hermes_boots', 1, 1), ('lucky_clover', 1, 1), ('seed_amulet', 1, 1)], 0, 2),
-            IndividualLoot('fairy_wings', 0.2, 1, 1),
-            SelectionLoot([('purple_ring', 1, 1), ('cyan_ring', 1, 1), ('yellow_ring', 1, 1),
-                            ('green_ring', 1, 1), ('blue_ring', 1, 1), ('orange_ring', 1, 1)], 0, 3),
+            IndividualLoot('platinum', 0.2, 10, 20),
+            SelectionLoot([('mana_flower', 1, 1), ('life_flower', 0, 1), ('star_amulet', 1, 1)], 0, 1),
+            SelectionLoot([('hermes_boots', 0, 1), ('lucky_clover', 1, 1), ('seed_amulet', 1, 1)], 0, 2),
+            IndividualLoot('fairy_wings', 0.1, 1, 1),
+            SelectionLoot([('purple_ring', 0, 1), ('cyan_ring', 0, 1), ('yellow_ring', 0, 1),
+                            ('green_ring', 0, 1), ('blue_ring', 0, 1), ('orange_ring', 0, 1)], 0, 3),
         ])
         BIOMES = ['forest', 'rainforest']
 
@@ -1601,12 +1602,12 @@ class Entities:
     class RedChest(Chest):
         IMG = 'entity_red_chest'
         LOOT_TABLE = LootTable([
-            SelectionLoot([('platinum', 10, 12), ('magic_stone', 10, 12)], 1, 2),
+            SelectionLoot([('platinum', 3, 5), ('magic_stone', 10, 12)], 1, 2),
             IndividualLoot('firite_ingot', 0.5, 10, 12),
-            IndividualLoot('firy_plant', 0.8, 1, 2),
-            IndividualLoot('fireball_magic', 0.3, 1, 1),
+            IndividualLoot('firy_plant', 0.4, 1, 4),
+            IndividualLoot('fireball_magic', 0.1, 1, 1),
             SelectionLoot([('fire_gloves', 1, 1), ('quenched_cross', 1, 1), ('lava_walker', 1, 1)], 0, 2),
-            IndividualLoot('obsidian', 0.6, 12, 20),
+            # IndividualLoot('obsidian', 0.6, 12, 20),
         ])
         BIOMES = ['hell']
         TOUGHNESS = 7
@@ -1619,12 +1620,12 @@ class Entities:
     class WhiteChest(Chest):
         IMG = 'entity_white_chest'
         LOOT_TABLE = LootTable([
-            SelectionLoot([('steel', 10, 12), ('magic_stone', 10, 12)], 1, 2),
-            SelectionLoot([('coniferous_leaf', 100, 200), ('snowball', 100, 200)], 0, 2),
-            IndividualLoot('platinum', 0.5, 20, 30),
-            SelectionLoot([('white_guard', 1, 2), ('snowstorm_bottle', 1, 1), ('snow_wings', 1, 1)], 0, 1),
-            SelectionLoot([('purple_ring', 1, 1), ('cyan_ring', 1, 1), ('yellow_ring', 1, 1),
-                            ('green_ring', 1, 1), ('blue_ring', 1, 1), ('orange_ring', 1, 1)], 0, 2),
+            SelectionLoot([('steel', 10, 12), ('magic_stone', 10, 12)], 0, 2),
+            SelectionLoot([('coniferous_leaf', 100, 200), ('snowball', 100, 200)], 0, 1),
+            IndividualLoot('platinum', 0.2, 10, 30),
+            SelectionLoot([('white_guard', 1, 2), ('snowstorm_bottle', 1, 1), ('snow_wings', 0, 1)], 0, 1),
+            SelectionLoot([('purple_ring', 0, 1), ('cyan_ring', 0, 1), ('yellow_ring', 0, 1),
+                            ('green_ring', 0, 1), ('blue_ring', 0, 1), ('orange_ring', 0, 1)], 0, 3),
         ])
         BIOMES = ['snowland']
         TOUGHNESS = 4
@@ -1637,10 +1638,10 @@ class Entities:
     class OrangeChest(Chest):
         IMG = 'entity_orange_chest'
         LOOT_TABLE = LootTable([
-            SelectionLoot([('platinum', 10, 12), ('mana_crystal', 3, 5)], 1, 2),
+            SelectionLoot([('platinum', 10, 12), ('mana_crystal', 1, 3)], 1, 2),
             IndividualLoot('copper', 1, 10, 12),
-            IndividualLoot('mysterious_substance', 0.5, 20, 30),
-            SelectionLoot([('rune_cross', 1, 1), ('rune_eye', 1, 1), ('rune_gloves', 1, 1)], 0, 2),
+            IndividualLoot('mysterious_substance', 0.1, 10, 30),
+            SelectionLoot([('rune_cross', 1, 1), ('rune_eye', 1, 1), ('rune_gloves', 1, 1)], 0, 1),
             IndividualLoot('nice_cream', 0.3, 5, 12),
             ])
         BIOMES = ['desert']
@@ -1654,9 +1655,9 @@ class Entities:
     class BlueChest(Chest):
         IMG = 'entity_blue_chest'
         LOOT_TABLE = LootTable([
-            SelectionLoot([('platinum', 10, 12), ('magic_stone', 10, 12)], 1, 2),
-            SelectionLoot([('iron_donut', 1, 10), ('heart_pie', 1, 10)], 0, 1),
-            IndividualLoot('obsidian', 0.6, 12, 20),
+            SelectionLoot([('platinum', 20, 32), ('magic_stone', 10, 12)], 1, 2),
+            # SelectionLoot([('iron_donut', 1, 10), ('heart_pie', 1, 10)], 0, 1),
+            # IndividualLoot('obsidian', 0.6, 12, 20),
         ])
         BIOMES = ['heaven']
         TOUGHNESS = 7
@@ -2714,7 +2715,8 @@ class Entities:
             IndividualLoot('tornado', 0.5, 1, 1),
             IndividualLoot('tip4', 1, 1, 1),
         ])
-
+        VITAL = True
+        PHASE_SEGMENTS = [0.5]
         SOUND_SPAWN = 'boss'
         SOUND_HURT = 'skeleton'
         SOUND_DEATH = 'huge_monster'
@@ -2728,13 +2730,14 @@ class Entities:
             self.obj.update()
             self.tick = 0
             self.phase = 0
-            self.obj.pos = (self.obj.pos[0] + random.randint(-100, 100), self.obj.pos[1] + random.randint(-100, 100))
+            self.obj.pos = (pos[0] + random.randint(-100, 100), pos[1] + random.randint(-100, 100))
             self.obj.IS_OBJECT = False
 
         def on_update(self):
             super().on_update()
             self.tick += 1
-            if self.tick % (8 if self.obj.state == 0 else (5 if self.obj.state == 2 else 8000)) == 1:
+            dr = self.phase * 3
+            if self.tick % (8 - dr if self.obj.state == 0 else (5 - dr if self.obj.state == 2 else 8000)) == 1:
                 px, py = game.get_game().player.obj.pos
                 rot = vector.coordinate_rotation(px - self.obj.pos[0], py - self.obj.pos[1])
                 self.set_rotation(rot)
@@ -3518,6 +3521,7 @@ class Entities:
         LOOT_TABLE = LootTable([
             IndividualLoot('soul', 0.9, 1, 2),
         ])
+        VITAL = True
 
         def __init__(self, pos, rot, dis, hp=10000, ar=6):
             super().__init__(pos, game.get_game().graphics['entity_abyss_rune'], AbyssRuneAI, hp)

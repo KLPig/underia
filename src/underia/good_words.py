@@ -21,4 +21,5 @@ WORDS = [
     'upperia',
     '石',
     '他帮我评价Underia',
+    '这下不得不玩了',
 ]

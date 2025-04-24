@@ -518,9 +518,11 @@ class Game:
                              (x + 400 - int(t_l * pc_p), y - 120, int(t_l * pc_p), 40))
                 pg.draw.rect(self.displayer.canvas, (242, 166, 94),
                                  (x + 400 - t_l, y - 120, t_l, 40), width=8, border_radius=3)
-                tf = self.displayer.font.render(str(int(t_p * 100)) + '%', True, (0, 0, 0))
-                tf = pg.transform.scale_by(tf, 2.4)
+                tf = self.displayer.ffont.render(str(int(t_p * 100)) + '%', True, (0, 0, 0))
                 tfr = tf.get_rect(midright=(x + 400 - 10, y - 100))
+                self.displayer.canvas.blit(tf, tfr)
+                tf = self.displayer.ffont.render(str(int(t_p * 100)) + '%', True, (255, 255, 255))
+                tfr = tf.get_rect(midright=(x + 400 - 15, y - 105))
                 self.displayer.canvas.blit(tf, tfr)
                 pg.draw.rect(self.displayer.canvas, (227, 105, 86),
                                  (x - 400, y - 50, 800, 60))

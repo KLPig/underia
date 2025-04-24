@@ -1112,17 +1112,17 @@ class Player:
             sk_z = 'healer' if 'healer' in self.profile.select_skill else None
             sk_x = 'multi_user' if'multi_user' in self.profile.select_skill else None
             sk_c = None
-            cdd = 300, 120, 0
+            cdd = 500, 320, 0
             rc = (255, 0, 255)
         elif inventory.TAGS['bow'] in inventory.ITEMS[w.name.replace(' ', '_')].tags or inventory.TAGS['gun'] in \
              inventory.ITEMS[w.name.replace(' ', '_')].tags or inventory.TAGS['knife'] in inventory.ITEMS[w.name.replace(' ', '_')].tags:
-            sk_z = 'fast_throw' if 'fast_throw' in self.profile.select_skill else None
-            sk_x = 'perfect_shot' if 'perfect_shot' in self.profile.select_skill else None
+            sk_z = 'storm_throw' if 'storm_throw' in self.profile.select_skill else ('fast_throw' if 'fast_throw' in self.profile.select_skill else None)
+            sk_x = 'energy_shot' if 'energy_shot' in self.profile.select_skill else 'perfect_shot' if 'perfect_shot' in self.profile.select_skill else None
             sk_c = None
             cdd = 80, 30, 0
             rc = (255, 255, 0)
         elif inventory.TAGS['melee_weapon'] in inventory.ITEMS[w.name.replace(' ', '_')].tags:
-            sk_z = 'the_fury' if 'the_fury' in self.profile.select_skill else None
+            sk_z = 'the_wraith' if 'the_wraith' in self.profile.select_skill else ('the_fury' if 'the_fury' in self.profile.select_skill else None)
             sk_x = 'warrior_shield' if 'warrior_shield' in self.profile.select_skill else None
             sk_c = None
             cdd = 360, 250, 0
@@ -1182,10 +1182,15 @@ class Player:
             self.cd_z -= 1
         elif sk_z is not None and pg.K_z in game.get_game().get_keys():
             if sk_z == 'fast_throw':
-                self.obj.velocity.add(vector.Vector(self.obj.velocity.get_net_rotation(), 30 * self.obj.SPEED / self.obj.MASS))
                 self.hp_sys.effect(effects.FastThrow(.4, 1))
+                self.obj.velocity.add(vector.Vector(self.obj.velocity.get_net_rotation(), 200 / self.obj.FRICTION))
+            elif sk_z == 'storm_throw':
+                self.hp_sys.effect(effects.StormThrow(.5, 1))
+                self.obj.velocity.add(vector.Vector(self.obj.velocity.get_net_rotation(), 500 / self.obj.FRICTION))
             elif sk_z == 'the_fury':
                 self.hp_sys.effect(effects.TheFury(6, 1))
+            elif sk_z == 'the_wraith':
+                self.hp_sys.effect(effects.TheWraith(8, 1))
             elif sk_z == 'healer':
                 self.hp_sys.heal(self.hp_sys.max_hp / 10)
                 self.mana = max(min(self.mana + self.max_mana / 4, self.max_mana), self.mana)
@@ -1202,12 +1207,23 @@ class Player:
                 w.attack()
                 self.ammo = am1
                 self.ammo_bullet = am2
+            elif sk_x == 'energy_shot':
+                am1 = self.ammo
+                am2 = self.ammo_bullet
+                self.ammo = ('eenergy_arrow', 1)
+                self.ammo_bullet = ('eenergy_arrow', 1)
+                w.attack()
+                self.ammo = am1
+                self.ammo_bullet = am2
             elif sk_x == 'warrior_shield':
                 self.hp_sys.effect(effects.WarriorShield(4, 1))
                 self.hp_sys.shields.append(('war', 1))
+            elif sk_x == 'guard':
+                self.hp_sys.effect(effects.Guard(3, 1))
+                self.hp_sys.shields.append(('gua', 1))
             elif sk_x == 'multi_user':
                 mc = self.mana
-                mmc = self.max_mana // w.mana_cost
+                mmc = self.max_mana // 2 // w.mana_cost
                 for _ in range(mmc):
                     self.mana = self.max_mana
                     w.attack()
@@ -1218,7 +1234,6 @@ class Player:
             self.cd_c -= 1
         te = [e for e in self.hp_sys.effects if type(e) is effects.FastThrow]
         if len(te):
-            self.obj.velocity.add(vector.Vector(self.obj.velocity.get_net_rotation(), 3 * self.obj.SPEED / self.obj.MASS))
             if te[0].tick in [4, 8, 12] and sk_z == 'fast_throw':
                 if 'throwing' in dir(w):
                     w.throwing = True
@@ -1250,6 +1265,40 @@ class Player:
                              position.displayed_position(ps2[i]),
                              position.displayed_position(ps2[i + 1]),
                              width=int((30 - i * 20 / len(ps1)) / self.get_screen_scale()))
+        te = [e for e in self.hp_sys.effects if type(e) is effects.StormThrow]
+        if len(te):
+            if te[0].tick in [3, 6, 9, 12] and sk_z == 'storm_throw':
+                if 'throwing' in dir(w):
+                    w.throwing = True
+                w.attack()
+            for e in game.get_game().entities:
+                if vector.distance(self.obj.pos[0] - e.obj.pos[0], self.obj.pos[1] - e.obj.pos[1]) < 500:
+                    if not e.hp_sys.is_immune:
+                        e.hp_sys.damage(w.damages[damages.DamageTypes.PIERCING] * self.attack * self.attacks[1],
+                                        damages.DamageTypes.PIERCING)
+                        e.hp_sys.enable_immume()
+            vr = 180 - self.obj.velocity.get_net_rotation()
+            sp = int(te[0].tick * 50 * self.obj.SPEED / self.obj.MASS)
+            ps1 = []
+            ps2 = []
+            for i in range(0, sp, 1):
+                d = i / 5
+                vx, vy = vector.rotation_coordinate(-vr)
+                vdx, vdy = vector.rotation_coordinate(90 - vr)
+                ar = te[0].tick / 3 + d / 20
+                ps1.append((self.obj.pos[0] + vx * d + math.sin(ar) * vdx * (sp / 4.5 - d) / 8,
+                            self.obj.pos[1] + vy * d + math.sin(ar) * vdy * (sp / 4.5 - d) / 8))
+                ps2.append((self.obj.pos[0] + vx * d - math.sin(ar) * vdx * (sp / 4.5 - d) / 8,
+                            self.obj.pos[1] + vy * d - math.sin(ar) * vdy * (sp / 4.5 - d) / 8))
+            for i in range(len(ps1) - 1):
+                draw.line(game.get_game().displayer.canvas, self.profile.get_color(),
+                          position.displayed_position(ps1[i]),
+                          position.displayed_position(ps1[i + 1]),
+                          width=int((30 - i * 20 / len(ps1)) / self.get_screen_scale()))
+                draw.line(game.get_game().displayer.canvas, self.profile.get_color(),
+                          position.displayed_position(ps2[i]),
+                          position.displayed_position(ps2[i + 1]),
+                          width=int((30 - i * 20 / len(ps1)) / self.get_screen_scale()))
         if len([1 for e in self.hp_sys.effects if type(e) is effects.WarriorShield]):
             if len([1 for s, t in self.hp_sys.shields if s == 'war']):
                 pg.draw.circle(game.get_game().displayer.canvas, (0, 255, 255),
@@ -1258,6 +1307,14 @@ class Player:
                                int(100 / self.get_screen_scale()))
         else:
             self.hp_sys.shields = [(s, t) for s, t in self.hp_sys.shields if s != 'war']
+        if len([1 for e in self.hp_sys.effects if type(e) is effects.Guard]):
+            if len([1 for s, t in self.hp_sys.shields if s == 'gua']):
+                pg.draw.circle(game.get_game().displayer.canvas, (0, 255, 255),
+                               position.displayed_position(self.obj.pos),
+                               int(5 / self.get_screen_scale()),
+                               int(100 / self.get_screen_scale()))
+        else:
+            self.hp_sys.shields = [(s, t) for s, t in self.hp_sys.shields if s != 'gua']
         for i in range(len(self.weapons)):
             if i % len(self.weapons) == 0 and i:
                 break

@@ -1,20 +1,6 @@
-# /// script
-# dependencies = [
-#  "pygame",
-#  "pickle",
-#  "perlin_noise",
-#  "underia",
-#  "legend",
-#  "resources",
-#  "visual",
-#  "physics",
-#  "values",
-#  "visual",
-#  "modloader",
-#  "saves_chooser",
-# ]
-# ///
-import copy
+# Underia
+# Copyright (c) KLpig 2025, under the BSD 2-Clause License
+# For more information, see ./LICENSE
 import os
 import pickle
 import pygame as pg
