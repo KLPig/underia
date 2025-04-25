@@ -1,136 +1,180 @@
-:root {
-    text-align: center;
-    background-color: #f2f2f2;
-    font-family: monospace, Arial, sans-serif;
+/* styles.css */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
 }
 
 h1 {
-    background-color: #f2f2f2;
+    color: #333;
+    text-align: center;
+    margin-top: 20px;
 }
 
-h1: hover {
-    background-color: #e6e6e6;
+h2 {
+    color: #333;
+    margin: 0;
 }
 
 table {
-    background-color: #fff;
-    border-collapse: collapse;
-    margin: 0 auto;
     width: 80%;
+    margin: 20px auto;
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
-tr {
-    border: 5px solid #ddd;
-    padding: 10px;
-    margin: 5px;
-}
-
-img {
-    width: 90px;
-    height: auto;
-    margin: 10px;
-}
-
-item {
-    width: 100%;
-    max-width: 100px;
+th, td {
+    padding: 8px;
     text-align: center;
-    margin: 0px;
-    padding: 0px;
-    height: 110px;
+    width: 8svw;
 }
 
-img:hover {
-    background-color: #e6e6e6;
-}
-.item.main {
-    background-color: #eee;
-}
-
-h2, p.desc {
-    text-align: left;
-    margin: 10px;
-    padding: 0px;
-    background-color: #fff;
-}
-
-drop {
-    display: inline-block;
-    background-color: #fff;
-    border: 2px dashed #ccc;
-    border-radius: 5px;
-    padding: 10px;
-    margin: 10px;
-    width: 100%;
-    text-align: center;
+th.header-class {
+    background-color: #4CAF50;
+    color: white;
     cursor: pointer;
+    padding: 12px;
 }
 
-td:not(:first-child).rec {
-    min-width: 200px;
-    text-align: left;
+tr.item-row {
+    background-color: #fff;
+    cursor: pointer;
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 10px; /* 行之间有间隔 */
+    display: block; /* 确保行之间有间隔 */
+    overflow: auto;
+    max-width: 100svw; /* 限制最大宽度 */
+}
+
+tr.item-row:hover {
+    background-color: #e0e0e0;
+}
+
+.item {
     display: inline-block;
+    text-align: center;
 }
 
-td:first-child.rec {
-    width: 200px;
+.item img {
+    max-width: 100px;
+    height: auto;
 }
 
-tr {
-    overflow: auto;
+.amount {
+    margin: 5px 0 0 0;
+    font-size: 14px;
 }
 
-.header-class {
-    background-color: #f2f2f2;
-    height: 50px;
+/* 主要项目样式 */
+td.rec:first-child div.item.main {
+    border-right: none;
+    padding: 20px;
+    background-color: #f8f8f8; /* 更深的背景颜色 */
 }
 
-.header-class:hover {
-    background-color: #e6e6e6;
+td.rec:first-child div.item.main:hover {
+    background-color: #e0e0e0;
 }
 
-.header {
-    position: sticky;
-    top: 0;
+/* 常规项目样式 */
+td.rec:not(:first-child) div.item.regular {
+    background-color: #fff;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-left: none; /* 避免左边重复边框 */
 }
 
-.materials {
-    overflow: auto;
-    max-width: 80%;
+td.rec:not(:first-child) div.item.regular:hover {
+    background-color: #d0d0d0;
 }
 
-tr {
-    overflow: auto;
-    max-width: calc(max(100svw, 100vw));
+.desc {
+    color: #3f3f3f;
+    font-size: 14px;
+    margin-top: 10px;
+    text-align: left; /* 描述文本左对齐 */
 }
 
-input, button {
-    box-sizing: border-box;
-    padding: 10px;
-    margin: 5px;
-    border: none;
-    border-radius: 5px;
-    background-color: #f2f2f2;
-    color: #333;
-    font-size: 16px;
-    font-family: monospace, Arial, sans-serif;
-}
-
-input:hover, button:hover {
-    background-color: #e6e6e6;
-}
-
-.filter-container {
-    border: 2px solid #ccc;
-    background-color: #f2f2f2;
-}
-
-a:visited, a:link {
-    color: #333;
+a {
+    color: #03A9F4;
     text-decoration: none;
 }
 
 a:hover {
-    color: #000;
     text-decoration: underline;
+}
+
+/* 为header部分添加一些样式 */
+.header {
+    width: 100%;
+    background-color: #f8f8f8;
+    border-bottom: 2px solid #ddd;
+}
+
+.header th {
+    padding: 15px;
+}
+
+.header td {
+    padding: 10px;
+}
+
+.header h1 {
+    margin: 0;
+}
+
+/* 确保行的第一项突出 */
+tr.item-row td:first-child {
+    background-color: #f0f0f0; /* 更深的背景颜色 */
+    border-left: 2px solid #4CAF50; /* 突出的左边框 */
+}
+
+tr.item-row td:first-child:hover {
+    background-color: #e0e0e0;
+}
+
+img {
+    max-width: 8svw;
+}
+
+
+img:not(.imge) {
+    width: 4svw;
+}
+
+
+/* 确保过滤容器样式正确 */
+.filter-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #fff;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.filter-container form {
+    display: inline-block;
+}
+
+.filter-container input[type="text"] {
+    padding: 5px;
+    font-size: 14px;
+    margin-right: 10px;
+}
+
+.filter-container button {
+    padding: 5px 10px;
+    font-size: 14px;
+    border: none;
+    background-color: #03A9F4;
+    color: white;
+    cursor: pointer;
+}
+
+.filter-container button:hover {
+    background-color: #0288d1;
 }

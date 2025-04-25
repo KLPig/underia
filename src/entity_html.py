@@ -22,8 +22,9 @@ f += "<table>"
 img_str = ("<td><div class='item %s drop' id='%s-%s' onclick='location.href=\"./items.html#%s-main\"'"
            "> <img src='assets/graphics/items/%s.png'/> <p class='amount'>%s</p> </div></td>")
 
-entity_str = "<div class='entity' id='%s'><img src='assets/graphics/entity/%s.png'/> <p class='amount'>%s</p></div>"
+entity_str = "<div class='entity' id='%s'><img class='imge' src='assets/graphics/entity/%s.png'/> <p class='amount'>%s</p></div>"
 
+'''
 ets = [
     'Tree', 'Cactus', 'ConiferousTree', 'HugeTree', 'TreeMonster', 'ClosedBloodflower', 'FluffBall', 'HeavenGuard',
     'Eye', 'Bloodflower', 'RedWatcher', 'Star',
@@ -35,9 +36,9 @@ ets = [
     'TimeTrap', 'TimeFlower', 'Molecules', 'TitaniumIngot',
     'CLOCK', 'MATTER', 'SunEye', 'MoonEye', 'ScarlettPillar', 'HolyPillar',
     'ReincarnationTheWorldsTree', 'Faith', 'OmegaFlowery'
-]
+]'''
 
-# ets = dir(underia.Entities)
+ets = dir(underia.Entities)
 
 
 for entity in ets:
@@ -46,7 +47,8 @@ for entity in ets:
     except TypeError:
         continue
     try:
-        f += "<tr><td>%s</td>\n" % (entity_str % (entity, e.NAME.lower().replace(' ', '_'),
+        ss = [k.removeprefix('entity_') for k, v in game.graphics.graphics.items() if v == e.img]
+        f += "<tr><td>%s</td>\n" % (entity_str % (entity, ss[0] if len(ss) else 'null',
                                                   e.NAME + '<br>' + str(int(e.hp_sys.max_hp)) + ' HP<br>' +
                                                   (f'{e.obj.TOUCHING_DAMAGE} AT ' if e.obj.TOUCHING_DAMAGE else ' ') +
                                                   f'{int(e.hp_sys.defenses[values.DamageTypes.PHYSICAL] +
@@ -63,5 +65,5 @@ for entity in ets:
         pass
 f += "</table></body></html>"
 
-with open("../docs/entities.html", "w") as ff:
+with open("../docs/entities.html", "w", encoding='utf-8') as ff:
     ff.write(f)

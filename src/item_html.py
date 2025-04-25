@@ -38,5 +38,5 @@ for _, item in underia.ITEMS.items():
 
 f += "</table>\n<script src='./item_js.js'></script>\n</body></html>"
 
-with open("../docs/items.html", "w") as ff:
+with open("../docs/items.html", "w", encoding='utf-8') as ff:
     ff.write(f)

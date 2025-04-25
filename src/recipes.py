@@ -6,7 +6,7 @@ pg.init()
 pg.display.set_mode((1, 1))
 
 recipes = underia.RECIPES
-img = pg.display.set_mode((800, 80 * len(recipes)))
+img = pg.Surface((1600, 80 * len(recipes)))
 game = underia.Game()
 underia.write_game(game)
 game.setup()

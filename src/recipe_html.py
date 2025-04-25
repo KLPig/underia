@@ -37,5 +37,5 @@ for recipe in recipes:
     f += "</tr>\n"
 f += "</table>\n<script src='recipe_js.js'></script>\n</body></html>"
 
-with open("../docs/recipes.html", "w") as ff:
+with open("../docs/recipes.html", "w", encoding="utf-8") as ff:
     ff.write(f)

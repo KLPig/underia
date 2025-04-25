@@ -61,12 +61,10 @@ class Displayer:
 
     def reflect(self, window_x: float, window_y: float) -> tuple[int, int]:
         window = pg.display.get_surface()
-
-        scale = min(window.get_width() / self.SCREEN_WIDTH, window.get_height() / self.SCREEN_HEIGHT)
-
+        scale = min(window.get_width() / self.SCREEN_WIDTH,
+                    window.get_height() / self.SCREEN_HEIGHT)
         canvas_x = int((window_x - self.blit_pos[0]) / scale)
         canvas_y = int((window_y - self.blit_pos[1]) / scale)
-
         return canvas_x, canvas_y
 
     def night_darkness(self):

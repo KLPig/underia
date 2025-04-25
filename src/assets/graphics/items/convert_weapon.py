@@ -3,6 +3,8 @@ import os
 import pygame as pg
 
 
+print('Converting weapons...')
+
 def convert_weapon(weapon_img):
     im = pg.image.load(weapon_img)
     im = pg.transform.rotate(im, -45)

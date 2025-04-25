@@ -42,5 +42,5 @@ for magic in magics:
 
 f += "</table></body></html>"
 
-with open("../docs/magic.html", "w") as ff:
+with open("../docs/magic.html", "w", encoding='utf-8') as ff:
     ff.write(f)
