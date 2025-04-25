@@ -13,6 +13,10 @@ if not constants.WEB_DEPLOY:
     import saves_chooser, modloader
 from underia import good_words
 
+if os.path.exists(resources.get_save_path('settings.uset')):
+    with open(resources.get_save_path('settings.uset'), 'rb') as f:
+        constants.load_settings(pickle.load(f))
+
 pg.init()
 random.seed(time.time())
 pg.display.set_mode((1600, 900), constants.FLAGS)
@@ -486,6 +490,9 @@ else:
                 delattr(obj, attr)
             except AttributeError:
                 print(f"Attribute {attr} not found in object {obj}")
+
+        with open(resources.get_save_path('settings.uset'), 'wb') as f:
+            f.write(pickle.dumps(constants.dump_settings()))
 
         if not constants.WEB_DEPLOY:
             try_delete_attribute(game, "displayer")

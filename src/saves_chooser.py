@@ -3,7 +3,7 @@ import math
 import os
 import pygame as pg
 import constants
-
+from underia import settings
 from resources import path
 import underia
 import pickle
@@ -61,6 +61,8 @@ def choose_save():
                 if event.key == pg.K_ESCAPE:
                     pg.quit()
                     return cmds, None
+                elif event.key == pg.K_s:
+                    settings.set_settings()
                 elif event.key == pg.K_UP:
                     if n != -1:
                         n = (n - 1 + len(selects)) % len(selects)

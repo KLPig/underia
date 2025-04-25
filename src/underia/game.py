@@ -8,6 +8,7 @@ import pygame as pg
 import resources, visual, constants, physics, web
 from underia import player, entity, projectiles, weapons, inventory, dialog, styles
 import perlin_noise
+import underia.settings as settings
 
 MUSICS = {
     'lantern': ['snowland1', 'snowland0', 'heaven1', 'heaven0', 'forest0', 'rainforest0', 'desert0'],
@@ -600,6 +601,10 @@ class Game:
                     text_rect = text.get_rect(center=(window.get_rect().centerx,
                                                       window.get_rect().centery + 80))
                     window.blit(text, text_rect)
+                    text = font.render('[S] for settings', True, (255, 255, 255))
+                    text_rect = text.get_rect(center=(window.get_rect().centerx,
+                                                      window.get_rect().centery + 160))
+                    window.blit(text, text_rect)
                     pg.display.flip()
                     paused = True
                     while paused:
@@ -619,6 +624,8 @@ class Game:
                                         self.server = web.SocketServer()
                                         loop = asyncio.get_event_loop()
                                         loop.create_task(self.server.start_server())
+                                elif ev.key == pg.K_s:
+                                    settings.set_settings()
                         pg.display.update()
                     self.pressed_mouse = []
                     self.pressed_keys = []
