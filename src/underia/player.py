@@ -89,7 +89,7 @@ class Player:
         self.weapons = 4 * [weapons.WEAPONS['null']]
         self.sel_weapon = 0
         self.inventory = inventory.Inventory()
-        self.accessories = 6 * ['null']
+        self.accessories = 10 * ['null']
         self.sel_accessory = 0
         self.open_inventory = False
         self.attack = 0
@@ -1176,7 +1176,8 @@ class Player:
                     game.get_game().projectiles.append(projectiles.Projectiles.DirectBullet(self.obj.pos, rt, 0,
                                                                                             self.weapons[self.sel_weapon].damages[damages.DamageTypes.PIERCING] / 10))
         if 'sweeper' in self.profile.select_skill:
-            if rc == (0, 255, 255) and not self.weapons[self.sel_weapon].cool:
+            if (rc == (0, 255, 255) and not self.weapons[self.sel_weapon].cool and not self.open_inventory and
+                    0 not in game.get_game().get_pressed_mouse()):
                 self.weapons[self.sel_weapon].attack()
         if self.cd_z:
             self.cd_z -= 1

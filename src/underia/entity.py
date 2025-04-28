@@ -2082,6 +2082,7 @@ class Entities:
             super().__init__(pos, 12, game.get_game().graphics['entity_fluffball'],
                              game.get_game().graphics['entity_fluffff'], FluffBallAI,
                              18000, 130, 40)
+            self.body[0].obj.SIGHT_DISTANCE = 9999
 
     class TrueEye(Entity):
         NAME = 'True Eye'

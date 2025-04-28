@@ -251,7 +251,7 @@ class PlayerProfile:
              'Let\'s do it.'],
             ['Are you here again?', 'Why are you here?', '...', 'Well, let\'s don\'t talk about it first.',
              'Again, you will get some \'AWARD\'.', 'Let\'s do it.'],
-            ['Hello, again, SOUL COLLECTOR.', 'You may find some tips before, ..', '.. but you won\'t find any now.',
+            ['Hello, again.', 'You may find some tips before, ..', '.. but you won\'t find any now.',
              'You know why?', '.. as you are SPECIAL.', 'Nobody will process your path like YOU do.', '...',
              'However, \'CHOOSE\' for your soul.'],
             ['Heya.', 'I know your name, CHARA, right?', 'You probably killed that deformed flower.',
@@ -265,6 +265,7 @@ class PlayerProfile:
             ['...', 'This is the \'adventure\'.', 'In a story, we will have the adventurer and the evil dragon.',
              '...', 'And also, get enough power from that flower.', 'You know what I\'m talking about.', '...anyway.'],
             ['...', '...anyway.'],
+            ['...', 'Let\'s change a new "scene".']
         ]
         if not t:
             self.point_wisdom = 0
@@ -286,6 +287,8 @@ class PlayerProfile:
             game.get_game().player.inventory.items = {}
             game.get_game().player.accessories = 6 * ['null']
             game.get_game().player.weapons = 4 * [weapons.WEAPONS['null']]
+            game.get_game().player.ammo = ('null', 0)
+            game.get_game().player.ammo_bullet = ('null', 0)
             game.get_game().decors.clear()
             game.get_game().entities.clear()
             game.get_game().projectiles.clear()

@@ -435,7 +435,7 @@ class Game:
                         e.play_sound('enemydust')
                 loots = e.LOOT_TABLE()
                 for item, amount in loots:
-                    k = random.randint(self.ITEM_SPLIT_MIN, min(self.ITEM_SPLIT_MAX, amount))
+                    k = random.randint(self.ITEM_SPLIT_MIN, min(self.ITEM_SPLIT_MAX, amount) + 1)
                     for i in range(k):
                         self.drop_items.append(entity.Entities.DropItem((e.obj.pos[0] + random.randint(-10, 10),
                                                                          e.obj.pos[1] + random.randint(-10, 10)),

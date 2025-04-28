@@ -256,8 +256,7 @@ class Projectiles:
                 if self.tick % self.EFF_INTERVAL == 1:
                     game.get_game().displayer.effect(particle_effects.p_particle_effects(*position.displayed_position(self.obj.pos),
                                                                                          n=12, t=12, r=20 / game.get_game().player.get_screen_scale(), col=self.COL,
-                                                                                         sp=10 / game.get_game().player.get_screen_scale(),
-                                                     ))
+                                                                                         sp=10 / game.get_game().player.get_screen_scale(),))
             imr = self.d_img.get_rect(center=self.obj.pos)
             if not game.get_game().displayer.canvas.get_rect().collidepoint(position.displayed_position(self.obj.pos)):
                 self.dead = True
@@ -1278,6 +1277,15 @@ class Projectiles:
         DMG_TYPE = damages.DamageTypes.PIERCING
         FACE_TO_MOUSE = True
 
+    class WilsonKnife(Beam):
+        WIDTH = 80
+        LENGTH = 3200
+        DAMAGE_AS = 'wilson_knife'
+        COLOR = (127, 255, 0)
+        DURATION = 20
+        DMG_TYPE = damages.DamageTypes.PHYSICAL
+        FACE_TO_MOUSE = True
+
     class ForwardBowHuge(ForwardBow):
         WIDTH = 60
         DURATION = 12
@@ -1757,6 +1765,25 @@ class Projectiles:
             self.img = pg.transform.scale_by(game.get_game().graphics['projectiles_nights_edge'],
                                              min(4.0, 0.3 * 1.15 ** self.tick))
             self.rotate(self.tick * 14)
+
+    class WilsonKnifeCut(NightsEdge):
+        DAMAGE_AS = 'wilson_knife'
+        IMG = 'projectiles_wilson_sword_cut'
+        DMG_RATE = 0.8
+        DMG_TYPE = damages.DamageTypes.PHYSICAL
+        COL = (200, 255, 100)
+
+        def update(self):
+            super().update()
+            self.tick += 1
+            if self.tick > 100:
+                self.dead = True
+            else:
+                self.dead = False
+            self.img = pg.transform.scale_by(game.get_game().graphics['projectiles_wilson_sword_cut'],
+                                             min(2.0, 0.3 * 1.12 ** self.tick))
+            self.rotate(self.tick * 18)
+            self.obj.velocity.reset(1.1)
 
     class BloodWand(PlatinumWand):
         DAMAGE_AS = 'blood_wand'

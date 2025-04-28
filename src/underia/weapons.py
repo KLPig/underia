@@ -919,6 +919,25 @@ class TrueNightsEdge(Blade):
         super().on_attack()
         self.cutting_effect(8, (100, 0, 100), (255, 100, 127))
 
+class WilsonKnifeBlade(Blade):
+    def on_start_attack(self):
+        super().on_start_attack()
+        mx, my = position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
+        rot = vector.coordinate_rotation(mx, my)
+        game.get_game().projectiles.append(projectiles.Projectiles.WilsonKnifeCut(game.get_game().player.obj.pos, rot))
+
+    def on_attack(self):
+        super().on_attack()
+        self.cutting_effect(8, (50, 50, 50), (200, 255, 100))
+
+class WilsonKnifeSpear(Spear):
+    def on_start_attack(self):
+        super().on_start_attack()
+        mx, my = position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
+        rot = vector.coordinate_rotation(mx, my)
+        game.get_game().projectiles.append(projectiles.Projectiles.WilsonKnife(game.get_game().player.obj.pos, rot))
+
+
 class MillenniumPersistSweep(SweepWeapon):
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, rot_speed: int,
                  st_pos: int, double_sided: bool = False):
@@ -3392,6 +3411,9 @@ def set_weapons():
                                              300, auto_fire=True, combat=[0, 0, 0, 0, 1, 1], sweep_type=MillenniumPersistSweep),
         'metal_hand': Spear('metal hand', {dmg.DamageTypes.PHYSICAL: 3200}, 1.2, 'items_weapons_metal_hand',
                             2, 8, 80, 400, auto_fire=True),
+        'wilson_knife': ComplexWeapon('wilson knife', {dmg.DamageTypes.PHYSICAL: 120}, {dmg.DamageTypes.PHYSICAL: 450},
+                                      3, 'items_weapons_wilson_knife', 1, 7, 7, 50, 200, 60, 200,
+                                      auto_fire=True, combat=[1, 1, 1, 1, 0], sweep_type=WilsonKnifeBlade, spear_type=WilsonKnifeSpear),
 
         'zenith': Zenith('zenith', {dmg.DamageTypes.PHYSICAL: 2999, dmg.DamageTypes.THINKING: 3999}, 10, 'items_weapons_zenith',
                         0, 6, 50, 200),

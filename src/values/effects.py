@@ -412,6 +412,35 @@ class Healer(Effect):
     NAME = 'Heals'
     DESC = '+20/sec regeneration\n+50/sec mana regeneration'
 
+class CurseSnow(Effect):
+    IMG = 'curse_snow'
+    NAME = 'Curse of Snow'
+    DESC = 'Cursed\n-5/sec regeneration'
+    CORRESPONDED_ELEMENT = elements.ElementTypes.WATER
+
+class CurseHell(Effect):
+    IMG = 'curse_hell'
+    NAME = 'Curse of Hell'
+    DESC = 'Cursed\n-10% damage'
+    CORRESPONDED_ELEMENT = elements.ElementTypes.FIRE
+
+class CurseSand(Effect):
+    IMG = 'curse_sand'
+    NAME = 'Curse of Sand'
+    DESC = 'Cursed\n-10 touching defense\n-10 magic defense'
+    CORRESPONDED_ELEMENT = elements.ElementTypes.EARTH
+
+class CurseHeaven(Effect):
+    IMG = 'curse_heaven'
+    NAME = 'Curse of Heaven'
+    DESC = 'Cursed\n-20% critical'
+    CORRESPONDED_ELEMENT = elements.ElementTypes.LIGHT
+
+class CurseTree(Effect):
+    IMG = 'curse_tree'
+    NAME = 'Curse of Tree'
+    DESC = 'Cursed\n-25% speed\n+50% air resistance'
+
 class MeleeReinforceI(SkillReinforce):
     IMG = 'melee_reinforce'
     NAME = 'Melee Reinforce'
