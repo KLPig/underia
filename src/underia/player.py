@@ -1396,6 +1396,11 @@ class Player:
                                 self.inventory.remove_item(item)
                         elif item.id == 'white_guard':
                             self.hp_sys.shields.append(('W.Guard', 20))
+                            self.inventory.remove_item(item)
+                        elif item.id == 'apple':
+                            self.hp_sys.shields.append(('Apple', 200))
+                            self.hp_sys.heal(99999)
+                            self.inventory.remove_item(item)
                         elif item.id == 'firy_plant':
                             if self.hp_sys.max_hp < 500:
                                 self.hp_sys.max_hp += 20

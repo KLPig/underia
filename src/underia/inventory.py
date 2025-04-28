@@ -141,13 +141,17 @@ class Inventory:
                 d = f"{weapon.talent_cost} talent cost\n" + d
                 if weapon.mana_cost:
                     d = f"{weapon.mana_cost} mana cost\n" + d
+            if TAGS['healing_potion'] in self.tags:
+                d = 'Auto-healing potion(Key:H)\n' + d
+            if TAGS['magic_potion'] in self.tags:
+                d = 'Auto-mana potion(Key:M)\n' + d
             if TAGS['poet_weapon'] in self.tags:
                 weapon: weapons.PoetWeapon = weapons.WEAPONS[self.id]
                 for gain in weapon.gains:
                     e = gain(5, 5)
                     d = f"{e.NAME}\n" + d
                 d = f"Gain ally with the following effect:\n" + d
-                d = f"Get back {int(weapon.back_rate * 100)}% of the inspiration cost\n" + d
+                d = f"Get back {int(weapon.back_rate * 100)}% of inspiration cost\n" + d
                 d = f"When first hit," + d
                 d = f"{weapon.mana_cost} mana cost\n" + d
                 d = f"{weapon.inspiration_cost} inspiration cost\n" + d
@@ -191,7 +195,28 @@ class Inventory:
                 ammo = projectiles.AMMOS[self.id]
                 d = f"{ammo.DAMAGES} piercing damage\n" + d
             d = f"{Inventory.Rarity_Names[self.rarity]}\n" + d
-            d = f"Mod: {self.mod}\n" + d
+            d = f"Mod:{self.mod}\n" + d
+            if TAGS['melee_weapon'] in self.tags:
+                d = '<Melee>\n' + d
+            elif TAGS['bow'] in self.tags or TAGS['gun'] in self.tags:
+                d = '<Ranged>\n' + d
+            elif TAGS['magic_weapon'] in self.tags:
+                d = '<Magic>\n' + d
+            elif TAGS['arcane_weapon'] in self.tags:
+                d = '<Magic-Arcane>\n' + d
+            elif TAGS['priest_weapon'] in self.tags:
+                d = '<Priest-Damage>\n' + d
+            elif TAGS['priest_healer'] in self.tags:
+                d = '<Priest-Heal>\n' + d
+            elif TAGS['pickaxe'] in self.tags:
+                d = '<Pickaxe>\n' + d
+            elif TAGS['knife'] in self.tags:
+                d = '<Ranged-Thief>\n'
+            elif TAGS['poet_weapon'] in self.tags:
+                d = '<Poet>\n' + d
+            elif TAGS['hypnotist_weapon'] in self.tags:
+                d = '<Hypnotist>\n' + d
+
             return d
 
     def __init__(self):
