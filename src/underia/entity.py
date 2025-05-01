@@ -6996,7 +6996,9 @@ class Entities:
     class OblivionAnnihilator(Entity):
         NAME = 'Oblivion: Annihilator'
         DISPLAY_MODE = 1
-        LOOT_TABLE = LootTable([])
+        LOOT_TABLE = LootTable([
+            IndividualLoot('destroy_shard', 1, 20, 30)
+        ])
         IS_MENACE = True
         BOSS_NAME = 'The Void and Chaos'
         PHASE_SEGMENTS = [0.6, 0.85]

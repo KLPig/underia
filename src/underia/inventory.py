@@ -450,6 +450,7 @@ items_dict: dict[str, Inventory.Item] = {
     'murders_knife': Inventory.Item('Murder\'s Knife', 'Deal physical damage of 10% maximum hp\nIt means of a start of a genocide.', 'murders_knife', 13, [TAGS['item'], TAGS['weapon']]),
     'savior': Inventory.Item('Savior', 'Make a shield of 100% maximum hp\nIt means a start of pacifier', 'savior', 13, [TAGS['item'], TAGS['weapon'], TAGS['magic_weapon'],
                                                                                          TAGS['arcane_weapon'], TAGS['magic_lv_primal_magic'], TAGS['magic_element_time']]),
+    'destroy_shard': Inventory.Item('Destroy Shard', 'The crush and demolish in the world.', 'destroy_shard', 13, [TAGS['item']]),
 
     'wooden_pickaxe': Inventory.Item('Wooden Pickaxe', 'Able to mine a few ore.', 'wooden_pickaxe', 1, [TAGS['item'], TAGS['weapon'], TAGS['pickaxe']]),
     'copper_pickaxe': Inventory.Item('Copper Pickaxe', 'Able to mine metal ores.', 'copper_pickaxe', 1, [TAGS['item'], TAGS['weapon'], TAGS['pickaxe']]),
@@ -1710,6 +1711,7 @@ items_dict: dict[str, Inventory.Item] = {
     'ends_sphere': Inventory.Item('End\'s Sphere', 'Final', 'ends_sphere', 12, [TAGS['item']]),
 
     'finale__soul': Inventory.Item('Finale: Soul', 'The finale is the the start.\nStart Chapter 2.', 'finale__soul', 13, [TAGS['item']]),
+    'finale__earth_core': Inventory.Item('Finale: Earth Core', 'The finale is the the start.\nStart Chapter 3.', 'finale__earth_core', 13, [TAGS['item']]),
 
     'invalid': Inventory.Item('Invalid Item', 'Invalid item', 'invalid', 0, []),
 }
@@ -2266,6 +2268,7 @@ RECIPES = [
     Recipe({'dragon_horn': 1, 'origin': 1}, 'poison_horn'),
 
     Recipe({'the_final_soul': 15, 'murders_knife': 1, 'savior': 1}, 'finale__soul'),
+    Recipe({'destroy_shard': 15, 'dark_dragon_ingot': 10, 'light_dragon_ingot': 10}, 'finale__earth_core'),
 
     Recipe({'platinum_ingot': 36, 'mana_crystal': 1, 'anvil': 1}, 'rocket_launcher'),
     Recipe({'mysterious_ingot': 18, 'storm_core': 1}, 'rapid_rocket_launcher'),

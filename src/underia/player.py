@@ -398,7 +398,7 @@ class Player:
         self.talent = min(self.talent + 0.005 + math.sqrt(self.max_talent) / 2000 + (self.max_talent - self.talent) / 1000, self.max_talent)
         self.hp_sys.pos = self.obj.pos
         self.attack = math.sqrt(self.calculate_damage() * self.calculate_data('damage', rate_data=True, rate_multiply=True))
-        self.strike = 0.08 + math.sqrt(self.calculate_data('crit', False)) / 100
+        self.strike = 0.08 + math.sqrt(max(0, self.calculate_data('crit', False))) / 100
         self.attacks = [self.calculate_melee_damage() * self.calculate_data('melee_damage', rate_data=True, rate_multiply=True),
                         self.calculate_ranged_damage() * self.calculate_data('ranged_damage', rate_data=True, rate_multiply=True),
                         self.calculate_magic_damage() * self.calculate_data('magic_damage', rate_data=True, rate_multiply=True),
@@ -1667,33 +1667,13 @@ class Player:
                             else:
                                 entity.entity_spawn(entity.Entities.Faith, 2000, 2000, 0, 1145, 100000)
                         elif item.id == 'finale__soul':
-                            game.get_game().dialog.dialog('Looks like you\'ve completed this timelines.',
-                                                          'A reminder is that,\nyour journey is not yet completed.',
-                                                          'Reset this timeline to start another chapter.',
-                                                          'If you can\'t afford to reset, [QUIT] now.\n'
-                                                          'Then copy your archive.',
-                                                          '...', 'Anyway, thank you for playing Underia!\nA game by KLPIG.',
-                                                          'Chapter 1: [The Soul] - [Ended]\nChapter 2: [The Adventure] - [..Start]')
-                            while game.get_game().dialog.curr_text != '' and len(game.get_game().dialog.word_queue):
-                                keys = []
-                                for event in pg.event.get():
-                                    if event.type == pg.QUIT:
-                                        raise errors.Interrupt()
-                                    elif event.type == pg.KEYDOWN:
-                                        if event.key == pg.K_ESCAPE:
-                                            raise errors.Interrupt()
-                                        elif event.key == pg.K_F4:
-                                            constants.FULLSCREEN = not constants.FULLSCREEN
-                                            pg.display.set_mode(pg.display.get_window_size(), (pg.FULLSCREEN if constants.FULLSCREEN else 0) | constants.FLAGS)
-                                        else:
-                                            keys.append(event.key)
-                                game.get_game().dialog.update(keys)
-                                game.get_game().displayer.update()
-                                pg.display.update()
-                                game.get_game().clock.update()
                             self.covered_items.extend(self.accessories)
                             self.covered_items.extend([i for i in self.inventory.items.keys() if inventory.TAGS['ce_item'] in inventory.ITEMS[i].tags])
                             self.profile.add_point(5)
+                        elif item.id == 'finale__earth_core':
+                            self.covered_items.extend(self.accessories)
+                            self.covered_items.extend([i for i in self.inventory.items.keys() if inventory.TAGS['ce_item'] in inventory.ITEMS[i].tags])
+                            self.profile.add_point(9)
 
                         elif item.id == 'muse_core':
                             if self.max_inspiration < 800:
@@ -1954,26 +1934,26 @@ class Player:
                         styles.item_display(displayer.SCREEN_WIDTH - 10 - 80, displayer.SCREEN_HEIGHT // 2 + i * 90 - 40,
                                             cur_recipe.result, str(s + 1), str(cur_recipe.crafted_amount), 1 if i else 1.2)
                         i += 1
-                cur_recipe = self.recipes[self.sel_recipe]
-                styles.item_mouse(game.get_game().displayer.SCREEN_WIDTH - 260,
-                                  game.get_game().displayer.SCREEN_HEIGHT - 170,
-                                  cur_recipe.result, str(self.sel_recipe + 1), str(cur_recipe.crafted_amount), 2,
-                                  anchor='right')
-                i = 0
-                for item, amount in cur_recipe.material.items():
-                    styles.item_mouse(
-                        game.get_game().displayer.SCREEN_WIDTH - 20 - 80 * (1 + len(cur_recipe.material)) + 80 * i,
-                        game.get_game().displayer.SCREEN_HEIGHT - 250, item, '', str(amount), 1, anchor='right')
-                    i += 1
-                for i in range(-10, 10):
-                    s = (self.sel_recipe + i + len(self.recipes)) % len(self.recipes)
-                    cur_recipe = self.recipes[s]
-                    styles.item_mouse(displayer.SCREEN_WIDTH - 90, displayer.SCREEN_HEIGHT // 2 + i * 80 - 40,
-                                      cur_recipe.result, str(s + 1), str(cur_recipe.crafted_amount), 1, anchor='right')
-                    r = pg.Rect(displayer.SCREEN_WIDTH - 90, displayer.SCREEN_HEIGHT // 2 + i * 80 - 40, 80, 80)
-                    if r.collidepoint(game.get_game().displayer.reflect(
-                            *pg.mouse.get_pos())) and 1 in game.get_game().get_mouse_press():
-                        self.sel_recipe = s
+                    cur_recipe = self.recipes[self.sel_recipe]
+                    styles.item_mouse(game.get_game().displayer.SCREEN_WIDTH - 260,
+                                      game.get_game().displayer.SCREEN_HEIGHT - 170,
+                                      cur_recipe.result, str(self.sel_recipe + 1), str(cur_recipe.crafted_amount), 2,
+                                      anchor='right')
+                    i = 0
+                    for item, amount in cur_recipe.material.items():
+                        styles.item_mouse(
+                            game.get_game().displayer.SCREEN_WIDTH - 20 - 80 * (1 + len(cur_recipe.material)) + 80 * i,
+                            game.get_game().displayer.SCREEN_HEIGHT - 250, item, '', str(amount), 1, anchor='right')
+                        i += 1
+                    for i in range(-10, 10):
+                        s = (self.sel_recipe + i + len(self.recipes)) % len(self.recipes)
+                        cur_recipe = self.recipes[s]
+                        styles.item_mouse(displayer.SCREEN_WIDTH - 90, displayer.SCREEN_HEIGHT // 2 + i * 80 - 40,
+                                          cur_recipe.result, str(s + 1), str(cur_recipe.crafted_amount), 1, anchor='right')
+                        r = pg.Rect(displayer.SCREEN_WIDTH - 90, displayer.SCREEN_HEIGHT // 2 + i * 80 - 40, 80, 80)
+                        if r.collidepoint(game.get_game().displayer.reflect(
+                                *pg.mouse.get_pos())) and 1 in game.get_game().get_mouse_press():
+                            self.sel_recipe = s
             if len(self.recipes) and self.ui_recipe_overlook:
                 ts = (len(self.recipes) + 255) // 256
                 if pg.K_LEFT in game.get_game().get_keys():

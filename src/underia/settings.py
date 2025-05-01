@@ -60,11 +60,7 @@ def set_settings():
         for i, st in enumerate(SETTINGS[sel_s][1]):
             at = getattr(constants, st[0])
             ot = st[1]
-            opt = st[2:]
             dt = at
-            for j, o in enumerate(opt):
-                if j == at:
-                    dt = o[1]
             if i == sel_c:
                 col = (255, 255, 0)
             else:

@@ -3248,7 +3248,7 @@ WEAPONS = {}
 
 def set_weapons():
     global WEAPONS
-    WEAPONS = {
+    weapons = {
         'null': SweepWeapon('null', {dmg.DamageTypes.PHYSICAL: 0}, 0,
                             'items_weapons_null', 0,
                             1, 40, 20),
@@ -4041,6 +4041,8 @@ def set_weapons():
         'savior': Savior('savior', {}, 0, 'items_weapons_savior', 80, 5,
                          projectiles.Projectiles.Projectile, 600, 20, True, 'Shield of Recovery'),
     }
-
+    print(len(WEAPONS), len(weapons))
+    for k, v in weapons.items():
+        WEAPONS[k] = v
 
 set_weapons()

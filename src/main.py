@@ -10,6 +10,7 @@ import asyncio
 import resources, visual, physics, underia, mods, legend, constants, web
 import values
 from underia import good_words
+import underia3
 if not constants.WEB_DEPLOY:
     import saves_chooser, modloader
 
@@ -469,6 +470,18 @@ def update():
             game.player.hp_sys.effect(values.CurseHell(5, 5))
         elif game.get_biome() == 'heaven':
             game.player.hp_sys.effect(values.CurseHeaven(5, 5))
+
+        biome = game.get_biome()
+
+        underia.entity_spawn(underia3.Chicken, 1000, 2000, target_number=18, rate=0.2)
+        if biome == 'forest':
+            underia.entity_spawn(underia3.Tree, 500, 2000, target_number=25, rate=0.6)
+        elif biome == 'rainforest':
+            underia.entity_spawn(underia3.Tree, 500, 2000, target_number=28, rate=0.6)
+        elif biome == 'desert':
+            underia.entity_spawn(underia3.DeadTree, 500, 2000, target_number=18, rate=0.6)
+        elif biome == 'snowland':
+            underia.entity_spawn(underia3.PoisonCentipede, 500, 1500, target_number=10, rate=0.9)
 
 if addr is not None:
     game.client = web.Client(addr, 1145)

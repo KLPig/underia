@@ -285,7 +285,7 @@ class PlayerProfile:
             game.get_game().player.max_mana = 30
             game.get_game().player.max_talent = 0
             game.get_game().player.inventory.items = {}
-            game.get_game().player.accessories = 6 * ['null']
+            game.get_game().player.accessories = 10 * ['null']
             game.get_game().player.weapons = 4 * [weapons.WEAPONS['null']]
             game.get_game().player.ammo = ('null', 0)
             game.get_game().player.ammo_bullet = ('null', 0)
