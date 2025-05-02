@@ -1658,6 +1658,8 @@ items_dict: dict[str, Inventory.Item] = {
     'toilet_paper': Inventory.Item('Toilet Paper', 'Recover all TP', 'toilet_paper', 7, [TAGS['item'], TAGS['healing_potion']]),
     'legendary_hero': Inventory.Item('Legendary Hero', 'Hero shaped sandwich.\nRecover 500 HP and adds a 800 HP shield', 'legendary_hero', 8, [TAGS['item'], TAGS['healing_potion']]),
 
+    'apple': Inventory.Item('Apple', 'Heals and gives a shield.', 'apple', 5, [TAGS['item']]),
+
     'mana_crystal': Inventory.Item('Mana Crystal', '+15 maximum mana.', 'mana_crystal', 2, [TAGS['item']]),
     'firy_plant': Inventory.Item('Firy Plant', '+20 maximum hp', 'firy_plant', 3, [TAGS['item']]),
     'white_guard': Inventory.Item('White Guard', 'Add a 20 hp shield', 'white_guard', 2, [TAGS['item']]),
@@ -2331,8 +2333,8 @@ RECIPES = [
     Recipe({'palladium_ingot': 5, 'mithrill_ingot': 5, 'titanium_ingot': 5}, 'merged_metal_greaves'),
 
     Recipe({'chlorophyte_ingot': 8}, 'chloro_formal_hat'),
-    Recipe({'mysterious_ingot': 12}, 'chloro_chestplate'),
-    Recipe({'mysterious_ingot': 6}, 'chloro_leggings'),
+    Recipe({'chlorophyte_ingot': 12}, 'chloro_chestplate'),
+    Recipe({'chlorophyte_ingot': 6}, 'chloro_leggings'),
 
     Recipe({'chaos_ingot': 20}, 'chaos_hood'),
     Recipe({'chaos_ingot': 30}, 'chaos_chestplate'),

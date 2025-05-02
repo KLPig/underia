@@ -2523,6 +2523,7 @@ class Entities:
         DISPLAY_MODE = 3
         LOOT_TABLE = LootTable([
             SelectionLoot([('doctor_expeller', 1, 1), ('apple_knife', 1, 1), ('fruit_wand', 1, 1)], 1, 2),
+            IndividualLoot('apple', 0.4, 1, 2)
             ])
         SOUND_SPAWN = 'boss'
         SOUND_HURT = 'ore'
@@ -6913,7 +6914,8 @@ class Entities:
             px, py = game.get_game().player.obj.pos
             px -= self.obj.pos[0]
             py -= self.obj.pos[1] + 1000
-            self.obj.apply_force(vector.Vector(vector.coordinate_rotation(px, py), vector.distance(px, py) * 16))
+            self.obj.apply_force(vector.Vector(vector.coordinate_rotation(px, py),
+                                               vector.distance(px, py) * 100))
             if self.state == 0:
                 if self.tick % self.interval == 0:
                     for _ in range(6):

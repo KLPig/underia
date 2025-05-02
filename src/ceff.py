@@ -10,7 +10,8 @@ random.seed(time.time())
 sf = pg.Surface((400, 400), pg.SRCALPHA)
 
 def rotation_coordinate(rotation):
-    return math.sin(math.radians(rotation)), -math.cos(math.radians(rotation))
+    return (math.sin(math.radians(rotation)),
+            -math.cos(math.radians(rotation)))
 
 noises = perlin_noise.PerlinNoise(octaves=2, seed=random.randint(0, 1000000))
 snoises = [noises(i / 100) for i in range(1000)]
