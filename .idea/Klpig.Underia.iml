@@ -4,7 +4,9 @@
     <content url="file://$MODULE_DIR$/app" />
     <content url="file://$MODULE_DIR$/docs" />
     <content url="file://$MODULE_DIR$/mods" />
-    <content url="file://$MODULE_DIR$/src" />
+    <content url="file://$MODULE_DIR$/src">
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+    </content>
     <orderEntry type="jdk" jdkName="Python 3.12" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
