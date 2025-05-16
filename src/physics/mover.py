@@ -12,14 +12,10 @@ class Mover:
     BOUNCY = False
 
     def __init__(self, pos):
-        self.pos = pos
-        self.velocity = vector.Vectors()
-        self.force = vector.Vectors()
+        self.pos = vector.Vector2D(0, 0, *pos)
+        self.velocity = vector.Vector2D()
+        self.force = vector.Vector2D()
 
-    def __del__(self):
-        del self.pos
-        del self.velocity
-        del self.force
 
     def apply_force(self, force):
         self.force.add(force)
@@ -31,18 +27,18 @@ class Mover:
         self.on_update()
         if not self.MASS:
             self.MASS = 1.0
-        self.velocity.add(self.force.get_net_vector(1 / self.MASS))
-        self.force.clear()
-        vx, vy = self.velocity.get_net_coordinates()
-        self.pos = (self.pos[0] + vx / 50 * game.get_game().clock.last_tick,
-                    self.pos[1] + vy / 50 * game.get_game().clock.last_tick)
-        self.pos = (max(-constants.MOVER_POS, min(constants.MOVER_POS, self.pos[0])),
-                    max(-constants.MOVER_POS, min(constants.MOVER_POS, self.pos[1])))
-        self.velocity.reset(self.FRICTION)
+        self.velocity += self.force / self.MASS
+        self.force *= 0.0
+        vx, vy = self.velocity
+        self.pos += vector.Vector2D(0, 0,
+                                    vx / 50 * game.get_game().clock.last_tick,
+                                    vy / 50 * game.get_game().clock.last_tick)
+        self.pos.restrict(-constants.MOVER_POS, constants.MOVER_POS, -constants.MOVER_POS, constants.MOVER_POS)
+        self.velocity *= self.FRICTION
         self.on_update()
 
     def momentum(self, rot):
-        return self.velocity.get_net_value() * self.MASS  # * math.cos(math.radians(rot - self.velocity.get_net_rotation()))
+        return self.velocity()[1] * self.MASS  # * math.cos(math.radians(rot - self.velocity.get_net_rotation()))
 
     def object_gravitational(self, other: 'Mover'):
         if other is self:

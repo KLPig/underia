@@ -113,6 +113,8 @@ class Inventory:
                             self.accessory_data['grenade_scat'] = 1
                         elif desc.endswith('spoetbonustime'):
                             self.accessory_data['gain_duration'] = int(desc.removesuffix('spoetbonustime'))
+                        elif desc.endswith('%dodgerate'):
+                            self.accessory_data['dodge_rate'] = int(desc.removesuffix('%dodgerate')) / 100
                         elif desc[0] in ['+', '-']:
                             print(f"Unknown accessory data: {desc}")
                     except ValueError:

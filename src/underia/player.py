@@ -405,6 +405,8 @@ class Player:
                         self.calculate_data('octave_damage', rate_data=True, rate_multiply=True),
                         self.calculate_data('hallow_damage', rate_data=True, rate_multiply=True),
                         self.calculate_data('pacify_damage', rate_data=True, rate_multiply=True)]
+        self.hp_sys.DODGE_RATE = (self.calculate_data('dodge_rate', False) +
+                                  (self.calculate_speed() * 100 - 100)) ** .8325 / 100
         for i in range(len(self.attacks)):
             self.attacks[i] = math.sqrt(self.attacks[i])
         if 'black_hole_pluvial' in self.accessories:

@@ -25,19 +25,22 @@ class Client:
         print('Client started')
         loop = asyncio.get_event_loop()
         while True:
-            data = await loop.sock_recv(self.client_socket, 32767)
-            if not data:
-                continue
-            data = pickle.loads(data)
-            t, data = data
-            if t == 'player':
-                players: dict[int, game_pack_data.SinglePlayerData] = data
-                for player in players.values():
-                    self.player_datas[player.player_id] = player
-            elif t == 'display':
-                self.displays = data.display
-            res = game_pack_data.SinglePlayerData(self.player_id, game.get_game().player)
-            await loop.sock_sendall(self.client_socket, pickle.dumps(res))
-            await asyncio.sleep(0.05)
+            try:
+                data = await loop.sock_recv(self.client_socket, 32767)
+                if not data:
+                    continue
+                data = pickle.loads(data)
+                t, data = data
+                if t == 'player':
+                    players: dict[int, game_pack_data.SinglePlayerData] = data
+                    for player in players.values():
+                        self.player_datas[player.player_id] = player
+                elif t == 'display':
+                    self.displays = data.display
+                res = game_pack_data.SinglePlayerData(self.player_id, game.get_game().player)
+                await loop.sock_sendall(self.client_socket, pickle.dumps(res))
+                await asyncio.sleep(0.05)
+            except Exception as e:
+                print('Error occurred:', e, ', retrying...')
 
 
