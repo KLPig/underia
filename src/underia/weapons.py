@@ -2646,7 +2646,7 @@ class KuangKuangKuang(Bow):
         if self.timer:
             mx, my = position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
             self.face_to(mx, my)
-            game.get_game().player.obj.apply_force(vector.Vector(self.rot + 180, 80))
+            game.get_game().player.obj.apply_force(vector.Vector(self.rot + 180, 200))
 
 class ForwardBow(Bow):
     def on_start_attack(self):

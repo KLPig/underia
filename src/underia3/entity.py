@@ -1,6 +1,6 @@
 from underia import entity, game
 from physics import vector
-from values import damages
+from values import damages, effects
 import random
 
 class ChickenAI(entity.MonsterAI):
@@ -8,7 +8,7 @@ class ChickenAI(entity.MonsterAI):
     IDLE_TIME = 30
     IDLE_CHANGER = 50
 
-    TOUCHING_DAMAGE = 80
+    TOUCHING_DAMAGE = 90
     SIGHT_DISTANCE = 2500
 
     MASS = 800
@@ -32,7 +32,7 @@ class CentipedeAI(entity.MonsterAI):
     IDLE_TIME = 80
     IDLE_CHANGER = 10
 
-    TOUCHING_DAMAGE = 100
+    TOUCHING_DAMAGE = 110
     SIGHT_DISTANCE = 1200
 
     MASS = 2000
@@ -50,6 +50,79 @@ class CentipedeAI(entity.MonsterAI):
         else:
             if self.time_touched_player > 120:
                 self.idle()
+
+class LycheeAI(CentipedeAI):
+    IDLE_SPEED = 0
+    MASS = 800
+    SIGHT_DISTANCE = 800
+    TOUCHING_DAMAGE = 130
+
+class PotAI(entity.MonsterAI):
+    IDLE_SPEED = 800
+    IDLE_TIME = 80
+    IDLE_CHANGER = 10
+
+    TOUCHING_DAMAGE = 160
+    SIGHT_DISTANCE = 1600
+
+    MASS = 500
+    FRICTION = 0.95
+
+    def on_update(self):
+        super().on_update()
+        if self.cur_target is not None:
+            px, py = self.cur_target.pos
+            if self.time_touched_player < 100:
+                self.apply_force(vector.Vector(vector.coordinate_rotation(px - self.pos[0], py - self.pos[1]) + 180,
+                                               1800000 / vector.distance(px - self.pos[0], py - self.pos[1])))
+            self.apply_force(vector.Vector(vector.coordinate_rotation(px - self.pos[0], py - self.pos[1]),
+                                           3000))
+        else:
+            if self.time_touched_player > 300:
+                self.idle()
+
+class PoiseWalkerAI(entity.MonsterAI):
+    IDLE_SPEED = 800
+    IDLE_TIME = 20
+    IDLE_CHANGER = 10
+    MASS = 400
+    SIGHT_DISTANCE = 3000
+    TOUCHING_DAMAGE = 240
+    FRICTION = 0.6
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.tick = 0
+        self.tx, self.ty = 0, 0
+
+    def on_update(self):
+        super().on_update()
+        if self.time_touched_player < 200:
+            return
+        if self.cur_target is not None:
+            px, py = self.cur_target.pos
+            self.tick += 1
+            if random.randint(0, self.tick) > 140:
+                self.tick = 0
+            ax, ay = vector.rotation_coordinate(random.randint(0, 360))
+            if self.tick < 70:
+                self.apply_force(vector.Vector(vector.coordinate_rotation(px - self.pos[0], py - self.pos[1]),
+                                               1200))
+            elif self.tick == 70:
+                self.tx = ax * 1000 + px
+                self.ty = ay * 1000 + py
+            elif self.tick < 80:
+                self.pos = ((self.pos[0] * 5 + self.tx) // 6, (self.pos[1] * 5 + self.ty) // 6)
+                self.IS_OBJECT = False
+            elif self.tick == 80:
+                self.IS_OBJECT = True
+            else:
+                self.apply_force(vector.Vector(vector.coordinate_rotation(px - self.pos[0], py - self.pos[1]),
+                                               1800))
+        else:
+            self.idle()
+
+
 
 class Entity(entity.Entities.Entity):
     def __init__(self, *args, **kwargs):
@@ -96,6 +169,28 @@ class Chicken(Entity):
         super().on_update()
         self.set_rotation(-self.obj.velocity.get_net_rotation())
 
+class PoisonChicken(Chicken):
+    NAME = 'Poison Chicken'
+    LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('e_poison_powder', 1, 10, 20),
+        entity.SelectionLoot([('e_feather', 3, 8), ('carrion', 1, 4)], 0, 1)
+    ])
+
+    def __init__(self, pos):
+        super(Chicken, self).__init__(pos, game.get_game().graphics[f'entity3_poison_chicken'],
+                                       ChickenAI, hp=1000)
+        self.obj.MASS *= 2
+        self.tick = 0
+
+    def on_update(self):
+        self.tick += 1
+        super().on_update()
+        px, py = self.obj.cur_target.pos
+        if vector.distance(px - self.obj.pos[0], py - self.obj.pos[1]) < 500:
+            game.get_game().player.hp_sys.effect(effects.CurseSnow(2, 1))
+            if self.tick % 5 == 0:
+                game.get_game().player.hp_sys.effect(effects.Poison(5, 1))
+
 class PoisonCentipede(entity.Entities.WormEntity):
     NAME = 'Poison Centipede'
     DISPLAY_MODE = 2
@@ -115,3 +210,70 @@ class PoisonCentipede(entity.Entities.WormEntity):
         self.hp_sys.defenses[damages.DamageTypes.OCTAVE] = 25
         self.hp_sys.defenses[damages.DamageTypes.HALLOW] = 15
         self.hp_sys.defenses[damages.DamageTypes.PACIFY] = 20
+
+class Lychee(entity.Entities.Entity):
+    NAME = 'Lychee'
+    DISPLAY_MODE = 2
+    LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('lychee_shard', 0.3, 1, 4),
+        ])
+    SOUND_HURT = 'crystal'
+    SOUND_DEATH = 'dragon'
+    
+    def __init__(self, pos):
+        super().__init__(pos, game.get_game().graphics['entity3_lychee'], LycheeAI, hp=400)
+        self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 30
+        self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 20
+        self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 35
+        self.hp_sys.defenses[damages.DamageTypes.OCTAVE] = 35
+        self.hp_sys.defenses[damages.DamageTypes.HALLOW] = 25
+        self.hp_sys.defenses[damages.DamageTypes.PACIFY] = 30
+
+class PurpleClayPot(entity.Entities.Entity):
+    NAME = 'Purple Clay Pot'
+    DISPLAY_MODE = 2
+    LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('purple_clay', .7, 2, 3),
+        ])
+    SOUND_HURT = 'crystal'
+    SOUND_DEATH = 'ore'
+
+    def __init__(self, pos):
+        super().__init__(pos, game.get_game().graphics['entity3_purple_clay_pot'], PotAI, hp=300)
+        self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 40
+        self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 45
+        self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 45
+        self.hp_sys.defenses[damages.DamageTypes.OCTAVE] = 45
+        self.hp_sys.defenses[damages.DamageTypes.HALLOW] = 40
+        self.hp_sys.defenses[damages.DamageTypes.PACIFY] = 45
+
+class PoiseWalker(entity.Entities.Entity):
+    NAME = 'Poise Walker'
+    DISPLAY_MODE = 2
+    LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('e_poison_powder', 1, 5, 25),
+        entity.SelectionLoot([('poise_blade', 1, 1)], 1, 1),
+    ])
+    IS_MENACE = True
+    BOSS_NAME = ''
+
+    def __init__(self, pos):
+        super().__init__(pos, game.get_game().graphics['entity3_poise_walker'], PoiseWalkerAI, hp=1200)
+        self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 250
+        self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 250
+        self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 250
+        self.hp_sys.defenses[damages.DamageTypes.OCTAVE] = 250
+        self.hp_sys.defenses[damages.DamageTypes.HALLOW] = 250
+        self.hp_sys.defenses[damages.DamageTypes.PACIFY] = 250
+        self.tick = 0
+
+    def on_update(self):
+        super().on_update()
+        self.set_rotation(-self.obj.velocity.get_net_rotation())
+        px, py = self.obj.cur_target.pos
+        if vector.distance(px - self.obj.pos[0], py - self.obj.pos[1]) < 500:
+            game.get_game().player.hp_sys.effect(effects.CurseSnow(2, 1))
+            if self.tick % 5 == 0:
+                game.get_game().player.hp_sys.effect(effects.Poison(5, 2))
+                game.get_game().player.hp_sys.effect(effects.Freezing(20, 1))
+        self.tick += 1

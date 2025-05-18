@@ -465,7 +465,7 @@ class Game:
                     rot = 0
                 else:
                     rot = round(rot / 3) * 3
-                img = entity.entity_get_surface(display_mode, rot, self.player.get_screen_scale(),
+                img = entity.entity_get_surface(display_mode, rot, 1 / self.player.get_screen_scale(),
                                                 self.graphics[img_idx])
                 imr = img.get_rect(center=resources.displayed_position(pos))
                 self.displayer.canvas.blit(img, imr)

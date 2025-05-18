@@ -1,100 +1,60 @@
 import math
 
-# Old Methods
+
 def rotation_coordinate(rotation):
     return math.sin(math.radians(rotation)), -math.cos(math.radians(rotation))
+
 
 def coordinate_rotation(x, y):
     return math.degrees(math.atan2(x, -y))
 
+
 def distance(x, y):
     return math.sqrt(x ** 2 + y ** 2)
 
-# New Methods
 
-def polar_to_cartesian(dt, theta):
-    dx, dy = rotation_coordinate(theta)
-    return dt * dx, dt * dy
+class Vector:
+    def __init__(self, rotation, value):
+        self.rotation = rotation
+        self.value = value
 
-def cartesian_to_polar(dx, dy):
-    dt = distance(dx, dy)
-    theta = coordinate_rotation(dx, dy)
-    return dt, theta
-
-
-class Vector2D:
-    def __init__(self, dt: float=0, theta: float=0, dx: float=0, dy: float=0):
-        ax, ay = polar_to_cartesian(dt, theta)
-        self.x = dx + ax
-        self.y = dy + ay
+    def __del__(self):
+        pass
 
     def __call__(self):
-        return cartesian_to_polar(self.x, self.y)
+        x, y = rotation_coordinate(self.rotation)
+        return x * self.value, y * self.value
 
-    def __iter__(self):
-        return iter((self.x, self.y))
+class Vectors:
+    def __init__(self):
+        self.vectors = []
 
-    def __set__(self, instance, value):
-        self.x, self.y = value
-
-    def __mul__(self, value: float=1.0):
-        return Vector2D(dx=self.x * value, dy=self.y * value)
-
-    def __add__(self, other: 'Vector2D'):
-        return Vector2D(dx=self.x + other.x, dy=self.y + other.y)
-
-    def __sub__(self, other: 'Vector2D'):
-        return Vector2D(dx=self.x - other.x, dy=self.y - other.y)
-
-    def __truediv__(self, value: float):
-        return Vector2D(dx=self.x / value, dy=self.y / value)
-
-    def __iadd__(self, other: 'Vector2D'):
-        self.x += other.x
-        self.y += other.y
-
-    def __isub__(self, other: 'Vector2D'):
-        self.x -= other.x
-        self.y -= other.y
-
-    def __imul__(self, value: float):
-        self.x *= value
-        self.y *= value
-
-    def __getitem__(self, item):
-        if item == 0:
-            return self.x
-        elif item == 1:
-            return self.y
-
-    # Old Methods
     def clear(self):
-        self.__imul__(0)
+        self.vectors = []
 
     def add(self, vector):
-        self.__iadd__(vector)
+        self.vectors.append(vector)
 
     def get_net_coordinates(self):
-        return self.x, self.y
+        x, y = 0, 0
+        for vector in self.vectors:
+            vx, vy = vector()
+            x += vx
+            y += vy
+        return x, y
 
     def get_net_rotation(self):
-        return cartesian_to_polar(self.x, self.y)[0]
+        x, y = self.get_net_coordinates()
+        return coordinate_rotation(x, y)
 
     def get_net_value(self):
-        return cartesian_to_polar(self.x, self.y)[1]
+        x, y = self.get_net_coordinates()
+        return math.sqrt(x ** 2 + y ** 2)
 
     def get_net_vector(self, time=1.0):
-        return self * time
+        return Vector(self.get_net_rotation(), self.get_net_value() * time)
 
     def reset(self, time=1.0):
-        self.__imul__(time)
-
-    def restrict(self, llx, ulx, lly, uly):
-        self.x = max(llx, min(ulx, self.x))
-        self.y = max(lly, min(uly, self.y))
-
-class Vector(Vector2D):
-    pass
-
-class Vectors(Vector2D):
-    pass
+        v = self.get_net_vector(time)
+        self.clear()
+        self.add(v)

@@ -2430,18 +2430,18 @@ class Projectiles:
                     break
 
         def damage(self, pos, cd):
-            imr = self.d_img.get_rect(center=pos)
             x, y = pos
-            for entity in game.get_game().entities:
-                if imr.collidepoint(entity.obj.pos[0], entity.obj.pos[1]) or entity.d_img.get_rect(
-                        center=entity.obj.pos).collidepoint(x, y) and entity not in cd:
-                    entity.hp_sys.damage(
+            for ee in game.get_game().entities:
+                if (vector.distance(ee.obj.pos[0] - x, ee.obj.pos[1] - y) <
+                        (ee.d_img.get_width() + ee.d_img.get_height() + self.d_img.get_width() + self.d_img.get_height()) / 4
+                        and ee not in cd):
+                    ee.hp_sys.damage(
                         self.dmg * game.get_game().player.attack * game.get_game().player.attacks[1],
                         damages.DamageTypes.PIERCING)
                     if self.DELETE:
                         self.dead = True
                     else:
-                        cd.append(entity)
+                        cd.append(ee)
             return cd
 
     class ConiferousLeaf(Arrow):

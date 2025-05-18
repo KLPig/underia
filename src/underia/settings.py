@@ -60,13 +60,12 @@ def set_settings():
         for i, st in enumerate(SETTINGS[sel_s][1]):
             at = getattr(constants, st[0])
             ot = st[1]
-            dt = at
             if i == sel_c:
                 col = (255, 255, 0)
             else:
                 col = (255, 255, 255)
             tr = font.render(ot, True, col)
             window.blit(tr, (100, 200 + 80 * i))
-            tr = font.render(str(dt), True, col)
+            tr = font.render(str(at), True, col)
             window.blit(tr, (window.get_width() - 50 - tr.get_width(), 200 + 80 * i))
         pg.display.flip()

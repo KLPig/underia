@@ -1,3 +1,5 @@
+from collections.abc import Callable
+
 from underia import weapons, projectiles, game
 from values import damages
 
@@ -34,6 +36,96 @@ class Inventory:
             def get_all_items(self):
                 return [item for item in ITEMS.values() if self.name in [tag.name for tag in item.tags]]
 
+        @staticmethod
+        def handle_data(desc):
+            cdata = {}
+            if desc.endswith('kg'):
+                cdata['mass'] = float(desc.removesuffix('kg'))
+            elif desc.endswith('armor'):
+                cdata['armor'] = float(desc.removesuffix('armor'))
+            elif desc.endswith('%wingcontrol'):
+                cdata['wing_control'] = int(desc.removesuffix('%wingcontrol'))
+            elif desc.endswith('touchingdefense'):
+                cdata['touch_def'] = int(desc.removesuffix('touchingdefense'))
+            elif desc.endswith('physicaldefense'):
+                cdata['phys_def'] = int(desc.removesuffix('physicaldefense'))
+            elif desc.endswith('magicdefense'):
+                cdata['mag_def'] = int(desc.removesuffix('magicdefense'))
+            elif desc.endswith('%speed'):
+                cdata['speed'] = int(desc.removesuffix('%speed'))
+            elif desc.endswith('%ammosavechance'):
+                cdata['ammo_save'] = int(desc.removesuffix('%ammosavechance'))
+            elif desc.endswith('attackspeed'):
+                cdata['atk_speed'] = int(desc.removesuffix('attackspeed'))
+            elif desc.endswith('%critical'):
+                cdata['crit'] = int(desc.removesuffix('%critical'))
+            elif desc.endswith('/secregeneration'):
+                cdata['regen'] = float(desc.removesuffix('/secregeneration'))
+            elif desc.endswith('/secmanaregeneration'):
+                cdata['mana_regen'] = float(desc.removesuffix('/secmanaregeneration'))
+            elif desc.endswith('/secinspirationregeneration'):
+                cdata['ins_regen'] = float(desc.removesuffix('/secinspirationregeneration'))
+            elif desc.endswith('%damage'):
+                cdata['damage'] = int(desc.removesuffix('%damage'))
+            elif desc.endswith('%meleedamage'):
+                cdata['melee_damage'] = int(desc.removesuffix('%meleedamage'))
+            elif desc.endswith('%rangeddamage'):
+                cdata['ranged_damage'] = int(desc.removesuffix('%rangeddamage'))
+            elif desc.endswith('%magicdamage') or desc.endswith('%magicaldamage'):
+                cdata['magic_damage'] = int(desc.split('%magic')[0])
+            elif desc.endswith('%octavedamage'):
+                cdata['octave_damage'] = int(desc.removesuffix('%octavedamage'))
+            elif desc.endswith('%hallowdamage'):
+                cdata['hallow_damage'] = int(desc.removesuffix('%hallowdamage'))
+            elif desc.endswith('%pacifydamage'):
+                cdata['pacify_damage'] = int(desc.removesuffix('%pacifydamage'))
+            elif desc.endswith('%airresistance'):
+                cdata['air_res'] = int(desc.removesuffix('%airresistance'))
+            elif desc.endswith('%domainsize'):
+                cdata['domain_size'] = int(desc.removesuffix('%domainsize'))
+            elif desc.endswith('%karmareduce'):
+                cdata['karma_reduce'] = int(desc.removesuffix('%karmareduce'))
+            elif desc.endswith('%pacifytime'):
+                cdata['pacify_time'] = int(desc.removesuffix('%pacifytime'))
+            elif desc.endswith('/secmentalityregeneration'):
+                cdata['mentality_regen'] = float(desc.removesuffix('/secmentalityregeneration'))
+            elif desc.endswith('%poisondamagereceived'):
+                cdata['poison_res'] = float(desc.removesuffix('%poisondamagereceived'))
+            elif desc.endswith('splint'):
+                cdata['splint'] = int(desc.removesuffix('splint'))
+            elif desc.endswith('%splintcooldown'):
+                cdata['splint_cd'] = int(desc.removesuffix('%splintcooldown'))
+            elif desc.endswith('additionalmaximummana'):
+                cdata['max_mana'] = int(desc.removesuffix('additionalmaximummana'))
+            elif desc.endswith('additionalmaximuminspiration'):
+                cdata['max_ins'] = int(desc.removesuffix('additionalmaximuminspiration'))
+            elif desc.endswith('grenadescattering'):
+                cdata['grenade_scat'] = 1
+            elif desc.endswith('spoetbonustime'):
+                cdata['gain_duration'] = int(desc.removesuffix('spoetbonustime'))
+
+            elif desc.endswith('treecurse'):
+                cdata['tree_curse'] = 1
+            elif desc.endswith('snowcurse'):
+                cdata['snow_curse'] = 1
+
+            elif desc[0] in ['+', '-']:
+                print(f"Unknown accessory data: {desc}")
+
+            return cdata
+
+        def update_data(self):
+            for (func, k, v), o in self.conditioned_accessory_data.items():
+                f = func(game.get_game().player)
+                if f and not o:
+                    b = 1
+                elif not f and o:
+                    b = -1
+                else:
+                    continue
+                self.accessory_data[k] += b * v
+                self.conditioned_accessory_data[(func, k, v)] = f
+
         def __init__(self, name, description, identifier: str, rarity: int = 0, tags: list[Tag] = [],
                      specify_img: str = None):
             self.name = name
@@ -45,79 +137,50 @@ class Inventory:
             self.mod = 'Underia'
             self.img = specify_img if specify_img else self.id
             self.accessory_data = {}
+            self.conditioned_accessory_data: dict[tuple[Callable, str, float], bool] = {}
             if TAGS['accessory'] in self.tags:
                 for desc in self.desc.split('\n'):
-                    desc = desc.replace(' ', '').lower().replace('.', '')
+                    desc = desc.lower().replace('.', '').replace(' ', '')
                     try:
-                        if desc.endswith('kg'):
-                            self.accessory_data['mass'] = float(desc.removesuffix('kg'))
-                        elif desc.endswith('armor'):
-                            self.accessory_data['armor'] = float(desc.removesuffix('armor'))
-                        elif desc.endswith('%wingcontrol'):
-                            self.accessory_data['wing_control'] = int(desc.removesuffix('%wingcontrol'))
-                        elif desc.endswith('touchingdefense'):
-                            self.accessory_data['touch_def'] = int(desc.removesuffix('touchingdefense'))
-                        elif desc.endswith('physicaldefense'):
-                            self.accessory_data['phys_def'] = int(desc.removesuffix('physicaldefense'))
-                        elif desc.endswith('magicdefense'):
-                            self.accessory_data['mag_def'] = int(desc.removesuffix('magicdefense'))
-                        elif desc.endswith('%speed'):
-                            self.accessory_data['speed'] = int(desc.removesuffix('%speed'))
-                        elif desc.endswith('%ammosavechance'):
-                            self.accessory_data['ammo_save'] = int(desc.removesuffix('%ammosavechance'))
-                        elif desc.endswith('attackspeed'):
-                            self.accessory_data['atk_speed'] = int(desc.removesuffix('attackspeed'))
-                        elif desc.endswith('%critical'):
-                            self.accessory_data['crit'] = int(desc.removesuffix('%critical'))
-                        elif desc.endswith('/secregeneration'):
-                            self.accessory_data['regen'] = float(desc.removesuffix('/secregeneration'))
-                        elif desc.endswith('/secmanaregeneration'):
-                            self.accessory_data['mana_regen'] = float(desc.removesuffix('/secmanaregeneration'))
-                        elif desc.endswith('/secinspirationregeneration'):
-                            self.accessory_data['ins_regen'] = float(desc.removesuffix('/secinspirationregeneration'))
-                        elif desc.endswith('%damage'):
-                            self.accessory_data['damage'] = int(desc.removesuffix('%damage'))
-                        elif desc.endswith('%meleedamage'):
-                            self.accessory_data['melee_damage'] = int(desc.removesuffix('%meleedamage'))
-                        elif desc.endswith('%rangeddamage'):
-                            self.accessory_data['ranged_damage'] = int(desc.removesuffix('%rangeddamage'))
-                        elif desc.endswith('%magicdamage') or desc.endswith('%magicaldamage'):
-                            self.accessory_data['magic_damage'] = int(desc.split('%magic')[0])
-                        elif desc.endswith('%octavedamage'):
-                            self.accessory_data['octave_damage'] = int(desc.removesuffix('%octavedamage'))
-                        elif desc.endswith('%hallowdamage'):
-                            self.accessory_data['hallow_damage'] = int(desc.removesuffix('%hallowdamage'))
-                        elif desc.endswith('%pacifydamage'):
-                            self.accessory_data['pacify_damage'] = int(desc.removesuffix('%pacifydamage'))
-                        elif desc.endswith('%airresistance'):
-                            self.accessory_data['air_res'] = int(desc.removesuffix('%airresistance'))
-                        elif desc.endswith('%domainsize'):
-                            self.accessory_data['domain_size'] = int(desc.removesuffix('%domainsize'))
-                        elif desc.endswith('%karmareduce'):
-                            self.accessory_data['karma_reduce'] = int(desc.removesuffix('%karmareduce'))
-                        elif desc.endswith('%pacifytime'):
-                            self.accessory_data['pacify_time'] = int(desc.removesuffix('%pacifytime'))
-                        elif desc.endswith('/secmentalityregeneration'):
-                            self.accessory_data['mentality_regen'] = float(desc.removesuffix('/secmentalityregeneration'))
-                        elif desc.endswith('%poisondamagereceived'):
-                            self.accessory_data['poison_res'] = float(desc.removesuffix('%poisondamagereceived'))
-                        elif desc.endswith('splint'):
-                            self.accessory_data['splint'] = int(desc.removesuffix('splint'))
-                        elif desc.endswith('%splintcooldown'):
-                            self.accessory_data['splint_cd'] = int(desc.removesuffix('%splintcooldown'))
-                        elif desc.endswith('additionalmaximummana'):
-                            self.accessory_data['max_mana'] = int(desc.removesuffix('additionalmaximummana'))
-                        elif desc.endswith('additionalmaximuminspiration'):
-                            self.accessory_data['max_ins'] = int(desc.removesuffix('additionalmaximuminspiration'))
-                        elif desc.endswith('grenadescattering'):
-                            self.accessory_data['grenade_scat'] = 1
-                        elif desc.endswith('spoetbonustime'):
-                            self.accessory_data['gain_duration'] = int(desc.removesuffix('spoetbonustime'))
-                        elif desc.endswith('%dodgerate'):
-                            self.accessory_data['dodge_rate'] = int(desc.removesuffix('%dodgerate')) / 100
-                        elif desc[0] in ['+', '-']:
-                            print(f"Unknown accessory data: {desc}")
+                        if desc.startswith('when'):
+                            vl = desc[4:6]
+                            assert vl in ['hp', 'mp', 'tp', 'ip']
+                            rate = float(desc[7:].split('%,')[0]) / 100
+                            rev = 1
+                            if desc[6] == '>':
+                                rev = -1
+                            if vl == 'hp':
+                                def func(player):
+                                    if rev > 0:
+                                        return player.hp_sys.hp / player.hp_sys.max_hp < rate
+                                    else:
+                                        return player.hp_sys.hp / player.hp_sys.max_hp > rate
+                            elif vl == 'mp':
+                                def func(player):
+                                    if rev > 0:
+                                        return player.mana / player.max_mana < rate
+                                    else:
+                                        return player.mana / player.max_mana > rate
+                            elif vl == 'tp':
+                                def func(player):
+                                    if rev > 0:
+                                        return player.talent / player.max_talent < rate
+                                    else:
+                                        return player.talent / player.max_talent > rate
+                            else:
+                                def func(player):
+                                     if rev > 0:
+                                        return player.inspiration / player.max_inspiration < rate
+                                     else:
+                                        return player.inspiration / player.max_inspiration > rate
+                            cdd = Inventory.Item.handle_data(desc.split(',')[1])
+                            for k, v in cdd.items():
+                                self.conditioned_accessory_data[(func, k, v)] = False
+                        else:
+                            self.accessory_data.update(Inventory.Item.handle_data(desc))
                     except ValueError:
+                        print(f"Invalid accessory data: {desc}")
+                    except AssertionError:
                         print(f"Invalid accessory data: {desc}")
 
 
@@ -1660,8 +1723,6 @@ items_dict: dict[str, Inventory.Item] = {
     'toilet_paper': Inventory.Item('Toilet Paper', 'Recover all TP', 'toilet_paper', 7, [TAGS['item'], TAGS['healing_potion']]),
     'legendary_hero': Inventory.Item('Legendary Hero', 'Hero shaped sandwich.\nRecover 500 HP and adds a 800 HP shield', 'legendary_hero', 8, [TAGS['item'], TAGS['healing_potion']]),
 
-    'apple': Inventory.Item('Apple', 'Heals and gives a shield.', 'apple', 5, [TAGS['item']]),
-
     'mana_crystal': Inventory.Item('Mana Crystal', '+15 maximum mana.', 'mana_crystal', 2, [TAGS['item']]),
     'firy_plant': Inventory.Item('Firy Plant', '+20 maximum hp', 'firy_plant', 3, [TAGS['item']]),
     'white_guard': Inventory.Item('White Guard', 'Add a 20 hp shield', 'white_guard', 2, [TAGS['item']]),
@@ -2335,8 +2396,8 @@ RECIPES = [
     Recipe({'palladium_ingot': 5, 'mithrill_ingot': 5, 'titanium_ingot': 5}, 'merged_metal_greaves'),
 
     Recipe({'chlorophyte_ingot': 8}, 'chloro_formal_hat'),
-    Recipe({'chlorophyte_ingot': 12}, 'chloro_chestplate'),
-    Recipe({'chlorophyte_ingot': 6}, 'chloro_leggings'),
+    Recipe({'mysterious_ingot': 12}, 'chloro_chestplate'),
+    Recipe({'mysterious_ingot': 6}, 'chloro_leggings'),
 
     Recipe({'chaos_ingot': 20}, 'chaos_hood'),
     Recipe({'chaos_ingot': 30}, 'chaos_chestplate'),

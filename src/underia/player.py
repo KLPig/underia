@@ -204,6 +204,7 @@ class Player:
                 d_r = self.major_usage if not data_idx == 'armor' and inventory.TAGS['major_accessory'] in inventory.ITEMS[self.accessories[i]].tags else 1.0
                 if d_r != 1 and data_idx == 'touch_def':
                     d_r = 1
+                inventory.ITEMS[self.accessories[i]].update_data()
                 if rate_plus:
                     val += inventory.ITEMS[self.accessories[i]].accessory_data[data_idx] * d_r / 100
                 elif rate_multiply:
@@ -405,8 +406,6 @@ class Player:
                         self.calculate_data('octave_damage', rate_data=True, rate_multiply=True),
                         self.calculate_data('hallow_damage', rate_data=True, rate_multiply=True),
                         self.calculate_data('pacify_damage', rate_data=True, rate_multiply=True)]
-        self.hp_sys.DODGE_RATE = (self.calculate_data('dodge_rate', False) +
-                                  (self.calculate_speed() * 100 - 100)) ** .8325 / 100
         for i in range(len(self.attacks)):
             self.attacks[i] = math.sqrt(self.attacks[i])
         if 'black_hole_pluvial' in self.accessories:
@@ -806,11 +805,12 @@ class Player:
                 elif tck == 200:
                     shards = [mover.Mover((px, py)) for _ in range(20)]
                     for s in shards:
-                        s.apply_force(vector.Vector(random.randint(0, 360), random.randint(80, 120)))
+                        s.FRICTION = 0.98
+                        s.apply_force(vector.Vector(random.randint(0, 360), random.randint(80, 120) * 3))
                 else:
                     for s in shards:
                         s.update()
-                        s.apply_force(vector.Vector(vector.coordinate_rotation(0, 1), 10))
+                        s.apply_force(vector.Vector(vector.coordinate_rotation(0, 1), 20))
                         im = pg.transform.rotate(game.get_game().graphics['background_shard'], random.randint(0, 360))
                         displayer.canvas.blit(im, im.get_rect(center=s.pos))
                 game.get_game().handle_events()

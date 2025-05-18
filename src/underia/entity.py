@@ -1158,6 +1158,7 @@ class GodsEyeAI(MonsterAI):
     FRICTION = 0.95
     TOUCHING_DAMAGE = 1080
     SIGHT_DISTANCE = 99999
+    SPEED = 0.5
 
     def __init__(self, pos):
         super().__init__(pos)
@@ -2523,7 +2524,6 @@ class Entities:
         DISPLAY_MODE = 3
         LOOT_TABLE = LootTable([
             SelectionLoot([('doctor_expeller', 1, 1), ('apple_knife', 1, 1), ('fruit_wand', 1, 1)], 1, 2),
-            IndividualLoot('apple', 0.4, 1, 2)
             ])
         SOUND_SPAWN = 'boss'
         SOUND_HURT = 'ore'
@@ -6311,7 +6311,8 @@ class Entities:
             self.tick = 0
             self.phs = 0
 
-        def on_update(self):
+        def t_draw(self):
+            super().t_draw()
             if self.action_state <= 2:
                 s = game.get_game().graphics['entity_sun_eye_back_soul']
                 if s.get_alpha() != 120:
@@ -6320,6 +6321,8 @@ class Entities:
                                            1200 / game.get_game().player.get_screen_scale()))
                 sr = s.get_rect(center=position.displayed_position(self.obj.pos))
                 game.get_game().displayer.canvas.blit(s, sr)
+
+        def on_update(self):
             self.obj.phs = self.phs
             self.tick += 1
             self.obj.state = self.action_state
@@ -6368,7 +6371,8 @@ class Entities:
             self.tick = 0
             self.phs = 0
 
-        def on_update(self):
+        def t_draw(self):
+            super().t_draw()
             if self.action_state <= 2:
                 s = game.get_game().graphics['entity_moon_eye_back_soul']
                 if s.get_alpha() != 120:
@@ -6377,6 +6381,8 @@ class Entities:
                                            1200 / game.get_game().player.get_screen_scale()))
                 sr = s.get_rect(center=position.displayed_position(self.obj.pos))
                 game.get_game().displayer.canvas.blit(s, sr)
+
+        def on_update(self):
             self.obj.phs = self.phs
             self.tick += 1
             self.obj.state = self.action_state
@@ -6428,7 +6434,7 @@ class Entities:
             self.moon_eye.action_state = 2
             self.tick = 0
 
-        def update(self):
+        def on_update(self):
             self.tick += 1
             if self.phase < len(self.PHASE_SEGMENTS) and self.hp_sys.hp < self.hp_sys.max_hp * self.PHASE_SEGMENTS[-1 - self.phase]:
                 self.phase += 1
@@ -6914,8 +6920,7 @@ class Entities:
             px, py = game.get_game().player.obj.pos
             px -= self.obj.pos[0]
             py -= self.obj.pos[1] + 1000
-            self.obj.apply_force(vector.Vector(vector.coordinate_rotation(px, py),
-                                               vector.distance(px, py) * 100))
+            self.obj.apply_force(vector.Vector(vector.coordinate_rotation(px, py), vector.distance(px, py) * 16))
             if self.state == 0:
                 if self.tick % self.interval == 0:
                     for _ in range(6):
@@ -7826,8 +7831,8 @@ def entity_spawn(entity: type(Entities.Entity), to_player_min=1500, to_player_ma
                  target_number=5, rate=0.5):
     game_obj = game.get_game()
     if (random.random() < max(0.0, len([e for e in game_obj.entities if type(e) is entity]) - target_number
-                                   * number_factor / 10) - rate / 60 + max(0, len(game_obj.entities) - constants.ENTITY_NUMBER)
-            / 8 * (not entity.IS_MENACE) + 1):
+                                   * number_factor / 20) - rate / 50 + max(0, len(game_obj.entities) - constants.ENTITY_NUMBER)
+            / 12 * (not entity.IS_MENACE) + 1):
         return
     player = game_obj.player
     dist = random.randint(to_player_min, to_player_max)

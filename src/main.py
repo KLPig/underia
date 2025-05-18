@@ -461,11 +461,13 @@ def update():
                                      rate=50, number_factor=1.9)
     elif game.chapter == 2:
         if game.get_biome().endswith('forest'):
-            game.player.hp_sys.effect(values.CurseTree(5, 5))
+            if not game.player.calculate_data('tree_curse', rate_data=False):
+                game.player.hp_sys.effect(values.CurseTree(5, 5))
         elif game.get_biome() == 'desert':
             game.player.hp_sys.effect(values.CurseSand(5, 5))
         elif game.get_biome() == 'snowland':
-            game.player.hp_sys.effect(values.CurseSnow(5, 5))
+            if not game.player.calculate_data('snow_curse', rate_data=False):
+                game.player.hp_sys.effect(values.CurseSnow(5, 5))
         elif game.get_biome() == 'hell':
             game.player.hp_sys.effect(values.CurseHell(5, 5))
         elif game.get_biome() == 'heaven':
@@ -473,15 +475,19 @@ def update():
 
         biome = game.get_biome()
 
-        underia.entity_spawn(underia3.Chicken, 1000, 2000, target_number=18, rate=0.2)
+        underia.entity_spawn(underia3.Chicken, 1000, 2000, target_number=18, rate=0.4)
+        underia.entity_spawn(underia3.PurpleClayPot, 1500, 2500, target_number=8, rate=0.4)
         if biome == 'forest':
-            underia.entity_spawn(underia3.Tree, 500, 2000, target_number=25, rate=0.6)
+            underia.entity_spawn(underia3.Tree, 1000, 2000, target_number=25, rate=0.6)
         elif biome == 'rainforest':
-            underia.entity_spawn(underia3.Tree, 500, 2000, target_number=28, rate=0.6)
+            underia.entity_spawn(underia3.Lychee, 500, 3000, target_number=18, rate=0.6)
+            underia.entity_spawn(underia3.Tree, 1000, 2000, target_number=28, rate=0.6)
         elif biome == 'desert':
-            underia.entity_spawn(underia3.DeadTree, 500, 2000, target_number=18, rate=0.6)
+            underia.entity_spawn(underia3.DeadTree, 1000, 2000, target_number=18, rate=0.6)
         elif biome == 'snowland':
-            underia.entity_spawn(underia3.PoisonCentipede, 500, 1500, target_number=10, rate=0.9)
+            underia.entity_spawn(underia3.PoisonCentipede, 1000, 1500, target_number=10, rate=0.6)
+            underia.entity_spawn(underia3.PoisonChicken, 1000, 2000, target_number=18, rate=0.3)
+            underia.entity_spawn(underia3.PoiseWalker, 2000, 3000, target_number=3, rate=0.2)
 
 if addr is not None:
     game.client = web.Client(addr, 1145)
