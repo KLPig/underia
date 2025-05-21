@@ -98,7 +98,7 @@ class MonsterAI(mover.Mover):
         self.time_touched_player *= not self.touched_player
 
     def apply_force(self, force: vector.Vector):
-        super().apply_force(vector.Vector(force.rotation, force.value * self.SPEED))
+        super().apply_force(force * self.SPEED)
 
     def idle(self):
         if not self.idle_rotation and random.randint(0, 360):

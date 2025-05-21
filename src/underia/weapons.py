@@ -10,8 +10,7 @@ from resources import position, tone
 from underia import game, projectiles, inventory, entity
 from values import damages as dmg, DamageTypes
 from values import effects
-from visual import effects as eff
-from visual import particle_effects as pef, fade_circle as fc
+from visual import effects as eff, particle_effects as pef, fade_circle as fc, draw
 
 import perlin_noise
 import functools
@@ -48,6 +47,8 @@ class Weapon:
         self.aposs = [[] for _ in range(400)]
         self.noises = []
         self.lx, self.ly = 0, 0
+        self.strike = 0
+        self.scale = 1.0
 
     def re_init(self):
         pass
@@ -58,6 +59,12 @@ class Weapon:
             game.get_game().play_sound(self.ATTACK_SOUND, 0.99 ** int(d / 10), True)
         self.timer = self.at_time + 1
         self.on_start_attack()
+
+    def on_special_attack(self, strike: int):
+        pass
+
+    def on_charge(self):
+        pass
 
     def on_start_attack(self):
         pass
@@ -75,7 +82,7 @@ class Weapon:
 
     def set_rotation(self, angle: int):
         self.img = game.get_game().graphics[self.img_index]
-        self.d_img = pg.transform.rotate(pg.transform.scale_by(self.img, 1 / game.get_game().player.get_screen_scale()), 90 - angle)
+        self.d_img = pg.transform.rotate(pg.transform.scale_by(self.img, self.scale / game.get_game().player.get_screen_scale()), 90 - angle)
         self.rot = angle
 
     def face_to(self, x: int, y: int):
@@ -100,6 +107,8 @@ class Weapon:
             self.cool = 1
         elif self.timer == 1:
             self.on_end_attack()
+            if self.strike:
+                self.strike = 0
             self.timer = 0
             self.cool = self.cd - game.get_game().player.calculate_data('atk_speed', False) // 3
             self.on_idle()
@@ -115,8 +124,14 @@ class Weapon:
                 else:
                     b = len([1 for k in self.keys if k in game.get_game().get_keys()]) or \
                         (self.auto_fire and len([1 for k in self.keys if k in game.get_game().get_pressed_keys()]))
-                if b:
+                if pg.BUTTON_RIGHT in game.get_game().get_pressed_mouse():
+                    self.strike += 1
+                    self.on_charge()
+                elif b or self.strike:
                     self.attack()
+                    if self.strike:
+                        self.on_special_attack(self.strike)
+                        self.strike = 0
                     if 'mana_cost' in dir(self) and 'fluffy_pluvial' in game.get_game().player.accessories:
                         self.attack()
                         if random.random() < 0.25:
@@ -135,7 +150,7 @@ class Weapon:
         arot = self.rot - self.lrot
         self.lrot = self.rot
         if abs(arot) > 5:
-            sf = Weapon.get_cut_surf(round(arot / 20) * 20, size, col1, col2)
+            sf = Weapon.get_cut_surf(round(arot / 20) * 20, size, col1, col2, self.scale)
             sf = pg.transform.scale_by(pg.transform.rotate(sf, -self.rot), 1 / game.get_game().player.get_screen_scale())
             sfr = sf.get_rect(center=position.displayed_position((self.x + game.get_game().player.obj.pos[0],
                                                                   self.y + game.get_game().player.obj.pos[1])))
@@ -150,7 +165,7 @@ class Weapon:
 
     @staticmethod
     @functools.lru_cache(maxsize=None)
-    def get_cut_surf(arot, size, col1, col2):
+    def get_cut_surf(arot, size, col1, col2, scale):
         if not len(Weapon._EFF_NOISES):
             noises = perlin_noise.PerlinNoise(octaves=2, seed=random.randint(0, 1000000))
             Weapon._EFF_NOISES = [noises(i / 100) for i in range(1000)]
@@ -158,6 +173,8 @@ class Weapon:
         mn = min(Weapon._EFF_NOISES)
         sz = {3: 32, 4: 40, 6: 64, 8: 80, 10: 100, 16: 160, 32: 320}[size]
         dst = {3: 100, 4: 130, 6: 200, 8: 260, 10: 350, 16: 520, 32: 1080}[size]
+        sz = int(sz * scale)
+        dst = int(dst * scale)
         gdt = 23
         sz //= constants.BLADE_EFFECT_QUALITY
         gdt *= constants.BLADE_EFFECT_QUALITY
@@ -216,6 +233,18 @@ class SweepWeapon(Weapon):
         self.double_sided = double_sided
         self.lrot = 0
         self.noises = []
+        self.ddata = [copy.copy(self.damages), 1, self.rot_speed]
+
+    def on_special_attack(self, strike: int):
+        self.damages = copy.copy(self.ddata[0])
+        self.scale = self.ddata[1]
+        self.rot_speed = self.ddata[2]
+        self.ddata = [copy.copy(self.damages), 1, self.rot_speed]
+        self.scale = 5 - 4 * 1.5 ** -(self.strike / 50)
+        for k in self.damages.keys():
+            self.damages[k] *= 4 - 3 * 1.2 ** -(self.strike / 50)
+        self.rot_speed = int(self.rot_speed / self.scale)
+        self.timer = int(self.at_time * self.scale ** 1.5)
 
     def on_start_attack(self, rr=None):
         if rr is None:
@@ -230,12 +259,22 @@ class SweepWeapon(Weapon):
 
     def on_attack(self):
         self.rotate(self.rot_speed)
+        self.rotate(int(-(self.timer - self.at_time / 2) * abs(self.rot_speed) // self.rot_speed *
+                        (25 + self.strike * 35) // self.at_time))
         super().on_attack()
         self.damage()
-        self.rotate(int(-(self.timer - self.at_time / 2)))
 
     def on_end_attack(self):
         super().on_end_attack()
+        self.damages = copy.copy(self.ddata[0])
+        self.scale = self.ddata[1]
+        self.rot_speed = self.ddata[2]
+
+    def on_charge(self):
+        mx, my = position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
+        self.set_rotation(180 + vector.cartesian_to_polar(mx, my)[0])
+        self.display = True
+        self.scale = 5 - 4 * 1.2 ** -(self.strike / 50)
 
     def damage(self):
         if self.rot_speed > 0:
@@ -249,7 +288,7 @@ class SweepWeapon(Weapon):
             r = int(vector.coordinate_rotation(px, py)) % 360
             if r in rot_range or r + 360 in rot_range or (
                     self.double_sided and ((r + 180) % 360 in rot_range or r + 180 in rot_range)):
-                if vector.distance(px, py) < self.img.get_width() + (
+                if vector.distance(px, py) < self.img.get_width() * self.scale + (
                 (e.img.get_width() + e.img.get_height()) // 2 if e.img is not None else 10):
                     for t, d in self.damages.items():
                         e.hp_sys.damage(d * game.get_game().player.attack * game.get_game().player.attacks[self.DMG_AS_IDX], t)
@@ -481,6 +520,7 @@ class Spear(Weapon):
         self.st_pos = st_pos
         self.forward_speed = forward_speed
         self.pos = 0
+        self.ddata = [copy.copy(damages), 1, forward_speed]
 
     def on_start_attack(self):
         self.x = 0
@@ -490,6 +530,32 @@ class Spear(Weapon):
         self.face_to(px, py)
         self.forward(-self.st_pos)
         self.pos = -self.st_pos
+
+    def on_end_attack(self):
+        super().on_end_attack()
+        self.damages = copy.copy(self.ddata[0])
+        self.scale = self.ddata[1]
+        self.forward_speed = self.ddata[2]
+
+    def on_charge(self):
+        mx, my = position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
+        self.x, self.y = 0, 0
+        self.set_rotation(vector.cartesian_to_polar(mx, my)[0])
+        self.scale = 5 - 4 * 1.2 ** -(self.strike / 50)
+        self.forward(-self.st_pos - self.st_pos / 8 * (self.scale ** 2 - 1))
+        self.display = True
+
+    def on_special_attack(self, strike: int):
+        self.damages = copy.copy(self.ddata[0])
+        self.scale = self.ddata[1]
+        self.forward_speed = self.ddata[2]
+        self.ddata = [copy.copy(self.damages), 1, self.forward_speed]
+        self.scale = 5 - 4 * 1.5 ** -(self.strike / 50)
+        self.forward(-self.st_pos / 8 * (self.scale ** 2 - 1))
+        for k in self.damages.keys():
+            self.damages[k] *= 4 - 3 * 1.2 ** -(self.strike / 50)
+        self.forward_speed = int(self.forward_speed / self.scale)
+        self.timer = int(self.at_time * self.scale ** 1.5)
 
     def on_attack(self):
         self.forward(self.timer * 2 - self.at_time)
@@ -2588,6 +2654,39 @@ class Bow(Weapon):
         self.tail_col = tail_col
         self.ammo_save_chance = ammo_save_chance
         self.precision = precision
+        self.ddata = [self.precision, self.spd]
+
+    def on_charge(self):
+        self.precision = self.ddata[0]
+        self.spd = self.ddata[1]
+        self.ddata = [self.precision, self.spd]
+        self.scale = 3 - 2 * 1.2 ** (-self.strike / 50)
+        self.precision = int(self.ddata[0] / self.scale)
+        self.spd = int(self.ddata[1] * self.scale ** 1.2)
+        self.display = True
+        mx, my = position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
+        rot = vector.cartesian_to_polar(mx, my)[0]
+        self.set_rotation(rot)
+
+        dt = 400 * self.scale ** 1.5
+
+        px, py = position.displayed_position(game.get_game().player.obj.pos)
+
+        sx, sy = vector.polar_to_cartesian(rot + self.precision, dt)
+        ex, ey = vector.polar_to_cartesian(rot + self.precision, -dt)
+        draw.line(game.get_game().displayer.canvas, (255, 0, 0), (sx + px, sy + py), (ex + px, ey + py),
+                  max(1, int(5 / game.get_game().player.get_screen_scale())))
+
+        sx, sy = vector.polar_to_cartesian(rot - self.precision, dt)
+        ex, ey = vector.polar_to_cartesian(rot - self.precision, -dt)
+        draw.line(game.get_game().displayer.canvas, (255, 0, 0), (sx + px, sy + py), (ex + px, ey + py),
+                  max(1, int(5 / game.get_game().player.get_screen_scale())))
+
+    def on_end_attack(self):
+        self.display = False
+        self.precision = self.ddata[0]
+        self.spd = self.ddata[1]
+
 
     def on_start_attack(self):
         self.face_to(
@@ -2910,6 +3009,39 @@ class Gun(Bow):
         super().__init__(name, damages, kb, img, speed, at_time, projectile_speed, auto_fire, tail_col)
         self.precision = precision
         self.ammo_save_chance = ammo_save_chance
+        self.ddata = [self.precision, self.spd]
+
+    def on_charge(self):
+        self.precision = self.ddata[0]
+        self.spd = self.ddata[1]
+        self.ddata = [self.precision, self.spd]
+        self.scale = 3 - 2 * 1.2 ** (-self.strike / 50)
+        self.precision = int(self.ddata[0] / self.scale)
+        self.spd = int(self.ddata[1] * self.scale ** 1.2)
+        self.display = True
+        mx, my = position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
+        rot = vector.cartesian_to_polar(mx, my)[0]
+        self.set_rotation(rot)
+
+        dt = 400 * self.scale ** 1.5
+
+        px, py = position.displayed_position(game.get_game().player.obj.pos)
+
+        sx, sy = vector.polar_to_cartesian(rot + self.precision, dt)
+        ex, ey = vector.polar_to_cartesian(rot + self.precision, -dt)
+        draw.line(game.get_game().displayer.canvas, (255, 0, 0), (sx + px, sy + py), (ex + px, ey + py),
+                  max(1, int(5 / game.get_game().player.get_screen_scale())))
+
+        sx, sy = vector.polar_to_cartesian(rot - self.precision, dt)
+        ex, ey = vector.polar_to_cartesian(rot - self.precision, -dt)
+        draw.line(game.get_game().displayer.canvas, (255, 0, 0), (sx + px, sy + py), (ex + px, ey + py),
+                  max(1, int(5 / game.get_game().player.get_screen_scale())))
+
+    def on_end_attack(self):
+        self.display = False
+        self.precision = self.ddata[0]
+        self.spd = self.ddata[1]
+
 
     def on_start_attack(self):
         self.face_to(
