@@ -97,7 +97,7 @@ class MonsterAI(mover.Mover):
             self.time_touched_player += 1
         self.time_touched_player *= not self.touched_player
 
-    def apply_force(self, force: vector.Vector):
+    def apply_force(self, force):
         super().apply_force(force * self.SPEED)
 
     def idle(self):
@@ -4665,10 +4665,10 @@ class Entities:
             self.goblins = []
             self.tick = 0
             self.this_no = []
-            self.wave = 3
+            self.wave = 0
             self.hp_sys(op='config', immune=True)
 
-        def update(self):
+        def on_update(self):
             self.NAME = 'The Heaven Goblins(Wave %d)' % (self.wave + 1)
             self.obj.pos = (game.get_game().player.obj.pos[0],
                             game.get_game().player.obj.pos[1] - 1000)
@@ -5244,7 +5244,7 @@ class Entities:
             _p = (game.get_game().player.obj.pos[0] + random.randint(-5000, 5000),
                   game.get_game().player.obj.pos[1] + random.randint(-5000, 5000))
             if not d:
-                hp_sys = hp_system.HPSystem(320000)
+                hp_sys = hp_system.HPSystem(450000)
                 for i in range(9):
                     game.get_game().entities.append(Entities.EyeOfTime(pos, True, hp_sys, i + 1))
                 super().__init__(_p, game.get_game().graphics['entity_eye_of_time'], BuildingAI, hp_sys=hp_sys)
@@ -5275,6 +5275,7 @@ class Entities:
                         et = Entities.EyeOfTime(self.obj.pos, 114, self.hp_sys, 1)
                         et.tick = (self.tick + 20 * f + 10) % 100
                         game.get_game().entities.append(et)
+            self.obj.IS_OBJECT = False
             if self.tick > 200 // self.me:
                 self.state = (self.state + 1) % 1
                 self.tick = 0
@@ -5287,6 +5288,8 @@ class Entities:
                 self.img.set_alpha(self.tick * 12 + 15)
             elif self.tick > 200 // self.me - 20 and constants.USE_ALPHA:
                 self.img.set_alpha(255 - (self.tick - 200 // self.me + 20) * 12)
+            else:
+                self.obj.IS_OBJECT = True
             if self.tick % 20 == 0 and 20 <= self.tick <= 20 + 20 * self.me:
                 t = Entities.Time(self.obj.pos,
                                   vector.coordinate_rotation(game.get_game().player.obj.pos[0] - self.obj.pos[0],
@@ -5315,7 +5318,7 @@ class Entities:
 
         def __init__(self, pos):
             super().__init__(pos, 60, game.get_game().graphics['entity_devil_python_head'],
-                             game.get_game().graphics['entity_devil_python_body'], DevilPythonAI, 360000,
+                             game.get_game().graphics['entity_devil_python_body'], DevilPythonAI, 800000,
                              body_length=90, body_touching_damage=320)
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 25
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 30
@@ -5621,7 +5624,7 @@ class Entities:
         NAME = 'Ghost Face'
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([
-            IndividualLoot('chaos_ingot', 1, 5, 12),
+            IndividualLoot('chaos_ingot', 1, 50, 120),
             IndividualLoot('wierd_essence', 0.5, 10, 22),
             ])
 
@@ -5632,7 +5635,7 @@ class Entities:
         NAME = 'Sad Face'
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([
-            IndividualLoot('chaos_ingot', 1, 5, 12),
+            IndividualLoot('chaos_ingot', 1, 15, 50),
             IndividualLoot('wierd_essence', 0.5, 10, 22),
             ])
 
@@ -5646,7 +5649,7 @@ class Entities:
         NAME = 'Angry Face'
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([
-            IndividualLoot('chaos_ingot', 1, 5, 12),
+            IndividualLoot('chaos_ingot', 1, 15, 50),
             IndividualLoot('wierd_essence', 0.5, 10, 22),
             ])
 
@@ -5686,7 +5689,7 @@ class Entities:
         NAME = 'Timetrap'
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([
-            IndividualLoot('chaos_ingot', 1, 5, 12),
+            IndividualLoot('chaos_ingot', 1, 15, 50),
             IndividualLoot('time_essence', 0.5, 10, 22),
             ])
 
@@ -5715,7 +5718,7 @@ class Entities:
         NAME = 'Timeflower'
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([
-            IndividualLoot('chaos_ingot', 1, 5, 12),
+            IndividualLoot('chaos_ingot', 1, 15, 50),
             IndividualLoot('time_essence', 0.5, 10, 22),
             ])
 
@@ -5773,7 +5776,7 @@ class Entities:
         NAME = 'Molecules'
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([
-            IndividualLoot('chaos_ingot', 1, 5, 12),
+            IndividualLoot('chaos_ingot', 1, 15, 50),
             IndividualLoot('substance_essence', 0.5, 10, 22),
             ])
 
@@ -5794,7 +5797,7 @@ class Entities:
         NAME = 'Titanium Ingot'
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([
-            IndividualLoot('chaos_ingot', 1, 5, 12),
+            IndividualLoot('chaos_ingot', 1, 15, 50),
             IndividualLoot('substance_essence', 0.5, 10, 22),
             ])
 
@@ -5811,7 +5814,7 @@ class Entities:
         NAME = 'Spark'
         DISPLAY_MODE = 3
         LOOT_TABLE = LootTable([
-            IndividualLoot('chaos_ingot', 1, 5, 12),
+            IndividualLoot('chaos_ingot', 1, 15, 50),
             IndividualLoot('light_essence', 0.5, 10, 22),
             ])
 
@@ -5827,7 +5830,7 @@ class Entities:
         NAME = 'Holyfire'
         DISPLAY_MODE = 3
         LOOT_TABLE = LootTable([
-            IndividualLoot('chaos_ingot', 1, 5, 12),
+            IndividualLoot('chaos_ingot', 1, 15, 50),
             IndividualLoot('light_essence', 0.5, 10, 22),
             ])
 
@@ -7830,9 +7833,12 @@ class Entities:
 def entity_spawn(entity: type(Entities.Entity), to_player_min=1500, to_player_max=2500, number_factor=0.5,
                  target_number=5, rate=0.5):
     game_obj = game.get_game()
-    if (random.random() < max(0.0, len([e for e in game_obj.entities if type(e) is entity]) - target_number
-                                   * number_factor / 20) - rate / 50 + max(0, len(game_obj.entities) - constants.ENTITY_NUMBER)
-            / 12 * (not entity.IS_MENACE) + 1):
+    print('Spawning', entity.NAME, 'entities')
+    print('Current number:', len([1 for e in game_obj.entities if type(e) is entity]), ', difference:',
+          max(0.0, target_number - len([1 for e in game_obj.entities if type(e) is entity])))
+    if (random.random() < (len([1 for e in game_obj.entities if type(e) is entity]) - int(target_number ** .45))
+            * number_factor * rate / 200 - rate / 80 + 1
+            + (len(game_obj.entities) - constants.ENTITY_NUMBER) / 16 * (not entity.IS_MENACE)):
         return
     player = game_obj.player
     dist = random.randint(to_player_min, to_player_max)

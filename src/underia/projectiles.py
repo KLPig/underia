@@ -2412,11 +2412,11 @@ class Projectiles:
             if self.tick > 30:
                 self.dead = True
             if ox != ax:
-                aax = -(ox - ax) / abs(ox - ax) * 120
+                aax = -(ox - ax) / abs(ox - ax) * 60
             else:
                 aax = 1
             if oy != ay:
-                aay = -(oy - ay) / abs(oy - ay) * 120
+                aay = -(oy - ay) / abs(oy - ay) * 60
             else:
                 aay = 1
             cd = []
@@ -2433,7 +2433,7 @@ class Projectiles:
             x, y = pos
             for ee in game.get_game().entities:
                 if (vector.distance(ee.obj.pos[0] - x, ee.obj.pos[1] - y) <
-                        (ee.d_img.get_width() + ee.d_img.get_height() + self.d_img.get_width() + self.d_img.get_height()) / 4
+                        (ee.d_img.get_width() + ee.d_img.get_height() + self.d_img.get_width() + self.d_img.get_height()) / 4 + 80
                         and ee not in cd):
                     ee.hp_sys.damage(
                         self.dmg * game.get_game().player.attack * game.get_game().player.attacks[1],

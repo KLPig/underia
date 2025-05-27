@@ -11,7 +11,7 @@ class ChickenAI(entity.MonsterAI):
     TOUCHING_DAMAGE = 90
     SIGHT_DISTANCE = 2500
 
-    MASS = 800
+    MASS = 100
     FRICTION = 0.98
 
     def on_update(self):
@@ -20,9 +20,9 @@ class ChickenAI(entity.MonsterAI):
             px, py = self.cur_target.pos
             if self.time_touched_player < 120:
                 self.apply_force(vector.Vector(vector.coordinate_rotation(px - self.pos[0], py - self.pos[1]),
-                                               -1800))
+                                               -250))
             self.apply_force(vector.Vector(vector.coordinate_rotation(px - self.pos[0], py - self.pos[1]),
-                                           1200))
+                                           150))
         else:
             if self.time_touched_player > 120:
                 self.idle()
@@ -35,7 +35,7 @@ class CentipedeAI(entity.MonsterAI):
     TOUCHING_DAMAGE = 110
     SIGHT_DISTANCE = 1200
 
-    MASS = 2000
+    MASS = 200
     FRICTION = 0.9
 
     def on_update(self):
@@ -44,16 +44,16 @@ class CentipedeAI(entity.MonsterAI):
             px, py = self.cur_target.pos
             if self.time_touched_player < 200:
                 self.apply_force(vector.Vector(vector.coordinate_rotation(px - self.pos[0], py - self.pos[1]) + 90,
-                                               3000))
+                                               300))
             self.apply_force(vector.Vector(vector.coordinate_rotation(px - self.pos[0], py - self.pos[1]),
-                                           4000))
+                                           400))
         else:
             if self.time_touched_player > 120:
                 self.idle()
 
 class LycheeAI(CentipedeAI):
     IDLE_SPEED = 0
-    MASS = 800
+    MASS = 80
     SIGHT_DISTANCE = 800
     TOUCHING_DAMAGE = 130
 
@@ -65,7 +65,7 @@ class PotAI(entity.MonsterAI):
     TOUCHING_DAMAGE = 160
     SIGHT_DISTANCE = 1600
 
-    MASS = 500
+    MASS = 100
     FRICTION = 0.95
 
     def on_update(self):
@@ -74,9 +74,9 @@ class PotAI(entity.MonsterAI):
             px, py = self.cur_target.pos
             if self.time_touched_player < 100:
                 self.apply_force(vector.Vector(vector.coordinate_rotation(px - self.pos[0], py - self.pos[1]) + 180,
-                                               1800000 / vector.distance(px - self.pos[0], py - self.pos[1])))
+                                               360000 / vector.distance(px - self.pos[0], py - self.pos[1])))
             self.apply_force(vector.Vector(vector.coordinate_rotation(px - self.pos[0], py - self.pos[1]),
-                                           3000))
+                                           600))
         else:
             if self.time_touched_player > 300:
                 self.idle()
@@ -122,7 +122,23 @@ class PoiseWalkerAI(entity.MonsterAI):
         else:
             self.idle()
 
+class BonecaAmbalabuAI(entity.MonsterAI):
+    MASS = 250
+    FRICTION = 0.9
+    IDLE_SPEED = 4000
+    IDLE_TIME = 100
+    IDLE_CHANGER = 180
 
+    def on_update(self):
+        super().on_update()
+        if self.cur_target is None:
+            self.idle()
+            return
+        pv = self.cur_target.pos - self.pos
+        if self.time_touched_player < 100:
+            self.apply_force(vector.Vector2D(0, 0, pv[0] * -1, pv[1] * -.3))
+        else:
+            self.apply_force(vector.Vector2D(0, 0, pv[0] * 2, pv[1] * .6))
 
 class Entity(entity.Entities.Entity):
     def __init__(self, *args, **kwargs):
@@ -191,6 +207,27 @@ class PoisonChicken(Chicken):
             if self.tick % 5 == 0:
                 game.get_game().player.hp_sys.effect(effects.Poison(5, 1))
 
+class BonecaAmbalabu(entity.Entities.Entity):
+    NAME = 'Boneca Ambalabu'
+    DISPLAY_MODE = 2
+    LOOT_TABLE = entity.LootTable([
+    ])
+
+    def __init__(self, pos):
+        super().__init__(pos, game.get_game().graphics['entity3_boneca_ambalabu'],
+                         BonecaAmbalabuAI, hp=1200)
+        self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 40
+        self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 30
+        self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 35
+        self.hp_sys.defenses[damages.DamageTypes.OCTAVE] = 35
+        self.hp_sys.defenses[damages.DamageTypes.HALLOW] = 25
+        self.hp_sys.defenses[damages.DamageTypes.PACIFY] = 10
+
+    def on_update(self):
+        super().on_update()
+        px, py = self.obj.cur_target.pos - self.obj.pos
+        self.set_rotation(-vector.cartesian_to_polar(px, py)[0])
+
 class PoisonCentipede(entity.Entities.WormEntity):
     NAME = 'Poison Centipede'
     DISPLAY_MODE = 2
@@ -246,6 +283,7 @@ class PurpleClayPot(entity.Entities.Entity):
         self.hp_sys.defenses[damages.DamageTypes.OCTAVE] = 45
         self.hp_sys.defenses[damages.DamageTypes.HALLOW] = 40
         self.hp_sys.defenses[damages.DamageTypes.PACIFY] = 45
+
 
 class PoiseWalker(entity.Entities.Entity):
     NAME = 'Poise Walker'

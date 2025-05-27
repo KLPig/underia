@@ -153,15 +153,11 @@ class Player:
 
     def calculate_damage(self):
         dmg = 1.0 + int(self.profile.point_strength ** 1.1) / 400
-        if 'patience_amulet' in self.accessories and self.hp_sys.hp <= self.hp_sys.max_hp * 0.5:
-            dmg *= 3
         return dmg
 
     def calculate_speed(self):
         spd = 1.0
         spd *= 1.0 + int(self.profile.point_agility ** 1.1) / 400
-        if 'patience_amulet' in self.accessories and self.hp_sys.hp > self.hp_sys.max_hp * 0.5:
-            spd *= 1.8
         return spd
 
     def calculate_melee_damage(self):
@@ -452,6 +448,7 @@ class Player:
         self.p_data.append(f'Attack: {int(self.attack * 100) / 100}x')
         self.p_data.append(f'Critical: {int(self.strike * 10000) / 100}%, {int((1 + (1 + self.strike) ** 2) * 10000) / 100}% damage')
         self.obj.SPEED = self.calculate_data('speed', rate_data=True, rate_multiply=True) * 80 * self.calculate_speed()
+        self.hp_sys.DODGE_RATE = ((self.calculate_speed() - 1) * 100) ** .7 / 100
         self.obj.FRICTION = max(0, 1 - 0.2 * self.calculate_data('air_res', rate_data=True, rate_multiply=True) * (1 + self.z))
         self.obj.MASS = max(40, 80 + self.calculate_data('mass', False))
         self.p_data.append(f'Agility {int(self.obj.SPEED / 2) / 10}N')
@@ -938,25 +935,41 @@ class Player:
             mp_l = min(300.0 - mt * 200.0, self.max_mana)
             tp_l = min(200.0 + mt * 300.0, 8 * self.max_talent)
             is_l = min(500.0, self.inspiration // 2)
-            hp_p = self.hp_sys.hp / self.hp_sys.max_hp
-            mp_p = self.mana / self.max_mana
+            hp_p = min(1.0, self.hp_sys.hp / self.hp_sys.max_hp)
+            mp_p = min(1.0, self.mana / self.max_mana)
             tp_p = self.talent / self.max_talent if self.max_talent else 0
-            sd_p = min(1, sum([v for n, v in game.get_game().player.hp_sys.shields]) / game.get_game().player.hp_sys.max_hp)
-            is_p = self.inspiration / self.max_inspiration
-            pg.draw.rect(displayer.canvas, (80, 0, 0), (10, 10, hp_l, 25))
-            pg.draw.rect(displayer.canvas, (0, 0, 80), (10 + hp_l, 10, mp_l, 25))
-            pg.draw.rect(displayer.canvas, (0, 80, 0), (10 + hp_l + mp_l, 10, tp_l, 25))
-            pg.draw.rect(displayer.canvas, (255, 0, 0), (10, 10, hp_l * hp_p, 25))
-            pg.draw.rect(displayer.canvas, (255, 255, 0), (10, 10, hp_l * sd_p, 25))
-            pg.draw.rect(displayer.canvas, (0, 0, 255), (10 + hp_l + mp_l - mp_l * mp_p, 10, mp_l * mp_p, 25))
-            pg.draw.rect(displayer.canvas, (0, 255, 0) if not mt else (200, 255, 127), (10 + hp_l + mp_l, 10, tp_l * tp_p, 25))
-            pg.draw.rect(displayer.canvas, (255, 255, 255), (10, 10, hp_l + mp_l + tp_l, 25), width=2)
-            pg.draw.rect(displayer.canvas, (80, 0, 80), (game.get_game().displayer.SCREEN_WIDTH - 35, 10, 25, is_l))
-            pg.draw.rect(displayer.canvas, (255, 0, 255), (game.get_game().displayer.SCREEN_WIDTH - 35, 10, 25, is_l * is_p))
-            pg.draw.rect(displayer.canvas, (255, 255, 255), (game.get_game().displayer.SCREEN_WIDTH - 35, 10, 25, is_l), width=2)
+            sd_p = min(1.0, sum([v for n, v in self.hp_sys.shields]) / self.hp_sys.max_hp)
+            sd_p2 = max(0.0, min(1.0, sum([v for n, v in self.hp_sys.shields]) / self.hp_sys.max_hp - 1))
+            sd_p3 = max(0.0, min(1.0, sum([v for n, v in self.hp_sys.shields]) / self.hp_sys.max_hp - 2))
+            sd_p4 = max(0.0, min(1.0, sum([v for n, v in self.hp_sys.shields]) / self.hp_sys.max_hp - 3))
+            md_p = min(1.0, max(0, self.mana - self.max_mana) / self.max_mana)
+            md_p2 = min(1.0, max(0, self.mana - self.max_mana * 2) / self.max_mana)
+            md_p3 = min(1.0, max(0, self.mana - self.max_mana * 3) / self.max_mana)
+            md_p4 = min(1.0, max(0, self.mana - self.max_mana * 4) / self.max_mana)
+            pg.draw.rect(displayer.canvas, (80, 0, 0), (10, 10, hp_l, 40))
+            pg.draw.rect(displayer.canvas, (0, 0, 80), (10 + hp_l, 10, mp_l, 40))
+            pg.draw.rect(displayer.canvas, (0, 80, 0), (10 + hp_l + mp_l, 10, tp_l, 40))
+            pg.draw.rect(displayer.canvas, (255, 0, 0), (10, 10, hp_l * hp_p, 40))
+            pg.draw.rect(displayer.canvas, (255, 127, 0), (10, 10, hp_l * sd_p, 40))
+            pg.draw.rect(displayer.canvas, (255, 255, 0), (10, 10, hp_l * sd_p2, 40))
+            pg.draw.rect(displayer.canvas, (127, 255, 0), (10, 10, hp_l * sd_p3, 40))
+            pg.draw.rect(displayer.canvas, (127, 255, 127), (10, 10, hp_l * sd_p4, 40))
+            pg.draw.rect(displayer.canvas, (0, 0, 255), (10 + hp_l + mp_l - mp_l * mp_p, 10, mp_l * mp_p, 40))
+            pg.draw.rect(displayer.canvas, (0, 127, 255), (10 + hp_l + mp_l - mp_l * md_p, 10, mp_l * md_p, 40))
+            pg.draw.rect(displayer.canvas, (0, 255, 255), (10 + hp_l + mp_l - mp_l * md_p2, 10, mp_l * md_p2, 40))
+            pg.draw.rect(displayer.canvas, (0, 255, 127), (10 + hp_l + mp_l - mp_l * md_p3, 10, mp_l * md_p3, 40))
+            pg.draw.rect(displayer.canvas, (127, 255, 127), (10 + hp_l + mp_l - mp_l * md_p4, 10, mp_l * md_p4, 40))
+            pg.draw.rect(displayer.canvas, (0, 255, 0) if not mt else (200, 255, 127), (10 + hp_l + mp_l, 10, tp_l * tp_p, 40))
+            pg.draw.rect(displayer.canvas, (207, 255, 112), (10, 10, hp_l + mp_l + tp_l, 40), width=6)
 
-            rc = pg.Rect(10, 10, hp_l + mp_l + tp_l, 25)
-            ic = pg.Rect(game.get_game().displayer.SCREEN_WIDTH - 35, 10, 25, is_l)
+            if self.max_inspiration:
+                is_p = self.inspiration / self.max_inspiration
+                pg.draw.rect(displayer.canvas, (80, 0, 80), (game.get_game().displayer.SCREEN_WIDTH - 50, 10, 40, is_l))
+                pg.draw.rect(displayer.canvas, (255, 0, 255), (game.get_game().displayer.SCREEN_WIDTH - 50, 10, 40, is_l * is_p))
+                pg.draw.rect(displayer.canvas, (207, 255, 112), (game.get_game().displayer.SCREEN_WIDTH - 50, 10, 40, is_l), width=6)
+
+            rc = pg.Rect(10, 10, hp_l + mp_l + tp_l, 40)
+            ic = pg.Rect(game.get_game().displayer.SCREEN_WIDTH - 50, 10, 40, is_l)
         eff = self.hp_sys.effects
         if not self.ui_attributes:
             eff = [e for e in eff if not issubclass(type(e), effects.OctaveIncrease) and not issubclass(type(e), effects.SkillReinforce)]
@@ -1396,6 +1409,28 @@ class Player:
                             if self.max_mana < 120:
                                 self.max_mana += 15
                                 self.inventory.remove_item(item)
+                        elif item.id == 'chaos_ingot':
+                            r = random.randint(1, 9)
+                            if r == 1:
+                                t = 'soul_of_flying'
+                            elif r == 2:
+                                t = 'soul_of_growth'
+                            elif r == 3:
+                                t = 'soul_of_coldness'
+                            elif r == 4:
+                                t = 'soul_of_integrity'
+                            elif r == 5:
+                                t = 'soul_of_kindness'
+                            elif r == 6:
+                                t = 'soul_of_bravery'
+                            elif r == 7:
+                                t = 'soul_of_perseverance'
+                            elif r == 8:
+                                t = 'soul_of_justice'
+                            else:
+                                t = 'soul_of_patience'
+                            self.inventory.remove_item(item)
+                            self.inventory.add_item(inventory.ITEMS[t], random.randint(1, 3))
                         elif item.id == 'white_guard':
                             self.hp_sys.shields.append(('W.Guard', 20))
                             self.inventory.remove_item(item)
@@ -1530,7 +1565,7 @@ class Player:
                                         type(e) in [effects.MetalAltar, effects.ScarlettAltar]]):
                                 game.get_game().dialog.dialog('Unable to summon the Heaven Goblins.',
                                                               'There is no Metal Altar nearby.')
-                            elif game.get_game().chapter:
+                            elif game.get_game().chapter == 1:
                                 entity.entity_spawn(entity.Entities.GoblinWaveEP2, 2000, 2000, 0, 1145, 100000)
                             else:
                                 entity.entity_spawn(entity.Entities.GoblinWave, 2000, 2000, 0, 1145, 100000)

@@ -12,7 +12,7 @@ class Mover:
     BOUNCY = False
 
     def __init__(self, pos):
-        self.pos = pos
+        self.pos = vector.Vector2D(0, 0, *pos)
         self.velocity = vector.Vectors()
         self.force = vector.Vectors()
 
@@ -33,11 +33,8 @@ class Mover:
             self.MASS = 1.0
         self.velocity.add(self.force.get_net_vector(1 / self.MASS))
         self.force.clear()
-        vx, vy = self.velocity.get_net_coordinates()
-        self.pos = (self.pos[0] + vx / 50 * game.get_game().clock.last_tick,
-                    self.pos[1] + vy / 50 * game.get_game().clock.last_tick)
-        self.pos = (max(-constants.MOVER_POS, min(constants.MOVER_POS, self.pos[0])),
-                    max(-constants.MOVER_POS, min(constants.MOVER_POS, self.pos[1])))
+        self.pos += self.velocity / 50 * game.get_game().clock.last_tick
+        self.pos.restrict(-constants.MOVER_POS, constants.MOVER_POS)
         self.velocity.reset(self.FRICTION)
         self.on_update()
 

@@ -99,6 +99,13 @@ class Vector2D:
     def __abs__(self):
         return math.sqrt(self.x ** 2 + self.y ** 2)
 
+    def __invert__(self):
+        return Vector2D(dx=-self.x, dy=-self.y)
+
+    def restrict(self, d_min, d_max):
+        self.x = max(d_min, min(d_max, self.x))
+        self.y = max(d_min, min(d_max, self.y))
+
     def clear(self):
         self.__imul__(0)
 

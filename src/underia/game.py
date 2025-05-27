@@ -84,6 +84,7 @@ class Game:
         self.bl_bg = None
         self.lp = (100, 100)
         self.major_rate = 0
+        self.game_time = 0
 
     def get_night_color(self, time_days: float):
         if len([1 for e in self.entities if type(e) is entity.Entities.AbyssEye]):
@@ -413,6 +414,7 @@ class Game:
         chunk_entities = {}
         for i, e in enumerate(self.entities):
             e.t_draw()
+        '''
             px, py = resources.relative_position(e.obj.pos)
             cp = (round(px / 200), round(py / 200))
             if cp not in chunk_entities:
@@ -425,6 +427,7 @@ class Game:
                     self.entities[e1].obj.object_collision(self.entities[e2].obj,
                                                            (self.entities[e1].d_img.get_width() + self.entities[e2].d_img.get_width() +
                                                             self.entities[e1].d_img.get_height() + self.entities[e2].d_img.get_height()) / 4)
+        '''
         for e in self.entities:
             if e.hp_sys.hp <= 0:
                 self.entities.remove(e)

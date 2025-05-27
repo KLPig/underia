@@ -23,6 +23,8 @@ class HPSystem:
 
     SOUND_HURT = None
 
+    DODGE_RATE = 0.0
+
     def __init__(self, hp: float):
         self.resistances = reduction.Resistances()
         self.defenses = reduction.Defenses()
@@ -68,11 +70,16 @@ class HPSystem:
         dmg *= (1 - self.DAMAGE_RANDOMIZE_RANGE + 2 *
                 self.DAMAGE_RANDOMIZE_RANGE * random.random())
         dmg = max(self.MINIMUM_DAMAGE, min(self.MAXIMUM_DAMAGE, dmg))
+        dodge = dmg > 1 and random.random() < self.DODGE_RATE
+        if dodge:
+            dmg = 0
         if not self.dmg_t:
             self.dmg_t = self.DAMAGE_TEXT_INTERVAL
             d = 0
             if dmg <= 1:
-                if self.resistances[damage_type] == 0:
+                if dodge:
+                    t = 'MISS'
+                elif self.resistances[damage_type] == 0:
                     t = 'IMMUNE'
                 else:
                     t = 'RESISTED'
