@@ -4,11 +4,12 @@ import random
 import pygame as pg
 
 from physics import mover, vector
-from resources import position, cursors, errors, path
+from resources import position, path
 from underia import game, styles, inventory, weapons, entity, projectiles, player_profile, notebook
 from values import hp_system, damages, effects
 import constants
-from visual import draw
+from visual import draw, fade_circle as fc
+import underia3
 
 status = []
 
@@ -135,6 +136,7 @@ class Player:
         self.boot_footprints = []
         self.covered_items = []
         self.major_usage = 0.0
+        self.afterimage_shadow = 0
 
     def calculate_regeneration(self):
         ACCESSORY_REGEN = {}
@@ -153,15 +155,11 @@ class Player:
 
     def calculate_damage(self):
         dmg = 1.0 + int(self.profile.point_strength ** 1.1) / 400
-        if 'patience_amulet' in self.accessories and self.hp_sys.hp <= self.hp_sys.max_hp * 0.5:
-            dmg *= 3
         return dmg
 
     def calculate_speed(self):
         spd = 1.0
         spd *= 1.0 + int(self.profile.point_agility ** 1.1) / 400
-        if 'patience_amulet' in self.accessories and self.hp_sys.hp > self.hp_sys.max_hp * 0.5:
-            spd *= 1.8
         return spd
 
     def calculate_melee_damage(self):
@@ -200,11 +198,11 @@ class Player:
         else:
             val = 0.0
         for i in range(len(self.accessories)):
+            inventory.ITEMS[self.accessories[i]].update_data()
             if data_idx in inventory.ITEMS[self.accessories[i]].accessory_data.keys():
                 d_r = self.major_usage if not data_idx == 'armor' and inventory.TAGS['major_accessory'] in inventory.ITEMS[self.accessories[i]].tags else 1.0
                 if d_r != 1 and data_idx == 'touch_def':
                     d_r = 1
-                inventory.ITEMS[self.accessories[i]].update_data()
                 if rate_plus:
                     val += inventory.ITEMS[self.accessories[i]].accessory_data[data_idx] * d_r / 100
                 elif rate_multiply:
@@ -452,6 +450,7 @@ class Player:
         self.p_data.append(f'Attack: {int(self.attack * 100) / 100}x')
         self.p_data.append(f'Critical: {int(self.strike * 10000) / 100}%, {int((1 + (1 + self.strike) ** 2) * 10000) / 100}% damage')
         self.obj.SPEED = self.calculate_data('speed', rate_data=True, rate_multiply=True) * 80 * self.calculate_speed()
+        self.hp_sys.DODGE_RATE = ((self.calculate_speed() - 1) * 100) ** .7 / 100 + bool(self.afterimage_shadow)
         self.obj.FRICTION = max(0, 1 - 0.2 * self.calculate_data('air_res', rate_data=True, rate_multiply=True) * (1 + self.z))
         self.obj.MASS = max(40, 80 + self.calculate_data('mass', False))
         self.p_data.append(f'Agility {int(self.obj.SPEED / 2) / 10}N')
@@ -812,7 +811,7 @@ class Player:
                         s.update()
                         s.apply_force(vector.Vector(vector.coordinate_rotation(0, 1), 20))
                         im = pg.transform.rotate(game.get_game().graphics['background_shard'], random.randint(0, 360))
-                        displayer.canvas.blit(im, im.get_rect(center=s.pos))
+                        displayer.canvas.blit(im, im.get_rect(center=s.pos()))
                 game.get_game().handle_events()
                 game.get_game().dialog.update(game.get_game().pressed_keys)
                 game.get_game().clock.update()
@@ -827,7 +826,7 @@ class Player:
             game.get_game().entities = []
             game.get_game().projectiles = []
             game.get_game().damage_texts = []
-            self.obj.pos = (0, 0)
+            self.obj.pos << (0, 0)
 
     def ui(self):
         self.in_ui = False
@@ -938,25 +937,41 @@ class Player:
             mp_l = min(300.0 - mt * 200.0, self.max_mana)
             tp_l = min(200.0 + mt * 300.0, 8 * self.max_talent)
             is_l = min(500.0, self.inspiration // 2)
-            hp_p = self.hp_sys.hp / self.hp_sys.max_hp
-            mp_p = self.mana / self.max_mana
+            hp_p = min(1.0, self.hp_sys.hp / self.hp_sys.max_hp)
+            mp_p = min(1.0, self.mana / self.max_mana)
             tp_p = self.talent / self.max_talent if self.max_talent else 0
-            sd_p = min(1, sum([v for n, v in game.get_game().player.hp_sys.shields]) / game.get_game().player.hp_sys.max_hp)
-            is_p = self.inspiration / self.max_inspiration
-            pg.draw.rect(displayer.canvas, (80, 0, 0), (10, 10, hp_l, 25))
-            pg.draw.rect(displayer.canvas, (0, 0, 80), (10 + hp_l, 10, mp_l, 25))
-            pg.draw.rect(displayer.canvas, (0, 80, 0), (10 + hp_l + mp_l, 10, tp_l, 25))
-            pg.draw.rect(displayer.canvas, (255, 0, 0), (10, 10, hp_l * hp_p, 25))
-            pg.draw.rect(displayer.canvas, (255, 255, 0), (10, 10, hp_l * sd_p, 25))
-            pg.draw.rect(displayer.canvas, (0, 0, 255), (10 + hp_l + mp_l - mp_l * mp_p, 10, mp_l * mp_p, 25))
-            pg.draw.rect(displayer.canvas, (0, 255, 0) if not mt else (200, 255, 127), (10 + hp_l + mp_l, 10, tp_l * tp_p, 25))
-            pg.draw.rect(displayer.canvas, (255, 255, 255), (10, 10, hp_l + mp_l + tp_l, 25), width=2)
-            pg.draw.rect(displayer.canvas, (80, 0, 80), (game.get_game().displayer.SCREEN_WIDTH - 35, 10, 25, is_l))
-            pg.draw.rect(displayer.canvas, (255, 0, 255), (game.get_game().displayer.SCREEN_WIDTH - 35, 10, 25, is_l * is_p))
-            pg.draw.rect(displayer.canvas, (255, 255, 255), (game.get_game().displayer.SCREEN_WIDTH - 35, 10, 25, is_l), width=2)
+            sd_p = min(1.0, sum([v for n, v in self.hp_sys.shields]) / self.hp_sys.max_hp)
+            sd_p2 = max(0.0, min(1.0, sum([v for n, v in self.hp_sys.shields]) / self.hp_sys.max_hp - 1))
+            sd_p3 = max(0.0, min(1.0, sum([v for n, v in self.hp_sys.shields]) / self.hp_sys.max_hp - 2))
+            sd_p4 = max(0.0, min(1.0, sum([v for n, v in self.hp_sys.shields]) / self.hp_sys.max_hp - 3))
+            md_p = min(1.0, max(0, self.mana - self.max_mana) / self.max_mana)
+            md_p2 = min(1.0, max(0, self.mana - self.max_mana * 2) / self.max_mana)
+            md_p3 = min(1.0, max(0, self.mana - self.max_mana * 3) / self.max_mana)
+            md_p4 = min(1.0, max(0, self.mana - self.max_mana * 4) / self.max_mana)
+            pg.draw.rect(displayer.canvas, (80, 0, 0), (10, 10, hp_l, 40))
+            pg.draw.rect(displayer.canvas, (0, 0, 80), (10 + hp_l, 10, mp_l, 40))
+            pg.draw.rect(displayer.canvas, (0, 80, 0), (10 + hp_l + mp_l, 10, tp_l, 40))
+            pg.draw.rect(displayer.canvas, (255, 0, 0), (10, 10, hp_l * hp_p, 40))
+            pg.draw.rect(displayer.canvas, (255, 127, 0), (10, 10, hp_l * sd_p, 40))
+            pg.draw.rect(displayer.canvas, (255, 255, 0), (10, 10, hp_l * sd_p2, 40))
+            pg.draw.rect(displayer.canvas, (127, 255, 0), (10, 10, hp_l * sd_p3, 40))
+            pg.draw.rect(displayer.canvas, (127, 255, 127), (10, 10, hp_l * sd_p4, 40))
+            pg.draw.rect(displayer.canvas, (0, 0, 255), (10 + hp_l + mp_l - mp_l * mp_p, 10, mp_l * mp_p, 40))
+            pg.draw.rect(displayer.canvas, (0, 127, 255), (10 + hp_l + mp_l - mp_l * md_p, 10, mp_l * md_p, 40))
+            pg.draw.rect(displayer.canvas, (0, 255, 255), (10 + hp_l + mp_l - mp_l * md_p2, 10, mp_l * md_p2, 40))
+            pg.draw.rect(displayer.canvas, (0, 255, 127), (10 + hp_l + mp_l - mp_l * md_p3, 10, mp_l * md_p3, 40))
+            pg.draw.rect(displayer.canvas, (127, 255, 127), (10 + hp_l + mp_l - mp_l * md_p4, 10, mp_l * md_p4, 40))
+            pg.draw.rect(displayer.canvas, (0, 255, 0) if not mt else (200, 255, 127), (10 + hp_l + mp_l, 10, tp_l * tp_p, 40))
+            pg.draw.rect(displayer.canvas, (207, 255, 112), (10, 10, hp_l + mp_l + tp_l, 40), width=6)
 
-            rc = pg.Rect(10, 10, hp_l + mp_l + tp_l, 25)
-            ic = pg.Rect(game.get_game().displayer.SCREEN_WIDTH - 35, 10, 25, is_l)
+            if self.max_inspiration:
+                is_p = self.inspiration / self.max_inspiration
+                pg.draw.rect(displayer.canvas, (80, 0, 80), (game.get_game().displayer.SCREEN_WIDTH - 50, 10, 40, is_l))
+                pg.draw.rect(displayer.canvas, (255, 0, 255), (game.get_game().displayer.SCREEN_WIDTH - 50, 10, 40, is_l * is_p))
+                pg.draw.rect(displayer.canvas, (207, 255, 112), (game.get_game().displayer.SCREEN_WIDTH - 50, 10, 40, is_l), width=6)
+
+            rc = pg.Rect(10, 10, hp_l + mp_l + tp_l, 40)
+            ic = pg.Rect(game.get_game().displayer.SCREEN_WIDTH - 50, 10, 40, is_l)
         eff = self.hp_sys.effects
         if not self.ui_attributes:
             eff = [e for e in eff if not issubclass(type(e), effects.OctaveIncrease) and not issubclass(type(e), effects.SkillReinforce)]
@@ -1120,8 +1135,8 @@ class Player:
              inventory.ITEMS[w.name.replace(' ', '_')].tags or inventory.TAGS['knife'] in inventory.ITEMS[w.name.replace(' ', '_')].tags:
             sk_z = 'storm_throw' if 'storm_throw' in self.profile.select_skill else ('fast_throw' if 'fast_throw' in self.profile.select_skill else None)
             sk_x = 'energy_shot' if 'energy_shot' in self.profile.select_skill else 'perfect_shot' if 'perfect_shot' in self.profile.select_skill else None
-            sk_c = None
-            cdd = 80, 30, 0
+            sk_c = 'afterimage_shadow' if 'afterimage_shadow' in self.profile.select_skill else None
+            cdd = 80, 30, 500
             rc = (255, 255, 0)
         elif inventory.TAGS['melee_weapon'] in inventory.ITEMS[w.name.replace(' ', '_')].tags:
             sk_z = 'the_wraith' if 'the_wraith' in self.profile.select_skill else ('the_fury' if 'the_fury' in self.profile.select_skill else None)
@@ -1169,14 +1184,14 @@ class Player:
             self.profile.skill_mouse(ps, sk_c, rc=rc, window=game.get_game().displayer.canvas,
                                      mps=game.get_game().displayer.reflect(*pg.mouse.get_pos()))
         if 'direct_bullet' in self.profile.select_skill:
-            if rc == (255, 255, 0) and game.get_game().clock.tick % 80 == 0:
+            if rc == (255, 255, 0) and game.get_game().clock.tick % (3 * (self.weapons[self.sel_weapon].at_time + self.weapons[self.sel_weapon].cd - 1)) == 0:
                 es = [e for e in game.get_game().entities if vector.distance(e.obj.pos[0] -  self.obj.pos[0],
                                                                              e.obj.pos[1] - self.obj.pos[1]) < 1500]
                 if len(es):
                     e = random.choice(es)
                     rt = vector.coordinate_rotation(e.obj.pos[0] - self.obj.pos[0], e.obj.pos[1] - self.obj.pos[1])
                     game.get_game().projectiles.append(projectiles.Projectiles.DirectBullet(self.obj.pos, rt, 0,
-                                                                                            self.weapons[self.sel_weapon].damages[damages.DamageTypes.PIERCING] / 10))
+                                                                                            self.weapons[self.sel_weapon].damages[damages.DamageTypes.PIERCING] * 2))
         if 'sweeper' in self.profile.select_skill:
             if (rc == (0, 255, 255) and not self.weapons[self.sel_weapon].cool and not self.open_inventory and
                     0 not in game.get_game().get_pressed_mouse()):
@@ -1235,6 +1250,26 @@ class Player:
             self.cd_x = cdd[1]
         if self.cd_c:
             self.cd_c -= 1
+        elif sk_c is not None and pg.K_c in game.get_game().get_keys():
+            if sk_c == 'afterimage_shadow':
+                self.afterimage_shadow = 1500
+                game.get_game().play_sound('bullet', .5, fadeout=500)
+            self.cd_c = cdd[2]
+        if 1500 > self.afterimage_shadow > 1 and pg.K_c in game.get_game().get_keys():
+            self.afterimage_shadow = 1
+        if self.afterimage_shadow > 1:
+            self.cd_c = cdd[2] - self.afterimage_shadow / 1500 * cdd[2]
+            self.afterimage_shadow -= 1
+        elif self.afterimage_shadow == 1:
+            self.cd_c = cdd[2]
+            self.afterimage_shadow -= 1
+            self.hp_sys.effect(effects.AfterimageShadow(2, 1))
+            self.weapons[self.sel_weapon].strike = constants.INFINITY
+            self.weapons[self.sel_weapon].attack()
+            self.weapons[self.sel_weapon].on_special_attack(constants.INFINITY)
+            game.get_game().displayer.effect(fc.p_fade_circle(*position.displayed_position(self.obj.pos), sp=20, t=20,
+                                                              col=(100, 0, 100)))
+            game.get_game().play_sound('create', .5)
         te = [e for e in self.hp_sys.effects if type(e) is effects.FastThrow]
         if len(te):
             if te[0].tick in [4, 8, 12] and sk_z == 'fast_throw':
@@ -1396,6 +1431,28 @@ class Player:
                             if self.max_mana < 120:
                                 self.max_mana += 15
                                 self.inventory.remove_item(item)
+                        elif item.id == 'chaos_ingot':
+                            r = random.randint(1, 9)
+                            if r == 1:
+                                t = 'soul_of_flying'
+                            elif r == 2:
+                                t = 'soul_of_growth'
+                            elif r == 3:
+                                t = 'soul_of_coldness'
+                            elif r == 4:
+                                t = 'soul_of_integrity'
+                            elif r == 5:
+                                t = 'soul_of_kindness'
+                            elif r == 6:
+                                t = 'soul_of_bravery'
+                            elif r == 7:
+                                t = 'soul_of_perseverance'
+                            elif r == 8:
+                                t = 'soul_of_justice'
+                            else:
+                                t = 'soul_of_patience'
+                            self.inventory.remove_item(item)
+                            self.inventory.add_item(inventory.ITEMS[t], random.randint(1, 3))
                         elif item.id == 'white_guard':
                             self.hp_sys.shields.append(('W.Guard', 20))
                             self.inventory.remove_item(item)
@@ -1530,7 +1587,7 @@ class Player:
                                         type(e) in [effects.MetalAltar, effects.ScarlettAltar]]):
                                 game.get_game().dialog.dialog('Unable to summon the Heaven Goblins.',
                                                               'There is no Metal Altar nearby.')
-                            elif game.get_game().chapter:
+                            elif game.get_game().chapter == 1:
                                 entity.entity_spawn(entity.Entities.GoblinWaveEP2, 2000, 2000, 0, 1145, 100000)
                             else:
                                 entity.entity_spawn(entity.Entities.GoblinWave, 2000, 2000, 0, 1145, 100000)
@@ -1676,6 +1733,10 @@ class Player:
                             self.covered_items.extend(self.accessories)
                             self.covered_items.extend([i for i in self.inventory.items.keys() if inventory.TAGS['ce_item'] in inventory.ITEMS[i].tags])
                             self.profile.add_point(9)
+
+                        elif item.id == 'lychee':
+                            if len([1 for e in game.get_game().player.hp_sys.effects if type(e) is effects.CurseTree]):
+                                entity.entity_spawn(underia3.LycheeKing, 2000, 2000, 0, 1145, 100000)
 
                         elif item.id == 'muse_core':
                             if self.max_inspiration < 800:

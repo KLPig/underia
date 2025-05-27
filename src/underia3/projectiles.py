@@ -27,7 +27,7 @@ class LycheeArrow(projectiles.Projectiles.Arrow):
         x, y = pos
         for entity in game.get_game().entities:
             if imr.collidepoint(entity.obj.pos[0], entity.obj.pos[1]) or entity.d_img.get_rect(
-                    center=entity.obj.pos).collidepoint(x, y) and entity not in cd:
+                    center=entity.obj.pos()).collidepoint(x, y) and entity not in cd:
                 entity.hp_sys.damage(
                     self.dmg * game.get_game().player.attack * game.get_game().player.attacks[1],
                     damages.DamageTypes.PIERCING)

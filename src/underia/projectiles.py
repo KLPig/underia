@@ -171,7 +171,7 @@ class Projectiles:
             self.damage()
 
         def damage(self):
-            imr = self.d_img.get_rect(center=self.obj.pos)
+            imr = self.d_img.get_rect(center=self.obj.pos())
             for entity in game.get_game().entities:
                 if imr.collidepoint(entity.obj.pos[0], entity.obj.pos[1]) or entity.d_img.get_rect(
                         center=entity.obj.pos).collidepoint(self.obj.pos[0], self.obj.pos[1]):
@@ -221,7 +221,7 @@ class Projectiles:
             self.tick += 1
             if self.tick > 200:
                 self.dead = True
-            imr = self.d_img.get_rect(center=self.obj.pos)
+            imr = self.d_img.get_rect(center=self.obj.pos())
             for entity in game.get_game().entities:
                 if imr.collidepoint(entity.obj.pos[0], entity.obj.pos[1]) or entity.d_img.get_rect(
                         center=entity.obj.pos).collidepoint(self.obj.pos[0], self.obj.pos[1]):
@@ -257,7 +257,7 @@ class Projectiles:
                     game.get_game().displayer.effect(particle_effects.p_particle_effects(*position.displayed_position(self.obj.pos),
                                                                                          n=12, t=12, r=20 / game.get_game().player.get_screen_scale(), col=self.COL,
                                                                                          sp=10 / game.get_game().player.get_screen_scale(),))
-            imr = self.d_img.get_rect(center=self.obj.pos)
+            imr = self.d_img.get_rect(center=self.obj.pos())
             if not game.get_game().displayer.canvas.get_rect().collidepoint(position.displayed_position(self.obj.pos)):
                 self.dead = True
             if type(self) is Projectiles.Glow:
@@ -314,7 +314,7 @@ class Projectiles:
             self.damage()
 
         def damage(self):
-            imr = self.d_img.get_rect(center=self.obj.pos)
+            imr = self.d_img.get_rect(center=self.obj.pos())
             for entity in game.get_game().entities:
                 if imr.collidepoint(entity.obj.pos[0], entity.obj.pos[1]) or entity.d_img.get_rect(
                         center=entity.obj.pos).collidepoint(self.obj.pos[0], self.obj.pos[1]):
@@ -476,7 +476,7 @@ class Projectiles:
             self.damage()
 
         def damage(self):
-            imr = self.d_img.get_rect(center=self.obj.pos)
+            imr = self.d_img.get_rect(center=self.obj.pos())
             for entity in game.get_game().entities:
                 if imr.collidepoint(entity.obj.pos[0], entity.obj.pos[1]) or entity.d_img.get_rect(
                         center=entity.obj.pos).collidepoint(self.obj.pos[0], self.obj.pos[1]):
@@ -753,9 +753,9 @@ class Projectiles:
         def update(self):
             mx, my = self.ttx
             if self.AUTO_FOLLOW:
-                self.obj.pos = ((mx + self.obj.pos[0]) // 2, (my + self.obj.pos[1]) // 2)
+                self.obj.pos << ((mx + self.obj.pos[0]) // 2, (my + self.obj.pos[1]) // 2)
             else:
-                self.obj.pos = game.get_game().player.obj.pos
+                self.obj.pos << game.get_game().player.obj.pos
             self.tick += 1
             if self.tick < 5:
                 self.img = copy.copy(game.get_game().graphics[self.IMG])
@@ -842,7 +842,7 @@ class Projectiles:
             for c in self.circles:
                 game.get_game().projectiles.append(c)
             self.tick = 0
-            self.obj.pos = position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+            self.obj.pos << position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
 
         def update(self):
             self.tick += 1
@@ -851,7 +851,7 @@ class Projectiles:
             for i, c in enumerate(self.circles):
                 c.hit = False
                 rt = math.radians(i * 90 - self.tick * 3)
-                c.obj.pos = (self.obj.pos[0] + dt * math.cos(rt),
+                c.obj.pos << (self.obj.pos[0] + dt * math.cos(rt),
                              self.obj.pos[1] + dt * math.sin(rt))
             for entity in game.get_game().entities:
                 if (vector.distance(entity.obj.pos[0] - self.obj.pos[0], entity.obj.pos[1] - self.obj.pos[1]) <
@@ -885,7 +885,7 @@ class Projectiles:
 
         def update(self):
             if self.tick < 6:
-                self.obj.pos = (self.obj.pos[0] + 80 * self.ax / (self.tick + 1),
+                self.obj.pos << (self.obj.pos[0] + 80 * self.ax / (self.tick + 1),
                                 self.obj.pos[1] + 80 * self.ay / (self.tick + 1))
             else:
                 tar, _ = self.get_closest_entity()
@@ -954,9 +954,9 @@ class Projectiles:
                                                   self.d_img.get_width() // 2)
             mx, my = self.ttx
             if self.AUTO_FOLLOW:
-                self.obj.pos = ((mx + self.obj.pos[0]) // 2, (my + self.obj.pos[1]) // 2)
+                self.obj.pos << ((mx + self.obj.pos[0]) // 2, (my + self.obj.pos[1]) // 2)
             else:
-                self.obj.pos = game.get_game().player.obj.pos
+                self.obj.pos << game.get_game().player.obj.pos
             self.tick += 1
             if self.tick < 5:
                 self.img = copy.copy(game.get_game().graphics[self.IMG])
@@ -1109,7 +1109,7 @@ class Projectiles:
         def update(self):
             self.tick += 1
             for i in range(len(self.te)):
-                self.te[i].obj.pos = self.tep[i]
+                self.te[i].obj.pos << self.tep[i]
             pg.draw.circle(game.get_game().displayer.canvas, (255, 255, 200),
                            position.displayed_position((self.tx, self.ty)), 300 / game.get_game().player.get_screen_scale(),
                            2)
@@ -1151,7 +1151,7 @@ class Projectiles:
             self.img = game.get_game().graphics['entity_null']
             self.d_img = self.img
             self.tx, self.ty = position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
-            self.obj.pos = self.tx, self.ty
+            self.obj.pos << self.tx, self.ty
             self.te = []
             for e in game.get_game().entities:
                 ex, ey = e.obj.pos
@@ -1176,7 +1176,7 @@ class Projectiles:
                 draw.line(game.get_game().displayer.canvas, (0, 0, 0),
                              position.displayed_position(self.tep[i]),
                              position.displayed_position(self.te[i].obj.pos), 10)
-                self.te[i].obj.pos = self.tep[i]
+                self.te[i].obj.pos << self.tep[i]
 
 
     class Beam(Projectile):
@@ -1232,8 +1232,9 @@ class Projectiles:
             self.lr = ay > 0
             self.slope = ax / ay
             if self.FOLLOW_PLAYER:
-                self.pos = game.get_game().player.obj.pos[0] + self.pap[0], game.get_game().player.obj.pos[1] + self.pap[1]
-            self.obj.pos = self.pos
+                self.pos << (game.get_game().player.obj.pos[0] + self.pap[0],
+                             game.get_game().player.obj.pos[1] + self.pap[1])
+            self.obj.pos << self.pos
             self.start_pos = self.pos[0] + ax * 50 + self.WIDTH / 2 * ax, self.pos[1] + ay * 50 + self.WIDTH / 2 * ay
             self.end_pos = self.start_pos[0] + ax * self.LENGTH, self.start_pos[1] + ay * self.LENGTH
             if ax == 0:
@@ -1598,7 +1599,7 @@ class Projectiles:
                                                    1000))
                 super().update()
             else:
-                self.obj.pos = (self.obj.pos[0] + self.ax * 120 / (self.tick + 1),
+                self.obj.pos << (self.obj.pos[0] + self.ax * 120 / (self.tick + 1),
                                 self.obj.pos[1] + self.ay * 120 / (self.tick + 1))
             pg.draw.circle(game.get_game().displayer.canvas, self.COLS[self.type], position.displayed_position(self.obj.pos),
                            int(30 / game.get_game().player.get_screen_scale()))
@@ -1649,7 +1650,7 @@ class Projectiles:
 
         def update(self):
             self.tick += 1
-            self.obj.pos = self.tpx, max(self.tpy - 4500 + 5 * self.tick ** 2, position.real_position((0, 0))[1] - 80)
+            self.obj.pos << self.tpx, max(self.tpy - 4500 + 5 * self.tick ** 2, position.real_position((0, 0))[1] - 80)
             self.ps.append(self.obj.pos)
             if len(self.ps) > 5:
                 self.ps.pop(0)
@@ -1684,7 +1685,7 @@ class Projectiles:
             self.ty += pos[1]
             dx = random.randint(-100, 100)
             dy = -1000
-            self.obj.pos = (self.tx + dx, self.ty + dy)
+            self.obj.pos << (self.tx + dx, self.ty + dy)
             self.ax = -dx / 8
             self.ay = -dy / 8
             self.rot = rotation
@@ -1695,7 +1696,7 @@ class Projectiles:
         def update(self):
             super().update()
             self.set_rotation(self.rot + 45)
-            self.obj.pos = (self.obj.pos[0] + self.ax, self.obj.pos[1] + self.ay)
+            self.obj.pos << (self.obj.pos[0] + self.ax, self.obj.pos[1] + self.ay)
             pg.draw.circle(game.get_game().displayer.canvas, (255, 255, 0), position.displayed_position((self.tx, self.ty)),
                            (self.O_DST + self.N_DST) // game.get_game().player.get_screen_scale(), 2)
             if self.tick > 8:
@@ -1841,7 +1842,7 @@ class Projectiles:
 
         def update(self):
             px, py = game.get_game().player.obj.pos
-            self.obj.pos = (px, py - 1000)
+            self.obj.pos << (px, py - 1000)
             self.tick += 1
             pg.draw.circle(game.get_game().displayer.canvas, (255, 0, 0), position.displayed_position(self.obj.pos),
                            radius=2000 // game.get_game().player.get_screen_scale(), width=12)
@@ -1882,7 +1883,7 @@ class Projectiles:
             self.set_rotation(0)
 
         def update(self):
-            self.obj.pos = game.get_game().player.obj.pos
+            self.obj.pos << game.get_game().player.obj.pos
             x = game.get_game().player.obj.pos[0]
             x /= 400
             x += game.get_game().displayer.canvas.get_width() // 2
@@ -1962,7 +1963,7 @@ class Projectiles:
                 self.dt += (self.tick - 140) * 20
                 self.rt += 8
             ax, ay = vector.rotation_coordinate(self.rt)
-            self.obj.pos = (self.op[0] + ax * self.dt, self.op[1] + ay * self.dt)
+            self.obj.pos << (self.op[0] + ax * self.dt, self.op[1] + ay * self.dt)
             self.poss.append(self.obj.pos)
             if len(self.poss) > 8:
                 self.poss.pop(0)
@@ -1995,7 +1996,7 @@ class Projectiles:
             self.dead = False
             sw = game.get_game().displayer.SCREEN_WIDTH
             sh = game.get_game().displayer.SCREEN_HEIGHT
-            self.obj.pos = (pos[0] + random.randint(-sw, sw), pos[1] + random.randint(-sh, sh) - 1800)
+            self.obj.pos << (pos[0] + random.randint(-sw, sw), pos[1] + random.randint(-sh, sh) - 1800)
             self.tick = 0
 
         def update(self):
@@ -2003,7 +2004,7 @@ class Projectiles:
                          position.displayed_position(self.obj.pos),
                          position.displayed_position((self.obj.pos[0], self.obj.pos[1] + 240)),
                          int(5 / game.get_game().player.get_screen_scale()))
-            self.obj.pos = (self.obj.pos[0], self.obj.pos[1] + 50)
+            self.obj.pos << (self.obj.pos[0], self.obj.pos[1] + 50)
             self.tick += 1
             if self.tick > 36:
                 self.dead = True
@@ -2044,7 +2045,7 @@ class Projectiles:
                                                                                    self.rot))
                 self.dead = True
             self.tick += 1
-            self.obj.pos = (self.obj.pos[0], self.obj.pos[1] - self.tick * 5)
+            self.obj.pos << (self.obj.pos[0], self.obj.pos[1] - self.tick * 5)
 
     class RisingAction(Projectile):
         def __init__(self, pos, rotation, no_left=5):
@@ -2078,7 +2079,7 @@ class Projectiles:
                                                    1000))
                 super().update()
             else:
-                self.obj.pos = (self.obj.pos[0] + self.ax * 120 / (self.tick + 1),
+                self.obj.pos << (self.obj.pos[0] + self.ax * 120 / (self.tick + 1),
                                 self.obj.pos[1] + self.ay * 120 / (self.tick + 1))
             self.poss.append(self.obj.pos)
             if len(self.poss) > 8:
@@ -2135,7 +2136,7 @@ class Projectiles:
                                                    1000))
                 super().update()
             else:
-                self.obj.pos = (self.obj.pos[0] + self.ax * 120 / (self.tick + 1),
+                self.obj.pos << (self.obj.pos[0] + self.ax * 120 / (self.tick + 1),
                                 self.obj.pos[1] + self.ay * 120 / (self.tick + 1))
             self.poss.append(self.obj.pos)
             if len(self.poss) > 8:
@@ -2197,7 +2198,7 @@ class Projectiles:
 
         def update(self):
             if self.tick < 6:
-                self.obj.pos = (self.obj.pos[0] + 80 * self.ax / (self.tick + 1),
+                self.obj.pos << (self.obj.pos[0] + 80 * self.ax / (self.tick + 1),
                                 self.obj.pos[1] + 80 * self.ay / (self.tick + 1))
             else:
                 tar, _ = self.get_closest_entity()
@@ -2258,7 +2259,7 @@ class Projectiles:
             self.rot = rotation
             self.dead = False
             self.tick = 0
-            self.obj.pos = position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+            self.obj.pos << position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
             self.img = pg.Surface((400, 4000), pg.SRCALPHA)
             self.draw_effect(self.img, 0, self.img.get_width(), (self.img.get_width(), 0),
                              20, (255, 255, 200))
@@ -2299,7 +2300,7 @@ class Projectiles:
                 super(Projectiles.TheGodsPenalty, self).update()
                 self.damage()
                 if self.tick % 8 == 1:
-                    self.obj.pos = position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+                    self.obj.pos << position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
             elif self.tick >= 50:
                 self.dead = True
             self.tick += 1
@@ -2327,7 +2328,7 @@ class Projectiles:
             self.ax, self.ay = vector.rotation_coordinate(rotation)
 
         def update(self):
-            self.obj.pos = (self.obj.pos[0] + 20 * self.ax, self.obj.pos[1] + 20 * self.ay)
+            self.obj.pos << (self.obj.pos[0] + 20 * self.ax, self.obj.pos[1] + 20 * self.ay)
             self.set_rotation(90)
             pg.draw.circle(game.get_game().displayer.canvas, (255, 255, 0),
                            position.displayed_position(self.obj.pos),
@@ -2412,11 +2413,11 @@ class Projectiles:
             if self.tick > 30:
                 self.dead = True
             if ox != ax:
-                aax = -(ox - ax) / abs(ox - ax) * 120
+                aax = -(ox - ax) / abs(ox - ax) * 60
             else:
                 aax = 1
             if oy != ay:
-                aay = -(oy - ay) / abs(oy - ay) * 120
+                aay = -(oy - ay) / abs(oy - ay) * 60
             else:
                 aay = 1
             cd = []
@@ -2433,7 +2434,7 @@ class Projectiles:
             x, y = pos
             for ee in game.get_game().entities:
                 if (vector.distance(ee.obj.pos[0] - x, ee.obj.pos[1] - y) <
-                        (ee.d_img.get_width() + ee.d_img.get_height() + self.d_img.get_width() + self.d_img.get_height()) / 4
+                        (ee.d_img.get_width() + ee.d_img.get_height() + self.d_img.get_width() + self.d_img.get_height()) / 4 + 80
                         and ee not in cd):
                     ee.hp_sys.damage(
                         self.dmg * game.get_game().player.attack * game.get_game().player.attacks[1],
@@ -2534,9 +2535,9 @@ class Projectiles:
         DAMAGES = 120
         SPEED = 500
         IMG = 'null'
-        TAIL_SIZE = 2
-        TAIL_WIDTH = 2
-        TAIL_COLOR = (0, 255, 0)
+        TAIL_SIZE = 5
+        TAIL_WIDTH = 10
+        TAIL_COLOR = (127, 255, 0)
 
         def __init__(self, pos, rotation, speed, damage):
             super().__init__(pos, rotation, speed, damage)
@@ -2544,13 +2545,13 @@ class Projectiles:
             self.spd = speed + self.SPEED
 
         def update(self):
-            tr = min(self.spd / 1200, .8)
+            tr = min(self.spd / 2400, .6)
             tar, _ = self.get_closest_entity()
             if tar is None:
                 super().update()
                 return
             tx, ty = tar.obj.pos
-            self.obj.pos = (self.obj.pos[0] + (tx - self.obj.pos[0]) * tr,
+            self.obj.pos << (self.obj.pos[0] + (tx - self.obj.pos[0]) * tr,
                             self.obj.pos[1] + (ty - self.obj.pos[1]) * tr)
             vp = self.obj.pos
             super().update()
@@ -2837,9 +2838,9 @@ class Projectiles:
 
     class DirectBullet(Bullet):
         DAMAGES = 0
-        SPEED = 500
-        TAIL_SIZE = 2
-        TAIL_WIDTH = 5
+        SPEED = 1200
+        TAIL_SIZE = 3
+        TAIL_WIDTH = 10
         TAIL_COLOR = (240, 200, 160)
 
     class Seperator(Bullet):
@@ -2888,7 +2889,7 @@ class Projectiles:
             self.tick += 1
             if self.tick < 10:
                 super().update()
-                self.obj.pos = (self.obj.pos[0] + (self.tp[0] - self.obj.pos[0]) / 2,
+                self.obj.pos << (self.obj.pos[0] + (self.tp[0] - self.obj.pos[0]) / 2,
                                 self.obj.pos[1] + (self.tp[1] - self.obj.pos[1]) / 2)
                 if vector.distance(self.tp[0] - self.obj.pos[0], self.tp[1] - self.obj.pos[1]) < 120:
                     self.tick = 10
@@ -3075,7 +3076,7 @@ class Projectiles:
 
         def update(self):
             super().update()
-            self.obj.pos = ((self.obj.pos[0] * 5 + self.mx) / 6, (self.obj.pos[1] * 5 + self.my) / 6)
+            self.obj.pos << ((self.obj.pos[0] * 5 + self.mx) / 6, (self.obj.pos[1] * 5 + self.my) / 6)
             if self.tk > 36:
                 self.dead = True
             self.p_calc = 1000
@@ -3193,7 +3194,7 @@ class Projectiles:
                 for i in range(6):
                     rr = self.rt + i * 60
                     ax, ay = vector.rotation_coordinate(rr)
-                    self.buls[i].obj.pos = (self.obj.pos[0] + ax * 120, self.obj.pos[1] + ay * 120)
+                    self.buls[i].obj.pos << (self.obj.pos[0] + ax * 120, self.obj.pos[1] + ay * 120)
 
         def damage(self):
             if self.mode == 'heart' and self.r:
@@ -3255,7 +3256,7 @@ class Projectiles:
                 Projectiles.TimeFlies.STEP -= 1
                 if Projectiles.TimeFlies.STEP <= 0:
                     self.dead = True
-            self.obj.pos = position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+            self.obj.pos << position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
             self.ar += 8
             self.ar %= 360
             bs = Projectiles.TimeFlies.STEP // 12

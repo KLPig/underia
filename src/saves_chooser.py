@@ -31,9 +31,9 @@ for i in range(1, 10):
         with open(path.get_save_path(f".save{i}.data.pkl"), "rb") as f:
             datas.append(pickle.load(f))
     except FileNotFoundError:
-        datas.append(underia.GameData(underia.PlayerProfile()))
+        datas.append(underia.GameData(underia.PlayerProfile(), 0))
     except ModuleNotFoundError:
-        datas.append(underia.GameData(underia.PlayerProfile()))
+        datas.append(underia.GameData(underia.PlayerProfile(), 0))
 
 pf = underia.PlayerProfile()
 t = 0
@@ -173,10 +173,15 @@ def choose_save():
             sf = pf.get_surface(*dt.col if len(sn.split('(')) <= 1 else (255, 255, 255))
             sf = pg.transform.scale(sf, (200, 200))
             screen.blit(sf, (screen.get_width() // 2 - 100, 300 + (tick % 100 > 50) * 20))
-            st = font.render(sn.split('(')[0] + f' LV.{dt.lv}', True, (0, 0, 0))
+            time = ''
+            try:
+                time = f'{int(dt.time) // 3600}h {int(dt.time) // 60 % 60}min'
+            except AttributeError:
+                pass
+            st = font.render(sn.split('(')[0] + f' LV.{dt.lv} {time}', True, (0, 0, 0))
             sstr = st.get_rect(center=(screen.get_width() // 2 + 3, 700 + 3))
             screen.blit(st, sstr)
-            st = font.render(sn.split('(')[0] + f' LV.{dt.lv}', True, (255, 255, 127) if sel else (255, 255, 255))
+            st = font.render(sn.split('(')[0] + f' LV.{dt.lv} {time}', True, (255, 255, 127) if sel else (255, 255, 255))
             sstr = st.get_rect(center=(screen.get_width() // 2, 700))
             screen.blit(st, sstr)
         w, h = screen.get_size()

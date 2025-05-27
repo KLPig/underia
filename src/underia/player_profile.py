@@ -41,6 +41,8 @@ class PlayerProfile:
         'guard': ('The Guard', 'Key: X\nSummon a shield to absorb 1000HP for 3s.'),
         'storm_throw': ('Storm Throw', 'Key: Z\nThrow 10 projectiles of 5x damage.'),
         'energy_shot': ('Energy Shot', 'Key: X\nShoot a energy ammo with 10x damage.'),
+
+        'afterimage_shadow': ('Afterimage Shadow', 'Key: C\nSneak for 30s.\nWhen ends, +1000% damage for 2s.'),
     }
 
     def __init__(self):
@@ -417,24 +419,22 @@ class PlayerProfile:
             [
                 ['melee_demand'],
                 ['the_fury', 'warrior_shield'],
-                ['melee_reinforce_i', 'melee_reinforce_ii'],
-                ['melee_reinforce_iii', 'melee_reinforce_iv'],
+                ['melee_reinforce_i', 'melee_reinforce_ii', 'melee_reinforce_iii', 'melee_reinforce_iv'],
                 ['sweeper'],
                 ['the_wraith', 'guard']
             ],
             [
                 ['ranged_demand'],
                 ['fast_throw', 'perfect_shot'],
-                ['ranged_reinforce_i', 'ranged_reinforce_ii'],
-                ['ranged_reinforce_iii', 'ranged_reinforce_iv'],
+                ['ranged_reinforce_i', 'ranged_reinforce_ii', 'ranged_reinforce_iii', 'ranged_reinforce_iv'],
                 ['direct_bullet'],
-                ['storm_throw', 'energy_shot']
+                ['storm_throw', 'energy_shot'],
+                ['afterimage_shadow']
             ],
             [
                 ['magic_demand'],
                 ['healer', 'multi_user'],
-                ['magic_reinforce_i', 'magic_reinforce_ii'],
-                ['magic_reinforce_iii', 'magic_reinforce_iv'],
+                ['magic_reinforce_i', 'magic_reinforce_ii', 'magic_reinforce_iii', 'magic_reinforce_iv'],
                 ['star_supporter'],
             ]
         ]

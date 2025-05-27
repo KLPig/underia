@@ -519,7 +519,7 @@ class Spear(Weapon):
         super().__init__(name, damages, kb, img, speed, at_time, auto_fire)
         self.st_pos = st_pos
         self.forward_speed = forward_speed
-        self.pos = 0
+        self.poss = 0
         self.ddata = [copy.copy(damages), 1, forward_speed]
 
     def on_start_attack(self):
@@ -529,7 +529,7 @@ class Spear(Weapon):
             position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
         self.face_to(px, py)
         self.forward(-self.st_pos)
-        self.pos = -self.st_pos
+        self.poss =  -self.st_pos
 
     def on_end_attack(self):
         super().on_end_attack()
@@ -560,7 +560,7 @@ class Spear(Weapon):
     def on_attack(self):
         self.forward(self.timer * 2 - self.at_time)
         self.forward(self.forward_speed)
-        self.pos += self.forward_speed
+        self.poss += self.forward_speed
         super().on_attack()
         self.damage()
 
@@ -573,7 +573,7 @@ class Spear(Weapon):
             py = dps[1] - game.get_game().player.obj.pos[1]
             r = int(vector.coordinate_rotation(px, py)) % 360
             if r in rot_range or r + 360 in rot_range:
-                if vector.distance(px, py) < self.img.get_width() + self.pos + (
+                if vector.distance(px, py) < self.img.get_width() + self.poss + (
                 (e.img.get_width() + e.img.get_height()) // 2 if e.img is not None else 10):
                     for t, d in self.damages.items():
                         e.hp_sys.damage(d * game.get_game().player.attack * game.get_game().player.attacks[0], t)
@@ -1326,7 +1326,7 @@ class QuarkRusher(Blade):
             qb = projectiles.Projectiles.QuarkBeam(game.get_game().player.obj.pos, vector.coordinate_rotation(mx, my))
             qb.LENGTH = vector.distance(mx, my)
             game.get_game().projectiles.append(qb)
-            game.get_game().player.obj.pos = position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+            game.get_game().player.obj.pos << position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
             game.get_game().player.obj.velocity.add(vector.Vector(vector.coordinate_rotation(mx, my), 20))
         self.st += 1
 
@@ -2079,7 +2079,7 @@ class TargetDummy(MagicWeapon):
     def on_attack(self):
         if self.dm is None:
             self.dm = entity.Entities.Dummy((0, 0))
-        self.dm.obj.pos = position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+        self.dm.obj.pos << position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
         self.dm.update()
         if self.dm.obj not in game.get_game().p_obj:
             game.get_game().p_obj.append(self.dm.obj)
@@ -2103,7 +2103,7 @@ class Teleporter(MagicWeapon):
             self.timer = 0
             return
         game.get_game().player.mana -= self.mana_cost
-        game.get_game().player.obj.pos = (game.get_game().player.obj.pos[0] + mx, game.get_game().player.obj.pos[1] + my)
+        game.get_game().player.obj.pos << (game.get_game().player.obj.pos[0] + mx, game.get_game().player.obj.pos[1] + my)
 
 class ChaosKiller(MagicWeapon):
     def on_start_attack(self):
@@ -2661,8 +2661,8 @@ class Bow(Weapon):
         self.spd = self.ddata[1]
         self.ddata = [self.precision, self.spd]
         self.scale = 3 - 2 * 1.2 ** (-self.strike / 50)
-        self.precision = int(self.ddata[0] / self.scale)
-        self.spd = int(self.ddata[1] * self.scale ** 1.2)
+        self.precision = int(self.ddata[0] / self.scale ** 1.5)
+        self.spd = int(self.ddata[1] * self.scale ** 3)
         self.display = True
         mx, my = position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
         rot = vector.cartesian_to_polar(mx, my)[0]
@@ -2686,7 +2686,7 @@ class Bow(Weapon):
         self.display = False
         self.precision = self.ddata[0]
         self.spd = self.ddata[1]
-
+        self.scale = 1
 
     def on_start_attack(self):
         self.face_to(
@@ -3016,8 +3016,8 @@ class Gun(Bow):
         self.spd = self.ddata[1]
         self.ddata = [self.precision, self.spd]
         self.scale = 3 - 2 * 1.2 ** (-self.strike / 50)
-        self.precision = int(self.ddata[0] / self.scale)
-        self.spd = int(self.ddata[1] * self.scale ** 1.2)
+        self.precision = int(self.ddata[0] / self.scale ** 1.5)
+        self.spd = int(self.ddata[1] * self.scale ** 3)
         self.display = True
         mx, my = position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
         rot = vector.cartesian_to_polar(mx, my)[0]
@@ -3041,7 +3041,7 @@ class Gun(Bow):
         self.display = False
         self.precision = self.ddata[0]
         self.spd = self.ddata[1]
-
+        self.scale = 1
 
     def on_start_attack(self):
         self.face_to(
@@ -3278,13 +3278,13 @@ class Astigmatism(Weapon):
         if self.cb < 30:
             rts = self.cb ** 3 // 10
             for b in self.pre_beams:
-                b.pos = game.get_game().player.obj.pos
+                b.pos << game.get_game().player.obj.pos
                 b.tick = 50
                 b.rot = self.rot + math.sin(math.radians(rts)) * (30 - self.cb)
                 b.update()
                 rts += 45
         else:
-            self.using_beam.pos = game.get_game().player.obj.pos
+            self.using_beam.pos << game.get_game().player.obj.pos
             self.using_beam.tick = 50
             self.using_beam.rot = self.rot
             self.using_beam.update()
@@ -3346,13 +3346,13 @@ class GreatForbiddenCurseLight(Weapon):
         if self.cb < 30:
             rts = self.cb ** 3 // 10
             for b in self.pre_beams:
-                b.pos = game.get_game().player.obj.pos
+                b.pos << game.get_game().player.obj.pos
                 b.tick = 50
                 b.rot = self.rot + math.sin(math.radians(rts)) * (30 - self.cb)
                 b.update()
                 rts += 60
         else:
-            self.using_beam.pos = game.get_game().player.obj.pos
+            self.using_beam.pos << game.get_game().player.obj.pos
             self.using_beam.tick = 50
             self.using_beam.rot = self.rot
             self.using_beam.update()

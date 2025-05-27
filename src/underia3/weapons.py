@@ -1,4 +1,4 @@
-from underia import weapons, game, KuangKuangKuang
+from underia import weapons, game
 from underia import projectiles as proj
 from values import damages, effects
 from resources import position
@@ -68,7 +68,7 @@ WEAPONS = {
     'e_pistol': weapons.Gun(name='e pistol', damages={damages.DamageTypes.PIERCING: 150}, kb=10,
                              img='items_weapons_e_pistol', speed=9, at_time=9, projectile_speed=1200,
                              auto_fire=True, precision=0),
-    'purple_clay_kuangkuang': KuangKuangKuang(name='purple clay kuangkuang', damages={damages.DamageTypes.PIERCING: 18}, kb=1,
+    'purple_clay_kuangkuang': weapons.KuangKuangKuang(name='purple clay kuangkuang', damages={damages.DamageTypes.PIERCING: 18}, kb=1,
                                                img='items_weapons_purple_clay_kuangkuang', speed=0, at_time=1,
                                               projectile_speed=100, auto_fire=True, precision=2),
 

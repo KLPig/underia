@@ -123,6 +123,8 @@ class Inventory:
                     b = -1
                 else:
                     continue
+                if k not in self.accessory_data:
+                    self.accessory_data[k] = 0
                 self.accessory_data[k] += b * v
                 self.conditioned_accessory_data[(func, k, v)] = f
 
@@ -188,7 +190,7 @@ class Inventory:
             return f"#{self.inner_id}: {self.name} - {self.desc}"
 
         def get_full_desc(self):
-            d = self.desc
+            d = self.desc.split('[cmd]')[0]
             if TAGS['major_accessory'] in self.tags:
                 d = 'Can only be placed in the first slot.\n' + d
             if TAGS['wings'] in self.tags:
@@ -1906,6 +1908,7 @@ RECIPES = [
     Recipe({'star_amulet': 1, 'snowstorm_bottle': 1}, 'starstorm_bottle'),
 
     Recipe({'blood_ingot': 18, 'anvil': 1}, 'bloody_traveller_boots'),
+    Recipe({'blood_ingot': 2, 'anvil': 1}, 'cell_organization', 5),
     Recipe({'platinum_ingot': 10, 'blood_ingot': 20, 'anvil': 1}, 'bloody_sword'),
     Recipe({'platinum_ingot': 12, 'blood_ingot': 32, 'anvil': 1}, 'blood_pike'),
     Recipe({'platinum_ingot': 6, 'blood_ingot': 24, 'anvil': 1}, 'bloody_bow'),
@@ -1960,6 +1963,7 @@ RECIPES = [
     Recipe({'storm_core': 1, 'starstorm_bottle': 1, 'snow_wings': 1}, 'soarer_bottle'),
     Recipe({'storm_core': 1, 'thiefs_charm': 1, 'winds_necklace': 1}, 'storm_charm'),
     Recipe({'gorgeous_ring': 1, 'magnificent_ring': 1, 'storm_core': 1}, 'red_ring'),
+    Recipe({'storm_core': 1, 'mysterious_ingot': 3}, 'wind'),
 
     Recipe({'soul': 60}, 'spiritual_heart'),
     Recipe({'soul': 30, 'firy_plant': 5}, 'butterscotch_pie', 20),
@@ -2042,6 +2046,8 @@ RECIPES = [
     Recipe({'shotgun': 1, 'daedalus_ingot': 15, 'soul_of_justice': 25, 'soul_of_bravery': 10},
            'justice_shotgun'),
     Recipe({'daedalus_ingot': 24, 'soul_of_justice': 22, 'soul_of_patience': 8, 'soul_of_bravery': 8}, 'bow_of_sanction'),
+    Recipe({'soul_of_flying': 1, 'soul_of_growth': 1, 'soul_of_coldness': 1}, 'soul', 7),
+
     Recipe({'chlorophyll': 1, 'weak_healing_potion': 1}, 'photon'),
     Recipe({'chlorophyll': 1, 'crabapple': 1}, 'photon', 2),
     Recipe({'chlorophyll': 1, 'butterscotch_pie': 1}, 'photon', 3),

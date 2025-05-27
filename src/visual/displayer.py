@@ -71,10 +71,11 @@ class Displayer:
         if not constants.LIGHTING:
             pg.display.update()
             return
-        self.light_engine.point_light(game.get_game().player.profile.get_color(),
-                                      position.displayed_position(game.get_game().player.obj.pos),
-                                      300 / game.get_game().player.get_screen_scale(),
-                                      0.5)
+        if not game.get_game().player.afterimage_shadow:
+            self.light_engine.point_light(game.get_game().player.profile.get_color(),
+                                          position.displayed_position(game.get_game().player.obj.pos),
+                                          300 / game.get_game().player.get_screen_scale(),
+                                          0.5)
         self.light_engine.update(self.canvas)
         self.light_engine.clear()
         self.light_engine.ambient_light = self.night_darkness_color

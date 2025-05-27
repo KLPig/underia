@@ -97,7 +97,7 @@ class MonsterAI(mover.Mover):
             self.time_touched_player += 1
         self.time_touched_player *= not self.touched_player
 
-    def apply_force(self, force: vector.Vector):
+    def apply_force(self, force):
         super().apply_force(force * self.SPEED)
 
     def idle(self):
@@ -655,7 +655,7 @@ class StarAI(MonsterAI):
             py = player.pos[1] - self.pos[1]
             self.apply_force(vector.Vector(vector.coordinate_rotation(px, py), 400))
             if self.touched_player:
-                self.pos = (self.pos[0] + px * 6,
+                self.pos << (self.pos[0] + px * 6,
                             self.pos[1] + py * 6)
         else:
             self.idle()
@@ -728,7 +728,7 @@ class SandStormAI(MonsterAI):
         pos = self.cur_target.pos if self.cur_target is not None else (0, 0)
         ax, ay = vector.rotation_coordinate(self.rot)
         px, py = pos[0] + ax * self.d, pos[1] + ay * self.d
-        self.pos = ((self.pos[0] + px * 6) / 7, (self.pos[1] + py * 6) / 7)
+        self.pos << ((self.pos[0] + px * 6) / 7, (self.pos[1] + py * 6) / 7)
 
 
 class AbyssRuneAI(MonsterAI):
@@ -749,9 +749,9 @@ class AbyssRuneAI(MonsterAI):
         e = [e for e in game.get_game().entities if type(e) is Entities.AbyssEye]
         if not len(e):
             return
-        self.pos = e[0].obj.pos
+        self.pos << e[0].obj.pos
         ax, ay = vector.rotation_coordinate(self.rot)
-        self.pos = (self.pos[0] + ax * self.d, self.pos[1] + ay * self.d)
+        self.pos << (self.pos[0] + ax * self.d, self.pos[1] + ay * self.d)
 
 
 class MagmaKingFireballAI(MonsterAI):
@@ -924,7 +924,7 @@ class JevilAI(SlowMoverAI):
                 self.tick = 0
                 self.ax, self.ay = vector.rotation_coordinate(random.randint(0, 360))
                 if self.state % 2 == 0:
-                    self.pos = (px + self.pos[0] + self.ax * 600, py + self.pos[1] + self.ay * 600)
+                    self.pos << (px + self.pos[0] + self.ax * 600, py + self.pos[1] + self.ay * 600)
                 dialogs = [
                     ['I CAN DO ANYTHING!', 'CHAOS, CHAOS!', 'SHALL WE PLAY THE RING-AROUND?', ],
                     ['HEE, HEE, HAVING FUN?! JOIN THE CLUB!', 'THESE CURTAINS ARE REALLY ON FIRE!',
@@ -1001,7 +1001,7 @@ class GhostFaceAI(SlowMoverAI):
                 self.tick += 1
                 if self.tick > self.appear_rate * 5:
                     self.tick = 0
-                    self.pos = (self.pos[0] + px // self.appear_rate, self.pos[1] + py // self.appear_rate)
+                    self.pos << (self.pos[0] + px // self.appear_rate, self.pos[1] + py // self.appear_rate)
 
 class JevilKnifeAI(SlowMoverAI):
     MASS = 3000
@@ -1054,7 +1054,7 @@ class TheCPUAI(SlowMoverAI):
                     t = px
                     px = py
                     py = t
-                self.pos = (px + player.pos[0], py + player.pos[1])
+                self.pos << (px + player.pos[0], py + player.pos[1])
             self.tick += 1
             if self.state == 0:
                 self.apply_force(vector.Vector(vector.coordinate_rotation(px, py), 15000))
@@ -1082,7 +1082,7 @@ class MechanicMedusaAI(TheCPUAI):
                     t = px
                     px = py
                     py = t
-                self.pos = (px + player.pos[0], py + player.pos[1])
+                self.pos << (px + player.pos[0], py + player.pos[1])
             self.tick += 1
             if self.state == 0:
                 self.apply_force(vector.Vector(vector.coordinate_rotation(px, py), 15000))
@@ -1110,7 +1110,7 @@ class GreedAI(SlowMoverAI):
         self.dp = pos
 
     def on_update(self):
-        self.pos = self.dp
+        self.pos << self.dp
         player = self.cur_target
         if player is not None:
             px = player.pos[0] - self.pos[0]
@@ -1129,7 +1129,7 @@ class GreedAI(SlowMoverAI):
                 ax, ay = vector.rotation_coordinate(self.rot)
                 px += ax * 320
                 py += ay * 320
-                self.pos = (self.pos[0] + px // 5, self.pos[1] + py // 5)
+                self.pos << (self.pos[0] + px // 5, self.pos[1] + py // 5)
                 self.velocity.clear()
                 self.velocity.add(vector.Vector(0, self.KB))
                 if self.state == 1:
@@ -1258,6 +1258,7 @@ class Entities:
 
     class Entity:
         NAME = 'Entity'
+        DIVERSITY = True
         DISPLAY_MODE = 0
         LOOT_TABLE = LootTable([])
         ENTITY_TAGS = []
@@ -1310,7 +1311,7 @@ class Entities:
             if self.IS_MENACE:
                 self.hp_sys.displayed_hp = 0
             self.adj = ''
-            if not random.randint(0, 3) and not self.IS_MENACE:
+            if not random.randint(0, 3) and not self.IS_MENACE and self.DIVERSITY:
                 self.adj, hp_t, def_a, mass_a, _atk_a = random.choice(self.ADJECTIVES)
                 self.hp_sys.max_hp *= hp_t
                 self.hp_sys.hp = self.hp_sys.max_hp
@@ -1423,7 +1424,7 @@ class Entities:
             if not len([1 for e in self.hp_sys.effects if type(e) is effects.Frozen]):
                 self.obj.update()
             self.set_rotation(self.rot)
-            self.hp_sys.pos = self.obj.pos
+            self.hp_sys.pos << self.obj.pos
             self.hp_sys.update()
             p = position.displayed_position((self.obj.pos[0], self.obj.pos[1]))
             if self.img.get_width() + self.img.get_height() > 30 * game.get_game().player.get_screen_scale():
@@ -1938,7 +1939,7 @@ class Entities:
                 self.body[i].set_rotation(-vector.coordinate_rotation(ox - nx, oy - ny))
                 ax, ay = vector.rotation_coordinate(vector.coordinate_rotation(ox - nx, oy - ny))
                 tx, ty = ox - ax * self.body_length, oy - ay * self.body_length
-                self.body[i].obj.pos = (tx, ty)
+                self.body[i].obj.pos << (tx, ty)
                 if not i and self.body[i].obj.velocity.get_net_value() > 0:
                     self.body[0].obj.velocity.add(self.body[i].obj.velocity.get_net_vector())
                     self.body[i].obj.velocity.clear()
@@ -2559,7 +2560,7 @@ class Entities:
                     if vector.distance(ax, ay) > 400:
                         ax *= 400 / vector.distance(ax, ay)
                         ay *= 400 / vector.distance(ax, ay)
-                        a.obj.pos = (self.obj.pos[0] + ax, self.obj.pos[1] + ay)
+                        a.obj.pos << (self.obj.pos[0] + ax, self.obj.pos[1] + ay)
                     if a.hp_sys.hp <= 0:
                         self.apples.remove(a)
                 self.hp_sys.hp = self.o_hp + sum([a.hp_sys.hp for a in self.apples])
@@ -2577,7 +2578,7 @@ class Entities:
                 elif self.tick == 150:
                     px, py = game.get_game().player.obj.pos
                     vx, vy = vector.rotation_coordinate(random.randint(0, 359))
-                    self.obj.pos = (px + vx * 1000, py + vy * 1000)
+                    self.obj.pos << (px + vx * 1000, py + vy * 1000)
                 elif self.tick > 150:
                     self.img.set_alpha((self.tick - 150) * 255 // 30)
             else:
@@ -2588,7 +2589,7 @@ class Entities:
                 elif self.tick == 70:
                     px, py = game.get_game().player.obj.pos
                     vx, vy = vector.rotation_coordinate(random.randint(0, 359))
-                    self.obj.pos = (px + vx * 1000, py + vy * 1000)
+                    self.obj.pos << (px + vx * 1000, py + vy * 1000)
                 elif self.tick > 70:
                     self.img.set_alpha((self.tick - 70) * 255 // 10)
             self.set_rotation(self.rot)
@@ -2732,7 +2733,7 @@ class Entities:
             self.obj.update()
             self.tick = 0
             self.phase = 0
-            self.obj.pos = (pos[0] + random.randint(-100, 100), pos[1] + random.randint(-100, 100))
+            self.obj.pos << (pos[0] + random.randint(-100, 100), pos[1] + random.randint(-100, 100))
             self.obj.IS_OBJECT = False
 
         def on_update(self):
@@ -2914,7 +2915,7 @@ class Entities:
                 for i in range(4):
                     rr = self.rt + i * 90
                     ax, ay = vector.rotation_coordinate(rr)
-                    self.buls[i].obj.pos = (self.obj.pos[0] + ax * 100, self.obj.pos[1] + ay * 100)
+                    self.buls[i].obj.pos << (self.obj.pos[0] + ax * 100, self.obj.pos[1] + ay * 100)
 
 
         def damage(self):
@@ -2987,7 +2988,7 @@ class Entities:
 
         def on_update(self):
             super().on_update()
-            self.obj.pos = (self.obj.pos[0], self.obj.pos[1] + 75)
+            self.obj.pos << (self.obj.pos[0], self.obj.pos[1] + 75)
             self.hp_sys.hp -= 75 * 10 ** 5
             if self.hp_sys.hp <= 0:
                 self.hp_sys.hp = 0
@@ -3105,7 +3106,7 @@ class Entities:
             super().on_update()
             self.tick += 1
             if self.tick < 10:
-                self.obj.pos = ((self.obj.pos[0] * 3 + self.target[0]) / 4,
+                self.obj.pos << ((self.obj.pos[0] * 3 + self.target[0]) / 4,
                                 (self.obj.pos[1] * 3 + self.target[1]) / 4)
             if vector.distance(self.obj.pos[0] - self.target[0],
                                self.obj.pos[1] - self.target[1]) < 50:
@@ -3152,7 +3153,7 @@ class Entities:
             super().on_update()
             self.tick += 1
             if self.tick < 10:
-                self.obj.pos = ((self.obj.pos[0] * 3 + self.target[0]) / 4,
+                self.obj.pos << ((self.obj.pos[0] * 3 + self.target[0]) / 4,
                                 (self.obj.pos[1] * 3 + self.target[1]) / 4)
             if vector.distance(self.obj.pos[0] - self.target[0],
                                self.obj.pos[1] - self.target[1]) < 50:
@@ -3199,7 +3200,7 @@ class Entities:
             super().on_update()
             self.tick += 1
             if self.tick < 10:
-                self.obj.pos = ((self.obj.pos[0] * 2 + self.target[0]) / 3,
+                self.obj.pos << ((self.obj.pos[0] * 2 + self.target[0]) / 3,
                                 (self.obj.pos[1] * 2 + self.target[1]) / 3)
             if vector.distance(self.obj.pos[0] - self.target[0],
                                self.obj.pos[1] - self.target[1]) < 50:
@@ -3247,7 +3248,7 @@ class Entities:
             super().on_update()
             self.tick += 1
             if self.tick < 10:
-                self.obj.pos = ((self.obj.pos[0] * 2 + self.target[0]) / 3,
+                self.obj.pos << ((self.obj.pos[0] * 2 + self.target[0]) / 3,
                                 (self.obj.pos[1] * 2 + self.target[1]) / 3)
             if vector.distance(self.obj.pos[0] - self.target[0],
                                self.obj.pos[1] - self.target[1]) < 50:
@@ -3299,7 +3300,7 @@ class Entities:
             super().on_update()
             self.tick += 1
             if self.tick < 10:
-                self.obj.pos = ((self.obj.pos[0] * 2 + self.target[0]) / 3,
+                self.obj.pos << ((self.obj.pos[0] * 2 + self.target[0]) / 3,
                                 (self.obj.pos[1] * 2 + self.target[1]) / 3)
             if vector.distance(self.obj.pos[0] - self.target[0], self.obj.pos[1] - self.target[1]) < 50:
                 self.tick = max(10, self.tick)
@@ -3344,7 +3345,7 @@ class Entities:
             super().on_update()
             self.tick += 1
             if self.tick < 10:
-                self.obj.pos = ((self.obj.pos[0] * 2 + self.target[0]) / 3,
+                self.obj.pos << ((self.obj.pos[0] * 2 + self.target[0]) / 3,
                                 (self.obj.pos[1] * 2 + self.target[1]) / 3)
             if vector.distance(self.obj.pos[0] - self.target[0],
                                self.obj.pos[1] - self.target[1]) < 50:
@@ -4041,10 +4042,10 @@ class Entities:
         def t_draw(self):
             if 'limit_pt' not in dir(self):
                 self.limit_pt = self.obj.pos
-            self.tail.obj.pos = self.obj.pos
+            self.tail.obj.pos << self.obj.pos
             self.tail.t_draw()
             super().t_draw()
-            self.head.obj.pos = self.obj.pos
+            self.head.obj.pos << self.obj.pos
             self.head.t_draw()
             pg.draw.circle(game.get_game().displayer.canvas, (255, 255, 255),
                             position.displayed_position(self.limit_pt),
@@ -4055,14 +4056,14 @@ class Entities:
             if vector.distance(px, py) > 8000:
                 px *= 8000 / vector.distance(px, py)
                 py *= 8000 / vector.distance(px, py)
-                game.get_game().player.obj.pos = (px + self.limit_pt[0], py + self.limit_pt[1])
+                game.get_game().player.obj.pos << (px + self.limit_pt[0], py + self.limit_pt[1])
             sx, sy = self.obj.pos
             sx -= self.limit_pt[0]
             sy -= self.limit_pt[1]
             if vector.distance(sx, sy) > 8000:
                 sx *= 8000 / vector.distance(sx, sy)
                 sy *= 8000 / vector.distance(sx, sy)
-                self.obj.pos = (sx + self.limit_pt[0], sy + self.limit_pt[1])
+                self.obj.pos << (sx + self.limit_pt[0], sy + self.limit_pt[1])
 
         def on_update(self):
             if self.phase == 0 and self.hp_sys.hp < self.hp_sys.max_hp * .7:
@@ -4449,7 +4450,7 @@ class Entities:
                                         self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 800:
                         game.get_game().player.hp_sys.damage(self.obj.TOUCHING_DAMAGE, damages.DamageTypes.MAGICAL)
                 else:
-                    self.obj.pos = (game.get_game().player.obj.pos[0] + random.randint(-500, 500),
+                    self.obj.pos << (game.get_game().player.obj.pos[0] + random.randint(-500, 500),
                                      game.get_game().player.obj.pos[1] + random.randint(-500, 500))
 
     class Cells(Entity):
@@ -4665,12 +4666,12 @@ class Entities:
             self.goblins = []
             self.tick = 0
             self.this_no = []
-            self.wave = 3
+            self.wave = 0
             self.hp_sys(op='config', immune=True)
 
-        def update(self):
+        def on_update(self):
             self.NAME = 'The Heaven Goblins(Wave %d)' % (self.wave + 1)
-            self.obj.pos = (game.get_game().player.obj.pos[0],
+            self.obj.pos << (game.get_game().player.obj.pos[0],
                             game.get_game().player.obj.pos[1] - 1000)
             self.tick += 1
             if self.tick % 10 == 1 and len(self.goblins) < self.NUMBERS[self.wave] * 2:
@@ -4714,7 +4715,7 @@ class Entities:
             self.hp_sys.hp = 140
 
         def update(self):
-            self.obj.pos = game.get_game().player.obj.pos
+            self.obj.pos << game.get_game().player.obj.pos
             self.tick += 1
             if self.tick % 10 == 1 and len(self.goblins) < 320:
                 px, py = self.obj.pos
@@ -5244,7 +5245,7 @@ class Entities:
             _p = (game.get_game().player.obj.pos[0] + random.randint(-5000, 5000),
                   game.get_game().player.obj.pos[1] + random.randint(-5000, 5000))
             if not d:
-                hp_sys = hp_system.HPSystem(320000)
+                hp_sys = hp_system.HPSystem(450000)
                 for i in range(9):
                     game.get_game().entities.append(Entities.EyeOfTime(pos, True, hp_sys, i + 1))
                 super().__init__(_p, game.get_game().graphics['entity_eye_of_time'], BuildingAI, hp_sys=hp_sys)
@@ -5275,10 +5276,11 @@ class Entities:
                         et = Entities.EyeOfTime(self.obj.pos, 114, self.hp_sys, 1)
                         et.tick = (self.tick + 20 * f + 10) % 100
                         game.get_game().entities.append(et)
+            self.obj.IS_OBJECT = False
             if self.tick > 200 // self.me:
                 self.state = (self.state + 1) % 1
                 self.tick = 0
-                self.obj.pos = (game.get_game().player.obj.pos[0] + random.randint(-500, 500),
+                self.obj.pos << (game.get_game().player.obj.pos[0] + random.randint(-500, 500),
                                 game.get_game().player.obj.pos[1] + random.randint(-500, 500))
                 self.obj.velocity.clear()
                 self.obj.velocity.add(vector.Vector(random.randint(0, 360), 5))
@@ -5287,6 +5289,8 @@ class Entities:
                 self.img.set_alpha(self.tick * 12 + 15)
             elif self.tick > 200 // self.me - 20 and constants.USE_ALPHA:
                 self.img.set_alpha(255 - (self.tick - 200 // self.me + 20) * 12)
+            else:
+                self.obj.IS_OBJECT = True
             if self.tick % 20 == 0 and 20 <= self.tick <= 20 + 20 * self.me:
                 t = Entities.Time(self.obj.pos,
                                   vector.coordinate_rotation(game.get_game().player.obj.pos[0] - self.obj.pos[0],
@@ -5315,7 +5319,7 @@ class Entities:
 
         def __init__(self, pos):
             super().__init__(pos, 60, game.get_game().graphics['entity_devil_python_head'],
-                             game.get_game().graphics['entity_devil_python_body'], DevilPythonAI, 360000,
+                             game.get_game().graphics['entity_devil_python_body'], DevilPythonAI, 800000,
                              body_length=90, body_touching_damage=320)
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 25
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 30
@@ -5615,13 +5619,13 @@ class Entities:
             if vector.distance(apx, apy) > self.cur_fs:
                 apx *= self.cur_fs / vector.distance(apx, apy)
                 apy *= self.cur_fs / vector.distance(apx, apy)
-                game.get_game().player.obj.pos = (self.sps[0] + apx, self.sps[1] + apy)
+                game.get_game().player.obj.pos << (self.sps[0] + apx, self.sps[1] + apy)
 
     class GhostFace(Entity):
         NAME = 'Ghost Face'
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([
-            IndividualLoot('chaos_ingot', 1, 5, 12),
+            IndividualLoot('chaos_ingot', 1, 50, 120),
             IndividualLoot('wierd_essence', 0.5, 10, 22),
             ])
 
@@ -5632,7 +5636,7 @@ class Entities:
         NAME = 'Sad Face'
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([
-            IndividualLoot('chaos_ingot', 1, 5, 12),
+            IndividualLoot('chaos_ingot', 1, 15, 50),
             IndividualLoot('wierd_essence', 0.5, 10, 22),
             ])
 
@@ -5646,7 +5650,7 @@ class Entities:
         NAME = 'Angry Face'
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([
-            IndividualLoot('chaos_ingot', 1, 5, 12),
+            IndividualLoot('chaos_ingot', 1, 15, 50),
             IndividualLoot('wierd_essence', 0.5, 10, 22),
             ])
 
@@ -5686,7 +5690,7 @@ class Entities:
         NAME = 'Timetrap'
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([
-            IndividualLoot('chaos_ingot', 1, 5, 12),
+            IndividualLoot('chaos_ingot', 1, 15, 50),
             IndividualLoot('time_essence', 0.5, 10, 22),
             ])
 
@@ -5700,12 +5704,12 @@ class Entities:
             px -= self.obj.pos[0]
             py -= self.obj.pos[1]
             if vector.distance(px, py) < 200:
-                game.get_game().player.obj.pos = self.obj.pos
+                game.get_game().player.obj.pos << self.obj.pos
             elif vector.distance(px, py) < 2000:
                 draw.line(game.get_game().displayer.canvas, (0, 255, 0),
                              position.displayed_position(self.obj.pos),
                              position.displayed_position(game.get_game().player.obj.pos), 10)
-                game.get_game().player.obj.pos = (game.get_game().player.obj.pos[0] - px // 20, game.get_game().player.obj.pos[1] - py // 20)
+                game.get_game().player.obj.pos << (game.get_game().player.obj.pos[0] - px // 20, game.get_game().player.obj.pos[1] - py // 20)
             pg.draw.circle(game.get_game().displayer.canvas, (255, 0, 0),
                            position.displayed_position(self.obj.pos), 200 / game.get_game().player.get_screen_scale(), 5)
             pg.draw.circle(game.get_game().displayer.canvas, (100, 100, 255),
@@ -5715,7 +5719,7 @@ class Entities:
         NAME = 'Timeflower'
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([
-            IndividualLoot('chaos_ingot', 1, 5, 12),
+            IndividualLoot('chaos_ingot', 1, 15, 50),
             IndividualLoot('time_essence', 0.5, 10, 22),
             ])
 
@@ -5729,12 +5733,12 @@ class Entities:
             px -= self.obj.pos[0]
             py -= self.obj.pos[1]
             if vector.distance(px, py) < 100:
-                game.get_game().player.obj.pos = self.obj.pos
+                game.get_game().player.obj.pos << self.obj.pos
             elif vector.distance(px, py) < 1000:
                 draw.line(game.get_game().displayer.canvas, (0, 255, 0),
                              position.displayed_position(self.obj.pos),
                              position.displayed_position(game.get_game().player.obj.pos), 10)
-                game.get_game().player.obj.pos = (game.get_game().player.obj.pos[0] - px // 40, game.get_game().player.obj.pos[1] - py // 40)
+                game.get_game().player.obj.pos << (game.get_game().player.obj.pos[0] - px // 40, game.get_game().player.obj.pos[1] - py // 40)
             pg.draw.circle(game.get_game().displayer.canvas, (255, 0, 0),
                            position.displayed_position(self.obj.pos), 100 / game.get_game().player.get_screen_scale(), 5)
             pg.draw.circle(game.get_game().displayer.canvas, (100, 100, 255),
@@ -5773,7 +5777,7 @@ class Entities:
         NAME = 'Molecules'
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([
-            IndividualLoot('chaos_ingot', 1, 5, 12),
+            IndividualLoot('chaos_ingot', 1, 15, 50),
             IndividualLoot('substance_essence', 0.5, 10, 22),
             ])
 
@@ -5794,7 +5798,7 @@ class Entities:
         NAME = 'Titanium Ingot'
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([
-            IndividualLoot('chaos_ingot', 1, 5, 12),
+            IndividualLoot('chaos_ingot', 1, 15, 50),
             IndividualLoot('substance_essence', 0.5, 10, 22),
             ])
 
@@ -5811,7 +5815,7 @@ class Entities:
         NAME = 'Spark'
         DISPLAY_MODE = 3
         LOOT_TABLE = LootTable([
-            IndividualLoot('chaos_ingot', 1, 5, 12),
+            IndividualLoot('chaos_ingot', 1, 15, 50),
             IndividualLoot('light_essence', 0.5, 10, 22),
             ])
 
@@ -5827,7 +5831,7 @@ class Entities:
         NAME = 'Holyfire'
         DISPLAY_MODE = 3
         LOOT_TABLE = LootTable([
-            IndividualLoot('chaos_ingot', 1, 5, 12),
+            IndividualLoot('chaos_ingot', 1, 15, 50),
             IndividualLoot('light_essence', 0.5, 10, 22),
             ])
 
@@ -5935,7 +5939,7 @@ class Entities:
                                                                          col=(255, 63, 0), t=3, sp=16, n=5))
             else:
                 if self.follow_entity is not None:
-                    self.obj.pos = (self.follow_entity.obj.pos[0] + self.ax, self.follow_entity.obj.pos[1] + self.ay)
+                    self.obj.pos << (self.follow_entity.obj.pos[0] + self.ax, self.follow_entity.obj.pos[1] + self.ay)
                     self.obj.rot = -self.follow_entity.rot + self.arot
                 ax, ay = vector.rotation_coordinate(self.obj.rot)
                 draw.line(game.get_game().displayer.canvas, (255, 0, 0),
@@ -5986,7 +5990,7 @@ class Entities:
                                                                         col=(63, 255, 0), t=3, sp=16, n=5))
             else:
                 if self.follow_entity is not None:
-                    self.obj.pos = (self.follow_entity.obj.pos[0] + self.ax, self.follow_entity.obj.pos[1] + self.ay)
+                    self.obj.pos << (self.follow_entity.obj.pos[0] + self.ax, self.follow_entity.obj.pos[1] + self.ay)
                     self.obj.rot = -self.follow_entity.rot + self.arot
                 ax, ay = vector.rotation_coordinate(self.obj.rot)
                 draw.line(game.get_game().displayer.canvas, (0, 255, 0),
@@ -6067,7 +6071,7 @@ class Entities:
                 py -= self.obj.pos[1]
                 if vector.distance(px, py) > self.dt:
                     ap = self.dt / vector.distance(px, py)
-                    game.get_game().player.obj.pos = (self.obj.pos[0] + ap * px, self.obj.pos[1] + ap * py)
+                    game.get_game().player.obj.pos << (self.obj.pos[0] + ap * px, self.obj.pos[1] + ap * py)
                     px *= ap
                     py *= ap
                 if self.phase == 1:
@@ -6157,7 +6161,7 @@ class Entities:
                 self.dt = int(1500 + 300 * math.sin(self.tick / 10))
             for i, e in enumerate(self.nums):
                 ax, ay = vector.rotation_coordinate(self.rt % 360 + i * 30)
-                e.obj.pos = (self.obj.pos[0] + ax * self.dt,
+                e.obj.pos << (self.obj.pos[0] + ax * self.dt,
                              self.obj.pos[1] + ay * self.dt)
 
     class MATTER(Entity):
@@ -6208,7 +6212,7 @@ class Entities:
                 py -= self.obj.pos[1]
                 if vector.distance(px, py) > self.cdt:
                     ap = self.cdt / vector.distance(px, py)
-                    game.get_game().player.obj.pos = (self.obj.pos[0] + ap * px, self.obj.pos[1] + ap * py)
+                    game.get_game().player.obj.pos << (self.obj.pos[0] + ap * px, self.obj.pos[1] + ap * py)
                     px *= ap
                     py *= ap
             if self.phase == 0:
@@ -6527,7 +6531,7 @@ class Entities:
             else:
                 self.sun_eye.action_state = 6
                 self.moon_eye.action_state = 6
-            self.obj.pos = self.sun_eye.obj.pos
+            self.obj.pos << self.sun_eye.obj.pos
 
     class HolyPillar(Ore):
         NAME = 'Holy Pillar'
@@ -6588,7 +6592,7 @@ class Entities:
                                                                         col=(0, 127, 0), t=6, sp=8, n=3))
             else:
                 if self.follow_entity is not None:
-                    self.obj.pos = (self.follow_entity.obj.pos[0] + self.ax, self.follow_entity.obj.pos[1] + self.ay)
+                    self.obj.pos << (self.follow_entity.obj.pos[0] + self.ax, self.follow_entity.obj.pos[1] + self.ay)
                     self.obj.rot = -self.follow_entity.rot + self.arot
                 ax, ay = vector.rotation_coordinate(self.obj.rot)
                 draw.line(game.get_game().displayer.canvas, (0, 255, 0),
@@ -6636,7 +6640,7 @@ class Entities:
                                                                         col=(0, 0, 0), t=6, sp=8, n=2))
             else:
                 if self.follow_entity is not None:
-                    self.obj.pos = (
+                    self.obj.pos << (
                     self.follow_entity.obj.pos[0] + self.ax, self.follow_entity.obj.pos[1] + self.ay)
                     self.obj.rot = -self.follow_entity.rot + self.arot
                 ax, ay = vector.rotation_coordinate(self.obj.rot)
@@ -6687,7 +6691,7 @@ class Entities:
                                                                         col=(0, 255, 255), t=6, sp=8, n=2))
             else:
                 if self.follow_entity is not None:
-                    self.obj.pos = (
+                    self.obj.pos << (
                     self.follow_entity.obj.pos[0] + self.ax, self.follow_entity.obj.pos[1] + self.ay)
                     self.obj.rot = -self.follow_entity.rot + self.arot
                 ax, ay = vector.rotation_coordinate(self.obj.rot)
@@ -7132,7 +7136,7 @@ class Entities:
             if vector.distance(px, py) > 1200:
                 px *= 1200 / vector.distance(px, py)
                 py *= 1200 / vector.distance(px, py)
-            game.get_game().player.obj.pos = (px + self.obj.pos[0], py + self.obj.pos[1])
+            game.get_game().player.obj.pos << (px + self.obj.pos[0], py + self.obj.pos[1])
             col = (200, 255, 127)
             if self.phase:
                 if self.state == -1:
@@ -7484,7 +7488,7 @@ class Entities:
             for i in range(6):
                 self.petals[i].set_rotation(self.rt + i * 60)
                 ax, ay = vector.rotation_coordinate(45 - self.rt - i * 60)
-                self.petals[i].obj.pos = (self.obj.pos[0] + ax * 1536, self.obj.pos[1] + ay * 1536)"""
+                self.petals[i].obj.pos << (self.obj.pos[0] + ax * 1536, self.obj.pos[1] + ay * 1536)"""
 
     class FriendlyBullet(Entity):
         NAME = 'Friendly Bullet'
@@ -7514,7 +7518,7 @@ class Entities:
                 self.set_rotation(self.rot + 77)
             if self.tick < 10:
                 if self.follow_entity is not None:
-                    self.obj.pos = (self.follow_entity.obj.pos[0] + self.ax, self.follow_entity.obj.pos[1] + self.ay)
+                    self.obj.pos << (self.follow_entity.obj.pos[0] + self.ax, self.follow_entity.obj.pos[1] + self.ay)
                     self.obj.rot = -self.follow_entity.rot + self.arot
                 ax, ay = vector.rotation_coordinate(self.obj.rot)
                 draw.line(game.get_game().displayer.canvas, (255, 0, 0),
@@ -7552,7 +7556,7 @@ class Entities:
             self.tick += 1
             self.set_rotation(self.rt + 180)
             ax, ay = vector.rotation_coordinate(self.rt)
-            self.obj.pos = (self.s_pos[0] + ax * (2000 + 2500 * math.sin(self.tick / 20)),
+            self.obj.pos << (self.s_pos[0] + ax * (2000 + 2500 * math.sin(self.tick / 20)),
                             self.s_pos[1] + ay * (2000 + 2500 * math.sin(self.tick / 20)))
             super().update()
 
@@ -7585,7 +7589,7 @@ class Entities:
             self.tick += 1
             if self.tick < 10:
                 if self.follow_entity is not None:
-                    self.obj.pos = (self.follow_entity.obj.pos[0] + self.ax, self.follow_entity.obj.pos[1] + self.ay)
+                    self.obj.pos << (self.follow_entity.obj.pos[0] + self.ax, self.follow_entity.obj.pos[1] + self.ay)
                     self.obj.rot = -self.follow_entity.rot + self.arot
                 ax, ay = vector.rotation_coordinate(self.obj.rot)
                 draw.line(game.get_game().displayer.canvas, (255, 0, 0),
@@ -7630,7 +7634,7 @@ class Entities:
             self.tick += 1
             self.set_rotation(self.rt + 180)
             ax, ay = vector.rotation_coordinate(self.rt)
-            self.obj.pos = (self.s_pos[0] + ax * (2000 * math.sin(self.tick / 40) - 500),
+            self.obj.pos << (self.s_pos[0] + ax * (2000 * math.sin(self.tick / 40) - 500),
                             self.s_pos[1] + ay * (2000 * math.sin(self.tick / 40) - 500))
             super().update()
 
@@ -7685,7 +7689,7 @@ class Entities:
             self.rt += 6
             self.set_rotation(self.rt + 180)
             ax, ay = vector.rotation_coordinate(self.rt)
-            self.obj.pos = (self.s_pos[0] + ax * self.dt,
+            self.obj.pos << (self.s_pos[0] + ax * self.dt,
                             self.s_pos[1] + ay * self.dt)
             if not self.tick and random.randint(0, 10) == 3:
                 self.tick = 1
@@ -7718,7 +7722,7 @@ class Entities:
             self.tick += 1
             self.set_rotation(self.rt + 180)
             ax, ay = vector.rotation_coordinate(self.rt)
-            self.obj.pos = (self.s_pos[0] + ax * (1000 + 3000 * math.sin(self.tick / 20)),
+            self.obj.pos << (self.s_pos[0] + ax * (1000 + 3000 * math.sin(self.tick / 20)),
                             self.s_pos[1] + ay * (1000 + 3000 * math.sin(self.tick / 20)))
             super().update()
 
@@ -7791,7 +7795,7 @@ class Entities:
             self.rt += 10
             self.set_rotation(self.rt + 180)
             ax, ay = vector.rotation_coordinate(self.rt)
-            self.obj.pos = (self.s_pos[0] + ax * self.dt,
+            self.obj.pos << (self.s_pos[0] + ax * self.dt,
                             self.s_pos[1] + ay * self.dt)
             if not self.tick and random.randint(0, 10) == 3:
                 self.tick = 1
@@ -7822,7 +7826,7 @@ class Entities:
             self.tick += 1
             self.set_rotation(-self.obj.velocity.get_net_rotation())
             ax, ay = vector.rotation_coordinate(self.rt)
-            self.obj.pos = (self.s_pos[0] + ax * (3000 * math.sin(self.tick / 40) - 1000),
+            self.obj.pos << (self.s_pos[0] + ax * (3000 * math.sin(self.tick / 40) - 1000),
                             self.s_pos[1] + ay * (3000 * math.sin(self.tick / 40) - 1000))
             super().update()
 
@@ -7830,9 +7834,9 @@ class Entities:
 def entity_spawn(entity: type(Entities.Entity), to_player_min=1500, to_player_max=2500, number_factor=0.5,
                  target_number=5, rate=0.5):
     game_obj = game.get_game()
-    if (random.random() < max(0.0, len([e for e in game_obj.entities if type(e) is entity]) - target_number
-                                   * number_factor / 20) - rate / 50 + max(0, len(game_obj.entities) - constants.ENTITY_NUMBER)
-            / 12 * (not entity.IS_MENACE) + 1):
+    if (random.random() < (len([1 for e in game_obj.entities if type(e) is entity]) - int(target_number ** .45))
+            * number_factor * rate / 200 - rate / 80 + 1
+            + (len(game_obj.entities) - constants.ENTITY_NUMBER) / 16 * (not entity.IS_MENACE)):
         return
     player = game_obj.player
     dist = random.randint(to_player_min, to_player_max)

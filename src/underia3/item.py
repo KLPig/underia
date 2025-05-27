@@ -1,4 +1,4 @@
-from underia import inventory, Recipe
+from underia import inventory
 
 # items
 
@@ -15,6 +15,8 @@ ITEMS = {
                                   [inventory.TAGS['item']]),
     'carrion': inventory.Inventory.Item('Carrion', '', 'carrion', 2, [inventory.TAGS['item']]),
 
+    'lychee_core_shard': inventory.Inventory.Item('Lychee Core Shard', '', 'lychee_core_shard', 3, [inventory.TAGS['item']]),
+
     'wooden_rope': inventory.Inventory.Item('Wooden Rope', '', 'wooden_rope', 0, [inventory.TAGS['item']]),
 
     'feather_amulet': inventory.Inventory.Item('Feather Amulet', 'Resistant to tree curse.\n-20% air resistance\n-10kg\n+20% speed',
@@ -29,15 +31,32 @@ ITEMS = {
     'toxic_wing': inventory.Inventory.Item('Toxic Wing', '+80% speed\n-20% air resistance\n50% wing control\n-10/sec regeneration',
                                  'toxic_wing', 2, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
     'clear_crystal__snow': inventory.Inventory.Item('Clear Crystal: Snow',
+                                                    'Using mana to gain regeneration.[cmd]\n'
                                                     'When MP > 25%, -5/sec mana regeneration\n'
                                                     'When MP > 50%, -5/sec mana regeneration\n'
                                                     'When MP > 75%, -5/sec mana regeneration\n'
                                                     'When MP > 100%, -5/sec mana regeneration\n'
-                                                    'When MP > 25%, +3/sec regeneration\n'
-                                                    'When MP > 50%, +3/sec regeneration\n'
-                                                    'When MP > 75%, +3/sec regeneration\n'
-                                                    'When MP > 100%, +3/sec regeneration',
+                                                    'When MP > 25%, +10/sec regeneration\n'
+                                                    'When MP > 50%, +10/sec regeneration\n'
+                                                    'When MP > 75%, +10/sec regeneration\n'
+                                                    'When MP > 100%, +10/sec regeneration',
                                                       'clear_crystal__snow', 2, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
+
+    'lychee_core': inventory.Inventory.Item('Lychee Core',
+                                            'Using mana to gain speed and critical.[cmd]\n'
+                                            'When MP > 25%, -5/sec mana regeneration\n'
+                                            'When MP > 50%, -5/sec mana regeneration\n'
+                                            'When MP > 75%, -5/sec mana regeneration\n'
+                                            'When MP > 100%, -5/sec mana regeneration\n'
+                                            'When MP > 25%, +30% speed\n'
+                                            'When MP > 50%, +30% speed\n'
+                                            'When MP > 75%, +30% speed\n'
+                                            'When MP > 100%, +30% speed\n'
+                                            'When MP > 25%, +8% critical\n'
+                                            'When MP > 50%, +8% critical\n'
+                                            'When MP > 75%, +8% critical\n'
+                                            'When MP > 100%, +8% critical', 'lychee_core', 3,
+                                            [inventory.TAGS['item'], inventory.TAGS['accessory']]),
 
     'poison_quiver': inventory.Inventory.Item('Poison Quiver',
                                               'Resistant to snow curse.\n+20 touching defense\n'
@@ -84,6 +103,11 @@ ITEMS = {
     'lychee_wand': inventory.Inventory.Item('Lychee Wand', '', 'lychee_wand', 1,
                                   [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['magic_weapon'],
                                    inventory.TAGS['magic_element_life'], inventory.TAGS['magic_lv_1']]),
+
+    'lychee': inventory.Inventory.Item('Lychee', '...even if you don\'t know how it was made.\n'
+                                                 'Under the "bless" of the trees, summon the lychee king.\n'
+                                                 'Suggested level: 2(uncommon)', 'lychee', 1,
+                                       [inventory.TAGS['item']]),
 }
 
 for k, v in ITEMS.items():
@@ -115,6 +139,9 @@ RECIPES = [
     inventory.Recipe({'e_wooden_hammer': 1, 'lychee_shard': 20, 'poison_powder': 10}, 'toxic_wing'),
     inventory.Recipe({'e_wooden_hammer': 1, 'lychee_shard': 20, 'purple_clay': 20, 'poison_powder': 50, 'carrion': 10}, 'clear_crystal__snow'),
 
+    inventory.Recipe({'e_wooden_hammer': 1, 'lychee_core_shard': 15, 'lychee_shard': 15}, 'lychee_core'),
+
+    inventory.Recipe({'e_wooden_hammer': 1, 'lychee_shard': 15, 'purple_clay': 10, 'e_feather': 10}, 'lychee'),
 ]
 
 inventory.RECIPES.extend(RECIPES)

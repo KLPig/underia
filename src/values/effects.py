@@ -93,6 +93,12 @@ class Freezing(Effect):
     DESC = '-60% speed'
     CORRESPONDED_ELEMENT = elements.ElementTypes.WATER
 
+class AfterimageShadow(Effect):
+    IMG = 'afterimage_shadow'
+    NAME = 'Afterimage Shadow'
+    DESC = 'Afterimage Shadow\n+1000% damage\n+1000% critical'
+    CORRESPONDED_ELEMENT = elements.ElementTypes.DEATH
+
 class Darkened(Effect):
     IMG = 'darkened'
     NAME = 'Darkened'

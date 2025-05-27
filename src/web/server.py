@@ -59,7 +59,7 @@ class SocketServer:
             loop.create_task(self.socket_handle(client))
 
     def update(self):
-        self.players[0].pos = game.get_game().player.obj.pos
+        self.players[0].pos << game.get_game().player.obj.pos
 
 
 if __name__ == '__main__':
