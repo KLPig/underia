@@ -4,7 +4,7 @@ import random
 import pygame as pg
 
 from physics import mover, vector
-from resources import position, path
+from resources import position, cursors, errors, path
 from underia import game, styles, inventory, weapons, entity, projectiles, player_profile, notebook
 from values import hp_system, damages, effects
 import constants
