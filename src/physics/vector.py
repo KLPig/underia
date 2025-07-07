@@ -16,7 +16,7 @@ def cartesian_to_polar(dx, dy):
     return coordinate_rotation(dx, dy), distance(dx, dy)
 
 def distance(x, y):
-    return math.sqrt(x ** 2 + y ** 2)
+    return (x ** 2 + y ** 2) ** .5
 
 class Vector2D:
     def __init__(self, dr=0, dt=0, dx=0, dy=0):
@@ -56,10 +56,10 @@ class Vector2D:
         return self.x == other.x and self.y == other.y
 
     def __add__(self, other):
-        return Vector2D(dx=self.x + other.x, dy=self.y + other.y)
+        return Vector2D(dx=self.x + other[0], dy=self.y + other[1])
 
     def __sub__(self, other):
-        return Vector2D(dx=self.x - other.x, dy=self.y - other.y)
+        return Vector2D(dx=self.x - other[0], dy=self.y - other[1])
 
     def __mul__(self, other):
         return Vector2D(dx=self.x * other, dy=self.y * other)
@@ -77,13 +77,13 @@ class Vector2D:
         return Vector2D(dx=+self.x, dy=+self.y)
 
     def __iadd__(self, other):
-        self.x += other.x
-        self.y += other.y
+        self.x += other[0]
+        self.y += other[1]
         return self
 
     def __isub__(self, other):
-        self.x -= other.x
-        self.y -= other.y
+        self.x -= other[0]
+        self.y -= other[1]
         return self
 
     def __imul__(self, other):

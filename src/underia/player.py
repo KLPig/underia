@@ -15,19 +15,25 @@ status = []
 
 class PlayerObject(mover.Mover):
     MASS = 20
-    FRICTION = 0.8
+    FRICTION = 0.9
     SPEED = 20
 
     def on_update(self):
         keys = game.get_game().get_pressed_keys()
         if pg.K_w in keys:
-            self.apply_force(vector.Vector(0, self.SPEED))
+            self.apply_force(vector.Vector(0, self.SPEED / 2))
         elif pg.K_s in keys:
-            self.apply_force(vector.Vector(180, self.SPEED))
+            self.apply_force(vector.Vector(180, self.SPEED / 2))
         if pg.K_a in keys:
-            self.apply_force(vector.Vector(270, self.SPEED))
+            self.apply_force(vector.Vector(270, self.SPEED / 2))
         elif pg.K_d in keys:
-            self.apply_force(vector.Vector(90, self.SPEED))
+            self.apply_force(vector.Vector(90, self.SPEED / 2))
+
+THAUMATURGY_RECIPES = [
+    (['feather_sword', 'hoverplume_headgear', 'hoverplume_back', 'hoverplume_kneepads', 'feather_amulet', 'toxic_wing'],
+     inventory.Recipe({'thaumaturgy': 1, 'feather_sword': 1, 'hoverplume_headgear': 1, 'hoverplume_back': 1,
+                       'hoverplume_kneepads': 1, 'feather_amulet': 1, 'toxic_wing': 1}, 'pluma_thaumaturgy')),
+]
 
 
 class Player:
@@ -133,10 +139,12 @@ class Player:
         self.cd_x = 0
         self.cd_c = 0
         self.z = 0
-        self.boot_footprints = []
+        self.boot_footprints: list[vector.Vector2D] = []
         self.covered_items = []
         self.major_usage = 0.0
         self.afterimage_shadow = 0
+        self.inv_capacity = 48
+        self.tick = 0
 
     def calculate_regeneration(self):
         ACCESSORY_REGEN = {}
@@ -244,7 +252,9 @@ class Player:
         return val
 
     def get_max_screen_scale(self):
-        ACCESSORY_SIZE = {'aimer': 1.5, 'winds_necklace': 1.1, 'cowboy_hat': 1.4, 'photon_aimer': 4.5, 'cloudy_glasses': 1.2, 'chaos_evileye': 8, 'horizon_goggles': 20}
+        ACCESSORY_SIZE = {'aimer': 1.5, 'winds_necklace': 1.1, 'cowboy_hat': 1.4, 'photon_aimer': 4.5,
+                          'cloudy_glasses': 1.2, 'chaos_evileye': 8, 'horizon_goggles': 20,
+                          'fate_alignment_amulet': 30}
         t = 1.0
         for i in range(len(self.accessories)):
             if self.accessories[i] in ACCESSORY_SIZE.keys():
@@ -285,6 +295,7 @@ class Player:
         return 0.08
 
     def update(self):
+        self.tick += 1
         self.ntcs = []
         self.p_data = []
         self.top_notice = ''
@@ -412,7 +423,7 @@ class Player:
                 e.obj.velocity.add(vector.Vector(vector.coordinate_rotation(px, py), self.obj.velocity.get_net_value() / 40))
 
         if 'karmic_trail_boots' in self.accessories:
-            self.boot_footprints.append(self.obj.pos)
+            self.boot_footprints.append((self.obj.pos[0], self.obj.pos[1]))
             if len(self.boot_footprints) > 63:
                 self.boot_footprints.pop(0)
             cols = [(255, 0, 0), (255, 127, 0), (255, 255, 0), (0, 255, 0), (0, 255, 255), (0, 0, 255),
@@ -450,8 +461,8 @@ class Player:
         self.p_data.append(f'Attack: {int(self.attack * 100) / 100}x')
         self.p_data.append(f'Critical: {int(self.strike * 10000) / 100}%, {int((1 + (1 + self.strike) ** 2) * 10000) / 100}% damage')
         self.obj.SPEED = self.calculate_data('speed', rate_data=True, rate_multiply=True) * 80 * self.calculate_speed()
-        self.hp_sys.DODGE_RATE = ((self.calculate_speed() - 1) * 100) ** .7 / 100 + bool(self.afterimage_shadow)
-        self.obj.FRICTION = max(0, 1 - 0.2 * self.calculate_data('air_res', rate_data=True, rate_multiply=True) * (1 + self.z))
+        self.hp_sys.DODGE_RATE = ((self.calculate_speed() - 1) * 100) ** .7 / 100 + bool(self.afterimage_shadow) + self.calculate_data('dodge_rate', rate_data=False)
+        self.obj.FRICTION = max(0, 1 - 0.1 * self.calculate_data('air_res', rate_data=True, rate_multiply=True) * (20 ** self.z))
         self.obj.MASS = max(40, 80 + self.calculate_data('mass', False))
         self.p_data.append(f'Agility {int(self.obj.SPEED / 2) / 10}N')
         if self.obj.velocity.get_net_value() / 20 > 500:
@@ -725,6 +736,10 @@ class Player:
                         for e in game.get_game().entities:
                             if not e.obj.IS_OBJECT:
                                 e.hp_sys.hp = 0
+        if self.tick % 60 == 1 and 'pluma_thaumaturgy' in self.accessories:
+            ss = int(abs(self.obj.velocity) / 10)
+            for i in range(ss):
+                game.get_game().projectiles.append(underia3.FeatherThaumaturgy(self.obj.pos, random.randint(0, 360)))
         if self.hp_sys.hp <= 1 + self.REGENERATION:
             if 'flashback' in self.accessories and not len([1 for e in self.hp_sys.effects if type(e) is effects.FlashBack]):
                 self.hp_sys(op='config', immune=True)
@@ -1125,6 +1140,22 @@ class Player:
                 if self.weapons[i].sk_cd:
                     self.weapons[i].sk_cd -= 1
         w = self.weapons[self.sel_weapon]
+        if len([1 for e in self.hp_sys.effects if type(e) is effects.RuneAltar]):
+            if not game.get_game().player.inventory.is_enough(inventory.ITEMS['thaumaturgy']):
+                game.get_game().player.inventory.add_item(inventory.ITEMS['thaumaturgy'])
+            for s, e in THAUMATURGY_RECIPES:
+                f = 1
+                for ss in s:
+                    if not game.get_game().player.inventory.is_enough(inventory.ITEMS[ss]) and not ss in self.accessories:
+                        print(ss)
+                        f = 0
+                        break
+                if f and e not in inventory.RECIPES:
+                    inventory.RECIPES.append(e)
+                    for ee in game.get_game().entities:
+                        if ee.NAME == 'Rune Altar':
+                            ee.hp_sys.hp = 0
+                    game.get_game().dialog.push_dialog('You have learnt a new recipe!')
         if inventory.TAGS['magic_weapon'] in inventory.ITEMS[w.name.replace(' ', '_')].tags:
             sk_z = 'healer' if 'healer' in self.profile.select_skill else None
             sk_x = 'multi_user' if'multi_user' in self.profile.select_skill else None
@@ -1263,7 +1294,7 @@ class Player:
         elif self.afterimage_shadow == 1:
             self.cd_c = cdd[2]
             self.afterimage_shadow -= 1
-            self.hp_sys.effect(effects.AfterimageShadow(2, 1))
+            self.hp_sys.effect(effects.AfterimageShadow(.5, 1))
             self.weapons[self.sel_weapon].strike = constants.INFINITY
             self.weapons[self.sel_weapon].attack()
             self.weapons[self.sel_weapon].on_special_attack(constants.INFINITY)
@@ -1376,7 +1407,8 @@ class Player:
                                     self.accessories[i].replace(' ', '_'), str(i), '1', 1,
                                     selected=i == self.sel_accessory)
             l = 12
-            lr = 4
+            lr = 4 + {0: 0, 1: 1, 2: 2, 3: 4, 4: 6, 5: 1, 6: 2, 7: 3, 8: 4, 9: 0}[game.get_game().stage]
+            self.inv_capacity = lr * l
             for i in range(lr):
                 for j in range(l):
                     if i + j * lr < len(self.inventory.items):
@@ -1418,7 +1450,17 @@ class Player:
                                 self.sel_accessory = 4
                             if self.accessories[self.sel_accessory] != 'null':
                                 self.inventory.add_item(inventory.ITEMS[self.accessories[self.sel_accessory]])
+                            self.sel_accessory = min(10, self.sel_accessory)
                             self.accessories[self.sel_accessory] = item.id
+                            if self.sel_accessory < 3:
+                                acc = self.accessories[:3]
+                                if not len([1 for a in acc if not str.startswith(a, 'hoverplume')]):
+                                    s_b = '_hoverplume_set_bonus'
+                                else:
+                                    s_b = 'null'
+                                if len(self.accessories) < 11:
+                                    self.accessories.append('null')
+                                self.accessories[10] = s_b
                         elif inventory.TAGS['weapon'] in item.tags:
                             if self.tutorial_step == 4:
                                 self.tutorial_process += 15
@@ -1548,6 +1590,7 @@ class Player:
                                                               'There is no Stone Altar nearby.')
                             else:
                                 entity.entity_spawn(entity.Entities.MagmaKing, 2000, 2000, 0, 1145, 100000)
+                                entity.entity_spawn(entity.Entities.MagmaKingCounter, 2000, 2000, 0, 1145, 100000)
                                 self.inventory.remove_item(item)
                         elif item.id == 'red_apple':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
@@ -1737,7 +1780,9 @@ class Player:
                         elif item.id == 'lychee':
                             if len([1 for e in game.get_game().player.hp_sys.effects if type(e) is effects.CurseTree]):
                                 entity.entity_spawn(underia3.LycheeKing, 2000, 2000, 0, 1145, 100000)
-
+                        elif item.id == 'intestine':
+                            if len([1 for e in game.get_game().player.hp_sys.effects if type(e) is effects.CurseSnow]):
+                                entity.entity_spawn(underia3.ToxicLargeIntestine, 2000, 2000, 0, 1145, 100000)
                         elif item.id == 'muse_core':
                             if self.max_inspiration < 800:
                                 self.max_inspiration = 800
@@ -1982,9 +2027,9 @@ class Player:
                     rc = cur_recipe
                     cur_recipe.make(self.inventory)
                     game.get_game().play_sound('grab')
-                    if len(self.inventory.items) > 48:
+                    if len(self.inventory.items) > self.inv_capacity:
                         k, v = self.inventory.items.popitem()
-                        game.get_game().entities.append(entity.Entities.DropItem(self.obj.pos, k, v))
+                        game.get_game().drop_items.append(entity.Entities.DropItem(self.obj.pos, k, v))
                     self.recipes = [r for r in inventory.RECIPES if r.is_valid(self.inventory)]
                     res = [i for i, r in enumerate(self.recipes) if r is rc]
                     self.sel_recipe = res[0] if res else 0
@@ -2116,7 +2161,7 @@ class Player:
                                    position.displayed_position(
                                        (px * 300 // dis + self.obj.pos[0], py * 300 // dis + self.obj.pos[1])),
                                    max(30, int(300 - dis // 30)) // 15)
-        if len([1 for a in self.accessories if a == 'horizon_goggles']):
+        if len([1 for a in self.accessories if a in ['horizon_goggles', 'fate_alignment_amulet']]):
             esf = game.get_game().graphics['background_horizon']
             if esf.get_width() != 64:
                 game.get_game().graphics['background_horizon'] = pg.transform.scale(esf, (64, 64))

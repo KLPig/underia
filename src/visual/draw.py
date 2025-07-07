@@ -23,3 +23,11 @@ def line(window, color, start_pos, end_pos, width=1):
     if end_pos[1] > window.get_height():
         end_pos = (int(end_pos[0] + ((1 / gradient) * (window.get_height() - end_pos[1]))), window.get_height())
     pg.draw.line(window, color, start_pos, end_pos, width)
+
+def l_rect(window, color, st_pos, en_pos, width=1):
+    sx, sy = st_pos
+    ex, ey = en_pos
+    line(window, color, (sx, sy), (sx, ey), width)
+    line(window, color, (sx, ey), (ex, ey), width)
+    line(window, color, (ex, ey), (ex, sy), width)
+    line(window, color, (sx, sy), (ex, sy), width)

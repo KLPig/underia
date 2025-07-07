@@ -56,7 +56,7 @@ class HPSystem:
         else:
             return self.hp
 
-    def damage(self, damage: float, damage_type: int):
+    def damage(self, damage: float, damage_type: int, penetrate: float = 0):
         if self.IMMUNE or self.is_immune:
             return
         try:
@@ -66,7 +66,11 @@ class HPSystem:
                 game.get_game().play_sound('hit_' + self.SOUND_HURT, vol=0.99 ** int(d / 10))
         except ValueError:
             pass
-        dmg = damage * self.resistances[damage_type] - self.defenses[damage_type]
+        dmm = [.3, 1.0, 1.25, 1.90][constants.DIFFICULTY]
+        dm = [.31, 1.0, 1.24, 1.88][constants.DIFFICULTY]
+        dmg = (damage * self.resistances[damage_type] * dmm -
+               (max(0.0, self.defenses[damage_type] - penetrate) if self.defenses[damage_type] > 0 else
+                min(0.0, self.defenses[damage_type] + penetrate)) * dm)
         dmg *= (1 - self.DAMAGE_RANDOMIZE_RANGE + 2 *
                 self.DAMAGE_RANDOMIZE_RANGE * random.random())
         dmg = max(self.MINIMUM_DAMAGE, min(self.MAXIMUM_DAMAGE, dmg))
@@ -186,8 +190,8 @@ class SubHPSystem(HPSystem):
         self.is_immune = self.hp_sys.is_immune
         self.hp_sys.update()
 
-    def damage(self, damage: float, damage_type: int):
-        self.hp_sys.damage(damage, damage_type)
+    def damage(self, *args, **kwargs):
+        self.hp_sys.damage(*args, **kwargs)
 
     def enable_immume(self):
         self.hp_sys.enable_immume()

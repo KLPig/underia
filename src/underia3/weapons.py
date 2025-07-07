@@ -7,11 +7,18 @@ from underia3 import projectiles
 import constants
 import random
 import pygame as pg
+import copy
 
 class PurpleClayBroadBlade(weapons.Blade):
     def on_attack(self):
         super().on_attack()
         self.cutting_effect(8)
+
+class FeatherSword(weapons.Blade):
+    def on_start_attack(self):
+        super().on_start_attack()
+        mx, my = position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
+        game.get_game().projectiles.append(projectiles.FeatherSword(game.get_game().player.obj.pos, vector.cartesian_to_polar(mx, my)[0]))
 
 class PoiseBlade(weapons.Blade):
     def on_attack(self):
@@ -44,11 +51,97 @@ class LycheeBow(weapons.Bow):
             pj.TAIL_WIDTH = max(pj.TAIL_WIDTH, 3)
         game.get_game().projectiles.append(pj)
 
+class NewMagicWeapon(weapons.MagicWeapon):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.level = 1
+        self.ddata = [self.damages, 1]
+
+    def on_special_attack(self, strike: int):
+        self.damages = copy.copy(self.ddata[0])
+        self.scale = self.ddata[1]
+        self.ddata = [copy.copy(self.damages), 1]
+        self.scale = 5 - 4 * 1.5 ** -(self.strike / 50)
+        for kk in self.damages.keys():
+            self.damages[kk] *= 4 - 3 * 1.2 ** -(self.strike / 50)
+        self.level = int(self.scale)
+
+    def on_charge(self):
+        super().on_charge()
+        self.scale = 5 - 4 * 1.5 ** -(self.strike / 50)
+        self.display = True
+
+    def on_end_attack(self):
+        self.display = False
+        self.scale = 1
+        self.level = 1
+        super().on_end_attack()
+
+    def on_attack(self):
+        if (self.timer - self.at_time) % 4 == 0 and 0 < (self.at_time - self.timer) // 4 < self.level:
+            self.face_to(
+                *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+            game.get_game().projectiles.append(
+                self.projectile((self.x + game.get_game().player.obj.pos[0], self.y + game.get_game().player.obj.pos[1]),
+                                self.rot))
+        super().on_attack()
+
+class MysterySwiftswordSpear(weapons.Spear):
+    def on_start_attack(self):
+        super().on_start_attack()
+        game.get_game().projectiles.append(projectiles.MysterySwiftsword(game.get_game().player.obj.pos,
+                                                                         self.rot))
+
+class IntestinalSword(weapons.Blade):
+    def on_start_attack(self):
+        super().on_start_attack()
+        for e in game.get_game().entities:
+            if vector.cartesian_to_polar(e.obj.pos[0] - self.x - game.get_game().player.obj.pos[0],
+                                          e.obj.pos[1] - self.y - game.get_game().player.obj.pos[1])[1] < 500:
+                r = random.randint(0, 360)
+                ax, ay = vector.polar_to_cartesian(r, -150)
+                game.get_game().projectiles.append(projectiles.IntestinalSword(e.obj.pos + (ax, ay), r))
+
+class Proof(weapons.Blade):
+    def on_attack(self):
+        self.ENABLE_IMMUNE = False
+        super().on_attack()
+        self.cutting_effect(4, (200, 100, 255), (100, 50, 150))
+        if pg.BUTTON_LEFT in game.get_game().get_pressed_mouse():
+            self.timer = 4
+            self.rot_speed *= -1
+        if self.rot_speed > 0:
+            mr, _ = vector.cartesian_to_polar(*position.relative_position(position.real_position(
+                game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+            self.set_rotation(mr - self.st_pos // 2)
+
+class Observe(weapons.Blade):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.sk_mcd = 100
+
+    def on_start_attack(self):
+        super().on_start_attack()
+        if not self.sk_cd:
+            self.sk_cd = self.sk_mcd
+            for e in game.get_game().entities:
+                if vector.cartesian_to_polar(e.obj.pos[0] - self.x - game.get_game().player.obj.pos[0],
+                                              e.obj.pos[1] - self.y - game.get_game().player.obj.pos[1])[1] < 1200:
+                    r = random.randint(0, 360)
+                    ax, ay = vector.polar_to_cartesian(r, -1000)
+                    game.get_game().projectiles.append(projectiles.Observe(e.obj.pos + (ax, ay), r))
+            self.rotate(self.rot_speed * 2)
+            self.cool += self.at_time
+            self.timer = 0
+
 WEAPONS = {
-    'e_wooden_sword': weapons.Blade(name='e wooden sword', damages={damages.DamageTypes.PHYSICAL: 48}, kb=6,
+    'e_wooden_sword': weapons.Blade(name='e wooden sword', damages={damages.DamageTypes.PHYSICAL: 55}, kb=6,
                                     img='items_weapons_e_wooden_sword', speed=3, at_time=5, rot_speed=40,
                                     st_pos=150),
-    'lychee_sword': weapons.Blade(name='lychee sword', damages={damages.DamageTypes.PHYSICAL: 88}, kb=10,
+    'feather_sword': FeatherSword(name='feather sword', damages={damages.DamageTypes.PHYSICAL: 40}, kb=2,
+                                    img='items_weapons_feather_sword', speed=0, at_time=3, rot_speed=100,
+                                    st_pos=200),
+    'lychee_sword': weapons.Blade(name='lychee sword', damages={damages.DamageTypes.PHYSICAL: 90}, kb=10,
                                    img='items_weapons_lychee_sword', speed=1, at_time=6, rot_speed=60, st_pos=200),
     'lychee_pike': weapons.Spear(name='lychee pike', damages={damages.DamageTypes.PHYSICAL: 110}, kb=12,
                                  img='items_weapons_lychee_pike', speed=3, at_time=8, forward_speed=30, st_pos=150,
@@ -58,6 +151,22 @@ WEAPONS = {
                                                     rot_speed=40, st_pos=150),
     'poise_blade': PoiseBlade(name='poise blade', damages={damages.DamageTypes.PHYSICAL: 80}, kb=12,
                               img='items_weapons_poise_blade', speed=1, at_time=5, rot_speed=70, st_pos=200),
+    'mystery_sword': weapons.Blade('mystery sword', {damages.DamageTypes.PHYSICAL: 190}, 20,
+                                   'items_weapons_mystery_sword', 0, 7, 40, 180),
+    'mystery_spear': weapons.Spear('mystery spear', {damages.DamageTypes.PHYSICAL: 100}, 35,
+                                   'items_weapons_mystery_spear', 0, 4, 70, 180),
+    'mystery_swiftsword': weapons.ComplexWeapon(name='mystery swiftsword', damages_rot={damages.DamageTypes.PHYSICAL: 60},
+                                                damages_spear={damages.DamageTypes.PHYSICAL: 100}, kb=5, img='items_weapons_mystery_swiftsword',
+                                                speed=1, at_time_rot=5, at_time_spear=8, rot_speed=70, st_pos_sweep=250, forward_speed=50,
+                                                st_pos_spear=300, auto_fire=True, combat=[1, 1, 1, 0], sweep_type=weapons.Blade,
+                                                spear_type=MysterySwiftswordSpear),
+
+    'proof': Proof(name='proof', damages={damages.DamageTypes.PHYSICAL: 60}, kb=2, img='items_weapons_proof',
+                   speed=8, at_time=2, rot_speed=30, st_pos=15),
+    'observe': Observe(name='observe', damages={damages.DamageTypes.PHYSICAL: 70}, kb=2, img='items_weapons_observe',
+                       speed=1, at_time=8, rot_speed=40, st_pos=240),
+    'intestinal_sword': IntestinalSword(name='intestinal sword', damages={damages.DamageTypes.PHYSICAL: 120}, kb=10,
+                                        img='items_weapons_intestinal_sword', speed=1, at_time=6, rot_speed=40, st_pos=150),
 
     'e_wooden_bow': weapons.Bow(name='e wooden bow', damages={damages.DamageTypes.PIERCING: 45}, kb=4,
                                 img='items_weapons_e_wooden_bow', speed=2, at_time=5, projectile_speed=300,
@@ -71,15 +180,29 @@ WEAPONS = {
     'purple_clay_kuangkuang': weapons.KuangKuangKuang(name='purple clay kuangkuang', damages={damages.DamageTypes.PIERCING: 18}, kb=1,
                                                img='items_weapons_purple_clay_kuangkuang', speed=0, at_time=1,
                                               projectile_speed=100, auto_fire=True, precision=2),
+    'lychee_twinblade': weapons.ThiefDoubleKnife(name='lychee twinblade', damages={damages.DamageTypes.PIERCING: 150}, kb=8,
+                                                 img='items_weapons_lychee_blade', speed=1, at_time=6,
+                                                 rot_speed=30, st_pos=120, throw_interval=12, power=3000,
+                                                  dcols=((255, 200, 255), (50, 0, 50))),
+    'poise_bow': weapons.Bow('poise bow', {damages.DamageTypes.PIERCING: 120}, 10,
+                             'items_weapons_poise_bow', 1, 3, 300, True, precision=5,
+                             tail_col=(200, 255, 100)),
+    'poise_submachine_gun': weapons.Gun('poise submachine gun', {damages.DamageTypes.PIERCING: 36}, 5,
+                                          'items_weapons_poise_submachine_gun', 1, 1, 1200,
+                                        True, 3, tail_col=(200, 255, 100)),
 
     'e_wooden_wand': weapons.MagicWeapon(name='e wooden wand', damages={damages.DamageTypes.MAGICAL: 40}, kb=2,
                                          img='items_weapons_e_wooden_wand', speed=1, at_time=6,
-                                         projectile=projectiles.EWoodenWand, mana_cost=4, auto_fire=True,
+                                         projectile=projectiles.EWoodenWand, mana_cost=5, auto_fire=True,
                                          spell_name='Life Growth'),
     'lychee_wand': weapons.MagicWeapon(name='lychee wand', damages={damages.DamageTypes.MAGICAL: 42}, kb=0,
                                         img='items_weapons_lychee_wand', speed=1, at_time=9,
-                                        projectile=projectiles.LycheeWand, mana_cost=12, auto_fire=True,
-                                        spell_name='Lychee Circle')
+                                        projectile=projectiles.LycheeWand, mana_cost=15, auto_fire=True,
+                                        spell_name='Lychee Circle'),
+    'lychee_spike': NewMagicWeapon(name='lychee spike', damages={damages.DamageTypes.MAGICAL: 360}, kb=0,
+                                   img='items_weapons_lychee_spike', speed=1, at_time=25,
+                                   projectile=projectiles.LycheeSpike, mana_cost=30, auto_fire=True,
+                                   spell_name='Lychee Spike'),
 }
 
 for k, v in WEAPONS.items():

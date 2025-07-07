@@ -15,7 +15,8 @@ MUSICS = {
     'wild_east': ['desert1', 'desert0', 'wither0', 'wither1'],
     'waterfall': ['forest0', 'rainforest0', 'desert0', 'snowland0', 'heaven0', 'heaven1', 'inner0', 'wither1'],
     'fields': ['forest1', 'rainforest1', 'snowland1', 'forest0'],
-    'empty': ['hell0', 'hell1', 'forest1', 'rainforest1', 'battle', 'hallow0', 'hallow1', 'wither0', 'wither1'],
+    'empty': ['hell0', 'hell1', 'forest1', 'rainforest1', 'battle', 'hallow0', 'hallow1', 'wither0', 'wither1',
+              'life_forest0', 'life_forest1'],
     'snow': ['snowland0', 'snowland1', 'hallow0', 'hallow1'],
     #'here_we_are': ['inner0', 'inner1'],
     'amalgam': ['inner0', 'inner1', 'none0', 'none1', 'wither0', 'wither1'],
@@ -27,6 +28,7 @@ MUSICS = {
     'wof_otherworld': ['battle'],
     'mercy_remix': ['battle'],
     'nothing_matter': ['battle'],
+    'from_now_on': ['battle'],
 }
 
 class Game:
@@ -43,8 +45,8 @@ class Game:
         self.player = player.Player()
         self.pressed_keys = []
         self.pressed_mouse = []
-        self.entities: list[entity.Entities.Entity] = []
-        self.projectiles: list[projectiles.Projectiles.Projectile] = []
+        self.entities: list[entity.Entities.Entity | object] = []
+        self.projectiles: list[projectiles.Projectiles.Projectile | object] = []
         self.clock = resources.Clock()
         self.damage_texts: list[tuple[str, int, tuple[int, int]]] = []
         self.save = ''
@@ -88,7 +90,7 @@ class Game:
 
     def get_night_color(self, time_days: float):
         if len([1 for e in self.entities if type(e) is entity.Entities.AbyssEye]):
-            return 255, 0, 0
+            return 255, 200, 200
         if 0.2 < time_days <= 0.3:
             r = int(255 * (time_days - 0.2) / 0.1)
             g = int(255 * (time_days - 0.2) / 0.1)
@@ -97,6 +99,10 @@ class Game:
             r = 255
             g = 255
             b = 255
+            if 'solar eclipse' in self.world_events:
+                r -= 100
+                g -= 100
+                b -= 150
         elif 0.7 < time_days <= 0.75:
             r = 255
             g = 255 - int(128 * (time_days - 0.7) / 0.05)
@@ -106,7 +112,7 @@ class Game:
             g = 127 - int(127 * (time_days - 0.75) / 0.05)
             b = 0
         else:
-            r = 0
+            r = 0 if 'blood moon' not in self.world_events else 100
             g = 0
             b = 0
         if 'aimer' in self.player.accessories or 'photon_aimer' in self.player.accessories:
@@ -117,18 +123,22 @@ class Game:
             r = 255 - (255 - r) * 2 // 3
             g = 255 - (255 - g) * 2 // 3
             b = 255 - (255 - b) * 2 // 3
+        if 'fate_alignment_amulet' in self.player.accessories:
+            r = 255 - (255 - r) // 3
+            g = 255 - (255 - g) // 3
+            b = 255 - (255 - b) // 3
         return r, g, b
 
     def on_day_start(self):
         if 'blood moon' in self.world_events:
             self.world_events.remove('blood moon')
-        if random.random() < 0.05:
+        if random.random() < 0.03:
             self.world_events.append('solar eclipse')
 
     def on_day_end(self):
         if 'solar eclipse' in self.world_events:
             self.world_events.remove('solar eclipse')
-        if random.random() < 0.05:
+        if random.random() < 0.03:
             self.world_events.append('blood moon')
 
     def cnt_graphics(self, directory, index=''):
@@ -221,15 +231,13 @@ class Game:
                 self._display_progress((x + 200) / 400, 0)
 
     def play_sound(self, sound: str, vol=1.0, stop_if_need=False, fadeout=0):
-        self.sounds[sound].set_volume(vol)
+        self.sounds[sound].set_volume(vol * constants.SOUND_VOL)
         if self.sounds[sound].get_num_channels():
             if stop_if_need:
                 self.sounds[sound].stop()
             else:
                 return
         self.sounds[sound].play()
-        if fadeout:
-            self.channel.fadeout(fadeout)
 
     def on_update(self):
         pass
@@ -242,6 +250,8 @@ class Game:
             return 'none'
         if len([1 for e in self.entities if type(e) is entity.Entities.AbyssEye]):
             return 'heaven'
+        if len([1 for e in self.entities if type(e) is entity.Entities.ReincarnationTheWorldsTree]):
+            return 'life_forest'
         if len([1 for e in self.entities if type(e) in [entity.Entities.Jevil, entity.Entities.Jevil2, entity.Entities.OblivionAnnihilator]]) or \
                 self.player.inventory.is_enough(inventory.ITEMS['chaos_heart']):
             return 'inner'
@@ -334,7 +344,7 @@ class Game:
         bg_ay = int(self.player.ay / self.player.get_screen_scale()) % (bg_size * chunk_size)
         cols = {'hell': (255, 0, 0), 'desert': (255, 191, 63), 'forest': (0, 255, 0), 'rainforest': (127, 255, 0),
                 'snowland': (255, 255, 255), 'heaven': (127, 127, 255), 'inner': (0, 0, 0), 'none': (0, 0, 0),
-                'hallow': (0, 255, 255), 'wither': (50, 0, 0)}
+                'hallow': (0, 255, 255), 'wither': (50, 0, 0), 'life_forest': (50, 127, 0)}
         if not self.graphics.is_loaded('nbackground_hell') or self.graphics['nbackground_hell'].get_width() != bg_size:
             for k in cols.keys():
                 self.graphics['nbackground_' + k] = pg.transform.scale(self.graphics['background_' + k],
@@ -364,6 +374,11 @@ class Game:
         if self.client is not None and not self.client.started:
             loop = asyncio.get_event_loop()
             loop.create_task(self.client.start())
+        if '3rd_sanctuary' not in MUSICS:
+            MUSICS['3rd_sanctuary'] = ['forest0', 'forest1', 'rainforest0', 'rainforest1', 'desert0', 'desert1',
+                                       'snowland0', 'snowland1', 'hell0', 'hell1', 'heaven0', 'heaven1']
+            MUSICS['dark_sanctuary'] = ['forest0', 'forest1', 'rainforest0', 'rainforest1', 'desert0', 'desert1',
+                                        'snowland0', 'snowland1', 'hell0', 'hell1', 'heaven0', 'heaven1']
         if (self.prepared_music is None and self.channel.get_busy() == 0) or \
                 (self.cur_music is not None and (self.get_biome() + str(int(0.3 < self.day_time < 0.7))) not in
                  self.MUSICS[self.cur_music] and not len([1 for e in self.entities if e.IS_MENACE])) \
@@ -388,6 +403,8 @@ class Game:
                     self.prepared_music = 'boss_otherworld'
                 else:
                     self.prepared_music = 'rude_buster'
+                if self.chapter > 1:
+                    self.prepared_music = 'from_now_on'
             else:
                 self.cur_music = None
                 self.channel.fadeout(8000)
@@ -395,6 +412,7 @@ class Game:
                                                      if (self.get_biome() + str(int(0.3 < self.day_time < 0.7))) in v])
         if self.cur_music is None and self.prepared_music is not None and self.channel.get_busy() == 0:
             self.cur_music = self.prepared_music
+            self.channel.set_volume(constants.MUSIC_VOL)
             self.channel.play(self.musics[self.cur_music])
             self.prepared_music = None
         self.chunk_pos = (
@@ -501,6 +519,8 @@ class Game:
             for j, i in enumerate(menace.PHASE_SEGMENTS):
                 if menace.hp_sys.hp >= menace.hp_sys.max_hp * i:
                     c_phase = len(menace.PHASE_SEGMENTS) - j - 1
+            if not menace.show_bar:
+                continue
             for i in range(len(menace.PHASE_SEGMENTS) + 1):
                 if i >= c_phase:
                     pg.draw.circle(self.displayer.canvas, (207, 255, 112), (x - 380 + 50 * i, y - 100), 20)
@@ -524,19 +544,20 @@ class Game:
                              (x + 400 - int(t_l * pc_p), y - 120, int(t_l * pc_p), 40))
                 pg.draw.rect(self.displayer.canvas, (242, 166, 94),
                                  (x + 400 - t_l, y - 120, t_l, 40), width=8, border_radius=3)
-                tf = self.displayer.ffont.render(str(int(t_p * 100)) + '%', True, (0, 0, 0))
-                tfr = tf.get_rect(midright=(x + 400 - 10, y - 100))
-                self.displayer.canvas.blit(tf, tfr)
-                tf = self.displayer.ffont.render(str(int(t_p * 100)) + '%', True, (255, 255, 255))
-                tfr = tf.get_rect(midright=(x + 400 - 15, y - 105))
-                self.displayer.canvas.blit(tf, tfr)
+                if not menace.hp_sys.IMMUNE:
+                    tf = self.displayer.ffont.render(str(int(t_p * 100)) + '%', True, (0, 0, 0))
+                    tfr = tf.get_rect(midright=(x + 400 - 10, y - 100))
+                    self.displayer.canvas.blit(tf, tfr)
+                    tf = self.displayer.ffont.render(str(int(t_p * 100)) + '%', True, (255, 255, 255))
+                    tfr = tf.get_rect(midright=(x + 400 - 15, y - 105))
+                    self.displayer.canvas.blit(tf, tfr)
                 pg.draw.rect(self.displayer.canvas, (227, 105, 86),
                                  (x - 400, y - 50, 800, 60))
                 pg.draw.rect(self.displayer.canvas, (207, 255, 112),
                                  (x - 400, y - 50, int(800 * r_p), 60))
                 pg.draw.rect(self.displayer.canvas, (242, 166, 94),
                                  (x - 400, y - 50, 800, 60), width=8, border_radius=3)
-                ft = self.displayer.font.render(f'{styles.text(menace.NAME)}({int(menace.hp_sys.hp)}/{int(menace.hp_sys.max_hp)})',
+                ft = self.displayer.font.render(f'{styles.text(menace.NAME)}' + f'({int(menace.hp_sys.hp)}/{int(menace.hp_sys.max_hp)})' if not menace.hp_sys.IMMUNE else '',
                                                 True, (0, 0, 0))
                 ftr = ft.get_rect(midright=(x + 360, y - 20))
                 self.displayer.canvas.blit(ft, ftr)
@@ -567,6 +588,7 @@ class Game:
         if len(self.dialog.word_queue) or self.dialog.curr_text != '':
             self.dialog.update(self.pressed_keys)
         self.clock.update()
+        pg.display.update()
         return True
 
     def after_stop(self):

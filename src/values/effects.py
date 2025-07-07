@@ -1,6 +1,6 @@
 from resources import time
 from values import hp_system, elements, damages
-from underia import game
+from underia import game, inventory
 
 
 class Effect:
@@ -18,44 +18,7 @@ class Effect:
         for desc in self.DESC.split('\n'):
             desc = desc.replace(' ', '').lower().replace('.', '')
             try:
-                if desc.endswith('touchingdefense'):
-                    self.datas['touch_def'] = int(desc.removesuffix('touchingdefense'))
-                elif desc.endswith('physicaldefense'):
-                    self.datas['phys_def'] = int(desc.removesuffix('physicaldefense'))
-                elif desc.endswith('magicdefense'):
-                    self.datas['mag_def'] = int(desc.removesuffix('magicdefense'))
-                elif desc.endswith('%speed'):
-                    self.datas['speed'] = int(desc.removesuffix('%speed'))
-                elif desc.endswith('%critical'):
-                    self.datas['crit'] = int(desc.removesuffix('%critical'))
-                elif desc.endswith('/secregeneration'):
-                    self.datas['regen'] = float(desc.removesuffix('/secregeneration'))
-                elif desc.endswith('/secmanaregeneration'):
-                    self.datas['mana_regen'] = float(desc.removesuffix('/secmanaregeneration'))
-                elif desc.endswith('/secinspirationregeneration'):
-                    self.datas['ins_regen'] = float(desc.removesuffix('/secinspirationregeneration'))
-                elif desc.endswith('%damage'):
-                    self.datas['damage'] = int(desc.removesuffix('%damage'))
-                elif desc.endswith('%meleedamage'):
-                    self.datas['melee_damage'] = int(desc.removesuffix('%meleedamage'))
-                elif desc.endswith('%rangeddamage'):
-                    self.datas['ranged_damage'] = int(desc.removesuffix('%rangeddamage'))
-                elif desc.endswith('%magicdamage') or desc.endswith('%magicaldamage'):
-                    self.datas['magic_damage'] = int(desc.split('%magic')[0])
-                elif desc.endswith('%airresistance'):
-                    self.datas['air_res'] = int(desc.removesuffix('%airresistance'))
-                elif desc.endswith('%domainsize'):
-                    self.datas['domain_size'] = int(desc.removesuffix('%domainsize'))
-                elif desc.endswith('/secmentalityregeneration'):
-                    self.datas['mentality_regen'] = float(desc.removesuffix('/secmentalityregeneration'))
-                elif desc.endswith('%poisondamagereceived'):
-                    self.datas['poison_res'] = float(desc.removesuffix('%poisondamagereceived'))
-                elif desc.endswith('additionalmaximummana'):
-                    self.datas['max_mana'] = int(desc.removesuffix('additionalmaximummana'))
-                elif desc.endswith('additionalmaximuminspiration'):
-                    self.datas['max_ins'] = int(desc.removesuffix('additionalmaximuminspiration'))
-                elif desc[0] in ['+', '-']:
-                    print(f"Unknown accessory data: {desc}")
+                self.datas.update(inventory.Inventory.Item.handle_data(desc))
             except ValueError:
                 print(f"Invalid accessory data: {desc}")
 
@@ -96,7 +59,7 @@ class Freezing(Effect):
 class AfterimageShadow(Effect):
     IMG = 'afterimage_shadow'
     NAME = 'Afterimage Shadow'
-    DESC = 'Afterimage Shadow\n+1000% damage\n+1000% critical'
+    DESC = 'Afterimage Shadow\n+300% damage\n+1000% critical\n+50% dodge rate'
     CORRESPONDED_ELEMENT = elements.ElementTypes.DEATH
 
 class Darkened(Effect):
@@ -368,6 +331,11 @@ class OctToughnessV(OctaveIncrease):
 class SkillReinforce(Effect):
     pass
 
+class RuneAltar(Effect):
+    IMG = 'rune_altar'
+    NAME = 'Rune Altar'
+    DESC = 'Able to learn thaumaturgies.'
+
 class MeleeDemand(SkillReinforce):
     IMG = 'melee_demand'
     NAME = 'Melee Demand'
@@ -386,12 +354,12 @@ class MagicDemand(SkillReinforce):
 class FastThrow(Effect):
     IMG = 'fast_throw'
     NAME = 'Fast Throw'
-    DESC = 'Sprinting\n+200% ranged damage'
+    DESC = 'Sprinting\n+200% ranged damage\n+20% dodge rate'
 
 class StormThrow(Effect):
     IMG = 'fast_throw'
     NAME = 'Storm Throw'
-    DESC = 'Sprinting\n+400% ranged damage'
+    DESC = 'Sprinting\n+400% ranged damage\n+40% dodge rate'
 
 class TheFury(Effect):
     IMG = 'the_fury'

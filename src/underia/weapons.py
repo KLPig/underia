@@ -56,7 +56,7 @@ class Weapon:
     def attack(self):
         if self.ATTACK_SOUND is not None:
             d = vector.distance(self.x, self.y)
-            game.get_game().play_sound(self.ATTACK_SOUND, 0.99 ** int(d / 10), True)
+            game.get_game().play_sound(self.ATTACK_SOUND, 0.99 ** int(d / 10) / 3, True)
         self.timer = self.at_time + 1
         self.on_start_attack()
 
@@ -173,9 +173,9 @@ class Weapon:
         mn = min(Weapon._EFF_NOISES)
         sz = {3: 32, 4: 40, 6: 64, 8: 80, 10: 100, 16: 160, 32: 320}[size]
         dst = {3: 100, 4: 130, 6: 200, 8: 260, 10: 350, 16: 520, 32: 1080}[size]
-        sz = int(sz * scale)
+        sz = sz
         dst = int(dst * scale)
-        gdt = 23
+        gdt = int(23 * scale)
         sz //= constants.BLADE_EFFECT_QUALITY
         gdt *= constants.BLADE_EFFECT_QUALITY
         surf = pg.Surface((dst * 2 + 10, dst * 2 + 10), pg.SRCALPHA)
@@ -189,7 +189,7 @@ class Weapon:
                                int(col1[1] + (col2[1] - col1[1]) / sz * j),
                                int(col1[2] + (col2[2] - col1[2]) / sz * j)), [(vx * d + surf.get_width() // 2, vy * d + surf.get_height() // 2)
                                                                               for vx, vy in rots],
-                              3 * constants.BLADE_EFFECT_QUALITY, salpha=int(255 * (1 - j / sz / 6)),
+                              int(3 * constants.BLADE_EFFECT_QUALITY * scale), salpha=int(255 * (1 - j / sz / 6)),
                               target=surf)
         return surf
 
@@ -234,6 +234,16 @@ class SweepWeapon(Weapon):
         self.lrot = 0
         self.noises = []
         self.ddata = [copy.copy(self.damages), 1, self.rot_speed]
+
+    def on_idle(self):
+        super().on_idle()
+        mx = position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))[0] - self.x - game.get_game().player.obj.pos[0]
+        if mx > 0:
+            mx = 1
+        else:
+            mx = -1
+        self.set_rotation(90 + mx * int(5 + self.img.get_width() / 20) + self.rot // 2)
+        self.display = True
 
     def on_special_attack(self, strike: int):
         self.damages = copy.copy(self.ddata[0])
@@ -350,6 +360,13 @@ class ThiefWeapon(SweepWeapon):
         self.pow = power
         self.auto_throw = False
 
+    def on_special_attack(self, strike: int):
+        super().on_special_attack(strike)
+        mp = vector.Vector2D()
+        mp << position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
+        mp /= abs(mp)
+        game.get_game().player.obj.velocity += mp * self.pow * (self.scale - 1) / 7
+
     def on_start_attack(self):
         super().on_start_attack()
         self.throwing = False
@@ -457,6 +474,30 @@ class ThiefDoubleKnife(ThiefWeapon):
             w.update()
         self.display = False
 
+    def on_idle(self):
+        self.display = False
+        for w in self.weapons:
+            mx = position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))[0] - w.x - \
+                 game.get_game().player.obj.pos[0]
+            if mx > 0:
+                mx = 1
+            else:
+                mx = -1
+            w.set_rotation(90 + mx * int(5 + w.img.get_width() / 20) + w.rot // 2)
+            w.display = True
+
+    def on_charge(self):
+        super().on_charge()
+        for w in self.weapons:
+            w.scale = self.scale
+            w.display = self.display
+            mp = vector.Vector2D()
+            mp << position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
+            mp /= abs(mp)
+            mp.x -= self.x
+            mp.y -= self.y
+            w.set_rotation(180 + vector.cartesian_to_polar(*mp)[0])
+
     def on_start_attack(self):
         if random.random() < 0.5:
             self.weapons.append(self.weapons[0])
@@ -468,6 +509,8 @@ class ThiefDoubleKnife(ThiefWeapon):
         super().on_attack()
         self.weapons[0].set_rotation(self.rot)
         self.weapons[1].set_rotation(self.rot + 180 * (not self.same_direction))
+        self.weapons[0].scale = self.scale
+        self.weapons[1].scale = self.scale
         if self.dcol1 is not None:
             self.weapons[0].cutting_effect(self.dsz, self.dcol1[0], self.dcol1[1])
             self.weapons[1].cutting_effect(self.dsz, self.dcol2[0], self.dcol2[1])
@@ -479,8 +522,15 @@ class ThiefDoubleKnife(ThiefWeapon):
 
     def on_end_attack(self):
         super().on_end_attack()
-        self.weapons[0].display = False
-        self.weapons[1].display = False
+        self.weapons[0].scale = 1
+        self.weapons[1].scale = 1
+
+class GenerationI(ThiefDoubleKnife):
+    def on_end_attack(self):
+        s = self.scale > 1
+        super().on_end_attack()
+        if s:
+            game.get_game().player.weapons[game.get_game().player.sel_weapon] = WEAPONS['generation_ii']
 
 class StormStabber(ThiefWeapon):
     def on_start_attack(self):
@@ -522,14 +572,26 @@ class Spear(Weapon):
         self.poss = 0
         self.ddata = [copy.copy(damages), 1, forward_speed]
 
+    def on_idle(self):
+        super().on_idle()
+        mx = position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))[0] - self.x - game.get_game().player.obj.pos[0]
+        if mx > 0:
+            mx = 1
+        else:
+            mx = -1
+        self.set_rotation(90 + mx * int(5 + self.img.get_width() / 20) + self.rot // 2)
+        self.display = True
+        self.x /= 2
+        self.y /= 2
+
     def on_start_attack(self):
         self.x = 0
         self.y = 0
         px, py = position.relative_position(
             position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
         self.face_to(px, py)
-        self.forward(-self.st_pos)
-        self.poss =  -self.st_pos
+        self.forward(-self.st_pos / 2)
+        self.poss =  -self.st_pos / 2
 
     def on_end_attack(self):
         super().on_end_attack()
@@ -542,7 +604,7 @@ class Spear(Weapon):
         self.x, self.y = 0, 0
         self.set_rotation(vector.cartesian_to_polar(mx, my)[0])
         self.scale = 5 - 4 * 1.2 ** -(self.strike / 50)
-        self.forward(-self.st_pos - self.st_pos / 8 * (self.scale ** 2 - 1))
+        self.forward(-self.st_pos / 2 - self.st_pos / 16 * (self.scale ** 2 - 1))
         self.display = True
 
     def on_special_attack(self, strike: int):
@@ -551,16 +613,16 @@ class Spear(Weapon):
         self.forward_speed = self.ddata[2]
         self.ddata = [copy.copy(self.damages), 1, self.forward_speed]
         self.scale = 5 - 4 * 1.5 ** -(self.strike / 50)
-        self.forward(-self.st_pos / 8 * (self.scale ** 2 - 1))
+        self.forward(-self.st_pos / 16 * (self.scale ** 2 - 1))
         for k in self.damages.keys():
             self.damages[k] *= 4 - 3 * 1.2 ** -(self.strike / 50)
         self.forward_speed = int(self.forward_speed / self.scale)
         self.timer = int(self.at_time * self.scale ** 1.5)
 
     def on_attack(self):
-        self.forward(self.timer * 2 - self.at_time)
-        self.forward(self.forward_speed)
-        self.poss += self.forward_speed
+        self.forward(self.timer - self.at_time // 2)
+        self.forward(self.forward_speed // 2)
+        self.poss += self.forward_speed // 2
         super().on_attack()
         self.damage()
 
@@ -1643,6 +1705,115 @@ class Zenith(Blade):
             self.attack()
             self.sk_cd = self.sk_mcd
 
+class ProphecyI(Blade):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.stars: list[vector.Vector2D] = []
+
+    def update(self):
+        super().update()
+        r = math.sin(game.get_game().day_time / game.get_game().TIME_SPEED / 12) * 40 + 80
+        r /= game.get_game().player.get_screen_scale() * 2
+        for sr in self.stars:
+            pg.draw.circle(game.get_game().displayer.canvas, (255, 255, 127), position.displayed_position(sr), r)
+
+    def on_start_attack(self):
+        super().on_start_attack()
+        if random.randint(0, len(self.stars)) > 2:
+            for sr in self.stars:
+                for rr in range(0, 360, 90):
+                    b = projectiles.Projectiles.GenerationBeam(sr, rr + random.randint(-10, 10))
+                    b.WIDTH = 20
+                    b.COLOR = (255, 255, 127)
+                    b.DAMAGE_AS = 'prophecy'
+                    b.DMG_TYPE = dmg.DamageTypes.PHYSICAL
+                    game.get_game().projectiles.append(b)
+                game.get_game().displayer.effect(fc.p_fade_circle(*position.displayed_position(sr), col=(255, 255, 127),
+                                                                  sp=20, t=30, follow_map=True))
+            self.stars.clear()
+            self.timer *= 2
+            return
+        np = vector.Vector2D()
+        if not len(self.stars) or not random.randint(0, 2):
+            np.x = game.get_game().player.obj.pos[0] + random.randint(-800, 800)
+            np.y = game.get_game().player.obj.pos[1] + random.randint(-800, 800)
+        else:
+            rp = random.choice(self.stars)
+            pp = game.get_game().player.obj.pos
+            rr = vector.cartesian_to_polar(*(pp - rp))[0] + random.randint(-30, 30)
+            np = pp + vector.Vector2D(rr, random.randint(500, 1500))
+        for sr in self.stars:
+            b = projectiles.Projectiles.GenerationBeam(sr, vector.cartesian_to_polar(*(np - sr))[0])
+            b.WIDTH = 50
+            b.COLOR = (255, 255, 127)
+            b.DAMAGE_AS = 'prophecy'
+            b.DMG_TYPE = dmg.DamageTypes.PHYSICAL
+            game.get_game().projectiles.append(b)
+        self.stars.append(np)
+
+    def on_end_attack(self):
+        if self.scale > 1:
+            for sr in self.stars:
+                for rr in range(0, 360, 72):
+                    b = projectiles.Projectiles.GenerationBeam(sr, rr + random.randint(-10, 10))
+                    b.WIDTH = 30
+                    b.COLOR = (255, 255, 127)
+                    b.DAMAGE_AS = 'prophecy'
+                    b.DMG_TYPE = dmg.DamageTypes.PHYSICAL
+                    game.get_game().projectiles.append(b)
+                game.get_game().displayer.effect(fc.p_fade_circle(*position.displayed_position(sr), col=(255, 255, 127),
+                                                                  sp=20, t=40, follow_map=True))
+            self.stars.clear()
+            WEAPONS['prophecy_ii'].stars = self.stars
+            game.get_game().player.weapons[game.get_game().player.sel_weapon] = WEAPONS['prophecy_ii']
+        super().on_end_attack()
+
+class ProphecyII(Spear):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.stars: list[vector.Vector2D] = []
+
+    def update(self):
+        super().update()
+        r = math.sin(game.get_game().day_time / game.get_game().TIME_SPEED / 12) * 40 + 80
+        r /= game.get_game().player.get_screen_scale() * 2
+        for sr in self.stars:
+            pg.draw.circle(game.get_game().displayer.canvas, (255, 255, 127), position.displayed_position(sr), r)
+
+    def on_start_attack(self):
+        super().on_start_attack()
+        if not len(self.stars):
+            for i in range(4):
+                sr = game.get_game().player.obj.pos + vector.Vector2D(random.randint(-1000, 1000), random.randint(-1000, 1000))
+                self.stars.append(sr)
+                game.get_game().displayer.effect(fc.p_fade_circle(*position.displayed_position(sr), col=(255, 255, 127),
+                                                                  sp=20, t=45, follow_map=True))
+            self.timer *= 3
+            return
+        i = random.randint(0, len(self.stars) - 1)
+        for j, sr in enumerate(self.stars):
+            b = projectiles.Projectiles.GenerationBeam(sr, self.rot)
+            b.WIDTH = 50
+            b.COLOR = (255, 255, 127)
+            b.DAMAGE_AS = 'prophecy'
+            b.DMG_TYPE = dmg.DamageTypes.PHYSICAL
+            if j == i:
+                b.WIDTH *= 3
+                b.DURATION *= 2
+            game.get_game().projectiles.append(b)
+        self.stars.pop(i)
+
+    def on_end_attack(self):
+        if self.scale > 1:
+            for i in range(max(0, 6 - len(self.stars))):
+                sr = game.get_game().player.obj.pos + vector.Vector2D(random.randint(-1000, 1000), random.randint(-1000, 1000))
+                self.stars.append(sr)
+                game.get_game().displayer.effect(fc.p_fade_circle(*position.displayed_position(sr), col=(255, 255, 127),
+                                                                  sp=20, t=45, follow_map=True))
+            WEAPONS['prophecy'].stars = self.stars
+            game.get_game().player.weapons[game.get_game().player.sel_weapon] = WEAPONS['prophecy']
+        super().on_end_attack()
+
 class LifeDevourer(Blade):
     def update(self):
         self.sk_mcd = 40
@@ -2648,13 +2819,15 @@ class Bow(Weapon):
     ATTACK_SOUND = 'attack_bow'
 
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, projectile_speed: int,
-                 auto_fire: bool = False, tail_col: tuple[int, int, int] | None = None, ammo_save_chance: float = 0.0, precision: float = 0.0):
+                 auto_fire: bool = False, tail_col: tuple[int, int, int] | None = None, ammo_save_chance: float = 0.0, precision: float = 0.0, tw=3, ts=3):
         super().__init__(name, damages, kb, img, speed, at_time, auto_fire)
         self.spd = projectile_speed
         self.tail_col = tail_col
         self.ammo_save_chance = ammo_save_chance
         self.precision = precision
         self.ddata = [self.precision, self.spd]
+        self.tw = tw
+        self.ts = ts
 
     def on_charge(self):
         self.precision = self.ddata[0]
@@ -2694,7 +2867,7 @@ class Bow(Weapon):
         if game.get_game().player.ammo[0] not in projectiles.AMMOS or not game.get_game().player.ammo[1]:
             self.timer = 0
             return
-        if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
+        if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() > self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
             game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
         pj = projectiles.AMMOS[game.get_game().player.ammo[0]]((self.x + game.get_game().player.obj.pos[0],
                                                                self.y + game.get_game().player.obj.pos[1]),
@@ -2702,9 +2875,16 @@ class Bow(Weapon):
                                                               self.damages[dmg.DamageTypes.PIERCING])
         if self.tail_col is not None:
             pj.TAIL_COLOR = self.tail_col
-            pj.TAIL_SIZE = max(pj.TAIL_SIZE, 3)
-            pj.TAIL_WIDTH = max(pj.TAIL_WIDTH, 3)
+            pj.TAIL_SIZE = max(pj.TAIL_SIZE, self.ts)
+            pj.TAIL_WIDTH = max(pj.TAIL_WIDTH, self.tw)
         game.get_game().projectiles.append(pj)
+
+class GenerationII(Bow):
+    def on_end_attack(self):
+        s = self.scale > 1
+        super().on_end_attack()
+        if s:
+            game.get_game().player.weapons[game.get_game().player.sel_weapon] = WEAPONS['generation']
 
 class ForestsBow(Bow):
     def on_start_attack(self):
@@ -3547,6 +3727,11 @@ def set_weapons():
                                       3, 'items_weapons_wilson_knife', 1, 7, 7, 50, 200, 60, 200,
                                       auto_fire=True, combat=[1, 1, 1, 1, 0], sweep_type=WilsonKnifeBlade, spear_type=WilsonKnifeSpear),
 
+        'prophecy': ProphecyI('prophecy', {dmg.DamageTypes.PHYSICAL: 1200, dmg.DamageTypes.THINKING: 4800}, 8, 'items_weapons_prophecy',
+                              2, 8, 50, 280),
+        'prophecy_ii': ProphecyII('prophecy ii', {dmg.DamageTypes.PHYSICAL: 4500, dmg.DamageTypes.THINKING: 1500}, 15, 'items_weapons_prophecy_ii',
+                                1, 7, 70, 300, auto_fire=True),
+
         'zenith': Zenith('zenith', {dmg.DamageTypes.PHYSICAL: 2999, dmg.DamageTypes.THINKING: 3999}, 10, 'items_weapons_zenith',
                         0, 6, 50, 200),
 
@@ -3702,6 +3887,12 @@ def set_weapons():
         'time_flies': ThiefDoubleKnife('time flies', {dmg.DamageTypes.PIERCING: 200}, 0.5,
                                         'items_weapons_time_flies', 0, 5, 40, 120,
                                        4, 1800, dcols=((255, 200, 150), (255, 255, 255))),
+        'generation': GenerationI('generation', {dmg.DamageTypes.PIERCING: 16000, dmg.DamageTypes.THINKING: 4000}, 3,
+                                       ('items_weapons_generation_l', 'items_weapons_generation_r'), 0, 9, 30, 200,
+                                       30, 4500, dcols=(((143, 222, 93), (207, 255, 112)), ((0, 255, 255), (127, 255, 255))), dsz=16),
+        'generation_ii': GenerationII('generation ii', {dmg.DamageTypes.PIERCING: 80000}, 10,
+                                      'items_weapons_generation_ii', 5, 25, 5000, auto_fire=True, precision=0,
+                                      tail_col=(71, 239, 174), tw=40, ts=5),
 
         'shuriken': ThrowerThiefWeapon('shuriken', {dmg.DamageTypes.PIERCING: 8}, 0, 'items_weapons_shuriken',
                                       1, 1, 2, 1, 3, 1200, 20),
@@ -3795,7 +3986,7 @@ def set_weapons():
                                             'items_weapons_water_of_disability', 4,
                                             1, projectiles.Projectiles.WaterOfDisability, 18, True,
                                             'Water of Disability'),
-        'curse_book': MagicWeapon('curse book', {dmg.DamageTypes.MAGICAL: 128}, 0.6,
+        'curse_book': MagicWeapon('curse book', {dmg.DamageTypes.MAGICAL: 144}, 0.6,
                                   'items_weapons_curse_book', 20,
                                   10, projectiles.Projectiles.CurseBook, 40, True,
                                   'Dark Magic Circle'),
@@ -3886,7 +4077,7 @@ def set_weapons():
                                               10, projectiles.Projectiles.ForbiddenCurseDarkWield, 600, 15, True,
                                                'Dark\'s Wield'),
         'great_forbidden_curse__evil': ArcaneWeapon('great forbidden curse  evil', {dmg.DamageTypes.ARCANE: 12}, 0.8,
-                                               'items_weapons_forbidden_curse__blood_moon', 590,
+                                               'items_weapons_forbidden_curse__blood moon', 590,
                                               10, projectiles.Projectiles.ForbiddenCurseBloodMoon, 800, 32, True,
                                                'Blood Moon',),
         'stop': MagicWeapon('stop', {}, 1, 'items_weapons_stop', 240, 1,

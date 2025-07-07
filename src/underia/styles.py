@@ -7,8 +7,8 @@ import constants
 def hp_bar(hp: hp_system.HPSystem, midtop: tuple, size: float):
     displayer = game.get_game().displayer
     p = bool(hp.pacify)
-    width = 120 / game.get_game().player.get_screen_scale()
-    height = (25 + p * 10) / game.get_game().player.get_screen_scale()
+    width = 250 / game.get_game().player.get_screen_scale()
+    height = (50 + p * 20) / game.get_game().player.get_screen_scale()
     size = size / game.get_game().player.get_screen_scale()
     rect = pg.Rect(midtop[0] - width // 2, midtop[1] - height - size // 5, width, height)
     hp_rate = hp.hp / hp.max_hp
@@ -22,13 +22,13 @@ def hp_bar(hp: hp_system.HPSystem, midtop: tuple, size: float):
     color_dis = (255 - hp_dis_rate * 255, hp_dis_rate * 255, 0)
     if constants.USE_ALPHA:
         surf = pg.Surface((width, height), pg.SRCALPHA)
-        pg.draw.rect(surf, color_dis, (0, 0, int(width * hp_dis_rate), height), border_radius=5)
-        pg.draw.rect(surf, color, (0, 0, int(width * hp_rate), height), border_radius=5)
+        pg.draw.rect(surf, color_dis, (0, 0, int(width * hp_dis_rate), height), border_radius=2)
+        pg.draw.rect(surf, color, (0, 0, int(width * hp_rate), height), border_radius=2)
         if p:
-            pg.draw.rect(surf, (0, 127, 255), (0, 25 / game.get_game().player.get_screen_scale(),
-                                               int(width * pacify_rate), 10 / game.get_game().player.get_screen_scale()), border_radius=5)
-        pg.draw.rect(surf, (255, 255, 255), (0, 0, width, height), 2, border_radius=5)
-        surf.set_alpha(80)
+            pg.draw.rect(surf, (0, 127, 255), (0, 50 / game.get_game().player.get_screen_scale(),
+                                               int(width * pacify_rate), 20 / game.get_game().player.get_screen_scale()), border_radius=2)
+        pg.draw.rect(surf, (255, 255, 255), (0, 0, width, height), 5, border_radius=2)
+        surf.set_alpha(180)
         displayer.canvas.blit(surf, (rect.left, rect.top))
     else:
         pg.draw.rect(displayer.canvas, color_dis, (rect.left, rect.top, int(width * hp_dis_rate), height), border_radius=5)

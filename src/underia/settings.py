@@ -18,7 +18,14 @@ SETTINGS = [
         ['ENTITY_NUMBER', 'Entity Number', (6, 'Fast'), (12, 'Low'), (18, 'Normal'), (28, 'High'), (36, 'Fancy')],
         ['FPS', 'FPS Limit', (120, '120')],
         ['ULTIMATE_AMMO_BONUS', 'Unlimited Ammo No.', (4000, '4000'), (10000, '10000'), (20000, '20000'), (114514, '114514')],
-        ['LANG', 'Language', ('en', 'English'), ('zh', '简体中文')]
+        ['LANG', 'Language', ('en', 'English'), ('zh', '简体中文')],
+        ['DIFFICULTY', 'Difficulty', (0, 'Easy'), (1, 'Normal'), (2, 'Mastery'), (3, 'Ultimate')],
+    ]),
+    ('Sound', [
+        ['MUSIC_VOL', 'Volume(BGM)', (0, 'Mute'), (.1, 'Weakest'), (.3, 'Very Weak'), (.4, 'Weak'), (.5, 'Moderate'),
+         (.6, 'Strong'), (.7, 'Stronger'), (.8, 'Very Strong'), (.9, 'Strongest'), (1, 'Max')],
+        ['SOUND_VOL', 'Volume(SFX)', (0, 'Mute'), (.1, 'Weakest'), (.3, 'Very Weak'), (.4, 'Weak'), (.5, 'Moderate'),
+         (.6, 'Strong'), (.7, 'Stronger'), (.8, 'Very Strong'), (.9, 'Strongest'), (1, 'Max')]
     ])
 ]
 

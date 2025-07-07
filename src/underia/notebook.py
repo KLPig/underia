@@ -1,4 +1,3 @@
-from values import element
 from visual import story
 from resources import path
 from underia import game
@@ -38,12 +37,23 @@ STORIES = [
       [],
       [],
       [],
-      [],])
+      [],]),
+    ([['This is a new notebook.', '...', '\'NOTES\'', '...by Eric Lee'],
+      ['\'NOTES, -by Eric Lee\'\nwritten in a unclear and crazy font']],
+     [[],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      ])
 ]
 
 CHAPTERS = [
     [('Intro', 0), ('1.', 1), ('2.', 2), ('3.', 3), ('4.', 4)],
     [('Intro', 5), ('1.', 6), ('2.', 7), ('3.', 8), ('4.', 9)],
+    [('Intro', 10), ('Kun Kun', 10), ('Chicken Soup', 10), ('Tung Tung', 10), ('Hadi', 10), ('Spiked Head', 10), ('Final', 11)],
 ]
 
 def show_notebook(chapter=0):

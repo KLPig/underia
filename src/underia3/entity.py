@@ -3,7 +3,7 @@ import math
 
 from underia import entity, game
 from physics import vector
-from values import damages, effects
+from values import damages, effects, hp_system
 import random
 
 class ChickenAI(entity.MonsterAI):
@@ -194,7 +194,8 @@ class Chicken(Entity):
     NAME = 'Chicken'
     DISPLAY_MODE = 2
     LOOT_TABLE = entity.LootTable([
-        entity.IndividualLoot('e_feather', 1, 5, 25)
+        entity.IndividualLoot('e_feather', 1, 5, 25),
+        entity.IndividualLoot('feather_sword', .08, 1, 1),
     ])
     SOUND_HURT = 'dragon'
     SOUND_DEATH = 'dragon'
@@ -207,11 +208,35 @@ class Chicken(Entity):
         super().on_update()
         self.set_rotation(-self.obj.velocity.get_net_rotation())
 
+class ManaChicken(Entity):
+    NAME = 'Mana Chicken'
+    DISPLAY_MODE = 2
+    LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('e_feather', .5, 5, 25),
+        entity.IndividualLoot('magic_feather', 1, 5, 25),
+        entity.IndividualLoot('book', .3, 1, 2),
+        entity.IndividualLoot('feather_sword', .08, 1, 1),
+    ])
+    SOUND_HURT = 'dragon'
+    SOUND_DEATH = 'dragon'
+
+    def __init__(self, pos):
+        super().__init__(pos, game.get_game().graphics[f'entity3_mana_chicken'],
+                         ChickenAI, hp=1200)
+        self.obj.MASS /= 3
+        self.obj.TOUCHING_DAMAGE += 50
+
+    def on_update(self):
+        super().on_update()
+        self.set_rotation(-self.obj.velocity.get_net_rotation())
+
+
 class PoisonChicken(Chicken):
     NAME = 'Poison Chicken'
     LOOT_TABLE = entity.LootTable([
         entity.IndividualLoot('e_poison_powder', 1, 10, 20),
-        entity.SelectionLoot([('e_feather', 3, 8), ('carrion', 1, 4)], 0, 1)
+        entity.SelectionLoot([('e_feather', 3, 8), ('carrion', 3, 9)], 1, 2),
+        entity.IndividualLoot('feather_sword', .08, 1, 1),
     ])
 
     def __init__(self, pos):
@@ -236,6 +261,8 @@ class BonecaAmbalabu(entity.Entities.Entity):
     NAME = 'Boneca Ambalabu'
     DISPLAY_MODE = 2
     LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('brainrot', 1, 10, 12),
+        entity.IndividualLoot('mystery_shard', 1, 30, 32),
     ])
 
     def __init__(self, pos):
@@ -260,6 +287,9 @@ class LaVacaSaturnoSaturnita(entity.Entities.Entity):
     NAME = 'La Vaca Saturno Saturnita'
     DISPLAY_MODE = 2
     LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('brainrot', 1, 30, 32),
+        entity.IndividualLoot('mystery_shard', 1, 30, 32),
+        entity.IndividualLoot('mystery_soul', .4, 6, 12),
     ])
 
     def __init__(self, pos):
@@ -330,6 +360,7 @@ class PoiseWalker(entity.Entities.Entity):
     LOOT_TABLE = entity.LootTable([
         entity.IndividualLoot('e_poison_powder', 1, 5, 25),
         entity.SelectionLoot([('poise_blade', 1, 1)], 1, 1),
+        entity.SelectionLoot([('e_feather', 3, 8), ('carrion', 2, 8)], 1, 2)
     ])
     IS_MENACE = True
     BOSS_NAME = ''
@@ -347,6 +378,9 @@ class PoiseWalker(entity.Entities.Entity):
     def on_update(self):
         super().on_update()
         self.set_rotation(-self.obj.velocity.get_net_rotation())
+        if self.obj.cur_target is None:
+            self.obj.idle()
+            return
         px, py = self.obj.cur_target.pos
         if vector.distance(px - self.obj.pos[0], py - self.obj.pos[1]) < 500:
             game.get_game().player.hp_sys.effect(effects.CurseSnow(2, 1))
@@ -388,7 +422,7 @@ class LycheeGuard(Lychee):
                 lychee.hp_sys.max_hp /= 2
                 lychee.hp_sys.hp /= 2
                 game.get_game().entities.append(lychee)
-            elif self.tick % 24 == 1:
+            elif self.tick % 12 == 1:
                 game.get_game().entities.append(LycheeKok(self.obj.pos,
                                                           vector.cartesian_to_polar(
                                                               *game.get_game().player.obj.pos - self.obj.pos)[0]))
@@ -404,12 +438,13 @@ class LycheeKing(entity.Entities.Entity):
     LOOT_TABLE = entity.LootTable([
         entity.IndividualLoot('lychee_core_shard', 1, 20, 30),
         entity.IndividualLoot('lychee_shard', .8, 40, 60),
+        entity.IndividualLoot('hammer_of_rational', 1, 1, 1),
     ])
     PHASE_SEGMENTS = []
     IS_MENACE = True
 
     def __init__(self, pos):
-        super().__init__(pos, game.get_game().graphics['entity3_lychee_king'], entity.BuildingAI, hp=16000)
+        super().__init__(pos, game.get_game().graphics['entity3_lychee_king'], entity.BuildingAI, hp=18000)
         self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 150
         self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 150
         self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 150
@@ -417,6 +452,7 @@ class LycheeKing(entity.Entities.Entity):
         self.hp_sys.defenses[damages.DamageTypes.HALLOW] = 150
         self.hp_sys.defenses[damages.DamageTypes.PACIFY] = 150
         self.tick = 0
+        self.phase = 0
         self.o_hp = self.hp_sys.hp
         self.obj.TOUCHING_DAMAGE = 200
         self.lychees = [LycheeGuard((i * 200 + self.obj.pos[0], i * 200 + self.obj.pos[1])) for i in range(12)]
@@ -425,23 +461,32 @@ class LycheeKing(entity.Entities.Entity):
         self.hp_sys.max_hp += sum([l.hp_sys.max_hp for l in self.lychees])
         self.PHASE_SEGMENTS.append(self.o_hp / self.hp_sys.max_hp)
 
-    def on_update(self):
-        super().on_update()
-
     def t_draw(self):
         super().t_draw()
         self.tick += 1
+        if self.phase == 0 and self.hp_sys.hp < self.o_hp:
+            self.phase = 1
+            for l in self.lychees:
+                l.hp_sys.max_hp = 1
+            self.tick = -80
         for i in range(12):
             lychee = self.lychees[i]
-            lychee.obj.pos = self.obj.pos + vector.Vector2D(i * 30 + self.tick * 2,
-                                                            2000 + 500 * math.sin(self.tick / 60 * math.pi + math.pi * i)
-                                                            if self.hp_sys.hp < self.o_hp else 600)
+            av = vector.Vector2D(i * 30 + self.tick * 2,
+                                 600 + self.tick ** 2 / 6400 * 1400 if self.tick < 0 else
+                                 2000 + 500 * math.sin(self.tick / 60 * math.pi + math.pi * i)
+                                 if self.hp_sys.hp < self.o_hp else 600)
+            av.x *= (1 + .5 * math.sin(self.tick / 40))
+            av.y *= (1 + .5 * math.cos(self.tick / 40))
+            lychee.obj.pos = self.obj.pos + av
         l_hp = sum([l.hp_sys.hp for l in self.lychees])
         if l_hp > 20:
             self.hp_sys.hp = self.o_hp + l_hp
         else:
             self.hp_sys.hp = min(self.hp_sys.hp, self.o_hp - 1)
         if self.hp_sys.hp <= 1:
+            for l in self.lychees:
+                if l in game.get_game().entities:
+                    game.get_game().entities.remove(l)
             self.lychees.clear()
 
 class LycheeKok(entity.Entities.Lazer):
@@ -469,3 +514,70 @@ class LycheeKok(entity.Entities.Lazer):
             game.get_game().player.hp_sys.damage(150, damages.DamageTypes.MAGICAL)
             game.get_game().player.hp_sys.enable_immume()
             self.hp_sys.hp = 0
+
+class ToxicIntestine(entity.Entities.WormEntity):
+    NAME = 'Toxic Intestine'
+
+    def __init__(self, pos, length=15):
+        super().__init__(pos, length, game.get_game().graphics['entity3_intestine'],
+                         game.get_game().graphics['entity3_intestine'], entity.DestroyerAI, length * 400,
+                         60, 140)
+        self.obj.SPEED *= 1.5
+        self.obj.MASS /= 1.5
+
+class ToxicLargeIntestine(entity.Entities.WormEntity):
+    NAME = 'Toxic Large Intestine'
+    IS_MENACE = True
+    BOSS_NAME = 'Pure Natural'
+    LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('e_poison_powder', 1, 10, 20),
+    ])
+
+    def __init__(self, pos, length=30):
+        super().__init__(pos, length, game.get_game().graphics['entity3_large_intestine'],
+                         game.get_game().graphics['entity3_large_intestine'], entity.DestroyerAI, length * 7000,
+                         120, 220)
+        s = 0
+        self.obj.SPEED *= 1.5
+        for e in self.body:
+            e.hp_sys = hp_system.HPSystem(7000)
+            e.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 60
+            e.hp_sys.defenses[damages.DamageTypes.PIERCING] = 60
+            e.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 60
+            e.hp_sys.defenses[damages.DamageTypes.OCTAVE] = 100
+            e.hp_sys.defenses[damages.DamageTypes.HALLOW] = 100
+            e.hp_sys.defenses[damages.DamageTypes.PACIFY] = 100
+            e.show_bar = True
+        self.body[0].hp_sys.max_hp = 1
+        self.body[0].hp_sys.hp = 1
+        for e in self.body:
+            s += e.hp_sys.max_hp
+        self.hp_sys.max_hp = s
+        self.hp_sys.hp = s
+
+    def on_update(self):
+        super().on_update()
+        s = 0
+        for i, b in enumerate(self.body):
+            s += b.hp_sys.hp
+            if 2 < b.hp_sys.hp < b.hp_sys.max_hp * .2:
+                b.hp_sys.damage(9999, damages.DamageTypes.TRUE)
+                ax, ay = vector.polar_to_cartesian(random.randint(0, 360), 100)
+                game.get_game().entities.append(ToxicIntestine((b.obj.pos[0] + ax, b.obj.pos[1] + ay)))
+                b.show_bar = False
+            b.hp_sys.hp = max(2, b.hp_sys.hp)
+        self.hp_sys.hp = s if s > 70 else 0
+
+class RuneAltar(entity.Entities.Entity):
+    DIVERSITY = False
+    DISPLAY_MODE = 2
+    NAME = 'Rune Altar'
+
+    def __init__(self, pos):
+        super().__init__(pos, game.get_game().graphics['entity3_rune_altar'], entity.BuildingAI, hp=1000000)
+        self.hp_sys.IMMUNE = True
+
+    def on_update(self):
+        super().on_update()
+        if vector.distance(*(game.get_game().player.obj.pos - self.obj.pos)) < 400:
+            game.get_game().player.hp_sys.effect(effects.RuneAltar(1, 1))

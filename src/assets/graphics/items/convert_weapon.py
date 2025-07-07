@@ -21,6 +21,6 @@ if not os.path.exists('weapons'):
 fs = [f for f in os.listdir('.') if f.endswith('.png')]
 
 for i, f in enumerate(fs):
-    if i % 5 == 0:
+    if i % 5 == (len(fs) - 1) % 5:
         print(f'\rConverting: {(i + 1) / len(fs) * 100:.2f}%', end='')
     convert_weapon(f)

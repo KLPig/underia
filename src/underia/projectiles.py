@@ -8,7 +8,7 @@ from physics import mover, vector
 from resources import position
 from underia import game, weapons, entity
 from values import damages, effects, DamageTypes
-from visual import effects as eff, particle_effects, fade_circle, draw
+from visual import effects as eff, particle_effects, fade_circle, draw, cut_effects
 import constants
 
 
@@ -172,13 +172,12 @@ class Projectiles:
 
         def damage(self):
             imr = self.d_img.get_rect(center=self.obj.pos())
-            for entity in game.get_game().entities:
-                if imr.collidepoint(entity.obj.pos[0], entity.obj.pos[1]) or entity.d_img.get_rect(
-                        center=entity.obj.pos).collidepoint(self.obj.pos[0], self.obj.pos[1]):
-                    entity.hp_sys.damage(weapons.WEAPONS['magic_sword'].damages[
+            for ee in game.get_game().entities:
+                if imr.collidepoint(ee.obj.pos[0], ee.obj.pos[1]):
+                    ee.hp_sys.damage(weapons.WEAPONS['magic_sword'].damages[
                                              damages.DamageTypes.PHYSICAL] * 0.8 * game.get_game().player.attack *
-                                         game.get_game().player.attacks[0],
-                                         damages.DamageTypes.PHYSICAL)
+                                     game.get_game().player.attacks[0],
+                                     damages.DamageTypes.PHYSICAL)
                     self.dead = True
                     break
 
@@ -351,7 +350,7 @@ class Projectiles:
             if target_rot - self.rot < -180:
                 target_rot += 360
             self.obj.velocity.reset()
-            self.obj.velocity.vectors[0].value *= math.cos(math.radians(.92 * (target_rot - self.obj.rotation)))
+            self.obj.velocity *= math.cos(math.radians(.92 * (target_rot - self.obj.rotation)))
             self.obj.rotation = (self.obj.rotation + .92 * (target_rot - self.obj.rotation))
             self.tick += 1
             super().update()
@@ -935,6 +934,7 @@ class Projectiles:
         DURATION = 100
         AUTO_FOLLOW = True
         DMG_TYPE = damages.DamageTypes.MAGICAL
+        ENABLE_IMMUNE = False
 
         def __init__(self, pos, rotation):
             self.obj = mover.Mover(pos)
@@ -984,13 +984,16 @@ class Projectiles:
             self.damage()
 
         def damage(self):
-            for entity in game.get_game().entities:
-                ex, ey = entity.obj.pos
+            for ee in game.get_game().entities:
+                ex, ey = ee.obj.pos
                 if vector.distance(self.obj.pos[0] - ex,
-                                   self.obj.pos[1] - ey) < self.d_img.get_width() // 2 + entity.d_img.get_width() // 2:
-                    entity.hp_sys.damage(
+                                   self.obj.pos[1] - ey) < self.d_img.get_width() // 2 + ee.d_img.get_width() // 2 and not \
+                    ee.hp_sys.is_immune:
+                    ee.hp_sys.damage(
                         weapons.WEAPONS[self.DAMAGE_AS].damages[self.DMG_TYPE] * game.get_game().player.attack *
                         game.get_game().player.attacks[2], self.DMG_TYPE)
+                    if self.ENABLE_IMMUNE:
+                        ee.hp_sys.enable_immume()
 
     class CactusWand(MagicCircle):
         DAMAGE_AS = 'cactus_wand'
@@ -1002,6 +1005,7 @@ class Projectiles:
     class CurseBook(MagicCircle):
         DAMAGE_AS = 'curse_book'
         IMG = 'projectiles_curse_book'
+        ENABLE_IMMUNE = True
 
     class LightPurify(MagicCircle):
         DAMAGE_AS = 'light_purify'
@@ -1190,6 +1194,7 @@ class Projectiles:
         FOLLOW_PLAYER = True
         FACE_TO_MOUSE = False
         ENABLE_IMMUNE = True
+        CUT_EFFECT = False
 
         def __init__(self, pos, rotation):
             ax, ay = vector.rotation_coordinate(rotation)
@@ -1210,7 +1215,7 @@ class Projectiles:
                 self.arot = 0
             self.start_pos = pos[0] + ax * 100, pos[1] + ay * 100
             self.end_pos = self.start_pos[0] + ax * self.LENGTH, self.start_pos[1] + ay * self.LENGTH
-            self.pos = pos
+            self.pos = vector.Vector2D(0, 0, *pos)
             self.pap = None
             self.img = pg.Surface((1, 1))
             self.d_img = self.img
@@ -1244,20 +1249,20 @@ class Projectiles:
                 dx, dy = position.displayed_position((x, y))
                 game.get_game().displayer.point_light(self.COLOR, (dx, dy), 1.2,
                                                       self.WIDTH / game.get_game().player.get_screen_scale())
-            for entity in game.get_game().entities:
-                ex = entity.obj.pos[0] - game.get_game().player.obj.pos[0]
-                ey = entity.obj.pos[1] - game.get_game().player.obj.pos[1]
+            for ee in game.get_game().entities:
+                ex = ee.obj.pos[0] - game.get_game().player.obj.pos[0]
+                ey = ee.obj.pos[1] - game.get_game().player.obj.pos[1]
                 if (abs(self.slope * ey - ex) * math.sin(math.atan(abs(1 / (self.slope + 10 ** -10)))) <
-                        self.WIDTH + (entity.d_img.get_width() + entity.d_img.get_height()) // 2 and
-                        ((ex > 0) == self.lf) and ((ey > 0) == self.lr) and vector.distance(ey, ex) < self.LENGTH) and not entity.hp_sys.is_immune:
-                    entity.hp_sys.damage((weapons.WEAPONS[self.DAMAGE_AS].damages[self.DMG_TYPE] if self.DMG is None
+                    self.WIDTH * 2 ** .5 + (ee.d_img.get_width() + ee.d_img.get_height()) // 2 and
+                    ((ex > 0) == self.lf) and ((ey > 0) == self.lr) and vector.distance(ey, ex) < self.LENGTH) and not ee.hp_sys.is_immune:
+                    ee.hp_sys.damage((weapons.WEAPONS[self.DAMAGE_AS].damages[self.DMG_TYPE] if self.DMG is None
                                           else self.DMG) * \
-                                         game.get_game().player.attack * game.get_game().player.attacks[{DamageTypes.PHYSICAL: 0,
+                                     game.get_game().player.attack * game.get_game().player.attacks[{DamageTypes.PHYSICAL: 0,
                                                                                                          DamageTypes.PIERCING: 1,
                                                                                                          DamageTypes.MAGICAL: 2,
                                                                                                          DamageTypes.ARCANE: 2}[self.DMG_TYPE]],
-                                         self.DMG_TYPE)
-                    entity.hp_sys.enable_immume()
+                                     self.DMG_TYPE)
+                    ee.hp_sys.enable_immume()
             if self.tick > self.DURATION:
                 self.dead = True
             self.tick += 1
@@ -1266,8 +1271,12 @@ class Projectiles:
             size = int(size / game.get_game().player.get_screen_scale())
             pg.draw.circle(game.get_game().displayer.canvas, self.COLOR, position.displayed_position(self.start_pos),
                            size // 2)
-            draw.line(game.get_game().displayer.canvas, self.COLOR, position.displayed_position(self.start_pos),
-                         position.displayed_position(self.end_pos), size)
+            if self.CUT_EFFECT:
+                cut_effects.cut_eff(game.get_game().displayer.canvas, size, *position.displayed_position(self.start_pos),
+                                    *position.displayed_position(self.end_pos), self.COLOR)
+            else:
+                draw.line(game.get_game().displayer.canvas, self.COLOR, position.displayed_position(self.start_pos),
+                             position.displayed_position(self.end_pos), size)
 
     class ForwardBow(Beam):
         WIDTH = 10
@@ -1395,6 +1404,15 @@ class Projectiles:
 
         def update(self):
             pass
+
+    class GenerationBeam(Beam):
+        DAMAGE_AS = 'generation'
+        DMG_TYPE = damages.DamageTypes.PIERCING
+        COLOR = (71, 239, 174)
+        DURATION = 30
+        WIDTH = 240
+        LENGTH = 9999
+        FOLLOW_PLAYER = False
 
     class FireDragonBreath(Projectile):
         DAMAGE_AS = 'fire_dragon_breath_wand'
@@ -1733,6 +1751,7 @@ class Projectiles:
         COLOR = (0, 80, 0)
         DURATION = 10
         FOLLOW_PLAYER = False
+        CUT_EFFECT = True
 
     class Excalibur(NightsEdge):
         DAMAGE_AS = 'excalibur'
@@ -1875,7 +1894,7 @@ class Projectiles:
     class ForbiddenCurseBloodMoon(Projectile):
         def __init__(self, pos, rotation):
             super().__init__(pos, rotation, motion=mover.Mover)
-            self.img = game.get_game().graphics['projectiles_forbidden_curse__blood_moon']
+            self.img = game.get_game().graphics['projectiles_forbidden_curse__blood moon']
             self.d_img = self.img
             self.rot = rotation
             self.dead = False
@@ -2413,17 +2432,19 @@ class Projectiles:
             if self.tick > 30:
                 self.dead = True
             if ox != ax:
-                aax = -(ox - ax) / abs(ox - ax) * 60
+                aax = -(ox - ax) / abs(ox - ax) * max((self.d_img.get_width() + self.d_img.get_height()) / 2 + 80, 300)
             else:
                 aax = 1
             if oy != ay:
-                aay = -(oy - ay) / abs(oy - ay) * 60
+                aay = -(oy - ay) / abs(oy - ay) * max((self.d_img.get_width() + self.d_img.get_height()) / 2 + 80, 300)
             else:
                 aay = 1
             cd = []
             for x in range(int(ox), int(ax) + 1, int(aax)):
                 for y in range(int(oy), int(ay) + 1, int(aay)):
                     pos = (x, y)
+                    if not game.get_game().displayer.canvas.get_rect().collidepoint(position.displayed_position(pos)):
+                        continue
                     cd.extend(self.damage(pos, cd))
                     if self.dead:
                         break
@@ -2433,16 +2454,21 @@ class Projectiles:
         def damage(self, pos, cd):
             x, y = pos
             for ee in game.get_game().entities:
+                if ee.ueid in cd:
+                    continue
                 if (vector.distance(ee.obj.pos[0] - x, ee.obj.pos[1] - y) <
-                        (ee.d_img.get_width() + ee.d_img.get_height() + self.d_img.get_width() + self.d_img.get_height()) / 4 + 80
-                        and ee not in cd):
+                        (ee.d_img.get_width() + ee.d_img.get_height() + self.d_img.get_width() + self.d_img.get_height()) / 4 + 80):
                     ee.hp_sys.damage(
                         self.dmg * game.get_game().player.attack * game.get_game().player.attacks[1],
                         damages.DamageTypes.PIERCING)
                     if self.DELETE:
                         self.dead = True
                     else:
-                        cd.append(ee)
+                        self.dmg *= .8
+                        self.TAIL_WIDTH = self.TAIL_WIDTH * 4 // 5
+                        if self.dmg < 1:
+                            self.dead = True
+                        cd.append(ee.ueid)
             return cd
 
     class ConiferousLeaf(Arrow):
@@ -2622,25 +2648,26 @@ class Projectiles:
 
     class EEnergyArrow(Arrow):
         DAMAGES = 200
-        SPEED = 300
+        SPEED = 1000
         IMG = 'null'
         TAIL_SIZE = 8
         TAIL_WIDTH = 15
         TAIL_COLOR = (0, 255, 255)
 
         def __init__(self, pos, rotation, speed, damage):
-            self.DAMAGES += damage * 5
+            self.DAMAGES += damage
             super().__init__(pos, rotation, speed, damage)
 
         def damage(self, pos, cd):
-            mx, my = position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
-            if vector.distance(mx - pos[0], my - pos[0]) < 300:
+            mp = vector.Vector2D()
+            mp << position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+            mp -= pos
+            if abs(mp) < 300:
                 for ee in game.get_game().entities:
                     if vector.distance(ee.obj.pos[0] - self.obj.pos[0], ee.obj.pos[1] - self.obj.pos[1]) < 1000:
                         ee.hp_sys.damage(self.dmg, damages.DamageTypes.PIERCING)
                 game.get_game().displayer.effect(fade_circle.p_fade_circle(*position.displayed_position(self.obj.pos),
-                                                                            (0, 255, 255), t=33,
-                                                                           sp=30))
+                                                                            (0, 255, 255), t=33, sp=30))
                 self.dead = True
             return cd
 
@@ -3229,6 +3256,17 @@ class Projectiles:
                 for i in range(-60, 61, 20):
                     game.get_game().projectiles.append(Projectiles.CardBullet(self.obj.pos, rot + i, 'club', 300, 1, power))
 
+    class Generation(Projectile):
+        def __init__(self, pos, rotation, power):
+            super().__init__(pos, rotation, motion=mover.Mover)
+            self.img = game.get_game().graphics['items_weapons_generation']
+            self.d_img = self.img
+            self.rot = rotation
+            self.dead = True
+            self.tick = 0
+            game.get_game().projectiles.append(Projectiles.GenerationBeam(pos, rotation))
+            game.get_game().projectiles.append(Projectiles.GenerationBeam(pos, rotation + 180))
+
     class TimeFlies(Projectile):
         TIMER = 0
         STEP = 0
@@ -3331,4 +3369,5 @@ THIEF_WEAPONS = {
     'jade_grenade': Projectiles.JadeGrenade,
     'shuriken': Projectiles.Shuriken,
     'spikeball': Projectiles.SpikeBall,
+    'generation': Projectiles.Generation
 }

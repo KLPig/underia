@@ -27,7 +27,7 @@ class Displayer:
         self.font = pg.font.Font(font, 32)
         self.ffont = pg.font.Font(font, 72)
         self.ffont.set_italic(True)
-        self.font_mono = pg.font.Font('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf', 36)
+        self.font_mono = pg.font.Font(path.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 36)
         self.font_mono.set_italic(True)
         self.font_s = pg.font.Font(font, 20)
         self.night_darkness_color = (127, 127, 0)
@@ -57,7 +57,6 @@ class Displayer:
         if self.lsw != self.SCREEN_WIDTH or self.lsh != self.SCREEN_HEIGHT:
             self.lsw, self.lsh = self.SCREEN_WIDTH, self.SCREEN_HEIGHT
             self.canvas = pg.Surface((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pg.SRCALPHA)
-        pg.display.flip()
 
     def reflect(self, window_x: float, window_y: float) -> tuple[int, int]:
         window = pg.display.get_surface()
