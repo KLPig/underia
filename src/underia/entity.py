@@ -6762,6 +6762,36 @@ class Entities:
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 180:
                 game.get_game().player.hp_sys.damage(2800, damages.DamageTypes.MAGICAL)
                 self.hp_sys.hp = 10 ** 8
+                
+    class LargeTree(Entity):
+        NAME = 'Large Tree'
+        DISPLAY_MODE = 3
+        
+        def __init__(self, pos):
+            super().__init__(pos, game.get_game().graphics['entity_tree'], FastBulletAI, 10 ** 6)
+            self.obj.MASS *= 3
+            self.obj.SPEED *= 2
+            self.tick = 0
+            self.tt = 0
+
+        def t_draw(self):
+            self.tt += 1
+            if self.tick > 10:
+                super().t_draw()
+                self.obj.update()
+                self.show_bar = False
+                self.set_rotation(self.obj.velocity.get_net_rotation())
+                if self.tt % 60 == 1:
+                    game.get_game().displayer.effect(
+            else:
+                if self.follow_entity is not None:
+                    self.obj.pos << (self.follow_entity.obj.pos[0] + self.ax, self.follow_entity.obj.pos[1] + self.ay)
+                    self.obj.rot = -self.follow_entity.rot + self.arot
+                ax, ay = vector.rotation_coordinate(self.obj.rot)
+                draw.line(game.get_game().displayer.canvas, (0, 255, 0),
+                          position.displayed_position(self.obj.pos),
+                          position.displayed_position((self.obj.pos[0] + ax * 3000, self.obj.pos[1] + ay * 3000)),
+                          int(7 + 6 * math.sin(self.tt / 30)))
 
     class FaithFire(Entity):
         NAME = 'Faith Fire'
@@ -6790,8 +6820,7 @@ class Entities:
                                                                         col=(0, 0, 0), t=6, sp=8, n=2))
             else:
                 if self.follow_entity is not None:
-                    self.obj.pos << (
-                    self.follow_entity.obj.pos[0] + self.ax, self.follow_entity.obj.pos[1] + self.ay)
+                    self.obj.pos << (self.follow_entity.obj.pos[0] + self.ax, self.follow_entity.obj.pos[1] + self.ay)
                     self.obj.rot = -self.follow_entity.rot + self.arot
                 ax, ay = vector.rotation_coordinate(self.obj.rot)
                 draw.line(game.get_game().displayer.canvas, (0, 0, 0),
@@ -7021,14 +7050,17 @@ class Entities:
                                                                           vector.coordinate_rotation(-1, 0)))
             elif self.phase == 1:
                 self.obj.state = 1
-                if self.tick % 3 == 0:
-                    game.get_game().entities.append(
-                        Entities.LifeFire((game.get_game().player.obj.pos[0] + random.randint(-3000, 3000),
-                                           game.get_game().player.obj.pos[1] - random.randint(1000, 4000)),
-                                          vector.coordinate_rotation(0, 1)))
-                if self.tick % 12 == 0:
-                    for ar in range(0, 360, 36):
-                        game.get_game().entities.append(Entities.LifeFire(self.obj.pos, ar, self))
+                if self.at_p % 2 == 0:
+                    self.obj.FRICTION = .9
+                    self.rw = 1000
+                    self.rh = 1000
+                else:
+                    self.rw = 4000
+                    self.rh = 4000
+                    self.obj.FRICTION = 0
+                    if self.tick % 10 == 0:
+                        for ar in range(int(self.obj.pos[0] + self.obj.pos[1]) % 60, 360, 60):
+                            game.get_game().entities.append(Entities.LifeDart(self.obj.pos, ar, self))
             elif self.phase == 2:
                 self.obj.state = 1
                 if self.tick % 12 == 0:

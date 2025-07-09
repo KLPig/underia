@@ -223,7 +223,7 @@ class Projectiles:
             imr = self.d_img.get_rect(center=self.obj.pos())
             for entity in game.get_game().entities:
                 if imr.collidepoint(entity.obj.pos[0], entity.obj.pos[1]) or entity.d_img.get_rect(
-                        center=entity.obj.pos).collidepoint(self.obj.pos[0], self.obj.pos[1]):
+                        center=entity.obj.pos()).collidepoint(self.obj.pos[0], self.obj.pos[1]):
                     entity.hp_sys.damage(weapons.WEAPONS['fur_spear'].damages[
                                              damages.DamageTypes.PHYSICAL] * 0.08 * game.get_game().player.attack *
                                          game.get_game().player.attacks[0],
@@ -2601,7 +2601,7 @@ class Projectiles:
             x, y = pos
             for ee in game.get_game().entities:
                 if imr.collidepoint(ee.obj.pos[0], ee.obj.pos[1]) or ee.d_img.get_rect(
-                        center=ee.obj.pos).collidepoint(x, y) and ee not in cd:
+                        center=(ee.obj.pos[0], ee.obj.pos[1])).collidepoint(x, y) and ee not in cd:
                     for e2 in game.get_game().entities:
                         if vector.distance(e2.obj.pos[0] - self.obj.pos[0], e2.obj.pos[1] - self.obj.pos[1]) < 100:
                             e2.hp_sys.damage(self.dmg, damages.DamageTypes.PIERCING)
