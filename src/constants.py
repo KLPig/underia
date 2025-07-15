@@ -17,7 +17,7 @@ LANG = 'en'
 
 DEBUG = True
 
-OS = "Windows"
+OS = "OSX"
 TONE = True
 ENTITY_NUMBER = 18
 WEB_DEPLOY = False

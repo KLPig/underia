@@ -503,12 +503,16 @@ def update():
             underia.entity_spawn(underia3.Tree, 1000, 2000, target_number=28, rate=6)
         elif biome == 'desert':
             underia.entity_spawn(underia3.DeadTree, 1000, 2000, target_number=18, rate=6)
-            underia.entity_spawn(underia3.BonecaAmbalabu, 2000, 4000, target_number=7, rate=2)
+            underia.entity_spawn(underia3.BonecaAmbalabu, 2000, 4000, target_number=17, rate=2)
             underia.entity_spawn(underia3.LaVacaSaturnoSaturnita, 2000, 4000, target_number=3, rate=.02 * night)
         elif biome == 'snowland':
             underia.entity_spawn(underia3.PoisonCentipede, 2000, 2500, target_number=2, rate=3)
             underia.entity_spawn(underia3.PoisonChicken, 1000, 4000, target_number=4, rate=8)
             underia.entity_spawn(underia3.PoiseWalker, 3000, 4000, target_number=1, rate=.01 * night)
+        elif biome == 'heaven':
+            underia.entity_spawn(underia3.HGoblinFighter, 1000, 2000, target_number=8, rate=6)
+            underia.entity_spawn(underia3.HGoblinRanger, 3000, 5000, target_number=15, rate=6)
+            underia.entity_spawn(underia3.HGoblinThief, 2000, 4000, target_number=5, rate=6)
 
 if addr is not None:
     game.client = web.Client(addr, 1145)

@@ -29,6 +29,9 @@ class Displayer:
         self.ffont.set_italic(True)
         self.font_mono = pg.font.Font(path.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 36)
         self.font_mono.set_italic(True)
+        self.font_dmg = pg.font.Font(path.get_path('assets/papyrus.ttf'), 36)
+        self.font_dmg.set_italic(True)
+        self.font_dmg.set_bold(True)
         self.font_s = pg.font.Font(font, 20)
         self.night_darkness_color = (127, 127, 0)
         self.lsw, self.lsh = 1600, 900

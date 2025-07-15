@@ -23,11 +23,12 @@ class FeatherSword(weapons.Blade):
 class PoiseBlade(weapons.Blade):
     def on_attack(self):
         super().on_attack()
-        self.cutting_effect(4, (200, 100, 255), (100, 50, 150))
+        self.cutting_effect(4, (200, 255, 100), (100, 150, 50))
         for e in game.get_game().entities:
-            if vector.distance(e.obj.pos[0] - self.x - game.get_game().player.obj.pos[0],
-                               e.obj.pos[1] - self.y - game.get_game().player.obj.pos[1]) < 800:
-                e.hp_sys.effect(effects.Poison(20, 5))
+            if vector.distance(*(e.obj.pos - game.get_game().player.obj.pos)) < 500:
+                if not e.hp_sys.is_immune:
+                    e.hp_sys.damage(self.damages[damages.DamageTypes.PHYSICAL] * .3, damages.DamageTypes.TRUE, 80)
+                    e.hp_sys.enable_immume()
 
 class LycheeBow(weapons.Bow):
     def on_start_attack(self):
@@ -77,14 +78,47 @@ class NewMagicWeapon(weapons.MagicWeapon):
         self.level = 1
         super().on_end_attack()
 
-    def on_attack(self):
-        if (self.timer - self.at_time) % 4 == 0 and 0 < (self.at_time - self.timer) // 4 < self.level:
-            self.face_to(
-                *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
-            game.get_game().projectiles.append(
-                self.projectile((self.x + game.get_game().player.obj.pos[0], self.y + game.get_game().player.obj.pos[1]),
-                                self.rot))
-        super().on_attack()
+class SpeedIncreaseMagicWeapon(NewMagicWeapon):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.level = 1
+        self.ddata = [self.damages, 1]
+
+    def on_special_attack(self, strike: int):
+        self.damages = copy.copy(self.ddata[0])
+        self.scale = self.ddata[1]
+        self.ddata = [copy.copy(self.damages), 1]
+        self.scale = 5 - 4 * 1.5 ** -(self.strike / 50)
+        for kk in self.damages.keys():
+            self.damages[kk] *= 4 - 3 * 1.2 ** -(self.strike / 50)
+        self.level = int(self.scale)
+
+    def on_charge(self):
+        super().on_charge()
+        self.scale = 5 - 4 * 1.5 ** -(self.strike / 50)
+        self.display = True
+
+    def on_end_attack(self):
+        self.display = False
+        self.scale = 1
+        self.level = 1
+        super().on_end_attack()
+
+    def on_start_attack(self):
+        if game.get_game().player.mana < self.mana_cost:
+            self.timer = 0
+            return
+        if self.sk_cd:
+            self.timer = 0
+            return
+        self.sk_cd = self.sk_mcd
+        self.face_to(
+            *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+        pj = self.projectile((self.x + game.get_game().player.obj.pos[0], self.y + game.get_game().player.obj.pos[1]),
+                            self.rot)
+        pj.obj.MASS /= self.scale ** 1.5
+        game.get_game().projectiles.append(pj)
+        game.get_game().player.mana -= self.mana_cost
 
 class MysterySwiftswordSpear(weapons.Spear):
     def on_start_attack(self):
@@ -149,8 +183,8 @@ WEAPONS = {
     'purple_clay_broad_blade': PurpleClayBroadBlade(name='purple clay broad blade', damages={damages.DamageTypes.PHYSICAL: 110}, kb=15,
                                                     img='items_weapons_purple_clay_broad_blade', speed=1, at_time=8,
                                                     rot_speed=40, st_pos=150),
-    'poise_blade': PoiseBlade(name='poise blade', damages={damages.DamageTypes.PHYSICAL: 80}, kb=12,
-                              img='items_weapons_poise_blade', speed=1, at_time=5, rot_speed=70, st_pos=200),
+    'poise_blade': PoiseBlade(name='poise blade', damages={damages.DamageTypes.PHYSICAL: 150}, kb=12,
+                              img='items_weapons_poise_blade', speed=4, at_time=5, rot_speed=70, st_pos=200),
     'mystery_sword': weapons.Blade('mystery sword', {damages.DamageTypes.PHYSICAL: 190}, 20,
                                    'items_weapons_mystery_sword', 0, 7, 40, 180),
     'mystery_spear': weapons.Spear('mystery spear', {damages.DamageTypes.PHYSICAL: 100}, 35,
@@ -177,19 +211,21 @@ WEAPONS = {
     'e_pistol': weapons.Gun(name='e pistol', damages={damages.DamageTypes.PIERCING: 150}, kb=10,
                              img='items_weapons_e_pistol', speed=9, at_time=9, projectile_speed=1200,
                              auto_fire=True, precision=0),
+    'heaven_shotgun': weapons.Shotgun('shotgun', {damages.DamageTypes.PIERCING: 120}, 0.1, 'items_weapons_shotgun',
+                            3, 8, 1000, auto_fire=True, precision=12),
     'purple_clay_kuangkuang': weapons.KuangKuangKuang(name='purple clay kuangkuang', damages={damages.DamageTypes.PIERCING: 18}, kb=1,
                                                img='items_weapons_purple_clay_kuangkuang', speed=0, at_time=1,
-                                              projectile_speed=100, auto_fire=True, precision=2),
+                                              projectile_speed=100, auto_fire=True, precision=2, ammo_save_chance=1 / 3),
     'lychee_twinblade': weapons.ThiefDoubleKnife(name='lychee twinblade', damages={damages.DamageTypes.PIERCING: 150}, kb=8,
                                                  img='items_weapons_lychee_blade', speed=1, at_time=6,
                                                  rot_speed=30, st_pos=120, throw_interval=12, power=3000,
                                                   dcols=((255, 200, 255), (50, 0, 50))),
-    'poise_bow': weapons.Bow('poise bow', {damages.DamageTypes.PIERCING: 120}, 10,
+    'poise_bow': weapons.Bow('poise bow', {damages.DamageTypes.PIERCING: 80}, 10,
                              'items_weapons_poise_bow', 1, 3, 300, True, precision=5,
                              tail_col=(200, 255, 100)),
-    'poise_submachine_gun': weapons.Gun('poise submachine gun', {damages.DamageTypes.PIERCING: 36}, 5,
+    'poise_submachine_gun': weapons.Gun('poise submachine gun', {damages.DamageTypes.PIERCING: 25}, 5,
                                           'items_weapons_poise_submachine_gun', 1, 1, 1200,
-                                        True, 3, tail_col=(200, 255, 100)),
+                                        True, 3, tail_col=(200, 255, 100), ammo_save_chance=1 / 4),
 
     'e_wooden_wand': weapons.MagicWeapon(name='e wooden wand', damages={damages.DamageTypes.MAGICAL: 40}, kb=2,
                                          img='items_weapons_e_wooden_wand', speed=1, at_time=6,
@@ -203,6 +239,26 @@ WEAPONS = {
                                    img='items_weapons_lychee_spike', speed=1, at_time=25,
                                    projectile=projectiles.LycheeSpike, mana_cost=30, auto_fire=True,
                                    spell_name='Lychee Spike'),
+    'brainstorm': SpeedIncreaseMagicWeapon(name='brainstorm', damages={damages.DamageTypes.MAGICAL: 240}, kb=0,
+                                           img='items_weapons_brainstorm', speed=15, at_time=5,
+                                           projectile=projectiles.Brainstorm, mana_cost=45, auto_fire=True,
+                                           spell_name='Brainstorm'),
+
+    'wooden_flute': weapons.PoetWeapon(name='wooden flute', damages={damages.DamageTypes.OCTAVE: 90}, kb=2,
+                                       img='items_weapons_wooden_flute', speed=0, at_time=5, projectile=projectiles.WoodenFlute,
+                                       gains=[effects.OctLimitlessI, effects.OctSpeedI], mana_cost=2, inspiration_cost=60,
+                                       auto_fire=True, back_rate=.4, song='sanctuary', instrument='flute'),
+    'the_roving_chord': weapons.PoetWeapon(name='the roving chord', damages={damages.DamageTypes.OCTAVE: 60}, kb=2,
+                                           img='items_weapons_the_roving_chord', speed=0, at_time=4, projectile=projectiles.TheRovingChord,
+                                           gains=[effects.OctSpeedII, effects.OctLuckyI], mana_cost=8, inspiration_cost=100,
+                                            auto_fire=True, back_rate=.3, song='sanctuary', instrument='ukulele'),
+
+    'talent_fruit': weapons.PriestHealer(name='talent fruit', amount=50, kb=3, img='items_weapons_talent_fruit',
+                                         speed=200, at_time=50, mana_cost=20, karma_gain=400, auto_fire=False,
+                                         spell_name='Talent Fruit'),
+    'holy_condense_wand': weapons.PriestWeapon(name='holy condense wand', damages={damages.DamageTypes.HALLOW: 120}, kb=0,
+                                               img='items_weapons_holy_condense_wand', speed=3, at_time=8, projectile=projectiles.HolyCondense,
+                                               mana_cost=12, maximum_multiplier=3.0, auto_fire=True, spell_name='Holy Condense')
 }
 
 for k, v in WEAPONS.items():

@@ -372,6 +372,8 @@ class Projectiles:
         WT = damages.DamageTypes.MAGICAL
         COL = (176, 48, 92)
         DMG_RATE = 1.0
+        DEL = True
+        LIMIT_VEL = 3.0
 
         def __init__(self, pos, rotation):
             super().__init__(pos, rotation)
@@ -379,7 +381,7 @@ class Projectiles:
 
         def update(self):
             super().update()
-            if self.obj.velocity.get_net_value() < 3:
+            if self.obj.velocity.get_net_value() < self.LIMIT_VEL:
                 self.dead = True
             self.damage()
 
@@ -387,20 +389,20 @@ class Projectiles:
             game.get_game().displayer.point_light(self.COL, position.displayed_position(self.obj.pos), 2.5,
                                                   (self.d_img.get_width() + self.d_img.get_height()) * .55)
             kb = weapons.WEAPONS[self.DAMAGE_AS].knock_back
-            for entity in game.get_game().entities:
-                if (vector.distance(entity.obj.pos[0] - self.obj.pos[0], entity.obj.pos[1] - self.obj.pos[1]) <
-                        50 + (entity.d_img.get_width() + self.d_img.get_height())) / 4 and not entity.hp_sys.is_immune:
+            for ee in game.get_game().entities:
+                if (vector.distance(ee.obj.pos[0] - self.obj.pos[0], ee.obj.pos[1] - self.obj.pos[1]) <
+                    50 + (ee.d_img.get_width() + self.d_img.get_height())) / 4 and not ee.hp_sys.is_immune:
                     at_mt = {damages.DamageTypes.PHYSICAL: 0, damages.DamageTypes.PIERCING: 1,
                              damages.DamageTypes.ARCANE: 2, damages.DamageTypes.MAGICAL: 2}[self.WT]
-                    entity.hp_sys.damage(
+                    ee.hp_sys.damage(
                         weapons.WEAPONS[self.DAMAGE_AS].damages[self.DMG_TYPE] * game.get_game().player.attack *
                         game.get_game().player.attacks[at_mt] * self.DMG_RATE, self.DMG_TYPE)
-                    self.dead = True
-                    if not entity.hp_sys.is_immune:
-                        r = vector.coordinate_rotation(entity.obj.pos[0] - self.obj.pos[0],
-                                                       entity.obj.pos[1] - self.obj.pos[1])
-                        entity.obj.apply_force(vector.Vector(r, kb * 120000 / entity.obj.MASS))
-                    entity.hp_sys.enable_immume()
+                    self.dead = self.dead or self.DEL
+                    if not ee.hp_sys.is_immune:
+                        r = vector.coordinate_rotation(ee.obj.pos[0] - self.obj.pos[0],
+                                                       ee.obj.pos[1] - self.obj.pos[1])
+                        ee.obj.apply_force(vector.Vector(r, kb * 120000 / ee.obj.MASS))
+                    ee.hp_sys.enable_immume()
                     self.damage_particle()
                     break
 
@@ -423,6 +425,7 @@ class Projectiles:
         IMG = 'projectiles_platinum_wand'
         SPD = 100
         COL = (200, 200, 255)
+        DURATION = 100
 
         def __init__(self, pos, rotation):
             super().__init__(pos, rotation)
@@ -432,7 +435,7 @@ class Projectiles:
 
         def update(self):
             self.tick += 1
-            if self.tick > 100:
+            if self.tick > self.DURATION:
                 self.dead = True
             super().update()
 
@@ -498,13 +501,14 @@ class Projectiles:
         IMG = 'projectiles_nights_edge'
         WT = damages.DamageTypes.PHYSICAL
         COL = (50, 0, 50)
-        DMG_RATE = 0.6
+        DMG_RATE = 0.9
 
         def update(self):
+            self.obj.FRICTION = .6
             self.WT = damages.DamageTypes.PHYSICAL
             super().update()
             self.tick += 1
-            if self.tick > 100:
+            if self.tick > 100 or abs(self.obj.velocity) < 1:
                 self.dead = True
             else:
                 self.dead = False
@@ -517,6 +521,7 @@ class Projectiles:
         DMG_RATE = 1
 
         def update(self):
+            self.obj.FRICTION = .7
             self.WT = damages.DamageTypes.PHYSICAL
             super().update()
             self.tick += 1
@@ -2214,6 +2219,7 @@ class Projectiles:
             self.obj.FRICTION = 0.95
             self.obj.MASS = 500
             self.ax, self.ay = vector.rotation_coordinate(random.randint(0, 359))
+            self.d_karma = game.get_game().player.good_karma
 
         def update(self):
             if self.tick < 6:
@@ -2233,21 +2239,21 @@ class Projectiles:
                            int(5 / game.get_game().player.get_screen_scale()))
             self.tick += 1
             self.damage()
-            if self.tick > 35:
+            if self.tick > 120:
                 self.dead = True
 
         def damage(self):
             for e in game.get_game().entities:
                 if (vector.distance(self.obj.pos[0] - e.obj.pos[0], self.obj.pos[1] - e.obj.pos[1]) <
                         100 + (e.d_img.get_height() + e.d_img.get_width()) // 4):
-                    karma = game.get_game().player.good_karma
+                    karma = self.d_karma
                     mult = weapons.WEAPONS['the_gods_penalty'].max_mult
                     step = 100
                     if not karma:
                         rate = 1
                     else:
                         rate = (1 + step / karma) ** (karma / step * math.log(mult, math.e))
-                    e.hp_sys.damage(weapons.WEAPONS['the_gods_penalty'].damages[damages.DamageTypes.HALLOW] *\
+                    e.hp_sys.damage(weapons.WEAPONS['holy_shine'].damages[damages.DamageTypes.HALLOW] *\
                                      game.get_game().player.attack * game.get_game().player.attacks[4] * rate,
                                     damages.DamageTypes.HALLOW)
                     self.dead = True

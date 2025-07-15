@@ -1,6 +1,9 @@
+import math
+import pygame as pg
 from underia import projectiles, game, weapons
 from values import damages, effects
 from physics import vector
+from resources import position
 import random
 
 class FeatherSwordMotion(projectiles.ProjectileMotion):
@@ -73,6 +76,24 @@ class LycheeSpike(projectiles.Projectiles.PlatinumWand):
     def __init__(self, *args):
         super().__init__(*args)
         self.obj.MASS /= 4
+
+class Brainstorm(projectiles.Projectiles.PlatinumWand):
+    COL = (0, 255, 255)
+    DAMAGE_AS = 'brainstorm'
+    IMG = 'projectiles_brainstorm'
+    DEL = False
+    LIMIT_VEL = 0
+    DURATION = 40000
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.obj.MASS *= 10
+        self.obj.FRICTION = 1
+
+    def update(self):
+        super().update()
+        for ee in game.get_game().entities:
+            ee.obj.apply_force((self.obj.pos - ee.obj.pos) * min(1, 100000000 / self.obj.MASS / abs(self.obj.pos - ee.obj.pos) ** 3))
 
 class LycheeWand(projectiles.Projectiles.MagicCircle):
     DAMAGE_AS = 'lychee_wand'
@@ -160,3 +181,81 @@ THIEF_WEAPONS = {
 for k, v in THIEF_WEAPONS.items():
     projectiles.THIEF_WEAPONS[k] = v
 
+class WoodenFlute(projectiles.Projectiles.PlatinumWand):
+    DAMAGE_AS = 'wooden_flute'
+    IMG = 'projectiles_wooden_flute'
+    SPEED = 800
+    ENABLE_IMMUNE = True
+    DELETE_SELF = True
+    DURATION = 500
+    LIMIT_VEL = 0
+
+    def __init__(self, pos, rotation):
+        super().__init__(pos, rotation)
+        self.obj.apply_force(vector.Vector(rotation, self.SPEED))
+        self.img = game.get_game().graphics[self.IMG]
+        self.set_rotation(rotation)
+        self.hit = False
+        self.ar_t = random.randint(0, 754)
+        self.ar_y = random.randint(0, 754)
+
+    def update(self):
+        #self.set_rotation(math.sin((self.tick + self.ar_t) / 50) * (self.ar_t / 3 + 50))
+        self.obj.pos += vector.Vector2D(dy=math.sin((self.tick + self.ar_y) / 120) * (self.ar_y / 1000 + 1))
+        super().update()
+
+    def damage(self):
+        for entity in game.get_game().entities:
+            if (vector.distance(entity.obj.pos[0] - self.obj.pos[0], entity.obj.pos[1] - self.obj.pos[1]) <
+                    120 + (entity.d_img.get_width() + self.d_img.get_height()) / 4):
+                if entity.hp_sys.is_immune and self.ENABLE_IMMUNE:
+                    continue
+                entity.hp_sys.damage(weapons.WEAPONS[self.DAMAGE_AS].damages[
+                                         damages.DamageTypes.OCTAVE] * game.get_game().player.attack *
+                                     game.get_game().player.attacks[3], damages.DamageTypes.OCTAVE,
+                                     )
+                if self.ENABLE_IMMUNE:
+                    entity.hp_sys.enable_immume()
+                if not self.hit:
+                    self.hit = True
+                else:
+                    continue
+                if len(weapons.WEAPONS[self.DAMAGE_AS].gains):
+                    gain = random.choice(weapons.WEAPONS[self.DAMAGE_AS].gains)
+                    game.get_game().player.hp_sys.effect(
+                        gain(3 + game.get_game().player.calculate_data('gain_duration', rate_data=False), 3))
+                game.get_game().player.inspiration += int(weapons.WEAPONS[self.DAMAGE_AS].back_rate *
+                                                          weapons.WEAPONS[self.DAMAGE_AS].inspiration_cost)
+                self.dead = self.dead or self.DELETE_SELF
+
+class TheRovingChord(WoodenFlute):
+    DAMAGE_AS = 'the_roving_chord'
+    IMG = 'projectiles_the_roving_chord'
+    SPEED = 300
+    ENABLE_IMMUNE = False
+    LIMIT_VEL = 0
+    DURATION = 1000
+
+    def __init__(self, pos, rotation, d=True):
+        if d:
+            for i in range(2):
+                game.get_game().projectiles.append(TheRovingChord(pos, rotation, False))
+        super().__init__(pos, rotation)
+
+    def update(self):
+        # self.set_rotation(math.sin((self.tick + self.ar_t) / 50) * (self.ar_t / 3 + 50))
+        self.obj.pos += vector.Vector2D(dy=math.sin((self.tick + self.ar_y) / 120) * 2)
+        super().update()
+
+class HolyCondense(projectiles.Projectiles.HolyLight):
+    def update(self):
+        self.obj.apply_force(vector.Vector2D(dx=self.ax, dy=self.ay) * 60)
+        self.set_rotation(90)
+        pg.draw.circle(game.get_game().displayer.canvas, (255, 255, 0),
+                       position.displayed_position(self.obj.pos),
+                       int(800 / game.get_game().player.get_screen_scale()),
+                       int(5 / game.get_game().player.get_screen_scale()))
+        self.damage()
+        self.tick += 1
+        if self.tick > 200:
+            self.dead = True

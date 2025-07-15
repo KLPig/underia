@@ -1,3 +1,4 @@
+import math
 import os
 import random
 import time
@@ -29,6 +30,25 @@ MUSICS = {
     'mercy_remix': ['battle'],
     'nothing_matter': ['battle'],
     'from_now_on': ['battle'],
+}
+
+MUSIC_DATA = {
+    'lantern': 'Toby Fox - Lantern (Deltarune)',
+    'wild_east': 'MasterSwordRemix - Wild East (Undertale Yellow)',
+    'waterfall': 'Toby Fox - Waterfall (Undertale)',
+    'fields': 'Toby Fox - Fields of Hopes and Dreams (Deltarune)',
+    'empty': '',
+    'snow': 'Scott Lloyd Shelly - Snow (Terraria)',
+    'amalgam': 'Toby Fox - Amalgam (Undertale)',
+    'null': '',
+    'rude_buster': 'Toby Fox - Rude Buster (Deltarune)',
+    'worlds_revolving': 'Toby Fox - The World\'s Revolving (Deltarune)',
+    'boss_otherworld': 'Jonathan van den Wijngaarden, Frank Klepacki - Boss 2 (Otherworldly, Terraria)',
+    'mercy_remix': 'Jammin - Mercy (Remixed, Terraria Homeward Journey)',
+    'nothing_matter': 'Jammin - Nothing Matters (Terraria Homeward Journey)',
+    'from_now_on': 'Toby Fox - From Now On (Deltarune)',
+    'dark_sanctuary': 'Toby Fox - Dark Sanctuary (Deltarune)',
+    '3rd_sanctuary': 'Toby Fox - 3rd Sanctuary (Deltarune)'
 }
 
 class Game:
@@ -505,7 +525,13 @@ class Game:
                 del proj
         self.damage_texts = [(dmg, tick + 1, pos) for dmg, tick, pos in self.damage_texts if tick < 80]
         for dmg, tick, pos in self.damage_texts:
-            f = self.displayer.font_mono.render(str(dmg), True, (255, 0, 0))
+            ll = int(math.log(int(dmg), 1 + (1 + self.player.strike) ** 2)) % 2 == 1 if str.isdecimal(dmg) else 1
+            f = self.displayer.font_dmg.render(str(dmg), True, (255, 127, 0) if ll else (255, 0, 0))
+            f.set_alpha(min(255.0, tick * tick / 2))
+            fr = f.get_rect(center=resources.displayed_position((pos[0] + 2, pos[1] + (80 - tick) ** 3 // 4000 + 2)))
+            self.displayer.canvas.blit(f, fr)
+            f = self.displayer.font_dmg.render(str(dmg), True, (255, 0, 0) if ll else (255, 127, 0))
+            f.set_alpha(min(255.0, tick * tick / 3))
             fr = f.get_rect(center=resources.displayed_position((pos[0], pos[1] + (80 - tick) ** 3 // 4000)))
             self.displayer.canvas.blit(f, fr)
         self.displayer.night_darkness_color = self.get_night_color(self.day_time % 1.0)

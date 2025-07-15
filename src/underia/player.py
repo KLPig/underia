@@ -33,6 +33,9 @@ THAUMATURGY_RECIPES = [
     (['feather_sword', 'hoverplume_headgear', 'hoverplume_back', 'hoverplume_kneepads', 'feather_amulet', 'toxic_wing'],
      inventory.Recipe({'thaumaturgy': 1, 'feather_sword': 1, 'hoverplume_headgear': 1, 'hoverplume_back': 1,
                        'hoverplume_kneepads': 1, 'feather_amulet': 1, 'toxic_wing': 1}, 'pluma_thaumaturgy')),
+    (['life_hood', 'life_cloak', 'life_hboots', 'talent_fruit', 'poise_necklace', 'moonflower'],
+     inventory.Recipe({'thaumaturgy': 1, 'life_hood': 1, 'life_cloak': 1, 'life_hboots': 1, 'talent_fruit': 1,
+                       'poise_necklace': 1,'moonflower': 1}, 'bioic_thaumaturgy')),
 ]
 
 
@@ -740,6 +743,18 @@ class Player:
             ss = int(abs(self.obj.velocity) / 10)
             for i in range(ss):
                 game.get_game().projectiles.append(underia3.FeatherThaumaturgy(self.obj.pos, random.randint(0, 360)))
+        if 'bioic_thaumaturgy' in self.accessories:
+            if not len([1 for n, hp in self.hp_sys.shields if n == 'bth']):
+                if self.tick % 60 == 1:
+                    self.hp_sys.shields.append(('bth', 0))
+                    f = 1
+                else:
+                    f = 0
+            else:
+                f = 1
+            if f:
+                if [hp for n, hp in self.hp_sys.shields if n == 'bth'][0] < self.hp_sys.max_hp:
+                    self.hp_sys.shields = [(n, min(hp + self.REGENERATION / 10, self.hp_sys.max_hp)) if n == 'bth' else (n, hp) for n, hp in self.hp_sys.shields]
         if self.hp_sys.hp <= 1 + self.REGENERATION:
             if 'flashback' in self.accessories and not len([1 for e in self.hp_sys.effects if type(e) is effects.FlashBack]):
                 self.hp_sys(op='config', immune=True)
@@ -1456,6 +1471,19 @@ class Player:
                                 acc = self.accessories[:3]
                                 if not len([1 for a in acc if not str.startswith(a, 'hoverplume')]):
                                     s_b = '_hoverplume_set_bonus'
+                                elif not len([1 for a in acc if not str.startswith(a, 'life')]):
+                                    s_b = '_life_set_bonus'
+                                elif not len([1 for a in acc if not str.startswith(a, 'concept')]):
+                                    if self.accessories[0].endswith('hat'):
+                                        s_b = '_concept_set_bonus_hat'
+                                    else:
+                                        s_b = '_concept_set_bonus_mask'
+                                elif not len([1 for a in acc if not str.startswith(a, 'ration')]):
+                                    s_b = '_ration_set_bonus'
+                                elif not len([1 for a in acc if not str.startswith(a, 'heaven_metal')]):
+                                    s_b = '_heaven_metal_set_bonus'
+                                elif not len([1 for a in acc if not str.startswith(a, 'heaven_wooden')]):
+                                    s_b = '_heaven_wooden_set_bonus'
                                 else:
                                     s_b = 'null'
                                 if len(self.accessories) < 11:
@@ -1472,6 +1500,10 @@ class Player:
                         elif item.id == 'mana_crystal':
                             if self.max_mana < 120:
                                 self.max_mana += 15
+                                self.inventory.remove_item(item)
+                        elif item.id == 'enchanted_book':
+                            if self.max_mana < 300:
+                                self.max_mana += 30
                                 self.inventory.remove_item(item)
                         elif item.id == 'chaos_ingot':
                             r = random.randint(1, 9)

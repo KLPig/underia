@@ -110,7 +110,7 @@ class Weapon:
             if self.strike:
                 self.strike = 0
             self.timer = 0
-            self.cool = self.cd - game.get_game().player.calculate_data('atk_speed', False) // 3
+            self.cool = max(0, self.cd + game.get_game().player.calculate_data('atk_speed', False) // 3)
             self.on_idle()
         else:
             self.on_idle()
@@ -132,7 +132,8 @@ class Weapon:
                     if self.strike:
                         self.on_special_attack(self.strike)
                         self.strike = 0
-                    if 'mana_cost' in dir(self) and 'fluffy_pluvial' in game.get_game().player.accessories:
+                    if 'mana_cost' in dir(self) and ('fluffy_pluvial' in game.get_game().player.accessories or
+                            'moonflower' in game.get_game().player.accessories):
                         self.attack()
                         if random.random() < 0.25:
                             game.get_game().player.mana = min(game.get_game().player.max_mana,
@@ -848,6 +849,10 @@ class NightsEdge(Blade):
         self.sc = 0
 
     def on_start_attack(self):
+        if self.strike < 50:
+            self.img_index = 'items_weapons_nights_edge'
+        else:
+            self.img_index = 'items_weapons_nights_edge_charged'
         self.sc = (self.sc + 1) % 4
         self.rots = []
         super().on_start_attack()
@@ -856,28 +861,33 @@ class NightsEdge(Blade):
             self.rot_speed = 36
             spd = 1600
             self.damages = {dmg.DamageTypes.PHYSICAL: 128, dmg.DamageTypes.MAGICAL: 72}
-            self.img_index = "items_weapons_nights_edge_night"
         else:
             self.at_time = 18
             self.rot_speed = 40
             spd = 4000
             self.damages = {dmg.DamageTypes.PHYSICAL: 88, dmg.DamageTypes.MAGICAL: 48}
-            self.img_index = 'items_weapons_nights_edge'
         if self.sc == 3:
             spd *= 1.5
         px, py = position.relative_position(
             position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
         r = -1 if px > 0 else 1
         vx, vy = vector.rotation_coordinate(self.rot - 100 * r)
-        ne = projectiles.Projectiles.NightsEdge if self.sc != 3 else projectiles.Projectiles.BNightsEdge
+        ne = projectiles.Projectiles.NightsEdge if self.sc != 3 and self.strike < 50 else projectiles.Projectiles.BNightsEdge
         n = ne((self.x + game.get_game().player.obj.pos[0] + vx * 200, self.y + game.get_game().player.obj.pos[1] + vy * 200),
                self.rot - r * 100)
         n.obj.apply_force(vector.Vector(self.rot - 100 * r, spd))
         n.set_rotation(self.rot)
+        if self.strike >= 50:
+            for ar in range(90, 360, 90):
+                n = ne(game.get_game().player.obj.pos + (self.x, self.y) + vector.polar_to_cartesian(self.rot - 100 * r + ar, 200),
+                       self.rot - r * 100 + ar)
+                n.obj.apply_force(vector.Vector2D(self.rot - 100 * r, spd))
+                n.set_rotation(self.rot)
         game.get_game().projectiles.append(n)
         self.lrot = self.rot
         if self.sc == 3:
             self.timer *= 2
+
 
     def on_attack(self):
         self.rotate(int(-(self.timer - self.at_time / 2) * -5))
@@ -2070,6 +2080,7 @@ class PoetWeapon(MagicWeapon):
         'quiet': [('A4', 2), ('D5', 2), ('F#5', 2), ('D5', 2), ('E5', 1), ('F#5', 1), ('G#5', 1), ('D5', 1),
                   ('F5', 4)],
         'spear_of_justice': [('D5', 3), ('D5', 2), ('F5', 1), ('E5', 2), ('B5', 2), ('D5', 2)],
+        'sanctuary': [('C#6', 1), ('G#5', 1), ('F#5', 1), ('G#5', 1), ('C#6', 1), ('C#6', 1), ('G#5', 1), ('F#5', 1), ('G#5', 2)]
     }
     SONGS_S = {
         'his_theme_s': [[('F4', 16)]] + [[]] * 6 +
@@ -2089,6 +2100,7 @@ class PoetWeapon(MagicWeapon):
         'apple_smells_good_s': [[]] * 16,
         'quiet_s': [[]] * 9,
         'spear_of_justice_s': [[]] * 7,
+        'sanctuary_s': [[]] * 9
     }
 
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int,

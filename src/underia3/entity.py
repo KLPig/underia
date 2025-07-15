@@ -1,6 +1,6 @@
 import copy
 import math
-
+import numpy
 from underia import entity, game
 from physics import vector
 from values import damages, effects, hp_system
@@ -132,7 +132,7 @@ class BonecaAmbalabuAI(entity.MonsterAI):
     IDLE_TIME = 100
     IDLE_CHANGER = 180
     TOUCHING_DAMAGE = 100
-    SIGHT_DISTANCE = 800
+    SIGHT_DISTANCE = 4000
 
     def on_update(self):
         super().on_update()
@@ -162,6 +162,39 @@ class LaVacaSaturnoSaturnitaAI(entity.MonsterAI):
         pv = self.cur_target.pos - self.pos + vector.Vector2D(dy=-600)
         self.apply_force(pv * 8)
 
+class PredictAI(entity.MonsterAI):
+    MASS = 2000
+    FRICTION = .9
+    IDLE_SPEED = 3000
+    IDLE_TIME = 10
+    IDLE_CHANGER = 180
+    SIGHT_DISTANCE = 2000
+    TOUCHING_DAMAGE = 200
+    PREFER_DISTANCE = 8
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.tick = 0
+        self.p_posx = []
+        self.p_posy = []
+
+    def on_update(self):
+        super().on_update()
+        self.tick += 1
+        if self.tick % 10 == 0:
+            self.p_posx.append(self.pos[0])
+            self.p_posy.append(self.pos[1])
+            if len(self.p_posx) > 10:
+                self.p_posx.pop(0)
+                self.p_posy.pop(0)
+            px = numpy.polyfit(numpy.array([self.tick + a for a in range(-len(self.p_posx) * 10 + 10, 1, 10)]),
+                               numpy.array(self.p_posx), 5)
+            py = numpy.polyfit(numpy.array([self.tick + a for a in range(-len(self.p_posx) * 10 + 10, 1, 10)]),
+                               numpy.array(self.p_posy), 5)
+            self.apply_force((vector.Vector(px[self.tick + 50], py[self.tick + 50]) - self.pos) / 40)
+
+
+
 class Entity(entity.Entities.Entity):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -171,6 +204,8 @@ class Tree(Entity):
     DISPLAY_MODE = 2
     LOOT_TABLE = entity.LootTable([
         entity.IndividualLoot('e_wood', 1, 5, 25),
+        entity.IndividualLoot('talent_fruit', .04, 1, 1),
+        entity.IndividualLoot('moonflower', .01, 1, 1)
     ])
     SOUND_DEATH = 'ore'
 
@@ -183,6 +218,7 @@ class DeadTree(Entity):
     DISPLAY_MODE = 2
     LOOT_TABLE = entity.LootTable([
         entity.IndividualLoot('e_wood', 1, 15, 30),
+        entity.IndividualLoot('talent_fruit', .02, 1, 1),
     ])
     SOUND_DEATH = 'ore'
 
@@ -216,6 +252,7 @@ class ManaChicken(Entity):
         entity.IndividualLoot('magic_feather', 1, 5, 25),
         entity.IndividualLoot('book', .3, 1, 2),
         entity.IndividualLoot('feather_sword', .08, 1, 1),
+        entity.IndividualLoot('moonflower', .02, 1, 1)
     ])
     SOUND_HURT = 'dragon'
     SOUND_DEATH = 'dragon'
@@ -263,6 +300,7 @@ class BonecaAmbalabu(entity.Entities.Entity):
     LOOT_TABLE = entity.LootTable([
         entity.IndividualLoot('brainrot', 1, 10, 12),
         entity.IndividualLoot('mystery_shard', 1, 30, 32),
+        entity.IndividualLoot('mystery_glove', .03, 1, 1)
     ])
 
     def __init__(self, pos):
@@ -285,11 +323,15 @@ class BonecaAmbalabu(entity.Entities.Entity):
 
 class LaVacaSaturnoSaturnita(entity.Entities.Entity):
     NAME = 'La Vaca Saturno Saturnita'
+    IS_MENACE = True
+    BOSS_NAME = ''
     DISPLAY_MODE = 2
     LOOT_TABLE = entity.LootTable([
         entity.IndividualLoot('brainrot', 1, 30, 32),
         entity.IndividualLoot('mystery_shard', 1, 30, 32),
         entity.IndividualLoot('mystery_soul', .4, 6, 12),
+        entity.IndividualLoot('moonflower', .08, 1, 1),
+        entity.IndividualLoot('tuner', 1, 1, 1),
     ])
 
     def __init__(self, pos):
@@ -568,6 +610,66 @@ class ToxicLargeIntestine(entity.Entities.WormEntity):
             b.hp_sys.hp = max(2, b.hp_sys.hp)
         self.hp_sys.hp = s if s > 70 else 0
 
+class HGoblinFighter(entity.Entities.HeavenGoblinFighter):
+    LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('heaven_wood', .3, 10, 20),
+        entity.IndividualLoot('heaven_metal_helmet', .06, 1, 1),
+        entity.IndividualLoot('heaven_metal_plate_mail', .06, 1, 1),
+        entity.IndividualLoot('heaven_metal_leggings', .06, 1, 1),
+        entity.IndividualLoot('shotgun', 0.04, 1, 1),
+        entity.IndividualLoot('holy_condense_wand', 0.03, 1, 1),
+        entity.IndividualLoot('holy_shine', 0.03, 1, 1),
+    ])
+
+    def __init__(self, pos):
+        super().__init__(pos)
+        self.hp_sys.max_hp *= 5
+        self.hp_sys.hp *= 5
+        for k in self.hp_sys.resistances.resistances.keys():
+            self.hp_sys.resistances[k] *= .8
+            self.hp_sys.defenses[k] += 30
+        self.obj.TOUCHING_DAMAGE += 80
+
+class HGoblinRanger(entity.Entities.HeavenGoblinRanger):
+    LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('heaven_wood', .3, 10, 20),
+        entity.IndividualLoot('heaven_metal_helmet', .03, 1, 1),
+        entity.IndividualLoot('heaven_metal_plate_mail', .03, 1, 1),
+        entity.IndividualLoot('heaven_metal_leggings', .03, 1, 1),
+        entity.IndividualLoot('shotgun', 0.08, 1, 1),
+        entity.IndividualLoot('holy_condense_wand', 0.03, 1, 1),
+        entity.IndividualLoot('holy_shine', 0.03, 1, 1),
+    ])
+
+    def __init__(self, pos):
+        super().__init__(pos)
+        self.hp_sys.max_hp *= 5
+        self.hp_sys.hp *= 5
+        for k in self.hp_sys.resistances.resistances.keys():
+            self.hp_sys.resistances[k] *= .8
+        self.obj.SIGHT_DISTANCE *= 4
+
+class HGoblinThief(entity.Entities.HeavenGoblinThief):
+    LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('heaven_wood', .3, 10, 20),
+        entity.IndividualLoot('heaven_metal_helmet', .03, 1, 1),
+        entity.IndividualLoot('heaven_metal_plate_mail', .03, 1, 1),
+        entity.IndividualLoot('heaven_metal_leggings', .03, 1, 1),
+        entity.IndividualLoot('shotgun', 0.04, 1, 1),
+        entity.IndividualLoot('holy_condense_wand', 0.03, 1, 1),
+        entity.IndividualLoot('holy_shine', 0.03, 1, 1),
+    ])
+
+    def __init__(self, pos):
+        super().__init__(pos)
+        self.hp_sys.max_hp *= 5
+        self.hp_sys.hp *= 5
+        for k in self.hp_sys.resistances.resistances.keys():
+            self.hp_sys.resistances[k] *= .8
+        self.obj.SIGHT_DISTANCE *= 2
+        self.obj.SPEED *= 1.5
+        self.obj.TOUCHING_DAMAGE += 30
+
 class RuneAltar(entity.Entities.Entity):
     DIVERSITY = False
     DISPLAY_MODE = 2
@@ -581,3 +683,4 @@ class RuneAltar(entity.Entities.Entity):
         super().on_update()
         if vector.distance(*(game.get_game().player.obj.pos - self.obj.pos)) < 400:
             game.get_game().player.hp_sys.effect(effects.RuneAltar(1, 1))
+

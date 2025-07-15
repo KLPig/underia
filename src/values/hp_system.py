@@ -87,6 +87,7 @@ class HPSystem:
                     t = 'IMMUNE'
                 else:
                     t = 'RESISTED'
+                '''
                 for i in range(len(game.get_game().damage_texts)):
                     if abs(game.get_game().damage_texts[i][2][0] - self.pos[0]) < 300 \
                             and abs(game.get_game().damage_texts[i][2][1] - self.pos[1]) < 300 and \
@@ -94,11 +95,12 @@ class HPSystem:
                         game.get_game().damage_texts[i] = (t, 0, (self.pos[0] + random.randint(-10, 10),
                                                                   self.pos[1] + random.randint(-10, 10)))
                         d = 1
-                        break
+                        break'''
                 if not d:
                     game.get_game().damage_texts.append(
-                        (t, 0, (self.pos[0] + random.randint(-10, 10), self.pos[1] + random.randint(-10, 10))))
+                        (t, 0, (self.pos[0] + random.randint(-30, 30), self.pos[1] + random.randint(-30, 30))))
             else:
+                '''
                 for i in range(len(game.get_game().damage_texts)):
                     if abs(game.get_game().damage_texts[i][2][0] - self.pos[0]) < 300 \
                             and abs(game.get_game().damage_texts[i][2][1] - self.pos[1]) < 300 and \
@@ -107,10 +109,10 @@ class HPSystem:
                                                            (self.pos[0] + random.randint(-10, 10),
                                                             self.pos[1] + random.randint(-10, 10)))
                         d = 1
-                        break
+                        break'''
                 if not d:
                     game.get_game().damage_texts.append(
-                        (str(int(dmg)), 0, (self.pos[0] + random.randint(-10, 10), self.pos[1] + random.randint(-10, 10))))
+                        (str(int(dmg)), 0, (self.pos[0] + random.randint(-30, 30), self.pos[1] + random.randint(-30, 30))))
         if len(self.shields):
             self.shields[0] = (self.shields[0][0], self.shields[0][1] - dmg)
             if self.shields[0][1] <= 0:

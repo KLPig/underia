@@ -1,9 +1,11 @@
 import constants
+import pygame
+import numpy as np
+from scipy.io import wavfile
+from resources import path
+from scipy.signal import resample
+
 if constants.TONE:
-    import pygame
-    import numpy as np
-    from scipy.io import wavfile
-    from resources import path
 
     pygame.init()
     pygame.mixer.init(44100, -16, 2, 2048)
@@ -14,14 +16,25 @@ if constants.TONE:
         'trumpet': 'assets/sounds/trumpet_c5.wav',
         'snare': 'assets/sounds/snare_c5.wav',
         'bell': 'assets/sounds/bell_c5.wav',
-        'oboe': 'assets/sounds/oboe_c5.wav'
+        'oboe': 'assets/sounds/oboe_c5.wav',
+        'ukulele': 'assets/sounds/ukulele_c4.wav'
+    }
+
+    freq_mapping = {
+        'piano': 'c5',
+        'flute': 'c7',
+        'trumpet': 'c5',
+       'snare': 'c5',
+        'bell': 'c5',
+        'oboe': 'c5',
+        'ukulele': 'c5'
     }
 
     datas: dict[str, tuple[int, np.ndarray]] = {
 
     }
 
-    tones: dict[tuple[str, float, float]: pygame.mixer.Sound] = {
+    tones: dict[tuple[str, float, ]: pygame.mixer.Sound] = {
 
     }
 
@@ -65,6 +78,7 @@ if constants.TONE:
         if file_path in datas.keys():
             return datas[file_path]
         sample_rate, audio_data = wavfile.read(path.get_path(file_path))
+        print(sample_rate)
         if audio_data.ndim == 1:
             audio_data = np.stack((audio_data, audio_data), axis=-1)  # 将单声道转换为立体声
         datas[file_path] = (sample_rate, audio_data)
@@ -72,36 +86,31 @@ if constants.TONE:
 
     # 函数：播放音符
     def play_note(instrument, new_frequency, duration, auto_play=True):
-        if (instrument, new_frequency, duration) in tones.keys():
+        if (instrument, new_frequency, ) in tones.keys():
             if auto_play:
-                tones[(instrument, new_frequency, duration)].play()
-            return tones[(instrument, new_frequency, duration)]
+                tones[(instrument, new_frequency, )].play()
+            return tones[(instrument, new_frequency, )]
         file_path = note_files.get(instrument, None)
         if file_path is not None:
             sample_rate, audio_data = load_audio_file(file_path)
-            original_frequency = note_to_frequency('C5')
+            original_frequency = note_to_frequency(freq_mapping[instrument].upper())
 
             if original_frequency is not None:
-                if audio_data.ndim == 2:  # 立体声
-                    left_channel = change_pitch(audio_data[:, 0], new_frequency, original_frequency, sample_rate)
-                    right_channel = change_pitch(audio_data[:, 1], new_frequency, original_frequency, sample_rate)
-                    new_audio_data = np.stack((left_channel, right_channel), axis=-1)
-                else:
-                    new_audio_data = change_pitch(audio_data, new_frequency, original_frequency, sample_rate)
+                target_frequency = original_frequency * (2 ** ((new_frequency - 60) / 12))
+                new_sample_rate = int(sample_rate * (original_frequency / target_frequency))
+                resampled_audio = resample(audio_data, int(len(audio_data) * new_sample_rate / sample_rate))
+                resampled_audio = resampled_audio.astype(np.int16)
 
-                target_length = int(sample_rate * duration)
-                if len(new_audio_data) > target_length:
-                    new_audio_data = new_audio_data[:target_length]
-                else:
-                    new_audio_data = np.pad(new_audio_data, ((0, target_length - len(new_audio_data)), (0, 0)), 'constant')
+                if len(resampled_audio.shape) == 1:
+                    resampled_audio = resampled_audio.reshape(-1, 1)
 
-                if new_audio_data.dtype != np.int16:
-                    new_audio_data = np.int16(new_audio_data * 32767 / np.max(np.abs(new_audio_data)))
+                if resampled_audio.shape[1] == 1:
+                    resampled_audio = np.repeat(resampled_audio, 2, axis=1)
 
-                sound = pygame.sndarray.make_sound(new_audio_data)
+                sound = pygame.sndarray.make_sound(resampled_audio)
                 if auto_play:
                     sound.play()
-                tones[(instrument, new_frequency, duration)] = sound
+                tones[(instrument, new_frequency, )] = sound
                 return sound
             else:
                 print(f"Frequency for note C5 not found in the frequency mapping.")

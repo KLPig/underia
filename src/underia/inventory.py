@@ -241,7 +241,7 @@ class Inventory:
                 d = f"Heals {healer.amount} HP\n" + d
             if TAGS['weapon'] in self.tags:
                 weapon = weapons.WEAPONS[self.id]
-                d = f"{round(100 / (weapon.at_time + weapon.cd + 1), 1)}% speed\n" + d
+                d = f"{round(100 / (weapon.at_time + max(weapon.cd + game.get_game().player.calculate_data('atk_speed', False) // 3, 0) + 1), 1)}% speed\n" + d
                 d = f"{weapon.knock_back} knockback\n" + d
                 for dmg, val in weapon.damages.items():
                     dt = 'damage'
