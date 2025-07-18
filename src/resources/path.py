@@ -17,7 +17,7 @@ print(pt)
 d = os.listdir(pt)
 if 'assets' not in d:
     print('Assets not found.')
-    messagebox.showerror('Error', 'Assets not found. Please reinstall the package.')
+    messagebox.showerror('Underia', 'Assets not found. Please reinstall the package.')
     exit()
 
 
@@ -38,7 +38,6 @@ if save_path is None:
 save_path = os.path.join(save_path, '.underia')
 if not os.path.exists(save_path):
     os.makedirs(save_path)
-
 
 def get_save_path(filename):
     global save_path

@@ -290,7 +290,7 @@ class Game:
             val = (val - self.m_min) / (self.m_max - self.m_min + 0.01)
             self.map_ns[pos] = val
             b = 1
-        idx = int(self.map_ns[pos] * len(lvs))
+        idx = int(self.map_ns[pos] * 6)
         if pos in self.w_ns.keys():
             w = self.w_ns[pos]
         else:
@@ -317,12 +317,13 @@ class Game:
                     idx = 5
             if w < 0.5 and idx == 2:
                 idx = 3
-        for pp, r in self.hallow_points:
-            if physics.distance(pp[0] - (pos[0] - 120) * self.CHUNK_SIZE, pp[1] - (pos[1] - 120) * self.CHUNK_SIZE) < r:
-                idx = 6
-        for pp, r in self.wither_points:
-            if physics.distance(pp[0] - (pos[0] - 120) * self.CHUNK_SIZE, pp[1] - (pos[1] - 120) * self.CHUNK_SIZE) < r:
-                idx = 7
+        if self.chapter == 1:
+            for pp, r in self.hallow_points:
+                if physics.distance(pp[0] - (pos[0] - 120) * self.CHUNK_SIZE, pp[1] - (pos[1] - 120) * self.CHUNK_SIZE) < r:
+                    idx = 6
+            for pp, r in self.wither_points:
+                if physics.distance(pp[0] - (pos[0] - 120) * self.CHUNK_SIZE, pp[1] - (pos[1] - 120) * self.CHUNK_SIZE) < r:
+                    idx = 7
         biome = lvs[idx]
         if b:
             no_of_decor = [4, 7, 10, 8, 4, 3, 6, 5][idx]
@@ -338,7 +339,7 @@ class Game:
     def get_player_objects(self) -> list[physics.Mover]:
         return [self.player.obj] + self.p_obj
 
-    @lru_cache(maxsize=None)
+    @lru_cache(maxsize=int(constants.MEMORY_USE * .05))
     def get_chunked_images(self, biomes, bg_size):
         cols = {'hell': (255, 0, 0), 'desert': (255, 191, 63), 'forest': (0, 255, 0), 'rainforest': (127, 255, 0),
                 'snowland': (255, 255, 255), 'heaven': (127, 127, 255), 'inner': (0, 0, 0), 'none': (0, 0, 0),

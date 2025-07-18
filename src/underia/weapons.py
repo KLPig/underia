@@ -125,7 +125,7 @@ class Weapon:
                     b = len([1 for k in self.keys if k in game.get_game().get_keys()]) or \
                         (self.auto_fire and len([1 for k in self.keys if k in game.get_game().get_pressed_keys()]))
                 if pg.BUTTON_RIGHT in game.get_game().get_pressed_mouse():
-                    self.strike += 1
+                    self.strike += 1 if constants.DIFFICULTY <= 1 else 2
                     self.on_charge()
                 elif b or self.strike:
                     self.attack()
@@ -165,7 +165,7 @@ class Weapon:
                                               1.5, size * 30 / game.get_game().player.get_screen_scale())
 
     @staticmethod
-    @functools.lru_cache(maxsize=None)
+    @functools.lru_cache(maxsize=int(constants.MEMORY_USE * .08))
     def get_cut_surf(arot, size, col1, col2, scale):
         if not len(Weapon._EFF_NOISES):
             noises = perlin_noise.PerlinNoise(octaves=2, seed=random.randint(0, 1000000))
@@ -271,7 +271,7 @@ class SweepWeapon(Weapon):
     def on_attack(self):
         self.rotate(self.rot_speed)
         self.rotate(int(-(self.timer - self.at_time / 2) * abs(self.rot_speed) // self.rot_speed *
-                        (25 + self.strike * 35) // self.at_time))
+                        (25 + self.strike * 35) * (3 if constants.DIFFICULTY > 1 else 1) // self.at_time) if self.timer <= self.at_time else 0)
         super().on_attack()
         self.damage()
 
@@ -305,7 +305,9 @@ class SweepWeapon(Weapon):
                         e.hp_sys.damage(d * game.get_game().player.attack * game.get_game().player.attacks[self.DMG_AS_IDX], t)
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
-                        e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS))
+                        e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS
+                                                        if self.knock_back * 60000 < e.obj.MASS else
+                                                        self.knock_back * 600000 / e.obj.MASS))
                     if 'matters_touch' in game.get_game().player.accessories:
                         e.obj.MASS *= 1.01
                     if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
@@ -316,7 +318,8 @@ class SweepWeapon(Weapon):
                         else:
                             e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), dmg.DamageTypes.THINKING)
                     if self.ENABLE_IMMUNE:
-                        e.hp_sys.enable_immume()
+                        if constants.DIFFICULTY > 1:
+                            e.hp_sys.enable_immume()
 
 class MurderersKnife(SweepWeapon):
     def damage(self):

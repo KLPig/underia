@@ -490,8 +490,8 @@ def update():
         biome = game.get_biome()
         night = game.day_time > 0.75 or game.day_time < 0.2
 
-        underia.entity_spawn(underia3.Chicken, 3000, 5000, target_number=4 + night * 5, rate=4)
-        underia.entity_spawn(underia3.ManaChicken, 3000, 5000, target_number=2 + night * 3, rate=2)
+        underia.entity_spawn(underia3.Chicken, 3000, 5000, target_number=12 - night * 5, rate=4)
+        underia.entity_spawn(underia3.ManaChicken, 3000, 5000, target_number=1 + night * 3, rate=2)
 
         underia.entity_spawn(underia3.RuneAltar, 3000, 5000, target_number=1, rate=.1)
         if night:

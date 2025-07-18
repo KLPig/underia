@@ -103,9 +103,9 @@ class MonsterAI(mover.Mover):
     def idle(self):
         if not self.idle_rotation and random.randint(0, 360):
             self.idle_rotation = random.randint(0, 360)
-        if self.idle_timer > self.IDLE_TIME + random.randint(-50, 50):
+        if self.idle_timer > self.IDLE_TIME // 5 + random.randint(-50, 50):
             self.idle_timer = 0
-            self.idle_rotation += random.randint(-self.IDLE_CHANGER, self.IDLE_CHANGER)
+            self.idle_rotation += random.randint(-self.IDLE_CHANGER, self.IDLE_CHANGER) // 5
         self.apply_force(vector.Vector(self.idle_rotation, self.IDLE_SPEED))
 
     def get_target(self):
@@ -1233,7 +1233,7 @@ class WorldsTreeAI(MonsterAI):
             self.apply_force(vector.Vector(vector.coordinate_rotation(ax, ay),
                                            vector.distance(ax, ay) * 6 + 8000))
 
-@functools.lru_cache(maxsize=None)
+@functools.lru_cache(maxsize=int(constants.MEMORY_USE * .1))
 def entity_get_surface(display_mode, rot, scale, img):
     if img.get_width() + img.get_height() > 30 * scale:
         if display_mode == Entities.DisplayModes.DIRECTIONAL:

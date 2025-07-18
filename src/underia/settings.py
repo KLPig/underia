@@ -2,6 +2,7 @@ import constants
 import pygame as pg
 from resources import path
 from underia import game
+from tkinter import messagebox
 
 SETTINGS = [
     ('Graphics', [
@@ -60,6 +61,8 @@ def set_settings():
                     setattr(constants, st[0], opt[(i + 1) % len(opt)][0])
                     if st[1] == 'Language':
                         game.get_game().displayer.__init__()
+                    if st[1] == 'Difficulty':
+                        pass
                 elif event.key == pg.K_ESCAPE:
                     return
         tr = font.render(SETTINGS[sel_s][0], True, (255, 255, 255))

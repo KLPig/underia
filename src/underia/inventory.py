@@ -1,8 +1,7 @@
 from collections.abc import Callable
-
 from underia import weapons, projectiles, game
 from values import damages
-
+import constants
 
 class Inventory:
     DEFAULT = 0
@@ -267,26 +266,36 @@ class Inventory:
             d = f"{Inventory.Rarity_Names[self.rarity]}\n" + d
             d = f"Mod:{self.mod}\n" + d
             if TAGS['melee_weapon'] in self.tags:
-                d = '<Melee>\n' + d
+                d = 'col7f7fff<Melee>\n' + d
             elif TAGS['bow'] in self.tags or TAGS['gun'] in self.tags:
-                d = '<Ranged>\n' + d
+                d = 'col7f7fff<Ranged>\n' + d
             elif TAGS['magic_weapon'] in self.tags:
-                d = '<Magic>\n' + d
+                d = 'col7f7fff<Magic>\n' + d
             elif TAGS['arcane_weapon'] in self.tags:
-                d = '<Magic-Arcane>\n' + d
+                d = 'col7f7fff<Magic-Arcane>\n' + d
             elif TAGS['priest_weapon'] in self.tags:
-                d = '<Priest-Damage>\n' + d
+                d = 'col7f7fff<Priest-Damage>\n' + d
             elif TAGS['priest_healer'] in self.tags:
-                d = '<Priest-Heal>\n' + d
+                d = 'col7f7fff<Priest-Heal>\n' + d
             elif TAGS['pickaxe'] in self.tags:
-                d = '<Pickaxe>\n' + d
+                d = 'col7f7fff<Pickaxe>\n' + d
             elif TAGS['knife'] in self.tags:
-                d = '<Ranged-Thief>\n' + d
+                d = 'col7f7fff<Ranged-Thief>\n' + d
             elif TAGS['poet_weapon'] in self.tags:
-                d = '<Poet>\n' + d
+                d = 'col7f7fff<Poet>\n' + d
             elif TAGS['hypnotist_weapon'] in self.tags:
-                d = '<Hypnotist>\n' + d
-
+                d = 'col7f7fff<Hypnotist>\n' + d
+            if TAGS['weapon'] in self.tags and constants.DIFFICULTY > 1:
+                weapon = weapons.WEAPONS[self.id]
+                d += 'col7fff7fMastery: +100% charge speed\n'
+                if issubclass(type(weapon), weapons.SweepWeapon):
+                    d += 'col7fff7fMastery: Disable immune time\n'
+                    d += 'col7fff7fMastery: +400% knockback to heavy entities\n'
+                if damages.DamageTypes.ARCANE in weapon.damages:
+                    d += 'col7fff7fMastery: enemy +16% arcane damage received\n'
+                if str.find(d.lower(), 'thinking') != -1 or damages.DamageTypes.THINKING in weapon.damages:
+                    d += 'col7fff7fMastery: each thinking damage heals 1/1.2m of max HP\n'
+            d.removesuffix('\n')
             return d
 
     def __init__(self):

@@ -38,7 +38,7 @@ class WeakProjectileMotion(ProjectileMotion):
     def on_update(self):
         pass
 
-@functools.lru_cache(maxsize=None)
+@functools.lru_cache(maxsize=int(constants.MEMORY_USE * .1))
 def projectile_get_surface(rot, scale, img):
     img = pg.transform.rotate(img, 90 - rot)
     return pg.transform.scale_by(img, 1 / scale)
@@ -504,7 +504,8 @@ class Projectiles:
         DMG_RATE = 0.9
 
         def update(self):
-            self.obj.FRICTION = .6
+            if isinstance(self, Projectiles.NightsEdge):
+                self.obj.FRICTION = .6
             self.WT = damages.DamageTypes.PHYSICAL
             super().update()
             self.tick += 1
@@ -2639,7 +2640,7 @@ class Projectiles:
             x, y = pos
             for ee in game.get_game().entities:
                 if imr.collidepoint(ee.obj.pos[0], ee.obj.pos[1]) or ee.d_img.get_rect(
-                        center=ee.obj.pos).collidepoint(x, y) and ee not in cd:
+                        center=(ee.obj.pos[0], ee.obj.pos[1])).collidepoint(x, y) and ee not in cd:
                     for e2 in game.get_game().entities:
                         if vector.distance(e2.obj.pos[0] - self.obj.pos[0], e2.obj.pos[1] - self.obj.pos[1]) < 300:
                             e2.hp_sys.damage(self.dmg, damages.DamageTypes.PIERCING)

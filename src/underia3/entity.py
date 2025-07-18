@@ -212,6 +212,8 @@ class Tree(Entity):
     def __init__(self, pos):
         super().__init__(pos, game.get_game().graphics[f'entity3_tree{random.randint(1, 3)}'],
                          entity.BuildingAI, hp=12)
+        for d in self.hp_sys.defenses.defences:
+            self.hp_sys.defenses[d] += 1999
 
 class DeadTree(Entity):
     NAME = 'Dead Tree'
@@ -225,6 +227,8 @@ class DeadTree(Entity):
     def __init__(self, pos):
         super().__init__(pos, game.get_game().graphics[f'entity3_dead_tree{random.randint(1, 2)}'],
                          entity.BuildingAI, hp=16)
+        for d in self.hp_sys.defenses.defences:
+            self.hp_sys.defenses[d] += 1999
 
 class Chicken(Entity):
     NAME = 'Chicken'

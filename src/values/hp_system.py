@@ -28,7 +28,7 @@ class HPSystem:
     def __init__(self, hp: float):
         self.resistances = reduction.Resistances()
         self.defenses = reduction.Defenses()
-        self.resistances[damages.DamageTypes.ARCANE] = 37
+        self.resistances[damages.DamageTypes.ARCANE] = 37 if constants.DIFFICULTY <= 1 else 43
         self.hp = hp
         self.displayed_hp = hp
         self.max_hp = hp
@@ -123,6 +123,8 @@ class HPSystem:
             self.pacify_cd = int(self.PACIFY_TIME * game.get_game().player.calculate_data('pacify_time', rate_data=True, rate_multiply=True))
         else:
             self.hp -= dmg
+        if damage_type == damages.DamageTypes.THINKING:
+            game.get_game().player.hp_sys.heal(dmg * game.get_game().player.hp_sys.max_hp // 1200000)
         if self.hp <= 0:
             self.hp = 0
 

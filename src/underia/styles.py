@@ -122,8 +122,13 @@ def item_mouse(x, y, name, no, amount, scale, anchor='left', _window=None, mp=No
         ts = []
 
         for j in range(l - 1):
-            ft = game.get_game().displayer.font.render(text(desc_split[j]), True,
-                                                      (255, 255, 255), (0, 0, 0))
+            col = (255, 255, 255)
+            ds = desc_split[j]
+            if str.startswith(ds, 'col'):
+                col = (int('0x' + ds[3:5], 16), int('0x' + ds[5:7], 16), int('0x' + ds[7:9], 16))
+                ds = ds[9:]
+            ft = game.get_game().displayer.font.render(text(ds), True,
+                                                      col, (0, 0, 0))
             ts.append(ft)
             mw = max(mw, ft.get_width())
 
