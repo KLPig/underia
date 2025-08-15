@@ -5,3 +5,4 @@ class GameData:
         self.lv = pf.stage
         self.col = pf.get_color()
         self.time = game.get_game().game_time if time is None else time
+        self.name = 'Underia World'

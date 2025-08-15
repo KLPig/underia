@@ -4,8 +4,11 @@ import constants
 import pygame as pg
 import os
 
-pt = path.get_path('assets/graphics/legend')
-image = {l: pg.image.load(os.path.join(pt, l)) for l in os.listdir(pt)}
+try:
+    pt = path.get_path('assets/graphics/legend')
+    image = {l: pg.image.load(os.path.join(pt, l)) for l in os.listdir(pt)}
+except FileNotFoundError:
+    print('Warning: File not found.\nIf story unused, ignore this warning.')
 
 dialogger = None
 

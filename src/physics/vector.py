@@ -133,6 +133,9 @@ class Vector2D:
     def reset(self, time=1.0):
         self.__imul__(time)
 
+    def to_value(self) -> tuple[int, int]:
+        return self.x, self.y
+
 class Vector(Vector2D):
     pass
 

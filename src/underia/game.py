@@ -6,7 +6,7 @@ from functools import lru_cache
 import asyncio
 import pygame as pg
 
-import resources, visual, constants, physics, web
+import resources, visual, constants, physics, web, underia3
 from underia import player, entity, projectiles, weapons, inventory, dialog, styles
 import perlin_noise
 import underia.settings as settings
@@ -30,6 +30,8 @@ MUSICS = {
     'mercy_remix': ['battle'],
     'nothing_matter': ['battle'],
     'from_now_on': ['battle'],
+    'knight_appears': ['battle'],
+    'knight': ['battle'],
 }
 
 MUSIC_DATA = {
@@ -48,7 +50,8 @@ MUSIC_DATA = {
     'nothing_matter': 'Jammin - Nothing Matters (Terraria Homeward Journey)',
     'from_now_on': 'Toby Fox - From Now On (Deltarune)',
     'dark_sanctuary': 'Toby Fox - Dark Sanctuary (Deltarune)',
-    '3rd_sanctuary': 'Toby Fox - 3rd Sanctuary (Deltarune)'
+    '3rd_sanctuary': 'Toby Fox - 3rd Sanctuary (Deltarune)',
+    'knight': 'Toby Fox - Black Knife (Deltarune)',
 }
 
 class Game:
@@ -58,6 +61,7 @@ class Game:
     CHUNK_SIZE = 100
 
     def __init__(self):
+        self.dimension = 'overworld'
         self.displayer = visual.Displayer()
         self.graphics = resources.Graphics()
         self.events = []
@@ -107,6 +111,12 @@ class Game:
         self.lp = (100, 100)
         self.major_rate = 0
         self.game_time = 0
+        self.mus_text = None
+        self.must_st = -1
+        self.fun = random.randint(1, 13)
+        self.c_dmg = 0
+        self.further_entities: dict[tuple[int, int], list[entity.Entities.Entity | object]] = {}
+        self.t_cmd = ''
 
     def get_night_color(self, time_days: float):
         if len([1 for e in self.entities if type(e) is entity.Entities.AbyssEye]):
@@ -194,12 +204,16 @@ class Game:
         time.sleep(0.001)
 
     def setup(self):
+        self.dimension = 'overworld'
+        self.must_st = -1
+        self.mus_text = None
         self.lp = (0, 0)
         self.server = None
         self.client = None
         self.role = ''
         self.p_obj = []
         self.sounds = {}
+        self.player.splint_t = 0
         self.map_open = False
         self.map_ns = {}
         self.w_ns = {}
@@ -265,7 +279,20 @@ class Game:
     def update_function(self, func):
         setattr(self, 'on_update', func)
 
+    @staticmethod
+    @lru_cache(maxsize=constants.MEMORY_USE)
+    def is_wall(pos):
+        return int(random.random() * 10 + pos[0] * 114 + pos[1] * 77) % 10 < 8
+
     def get_biome(self, pos=None):
+        if pos is None:
+            pos = self.chunk_pos
+        if self.dimension == 'ancient_city':
+            hp = ((pos[0] - 120) * self.CHUNK_SIZE // 400, (pos[1] - 120) * self.CHUNK_SIZE // 400)
+            if ((pos[0] - 120) * self.CHUNK_SIZE % 4000 < 400 or (pos[1] - 120) * self.CHUNK_SIZE % 4000 < 400) and self.is_wall(hp):
+                return 'ancient_wall'
+            else:
+                return 'ancient_city'
         if len([1 for e in self.entities if type(e) in [entity.Entities.OmegaFlowery]]):
             return 'none'
         if len([1 for e in self.entities if type(e) is entity.Entities.AbyssEye]):
@@ -275,11 +302,11 @@ class Game:
         if len([1 for e in self.entities if type(e) in [entity.Entities.Jevil, entity.Entities.Jevil2, entity.Entities.OblivionAnnihilator]]) or \
                 self.player.inventory.is_enough(inventory.ITEMS['chaos_heart']):
             return 'inner'
-        if pos is None:
-            pos = self.chunk_pos
-        if pos[0] ** 2 + pos[1] ** 2 < 1000:
+        if pos[0] ** 2 + pos[1] ** 2 < 50000:
             return 'forest'
-        lvs = ['hell', 'desert', 'rainforest', 'forest', 'snowland', 'heaven', 'hallow', 'wither']
+        if pos[1] < -100000 and self.chapter == 2:
+            return 'inner'
+        lvs = ['hell', 'desert', 'rainforest', 'forest', 'snowland', 'heaven', 'hallow', 'wither', 'ancient']
         b = 0
         if pos not in self.map_ns.keys():
             val = self.noise([pos[0] / 400.0, pos[1] / 400.0])
@@ -324,9 +351,12 @@ class Game:
             for pp, r in self.wither_points:
                 if physics.distance(pp[0] - (pos[0] - 120) * self.CHUNK_SIZE, pp[1] - (pos[1] - 120) * self.CHUNK_SIZE) < r:
                     idx = 7
+        if self.chapter == 2:
+            if (pos[1] - 120) * self.CHUNK_SIZE < -80000:
+                idx=8
         biome = lvs[idx]
         if b:
-            no_of_decor = [4, 7, 10, 8, 4, 3, 6, 5][idx]
+            no_of_decor = [4, 7, 10, 8, 4, 3, 6, 5, 0][idx]
             if no_of_decor:
                 for i in range(no_of_decor):
                     if random.random() < (0.007 - [0.003, 0.004, -0.002, -0.001, 0.003, 0.003, -0.001, -0.002][idx]) / 3:
@@ -359,13 +389,18 @@ class Game:
         return surf
 
     def update_map(self):
-        bg_size = 200  # int(120 / self.player.get_screen_scale())
+        bg_size = 200 if self.dimension == 'overworld' else int(400 / self.player.get_screen_scale())
+
+        pp = self.chunk_pos
+        
+
         chunk_size = 3
         bg_ax = int(self.player.ax / self.player.get_screen_scale()) % (bg_size * chunk_size)
         bg_ay = int(self.player.ay / self.player.get_screen_scale()) % (bg_size * chunk_size)
         cols = {'hell': (255, 0, 0), 'desert': (255, 191, 63), 'forest': (0, 255, 0), 'rainforest': (127, 255, 0),
                 'snowland': (255, 255, 255), 'heaven': (127, 127, 255), 'inner': (0, 0, 0), 'none': (0, 0, 0),
-                'hallow': (0, 255, 255), 'wither': (50, 0, 0), 'life_forest': (50, 127, 0)}
+                'hallow': (0, 255, 255), 'wither': (50, 0, 0), 'life_forest': (50, 127, 0), 'ancient': (50, 0, 0),
+                'ancient_city': (255, 200, 128), 'ancient_wall': (100, 50, 0)}
         if not self.graphics.is_loaded('nbackground_hell') or self.graphics['nbackground_hell'].get_width() != bg_size:
             for k in cols.keys():
                 self.graphics['nbackground_' + k] = pg.transform.scale(self.graphics['background_' + k],
@@ -386,6 +421,32 @@ class Game:
                 surf = self.get_chunked_images(tuple([tuple(b) for b in bgg]), bg_size)
                 #self.bl_bg.blit(surf, (i - bg_ax, j - bg_ay))
                 self.displayer.canvas.blit(surf, (i - bg_ax, j - bg_ay))
+        if self.chapter == 2:
+            for e in self.entities:
+                if e.obj.pos[1] < -99000:
+                    e.obj.pos.y = -99000
+            if self.player.obj.pos[1] < -99000:
+                self.player.obj.pos.y = -98999
+                if self.player.inventory.is_enough(underia3.ITEMS['ancient_key']) or self.dimension == 'ancient_city':
+                    if self.player.max_mana >= 300:
+                        self.dimension = 'overworld' if self.dimension == 'ancient_city' else 'ancient_city'
+                        self.player.profile.add_point(10)
+                        self.player.hp_sys.max_hp = 1200
+                        self.player.max_mana = 500
+                    else:
+                        self.dialog.dialog('You are not strong enough to enter the Ancient City.')
+                elif not len([1 for e in self.entities if type(e) is underia3.ChaosDisciple]):
+                    self.entities.append(underia3.ChaosDisciple(self.player.obj.pos + (random.randint(-1000, 1000), random.randint(-1000, 1000))))
+                self.player.obj.velocity *= 0
+                self.player.obj.velocity += (0, 500)
+
+            dp = resources.displayed_position((0, -100000))
+            bs = int(1024 / self.player.get_screen_scale())
+            if -1500 <= dp[1] <= self.displayer.canvas.get_height() + 1500:
+                ap = int(self.player.ax / self.player.get_screen_scale()) % bs
+                for i in range(-ap, self.displayer.SCREEN_WIDTH + ap, bs):
+                    self.displayer.canvas.blit(pg.transform.scale_by(self.graphics.get_graphics('entity3_uwall' + str(i // bs % 2 + 1)),
+                                                                     1 / self.player.get_screen_scale()), (i, dp[1]))
 
     def blend_map(self):
         # self.displayer.canvas.blit(self.bl_bg, (0, 0))
@@ -397,9 +458,10 @@ class Game:
             loop.create_task(self.client.start())
         if '3rd_sanctuary' not in MUSICS:
             MUSICS['3rd_sanctuary'] = ['forest0', 'forest1', 'rainforest0', 'rainforest1', 'desert0', 'desert1',
-                                       'snowland0', 'snowland1', 'hell0', 'hell1', 'heaven0', 'heaven1']
-            MUSICS['dark_sanctuary'] = ['forest0', 'forest1', 'rainforest0', 'rainforest1', 'desert0', 'desert1',
-                                        'snowland0', 'snowland1', 'hell0', 'hell1', 'heaven0', 'heaven1']
+                                       'snowland0', 'snowland1', 'hell0', 'hell1', 'heaven0', 'heaven1', 'ancient0',
+                                       'ancient1']
+            MUSICS['dark_sanctuary'] = ['ancient0', 'ancient1', 'ancient_city0', 'ancient_city1',
+                                        'ancient_wall0', 'ancient_wall1']
         if (self.prepared_music is None and self.channel.get_busy() == 0) or \
                 (self.cur_music is not None and (self.get_biome() + str(int(0.3 < self.day_time < 0.7))) not in
                  self.MUSICS[self.cur_music] and not len([1 for e in self.entities if e.IS_MENACE])) \
@@ -418,14 +480,20 @@ class Game:
                     self.prepared_music = 'nothing_matter'
                 elif len([1 for e in self.entities if type(e) is entity.Entities.OmegaFlowery]):
                     self.prepared_music = 'empty'
+                elif len([1 for e in self.entities if type(e) is underia3.ChaosDisciple]):
+                    self.prepared_music = 'knight' if [e for e in self.entities if type(e) is underia3.ChaosDisciple][0].phase == 0 else 'knight_appears'
                 elif len([1 for e in self.entities if type(e) in [entity.Entities.GodsEye]]):
                     self.prepared_music = 'wof_otherworld'
                 elif len([1 for e in self.entities if type(e) in [entity.Entities.CLOCK, entity.Entities.MATTER]]):
                     self.prepared_music = 'boss_otherworld'
                 else:
                     self.prepared_music = 'rude_buster'
-                if self.chapter > 1:
-                    self.prepared_music = 'from_now_on'
+                    if self.chapter > 1:
+                        self.prepared_music = 'from_now_on'
+            elif len([1 for e in self.entities if type(e) is underia3.ChaosDisciple and not e.IS_MENACE]):
+                self.cur_music = None
+                self.channel.stop()
+                self.prepared_music = 'knight_appears'
             else:
                 self.cur_music = None
                 self.channel.fadeout(8000)
@@ -436,15 +504,21 @@ class Game:
             self.channel.set_volume(constants.MUSIC_VOL)
             self.channel.play(self.musics[self.cur_music])
             self.prepared_music = None
+            if self.cur_music in MUSIC_DATA and len(MUSIC_DATA[self.cur_music]):
+                self.must_st = 0
+                self.mus_text = (self.displayer.ffont.render(MUSIC_DATA[self.cur_music], True, (255, 255, 255)),
+                                 self.displayer.font.render(MUSIC_DATA[self.cur_music], True, (0, 0, 0)))
+
         self.chunk_pos = (
         int(self.player.obj.pos[0]) // self.CHUNK_SIZE + 120, int(self.player.obj.pos[1]) // self.CHUNK_SIZE + 120)
         self.day_time += self.TIME_SPEED
         self.day_time %= 1.0
         if self.day_time - self.TIME_SPEED < 0.25 <= self.day_time:
             self.on_day_start()
-        if self.day_time - self.TIME_SPEED < 0.8 <= self.day_time:
+        if self.day_time - self.TIME_SPEED < 0.85 <= self.day_time:
             self.on_day_end()
         self.on_update()
+        self.c_dmg = 0
         self.handle_events()
         self.blend_map()
         for img, x, y, scale_req in self.decors:
@@ -526,7 +600,7 @@ class Game:
                 del proj
         self.damage_texts = [(dmg, tick + 1, pos) for dmg, tick, pos in self.damage_texts if tick < 80]
         for dmg, tick, pos in self.damage_texts:
-            ll = int(math.log(int(dmg), 1 + (1 + self.player.strike) ** 2)) % 2 == 1 if str.isdecimal(dmg) else 1
+            ll = int(math.log(max(.01, int(dmg)), max(1.1, 1 + (1 + self.player.strike) ** 2))) % 2 == 1 if str.isdecimal(dmg) and int(dmg) > 0 else 1
             f = self.displayer.font_dmg.render(str(dmg), True, (255, 127, 0) if ll else (255, 0, 0))
             f.set_alpha(min(255.0, tick * tick / 2))
             fr = f.get_rect(center=resources.displayed_position((pos[0] + 2, pos[1] + (80 - tick) ** 3 // 4000 + 2)))
@@ -549,11 +623,20 @@ class Game:
             if not menace.show_bar:
                 continue
             for i in range(len(menace.PHASE_SEGMENTS) + 1):
+                fill_uncoloured = (227, 105, 86)
+                fill_coloured = (207, 255, 112)
                 if i >= c_phase:
-                    pg.draw.circle(self.displayer.canvas, (207, 255, 112), (x - 380 + 50 * i, y - 100), 20)
+                    pg.draw.circle(self.displayer.canvas, fill_coloured, (x - 380 + 50 * i, y - 100), 20)
                 else:
-                    pg.draw.circle(self.displayer.canvas, (227, 105, 86), (x - 380 + 50 * i, y - 100), 20)
-                pg.draw.circle(self.displayer.canvas, (242, 166, 94), (x - 380 + 50 * i, y - 100), 20, width=8)
+                    pg.draw.circle(self.displayer.canvas, fill_uncoloured, (x - 380 + 50 * i, y - 100), 20)
+                border = (242, 166, 94)
+                tt = math.sin(self.day_time * 1000)
+                ct = math.cos(self.day_time * 1000)
+                if 'CHAOS' in dir(menace):
+                    fill_uncoloured = (tt * 120 + 127, tt * 120 + 127, tt * 120 + 127)
+                    fill_coloured = (tt * -120 + 127, tt * -120 + 127, tt * -120 + 127)
+                    border = (tt * 50 + 55, 0, ct * 50 + 55)
+                pg.draw.circle(self.displayer.canvas, border, (x - 380 + 50 * i, y - 100), 20, width=8)
                 t_p = menace.hp_sys.hp / menace.hp_sys.max_hp
                 pc_p = menace.hp_sys.pacify / menace.hp_sys.max_hp
                 pp_p = menace.hp_sys.pacify / (menace.hp_sys.max_hp - menace.hp_sys.hp) if menace.hp_sys.hp < menace.hp_sys.max_hp else 0
@@ -563,14 +646,14 @@ class Game:
                 sp_s = sp[-c_phase - 2]
                 r_p = ((menace.hp_sys.hp - sp_s * menace.hp_sys.max_hp) /
                        (sp_e * menace.hp_sys.max_hp - sp_s * menace.hp_sys.max_hp))
-                pg.draw.rect(self.displayer.canvas, (227, 105, 86),
-                                 (x + 400 - t_l, y - 120, t_l, 40))
-                pg.draw.rect(self.displayer.canvas, (207, 255, 112),
-                                 (x + 400 - t_l, y - 120, int(t_l * t_p), 40))
+                pg.draw.rect(self.displayer.canvas, fill_uncoloured,
+                             (x + 400 - t_l, y - 120, t_l, 40))
+                pg.draw.rect(self.displayer.canvas, fill_coloured,
+                             (x + 400 - t_l, y - 120, int(t_l * t_p), 40))
                 pg.draw.rect(self.displayer.canvas, (0, 255, 255),
                              (x + 400 - int(t_l * pc_p), y - 120, int(t_l * pc_p), 40))
-                pg.draw.rect(self.displayer.canvas, (242, 166, 94),
-                                 (x + 400 - t_l, y - 120, t_l, 40), width=8, border_radius=3)
+                pg.draw.rect(self.displayer.canvas, border,
+                             (x + 400 - t_l, y - 120, t_l, 40), width=8, border_radius=3)
                 if not menace.hp_sys.IMMUNE:
                     tf = self.displayer.ffont.render(str(int(t_p * 100)) + '%', True, (0, 0, 0))
                     tfr = tf.get_rect(midright=(x + 400 - 10, y - 100))
@@ -578,13 +661,13 @@ class Game:
                     tf = self.displayer.ffont.render(str(int(t_p * 100)) + '%', True, (255, 255, 255))
                     tfr = tf.get_rect(midright=(x + 400 - 15, y - 105))
                     self.displayer.canvas.blit(tf, tfr)
-                pg.draw.rect(self.displayer.canvas, (227, 105, 86),
-                                 (x - 400, y - 50, 800, 60))
-                pg.draw.rect(self.displayer.canvas, (207, 255, 112),
-                                 (x - 400, y - 50, int(800 * r_p), 60))
-                pg.draw.rect(self.displayer.canvas, (242, 166, 94),
-                                 (x - 400, y - 50, 800, 60), width=8, border_radius=3)
-                ft = self.displayer.font.render(f'{styles.text(menace.NAME)}' + f'({int(menace.hp_sys.hp)}/{int(menace.hp_sys.max_hp)})' if not menace.hp_sys.IMMUNE else '',
+                pg.draw.rect(self.displayer.canvas, fill_uncoloured,
+                             (x - 400, y - 50, 800, 60))
+                pg.draw.rect(self.displayer.canvas, fill_coloured,
+                             (x - 400, y - 50, int(800 * r_p), 60))
+                pg.draw.rect(self.displayer.canvas, border,
+                             (x - 400, y - 50, 800, 60), width=8, border_radius=3)
+                ft = self.displayer.font.render(f'{styles.text(menace.NAME)}' + (f'({int(menace.hp_sys.hp)}/{int(menace.hp_sys.max_hp)})' if not menace.hp_sys.IMMUNE else ''),
                                                 True, (0, 0, 0))
                 ftr = ft.get_rect(midright=(x + 360, y - 20))
                 self.displayer.canvas.blit(ft, ftr)
@@ -611,9 +694,28 @@ class Game:
             im = pg.transform.scale(im, (64, 64))
             imr = im.get_rect(topright=self.displayer.reflect(*pg.mouse.get_pos()))
             self.displayer.canvas.blit(im, imr)
+        if self.must_st != -1:
+            self.must_st += 1
+            ps = 0
+            if self.must_st < 25:
+                ps = (self.must_st - 25) * 10 - 5
+            if self.must_st > 125:
+                ps = (self.must_st - 125) * 10 + 5
+            m1, m2 = self.mus_text
+            m1.set_alpha(255 - abs(ps))
+            m2.set_alpha(255 - abs(ps))
+            rr = pg.Surface((self.displayer.canvas.get_width(), 200))
+            rr.set_alpha(128 - abs(ps))
+            self.displayer.canvas.blit(rr, (0, 100))
+            m1r = m1.get_rect(center=(self.displayer.canvas.get_width() // 2, 200))
+            m1r.x += ps * 3
+            self.displayer.canvas.blit(m1, m1r)
+            if self.must_st >= 150:
+                self.must_st = -1
         self.displayer.update()
         if len(self.dialog.word_queue) or self.dialog.curr_text != '':
             self.dialog.update(self.pressed_keys)
+
         self.clock.update()
         pg.display.update()
         return True
@@ -659,6 +761,10 @@ class Game:
                     text_rect = text.get_rect(center=(window.get_rect().centerx,
                                                       window.get_rect().centery + 160))
                     window.blit(text, text_rect)
+                    text = font.render('[T] for command', True, (255, 255, 255))
+                    text_rect = text.get_rect(center=(window.get_rect().centerx,
+                                                      window.get_rect().centery + 240))
+                    window.blit(text, text_rect)
                     pg.display.flip()
                     paused = True
                     while paused:
@@ -680,6 +786,47 @@ class Game:
                                         loop.create_task(self.server.start_server())
                                 elif ev.key == pg.K_s:
                                     settings.set_settings()
+                                elif ev.key == pg.K_t:
+                                    cmd = ''
+                                    qt = False
+                                    shift = False
+                                    while not qt:
+                                        for ee in pg.event.get():
+                                            if ee.type == pg.QUIT:
+                                                raise resources.Interrupt()
+                                            elif ee.type == pg.KEYDOWN:
+                                                if ee.key == pg.K_BACKSPACE:
+                                                    cmd = cmd[:-1] if len(cmd) > 0 else ''
+                                                elif ee.key == pg.K_LSHIFT or ee.key == pg.K_RSHIFT:
+                                                     shift = True
+                                                elif ee.key == pg.K_RETURN:
+                                                    qt = True
+                                                    try:
+                                                        cmd = str(eval(cmd))
+                                                    except Exception as e:
+                                                        cmd = str(e)
+                                                else:
+                                                    cc = pg.key.name(ee.key)
+                                                    if cc == 'space':
+                                                        cc = ' '
+                                                    changes = {'1': '!', '2': '@', '3': '#', '4': '$', '5': '%', '6': '^', '7': '&', '8': '*', '9': '(', '0': ')', '-': '_', '=': '+', '[': '{', ']': '}', ';': ':', ',': '<', '.': '>', '/': '?'}
+                                                    if shift:
+                                                        if cc in changes:
+                                                            cc = changes[cc]
+                                                        else:
+                                                            cc = cc.upper()
+                                                    else:
+                                                        cc = cc.lower()
+                                                    cmd += cc
+                                            elif ee.type == pg.KEYUP:
+                                                 if ee.key == pg.K_LSHIFT or ee.key == pg.K_RSHIFT:
+                                                     shift = False
+                                        text = font.render(cmd, True, (255, 255, 255))
+                                        pg.draw.rect(window, (0, 0, 0), (0, window.get_rect().centery + 300, window.get_width(), 40))
+                                        text_rect = text.get_rect(center=(window.get_rect().centerx,
+                                                                          window.get_rect().centery + 320))
+                                        window.blit(text, text_rect)
+                                        pg.display.flip()
                         pg.display.update()
                     self.pressed_mouse = []
                     self.pressed_keys = []

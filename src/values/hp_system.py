@@ -66,27 +66,29 @@ class HPSystem:
                 game.get_game().play_sound('hit_' + self.SOUND_HURT, vol=0.99 ** int(d / 10))
         except ValueError:
             pass
-        dmm = [.3, 1.0, 1.25, 1.90][constants.DIFFICULTY]
-        dm = [.31, 1.0, 1.24, 1.88][constants.DIFFICULTY]
-        dmg = (damage * self.resistances[damage_type] * dmm -
+        dmm = [.3, 1.0, 1.15, 1.50][constants.DIFFICULTY]
+        dm = [.31, 1.0, 1.14, 1.48][constants.DIFFICULTY]
+        dmg = (damage * dmm -
                (max(0.0, self.defenses[damage_type] - penetrate) if self.defenses[damage_type] > 0 else
-                min(0.0, self.defenses[damage_type] + penetrate)) * dm)
+                min(0.0, self.defenses[damage_type] + penetrate)) * dm) * self.resistances[damage_type]
         dmg *= (1 - self.DAMAGE_RANDOMIZE_RANGE + 2 *
                 self.DAMAGE_RANDOMIZE_RANGE * random.random())
         dmg = max(self.MINIMUM_DAMAGE, min(self.MAXIMUM_DAMAGE, dmg))
         dodge = dmg > 1 and random.random() < self.DODGE_RATE
         if dodge:
             dmg = 0
+        game.get_game().c_dmg += dmg
         if not self.dmg_t:
             self.dmg_t = self.DAMAGE_TEXT_INTERVAL
             d = 0
             if dmg <= 1:
                 if dodge:
                     t = 'MISS'
+                    self.dmg_t *= 5
                 elif self.resistances[damage_type] == 0:
-                    t = 'IMMUNE'
+                    t = '0'
                 else:
-                    t = 'RESISTED'
+                    t = '1'
                 '''
                 for i in range(len(game.get_game().damage_texts)):
                     if abs(game.get_game().damage_texts[i][2][0] - self.pos[0]) < 300 \
@@ -128,8 +130,8 @@ class HPSystem:
         if self.hp <= 0:
             self.hp = 0
 
-    def enable_immume(self):
-        self.is_immune = self.IMMUNE_TIME
+    def enable_immume(self, t=1.0):
+        self.is_immune = self.IMMUNE_TIME * t
 
     def update(self):
         try:
@@ -197,8 +199,8 @@ class SubHPSystem(HPSystem):
     def damage(self, *args, **kwargs):
         self.hp_sys.damage(*args, **kwargs)
 
-    def enable_immume(self):
-        self.hp_sys.enable_immume()
+    def enable_immume(self, t=1.0):
+        self.hp_sys.enable_immume(t)
 
     def effect(self, effect):
         self.hp_sys.effect(effect)

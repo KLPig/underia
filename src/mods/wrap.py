@@ -2,8 +2,11 @@ from mods import mod
 import os
 import sys
 import pickle
+import constants
 
 def wrap():
+    constants.DEBUG = False
+
     module = sys.modules['__main__']
     code = ''
     with open(module.__file__, 'r') as f:

@@ -34,16 +34,11 @@ ENTITIES: dict[str, ENTITY_TYPE] = {
 # SETUP_FUNC
 # Code here (import allowed)
 import underia
-for i in range(0x1FFFFFFF):
-    if i >= len(underia.RECIPES):
-        break
-    r = underia.RECIPES[i]
-    for m, _ in r.material.items():
-        if not len([1 for r in underia.RECIPES if r.result == m]):
-            underia.RECIPES.insert(i - 1, underia.Recipe({}, m , 9999))
-            i += 1
-    r.material.clear()
-    r.crafted_amount = 9999
+nr = []
+for it in underia.ITEMS.values():
+    nr.append(underia.Recipe({}, it.id, 9999))
+print(len(nr))
+underia.RECIPES.extend(nr)
 # SETUP_FUNC
 # UPDATE_FUNC
 # Code here (import allowed)

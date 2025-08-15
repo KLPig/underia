@@ -127,6 +127,17 @@ def item_mouse(x, y, name, no, amount, scale, anchor='left', _window=None, mp=No
             if str.startswith(ds, 'col'):
                 col = (int('0x' + ds[3:5], 16), int('0x' + ds[5:7], 16), int('0x' + ds[7:9], 16))
                 ds = ds[9:]
+            elif str.startswith(ds, 'rainbow'):
+                tt = int(game.get_game().day_time * 10000)
+                cols = [(255, 0, 0), (255, 255, 0), (0, 255, 0), (0, 255, 255), (0, 0, 255), (255, 0, 255), (255, 0, 0)]
+                tcols = []
+                for i in range(6):
+                    for jj in range(17):
+                        tcols.append((cols[i][0] + (cols[i + 1][0] - cols[i][0]) * jj // 17,
+                                       cols[i][1] + (cols[i + 1][1] - cols[i][1]) * jj // 17,
+                                       cols[i][2] + (cols[i + 1][2] - cols[i][2]) * jj // 17))
+                col = tcols[tt % (6 * 17)]
+                ds = ds[7:]
             ft = game.get_game().displayer.font.render(text(ds), True,
                                                       col, (0, 0, 0))
             ts.append(ft)

@@ -51,10 +51,13 @@ STORIES = [
 ]
 
 CHAPTERS = [
-    [('Intro', 0), ('1.', 1), ('2.', 2), ('3.', 3), ('4.', 4)],
+    [('Intro', 0), ('1.', 1), ('2.', 2), ('3.', 3), ('4.', 4), ('Guidance: True Eye', 1)],
     [('Intro', 5), ('1.', 6), ('2.', 7), ('3.', 8), ('4.', 9)],
     [('Intro', 10), ('Kun Kun', 10), ('Chicken Soup', 10), ('Tung Tung', 10), ('Hadi', 10), ('Spiked Head', 10), ('Final', 11)],
 ]
+
+def guidance(md: str):
+    pass
 
 def show_notebook(chapter=0):
     pre_words, words = STORIES[chapter]
@@ -78,7 +81,10 @@ def show_notebook(chapter=0):
                     sel_c = (sel_c + 1) % len(chapters)
                 elif event.key == pg.K_RETURN:
                     if chapters[sel_c][1] <= game.get_game().player.profile.stage:
-                        story.show_story(f'note{chapter}{sel_c}', words[sel_c])
+                        if chapters[sel_c][0].lower().startswith('guidance: '):
+                            guidance(open(path.get_path(f'assets/desc/{chapters[sel_c][0][10:].lower()}'), encoding='utf-8').read())
+                        else:
+                            story.show_story(f'note{chapter}{sel_c}', words[sel_c])
                 elif event.key == pg.K_ESCAPE:
                     return
         for i, (cht, lv) in enumerate(chapters):

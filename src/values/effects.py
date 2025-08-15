@@ -39,8 +39,9 @@ class Aberration(Effect):
 
     def on_update(self, entity: hp_system.HPSystem):
         super().on_update(entity)
-        if time.time_interval(time.get_time(self.tick), 1, 0):
-            entity.damage(min(self.level + 2, max(entity.max_hp / 200, 200.0)),
+        dmg = min(self.level + 2, max(entity.max_hp / 200, 200.0))
+        if (dmg * 3  > (1000 / game.get_game().clock.last_tick) or self.tick % 9 == 0) and self.tick % 3 == 0:
+            entity.damage(dmg / 1000 * game.get_game().clock.last_tick * (9 if dmg * 3 > (1000 / game.get_game().clock.last_tick) else 3),
                           getattr(damages.DamageTypes, 'ELEMENT_' + elements.NAMES[self.CORRESPONDED_ELEMENT].upper()))
 
 
@@ -195,6 +196,11 @@ class Weak(Effect):
     DESC = '-99.5% melee damage\n-99.5% ranged damage\n-99.5% magic damage'
     CORRESPONDED_ELEMENT = elements.ElementTypes.DARK
 
+class Bleeding(Effect):
+    IMG = 'bleeding'
+    NAME = 'Bleeding'
+    DESC = '-4/sec regeneration'
+
 class FlashBack(Effect):
     IMG = 'flashback'
     NAME = 'Flashback'
@@ -216,117 +222,117 @@ class OctaveIncrease(Effect):
 class OctSpeedI(OctaveIncrease):
     IMG = 'n_cyan'
     NAME = 'Speed I'
-    DESC = '+5% speed'
+    DESC = '+20% speed'
 
 class OctSpeedII(OctaveIncrease):
     IMG = 'n_cyan'
     NAME = 'Speed II'
-    DESC = '+10% speed'
+    DESC = '+36% speed'
 
 class OctSpeedIII(OctaveIncrease):
     IMG = 'n_cyan'
     NAME = 'Speed III'
-    DESC = '+20% speed'
+    DESC = '+69% speed'
 
 class OctSpeedIV(OctaveIncrease):
     IMG = 'n_cyan'
     NAME = 'Speed IV'
-    DESC = '+35% speed'
+    DESC = '+138% speed'
 
 class OctSpeedV(OctaveIncrease):
     IMG = 'n_cyan'
     NAME = 'Speed V'
-    DESC = '+50% speed'
+    DESC = '+277% speed'
 
 class OctStrengthI(OctaveIncrease):
     IMG = 'n_red'
     NAME = 'Strength I'
-    DESC = '+5% damage'
+    DESC = '+8% damage'
 
 class OctStrengthII(OctaveIncrease):
     IMG = 'n_red'
     NAME = 'Strength II'
-    DESC = '+10% damage'
+    DESC = '+15% damage'
 
 class OctStrengthIII(OctaveIncrease):
     IMG = 'n_red'
     NAME = 'Strength III'
-    DESC = '+20% damage'
+    DESC = '+27% damage'
 
 class OctStrengthIV(OctaveIncrease):
     IMG = 'n_red'
     NAME = 'Strength IV'
-    DESC = '+35% damage'
+    DESC = '+55% damage'
 
 class OctLimitlessI(OctaveIncrease):
     IMG = 'n_blue'
     NAME = 'Limitless I'
-    DESC = '+20 additional maximum mana\n+30 additional maximum inspiration'
+    DESC = '+50 additional maximum mana\n+200 additional maximum inspiration'
 
 class OctLimitlessII(OctaveIncrease):
     IMG = 'n_blue'
     NAME = 'Limitless II'
-    DESC = '+30 additional maximum mana\n+50 additional maximum inspiration'
+    DESC = '+90 additional maximum mana\n+360 additional maximum inspiration'
 
 class OctLimitlessIII(OctaveIncrease):
     IMG = 'n_blue'
     NAME = 'Limitless III'
-    DESC = '+50 additional maximum mana\n+90 additional maximum inspiration'
+    DESC = '+160 additional maximum mana\n+700 additional maximum inspiration'
 
 class OctWisdomI(OctaveIncrease):
     IMG = 'n_green'
     NAME = 'Wisdom I'
-    DESC = '+12/sec mana regeneration\n+15/sec inspiration regeneration'
+    DESC = '+15/sec mana regeneration\n+40/sec inspiration regeneration'
 
 class OctWisdomII(OctaveIncrease):
     IMG = 'n_green'
     NAME = 'Wisdom II'
-    DESC = '+18/sec mana regeneration\n+24/sec inspiration regeneration'
+    DESC = '+27/sec mana regeneration\n+75/sec inspiration regeneration'
 
 class OctWisdomIII(OctaveIncrease):
     IMG = 'n_green'
     NAME = 'Wisdom III'
-    DESC = '+28/sec mana regeneration\n+40/sec inspiration regeneration'
+    DESC = '+52/sec mana regeneration\n+140/sec inspiration regeneration'
 
 class OctLuckyI(OctaveIncrease):
     IMG = 'n_yellow'
     NAME = 'Lucky I'
-    DESC = '+4% critical'
+    DESC = '+15% critical'
 
 class OctLuckyII(OctaveIncrease):
     IMG = 'n_yellow'
     NAME = 'Lucky II'
-    DESC = '+8% critical'
+    DESC = '+28% critical'
 
 class OctLuckyIII(OctaveIncrease):
     IMG = 'n_yellow'
     NAME = 'Lucky III'
-    DESC = '+15% critical'
+    DESC = '+55% critical'
 
 class OctToughnessI(OctaveIncrease):
     IMG = 'n_purple'
     NAME = 'Toughness I'
-    DESC = '+15 touching defense'
+    DESC = '+9 touching defense\n+3 magic defense'
 
 class OctToughnessII(OctaveIncrease):
     IMG = 'n_purple'
     NAME = 'Toughness II'
-    DESC = '+25 touching defense'
+    DESC = '+16 touching defense\n+7 magic defense'
 
 class OctToughnessIII(OctaveIncrease):
     IMG = 'n_purple'
     NAME = 'Toughness III'
-    DESC = '+40 touching defense'
+    DESC = '+30 touching defense\n+15 magic defense'
 
 class OctToughnessIV(OctaveIncrease):
     IMG = 'n_purple'
     NAME = 'Toughness IV'
-    DESC = '+60 touching defense'
+    DESC = '+55 touching defense\n+28 magic defense'
 
 class OctToughnessV(OctaveIncrease):
     IMG = 'n_purple'
     NAME = 'Toughness V'
-    DESC = '+85 touching defense'
+    DESC = '+105 touching defense\n+55 magic defense'
 
 class SkillReinforce(Effect):
     pass
@@ -456,3 +462,18 @@ class MagicReinforceIII(MagicReinforceI):
 
 class MagicReinforceIV(MagicReinforceI):
     DESC = '+20/sec mana regeneration\n+12 magic defense'
+
+class ExtremeTerror(Effect):
+    NAME = 'Extreme Terror'
+    IMG = 'extreme_terror'
+    DESC = 'You are terrified.\nChaos attack deducts your maximum HP'
+
+class BalancedSheathAttack(Effect):
+    NAME = 'Balanced Sheath: Attack'
+    IMG = 'balanced_sheath_attack'
+    DESc = '-100% dodge rate\n-50 touching defense\n+100% melee damage\n+100% critical'
+
+class LogosThaumaturgy(Effect):
+    NAME = 'Logos Thaumaturgy'
+    IMG = 'logos_thaumaturgy'
+    DESC = '+100% critical'

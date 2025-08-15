@@ -236,6 +236,7 @@ class Projectiles:
         COL = (255, 127, 63)
         EFF = True
         EFF_INTERVAL = 6
+        LIMIT_VEL = 3
 
         def __init__(self, pos, rotation):
             self.obj = WeakProjectileMotion(pos, rotation)
@@ -249,7 +250,7 @@ class Projectiles:
         def update(self):
             self.tick += 1
             super().update()
-            if self.obj.velocity.get_net_value() < 3 and type(self) not in [Projectiles.TalentBook, Projectiles.BurningBook]:
+            if self.obj.velocity.get_net_value() < self.LIMIT_VEL and type(self) not in [Projectiles.TalentBook, Projectiles.BurningBook]:
                 self.dead = True
             if self.EFF:
                 if self.tick % self.EFF_INTERVAL == 1:
@@ -262,7 +263,7 @@ class Projectiles:
             if type(self) is Projectiles.Glow:
                 for entity in game.get_game().entities:
                     if imr.collidepoint(entity.obj.pos[0], entity.obj.pos[1]) or entity.d_img.get_rect(
-                            center=entity.obj.pos).collidepoint(self.obj.pos[0], self.obj.pos[1]):
+                            center=entity.obj.pos.to_value()).collidepoint(self.obj.pos[0], self.obj.pos[1]):
                         entity.hp_sys.damage(weapons.WEAPONS['glowing_splint'].damages[
                                                  damages.DamageTypes.MAGICAL] * game.get_game().player.attack *
                                              game.get_game().player.attacks[2],
@@ -374,6 +375,8 @@ class Projectiles:
         DMG_RATE = 1.0
         DEL = True
         LIMIT_VEL = 3.0
+        ENABLE_IMMUNE = True
+        DECAY_RATE = 0.95
 
         def __init__(self, pos, rotation):
             super().__init__(pos, rotation)
@@ -402,7 +405,8 @@ class Projectiles:
                         r = vector.coordinate_rotation(ee.obj.pos[0] - self.obj.pos[0],
                                                        ee.obj.pos[1] - self.obj.pos[1])
                         ee.obj.apply_force(vector.Vector(r, kb * 120000 / ee.obj.MASS))
-                    ee.hp_sys.enable_immume()
+                        self.DMG_RATE *= self.DECAY_RATE
+                    ee.hp_sys.enable_immume(self.ENABLE_IMMUNE)
                     self.damage_particle()
                     break
 
@@ -481,7 +485,7 @@ class Projectiles:
             imr = self.d_img.get_rect(center=self.obj.pos())
             for entity in game.get_game().entities:
                 if imr.collidepoint(entity.obj.pos[0], entity.obj.pos[1]) or entity.d_img.get_rect(
-                        center=entity.obj.pos).collidepoint(self.obj.pos[0], self.obj.pos[1]):
+                        center=entity.obj.pos.to_value()).collidepoint(self.obj.pos[0], self.obj.pos[1]):
                     if 'disa' in dir(entity.hp_sys.defenses):
                         if getattr(entity.hp_sys.defenses, 'disa') < 10:
                             entity.hp_sys.defenses.disa += 1
@@ -504,8 +508,6 @@ class Projectiles:
         DMG_RATE = 0.9
 
         def update(self):
-            if isinstance(self, Projectiles.NightsEdge):
-                self.obj.FRICTION = .6
             self.WT = damages.DamageTypes.PHYSICAL
             super().update()
             self.tick += 1
@@ -513,6 +515,8 @@ class Projectiles:
                 self.dead = True
             else:
                 self.dead = False
+            if type(self) is Projectiles.NightsEdge:
+                self.obj.FRICTION = .6
 
     class BNightsEdge(PlatinumWand):
         DAMAGE_AS = 'nights_edge'
@@ -1674,7 +1678,7 @@ class Projectiles:
 
         def update(self):
             self.tick += 1
-            self.obj.pos << self.tpx, max(self.tpy - 4500 + 5 * self.tick ** 2, position.real_position((0, 0))[1] - 80)
+            self.obj.pos << (self.tpx, max(self.tpy - 4500 + 5 * self.tick ** 2, position.real_position((0, 0))[1] - 80))
             self.ps.append(self.obj.pos)
             if len(self.ps) > 5:
                 self.ps.pop(0)
@@ -1852,8 +1856,10 @@ class Projectiles:
         def damage(self):
             for e in game.get_game().entities:
                 if vector.distance(self.obj.pos[0] - e.obj.pos[0], self.obj.pos[1] - e.obj.pos[1]) < 100:
-                    e.hp_sys.damage(weapons.WEAPONS['fruit_wand'].damages[damages.DamageTypes.MAGICAL] *\
-                                     game.get_game().player.attack * game.get_game().player.attacks[0], damages.DamageTypes.MAGICAL)
+                    if not e.hp_sys.is_immune:
+                        e.hp_sys.damage(weapons.WEAPONS['fruit_wand'].damages[damages.DamageTypes.MAGICAL] *\
+                                         game.get_game().player.attack * game.get_game().player.attacks[0], damages.DamageTypes.MAGICAL)
+                        e.hp_sys.enable_immume()
 
     class Seraph(Projectile):
         def __init__(self, pos, rotation):
@@ -2395,6 +2401,7 @@ class Projectiles:
         TAIL_WIDTH = 3
         TAIL_COLOR = (255, 255, 255)
         SPEED_RATE = 1.0
+        DURATION = 80
 
         def __init__(self, pos, rotation, speed, damage):
             self.obj = ProjectileMotion(pos, rotation, (speed + self.SPEED) * self.SPEED_RATE)
@@ -2421,9 +2428,9 @@ class Projectiles:
                 target_rot += 360
             self.obj.velocity.reset()
             if self.AIMING:
-                self.obj.velocity.vectors[0].value *= math.cos(
-                    math.radians(self.AIMING * (target_rot - self.obj.rotation)))
-                self.obj.rotation = (self.obj.rotation + self.AIMING * (target_rot - self.obj.rotation)) % 360
+                at = min(target_rot - self.obj.rotation, 360 - target_rot + self.obj.rotation)
+                self.obj.velocity *= math.cos(math.radians(self.AIMING * at))
+                self.obj.rotation = (self.obj.rotation + self.AIMING * (at if at == target_rot - self.obj.rotation else -at)) % 360
             ox, oy = self.obj.pos
             super().update()
             ax, ay = self.obj.pos
@@ -2436,7 +2443,7 @@ class Projectiles:
             if self.TAIL_SIZE:
                 eff.pointed_curve(self.TAIL_COLOR, self.ps, self.TAIL_WIDTH, 255)
             self.tick += 1
-            if self.tick > 30:
+            if self.tick > self.DURATION:
                 self.dead = True
             if ox != ax:
                 aax = -(ox - ax) / abs(ox - ax) * max((self.d_img.get_width() + self.d_img.get_height()) / 2 + 80, 300)

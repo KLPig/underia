@@ -3,6 +3,7 @@ import pygame as pg
 from underia import projectiles, game, weapons
 from values import damages, effects
 from physics import vector
+from visual import draw
 from resources import position
 import random
 
@@ -18,6 +19,32 @@ class FeatherSwordMotion(projectiles.ProjectileMotion):
         self.apply_force(vector.Vector2D(self.rotation, 20))
         self.apply_force(vector.Vector2D(self.rotation + 90, self.d * 80))
         self.rotation = self.velocity.get_net_rotation()
+
+class FeatherFeatherSwordMotion(projectiles.ProjectileMotion):
+    FRICTION = .95
+    MASS = 5
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.d = random.choice([1, -1])
+        self.tgt = vector.Vector2D()
+        self.sgt = vector.Vector2D(0, 0, *self.pos)
+        self.dead = False
+        self.tpos = vector.Vector2D(0, 0, *self.pos)
+
+    def on_update(self):
+        self.tgt = (self.tgt * 100 +
+                    position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
+        self.tgt /= 101
+        rg = float(abs(self.tpos - self.sgt)) / abs(self.tgt - self.sgt)
+        rg += min(0.03, 80 / abs(self.tgt - self.sgt))
+        self.pos = (self.tgt - self.sgt) * rg
+        self.pos += self.sgt
+        self.tpos = vector.Vector2D(0, 0, *self.pos)
+        rot = (self.tgt - self.sgt).get_net_rotation()
+        self.pos += vector.Vector2D(rot + 90 * self.d, (math.sin(math.pi * rg) if rg < 1 else -rg ** 2) * abs(self.tgt - self.sgt) * .4)
+        if rg > 20:
+            self.dead = True
 
 class FeatherSword(projectiles.Projectiles.Projectile):
     def __init__(self, pos, rot):
@@ -38,6 +65,36 @@ class FeatherSword(projectiles.Projectiles.Projectile):
         super().update()
         self.tick += 1
         if self.tick > 200:
+            self.dead = True
+        self.damage()
+
+class FeatherFeatherSword(projectiles.Projectiles.Projectile):
+    def __init__(self, pos, rot):
+        super().__init__(pos, img=game.get_game().graphics['entity_null'], motion=FeatherFeatherSwordMotion)
+        self.obj.rotation = rot
+        self.tick = 0
+        self.obj.tgt << position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+        self.pp = []
+
+    def damage(self):
+        for e in game.get_game().entities:
+            if vector.distance(*(e.obj.pos - self.obj.pos)) < 120:
+                e.hp_sys.damage(weapons.WEAPONS['feather_feather_sword'].damages[damages.DamageTypes.PHYSICAL] * .1 *  \
+                                game.get_game().player.attack * game.get_game().player.attacks[0],
+                                damages.DamageTypes.PHYSICAL, penetrate=300)
+                self.dead = True
+
+    def update(self):
+        self.pp.append(self.obj.pos.to_value())
+        if len(self.pp) > 10:
+            self.pp.pop(0)
+        self.dead = self.obj.dead or self.dead
+        for i in range(len(self.pp) - 1):
+            draw.line(game.get_game().displayer.canvas, (255, 255, 255), position.displayed_position(self.pp[i]),
+                      position.displayed_position(self.pp[i + 1]), int((5 + i * 2) / game.get_game().player.get_screen_scale()))
+        super().update()
+        self.tick += 1
+        if self.tick > 500:
             self.dead = True
         self.damage()
 
@@ -62,6 +119,48 @@ class FeatherThaumaturgy(projectiles.Projectiles.Projectile):
         if self.tick > 200:
             self.dead = True
         self.damage()
+
+class EarthsTwinbladeForest(projectiles.Projectiles.NightsEdge):
+    DAMAGE_AS = 'earths_twinblade'
+    IMG = 'projectiles_earths_twinblade_forest'
+    DMG_RATE = 1
+    COL = (200, 255, 100)
+    DMG_TYPE = damages.DamageTypes.PIERCING
+    ENABLE_IMMUNE = 2.5
+    DECAY_RATE = 0.9
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.obj.MASS /= 20
+        self.obj.apply_force(self.obj.velocity * self.obj.MASS)
+        self.obj.velocity += game.get_game().player.obj.velocity
+
+    def update(self):
+        super().update()
+        self.obj.FRICTION = .4
+
+    def damage(self):
+        game.get_game().displayer.point_light(self.COL, position.displayed_position(self.obj.pos), 2.5,
+                                              (self.d_img.get_width() + self.d_img.get_height()) * .55)
+        kb = weapons.WEAPONS[self.DAMAGE_AS].knock_back
+        for ee in game.get_game().entities:
+            if (vector.distance(ee.obj.pos[0] - self.obj.pos[0], ee.obj.pos[1] - self.obj.pos[1]) <
+                50 + (ee.d_img.get_width() + self.d_img.get_height())) / 4 and not ee.hp_sys.is_immune:
+                at_mt = {damages.DamageTypes.PHYSICAL: 0, damages.DamageTypes.PIERCING: 1,
+                         damages.DamageTypes.ARCANE: 2, damages.DamageTypes.MAGICAL: 2}[self.WT]
+                ee.hp_sys.damage(
+                    weapons.WEAPONS[self.DAMAGE_AS].damages[self.DMG_TYPE] * game.get_game().player.attack *
+                    game.get_game().player.attacks[at_mt] * self.DMG_RATE, self.DMG_TYPE)
+                self.dead = self.dead or self.DEL
+                if not ee.hp_sys.is_immune:
+                    r = vector.coordinate_rotation(ee.obj.pos[0] - self.obj.pos[0],
+                                                   ee.obj.pos[1] - self.obj.pos[1])
+                    ee.obj.velocity += vector.Vector2D(r, kb)
+                    self.DMG_RATE *= self.DECAY_RATE
+                ee.hp_sys.enable_immume(self.ENABLE_IMMUNE)
+                self.damage_particle()
+                break
+
 
 class EWoodenWand(projectiles.Projectiles.PlatinumWand):
     COL = (200, 255, 100)
@@ -94,6 +193,41 @@ class Brainstorm(projectiles.Projectiles.PlatinumWand):
         super().update()
         for ee in game.get_game().entities:
             ee.obj.apply_force((self.obj.pos - ee.obj.pos) * min(1, 100000000 / self.obj.MASS / abs(self.obj.pos - ee.obj.pos) ** 3))
+
+class AbyssFury(projectiles.Projectiles.PlatinumWand):
+    COL = (100, 0, 0)
+    DAMAGE_AS = 'abyss_fury'
+    IMG = 'entity_null'
+    DEL = False
+    LIMIT_VEL = -10
+    DURATION = 1000
+    DECAY_RATE = 1
+
+    def __init__(self, pos, rot):
+        super().__init__(pos, rot)
+        self.obj.velocity.clear()
+        self.obj.velocity += vector.Vector2D(rot, 80)
+        self.obj.FRICTION = .9999
+
+        self.poss = []
+
+    def update(self):
+        super().update()
+        self.poss.append(self.obj.pos.to_value())
+        if len(self.poss) > 15:
+            self.poss.pop(0)
+        for i in range(len(self.poss) - 1):
+            draw.line(game.get_game().displayer.canvas, (255 * i // len(self.poss), 0, 0),
+                      position.displayed_position(self.poss[i]),
+                      position.displayed_position(self.poss[i + 1]), i * 10 // len(self.poss) + 1)
+
+        tar, _ = self.get_closest_entity()
+        if tar is None:
+            return
+
+        ap = tar.obj.pos - self.obj.pos
+        ap = ap / abs(ap)
+        self.obj.velocity += ap * 35
 
 class LycheeWand(projectiles.Projectiles.MagicCircle):
     DAMAGE_AS = 'lychee_wand'
@@ -129,10 +263,89 @@ class Observe(projectiles.Projectiles.Beam):
     FOLLOW_PLAYER = False
     CUT_EFFECT = True
 
-class EWoodenArrow(projectiles.Projectiles.Arrow):
+class U3Arrow(projectiles.Projectiles.Arrow):
+    SPEED_RATE = .15
+    DURATION = 400
+
+class EWoodenArrow(U3Arrow):
     DAMAGES = 10
     SPEED = 300
     IMG = 'u3_wooden_arrow'
+
+class FeatherArrow(U3Arrow):
+    DAMAGES = 35
+    SPEED = 500
+    IMG = 'feather_arrow'\
+
+    def damage(self, pos, cd):
+        x, y = pos
+        for ee in game.get_game().entities:
+            if ee.ueid in cd:
+                continue
+            if (vector.distance(ee.obj.pos[0] - x, ee.obj.pos[1] - y) <
+                    (
+                            ee.d_img.get_width() + ee.d_img.get_height() + self.d_img.get_width() + self.d_img.get_height()) / 4 + 80):
+                ee.hp_sys.damage(
+                    self.dmg * game.get_game().player.attack * game.get_game().player.attacks[1] * .5,
+                    damages.DamageTypes.PIERCING, penetrate=self.dmg * game.get_game().player.attack * game.get_game().player.attacks[1] * 3)
+                if self.DELETE:
+                    self.dead = True
+                else:
+                    self.dmg *= .8
+                    self.TAIL_WIDTH = self.TAIL_WIDTH * 4 // 5
+                    if self.dmg < 1:
+                        self.dead = True
+                    cd.append(ee.ueid)
+        return cd
+
+class ToxicArrow(U3Arrow):
+    DAMAGES = 24
+    SPEED = 400
+    IMG = 'toxic_arrow'
+    TAIL_COLOR = (200, 255, 100)
+
+    def __init__(self, pos, rotation, speed, damage, t=0):
+        super().__init__(pos, rotation, speed, damage)
+        self.args = (pos, rotation, speed, damage, 1)
+        self.t = t
+
+    def update(self):
+        super().update()
+        if not random.randint(0, 30) and not self.t:
+            self.dead = True
+            self.t = 1
+            for _ in range(random.randint(3, 5)):
+                pj = ToxicArrow(self.obj.pos, self.rot + random.randint(-20, 20),
+                                self.SPEED * 12 // 10, self.args[3], 1)
+                game.get_game().projectiles.append(pj)
+
+class RottenArrow(U3Arrow):
+    DAMAGES = 45
+    SPEED = 800
+    IMG = 'rotten_arrow'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.tc = 2
+
+    def damage(self, pos, cd):
+        x, y = pos
+        for ee in game.get_game().entities:
+            if ee.ueid in cd:
+                continue
+            if (vector.distance(ee.obj.pos[0] - x, ee.obj.pos[1] - y) <
+                    (ee.d_img.get_width() + ee.d_img.get_height() + self.d_img.get_width() + self.d_img.get_height()) / 4 + 80) and \
+                not ee.hp_sys.is_immune:
+                ee.hp_sys.damage(
+                    self.dmg * game.get_game().player.attack * game.get_game().player.attacks[1],
+                    damages.DamageTypes.PIERCING)
+                ee.hp_sys.enable_immume(.5)
+                if not self.tc:
+                    self.dead = True
+                else:
+                    self.tc -= 1
+        return cd
+
 
 class LycheeArrow(projectiles.Projectiles.Arrow):
     DAMAGES = 0
@@ -165,6 +378,9 @@ class EBullet(projectiles.Projectiles.Bullet):
 AMMO = {
     'e_wooden_arrow': EWoodenArrow,
     'e_bullet': EBullet,
+    'feather_arrow': FeatherArrow,
+    'toxic_arrow': ToxicArrow,
+    'rotten_arrow': RottenArrow,
 }
 
 for k, v in AMMO.items():
@@ -174,8 +390,35 @@ class LycheeTwinblade(projectiles.Projectiles.ThiefWeapon):
     IMG = 'items_weapons_lychee_blade'
     DAMAGE_AS = 'lychee_twinblade'
 
+class EarthsTwinbladeSnow(projectiles.Projectiles.ThiefWeapon):
+    IMG = 'items_weapons_magic_blade'
+    DAMAGE_AS = 'earths_twinblade'
+
+    def damage(self):
+        for ee in game.get_game().entities:
+            if vector.distance(ee.obj.pos[0] - self.obj.pos[0],
+                               ee.obj.pos[1] - self.obj.pos[1]) < self.DMG_RANGE:
+                if not ee.hp_sys.is_immune:
+                    ee.hp_sys.damage(weapons.WEAPONS[self.DAMAGE_AS].damages[
+                                             damages.DamageTypes.PIERCING] * game.get_game().player.attack *
+                                     game.get_game().player.attacks[1], damages.DamageTypes.PIERCING)
+                    ee.hp_sys.effect(effects.Frozen(1.5, 1))
+                    ee.hp_sys.enable_immume(2.5)
+                self.dead = self.dead or self.DEAD_DELETE
+
+class EarthsTwinblade(projectiles.Projectiles.ThiefWeapon):
+    def __init__(self, pos, rot, power):
+        super().__init__(pos, rot, power)
+        self.dead = True
+        bt = weapons.WEAPONS['earths_twinblade'].attr
+        if bt == 'forest':
+            game.get_game().projectiles.append(EarthsTwinbladeForest(pos, rot))
+        elif bt == 'snowland':
+            game.get_game().projectiles.append(EarthsTwinbladeSnow(pos, rot, power))
+
 THIEF_WEAPONS = {
     'lychee_twinblade': LycheeTwinblade,
+    'earths_twinblade': EarthsTwinblade,
 }
 
 for k, v in THIEF_WEAPONS.items():
@@ -259,3 +502,142 @@ class HolyCondense(projectiles.Projectiles.HolyLight):
         self.tick += 1
         if self.tick > 200:
             self.dead = True
+
+class GrowthEater(projectiles.Projectiles.LifeDevourer):
+    DAMAGE_AS = 'lost__growth_eater'
+    DMG_TYPE = damages.DamageTypes.PHYSICAL
+
+class AncientSwiftsword(projectiles.Projectiles.NightsEdge):
+    DAMAGE_AS = 'ancient_swiftsword'
+    IMG = 'projectiles_ancient_swiftsword'
+    DMG_RATE = 1.5
+    COL = (0, 255, 255)
+    DMG_TYPE = damages.DamageTypes.PHYSICAL
+    ENABLE_IMMUNE = 2.5
+    DECAY_RATE = 0.9
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.obj.MASS /= 5
+        self.obj.apply_force(self.obj.velocity * self.obj.MASS)
+        self.obj.velocity += game.get_game().player.obj.velocity
+
+    def update(self):
+        super().update()
+        self.obj.FRICTION = 1
+
+class AbyssRanseur(projectiles.Projectiles.PlatinumWand):
+    DAMAGE_AS = 'abyss_ranseur'
+    IMG = 'items_weapons_abyss_ranseur'
+    DMG_RATE = 1
+    COL = (100, 0, 0)
+    DMG_TYPE = damages.DamageTypes.PHYSICAL
+    ENABLE_IMMUNE = .5
+    DURATION = 200
+    LIMIT_VEL = -100
+    DEL = False
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.obj.MASS /= 5
+        self.obj.apply_force(self.obj.velocity * self.obj.MASS)
+        self.obj.velocity += game.get_game().player.obj.velocity
+
+        self.tar = None
+        self.ap = vector.Vector2D()
+        self.tk = 0
+
+    def damage(self):
+        self.tk += 1
+        game.get_game().displayer.point_light(self.COL, position.displayed_position(self.obj.pos), 2.5,
+                                              (self.d_img.get_width() + self.d_img.get_height()) * .55)
+        if self.tar is not None:
+            self.obj.pos << self.ap + self.tar.obj.pos
+            if self.tk % 15 == 0:
+                self.tar.hp_sys.damage(weapons.WEAPONS[self.DAMAGE_AS].damages[self.DMG_TYPE] * game.get_game().player.attack *
+                                       game.get_game().player.attacks[0] * self.DMG_RATE * .2, self.DMG_TYPE, penetrate=100)
+                self.tar.hp_sys.enable_immume(self.ENABLE_IMMUNE)
+            return
+        kb = weapons.WEAPONS[self.DAMAGE_AS].knock_back
+        for ee in game.get_game().entities:
+            if (vector.distance(ee.obj.pos[0] - self.obj.pos[0], ee.obj.pos[1] - self.obj.pos[1]) <
+                50 + (ee.d_img.get_width() + self.d_img.get_height())) / 4 and not ee.hp_sys.is_immune:
+                at_mt = {damages.DamageTypes.PHYSICAL: 0, damages.DamageTypes.PIERCING: 1,
+                         damages.DamageTypes.ARCANE: 2, damages.DamageTypes.MAGICAL: 2}[self.WT]
+                ee.hp_sys.damage(
+                    weapons.WEAPONS[self.DAMAGE_AS].damages[self.DMG_TYPE] * game.get_game().player.attack *
+                    game.get_game().player.attacks[at_mt] * self.DMG_RATE, self.DMG_TYPE)
+                if not ee.hp_sys.is_immune:
+                    r = vector.coordinate_rotation(ee.obj.pos[0] - self.obj.pos[0],
+                                                   ee.obj.pos[1] - self.obj.pos[1])
+                    ee.obj.apply_force(vector.Vector(r, kb * 120000 / ee.obj.MASS))
+                    self.DMG_RATE *= self.DECAY_RATE
+                ee.hp_sys.enable_immume(self.ENABLE_IMMUNE)
+                self.damage_particle()
+                self.tar = ee
+                self.ap = self.obj.pos - ee.obj.pos
+                self.DURATION = 500
+                break
+
+class Insights(projectiles.Projectiles.PlatinumWand):
+    DAMAGE_AS = 'insights'
+    IMG = 'items_null'
+    DMG_RATE = .2
+    COL = (0, 255, 255)
+    DMG_TYPE = damages.DamageTypes.PHYSICAL
+    ENABLE_IMMUNE = 0
+    DURATION = 1000
+    LIMIT_VEL = -100
+    DEL = True
+
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.obj = projectiles.WeakProjectileMotion(self.obj.pos, 0)
+        self.obj.MASS = 10
+        self.obj.FRICTION = 1.01
+        self.obj.velocity.clear()
+        self.obj.force.clear()
+
+    def update(self):
+        super().update()
+        tar, _ = self.get_closest_entity()
+        if tar is not None:
+            self.obj.apply_force(vector.Vector2D(vector.coordinate_rotation(*(tar.obj.pos - self.obj.pos)), 5))
+        pg.draw.circle(game.get_game().displayer.canvas, (255, 255, 255), position.displayed_position(self.obj.pos),
+                       int(45 / game.get_game().player.get_screen_scale()))
+        pg.draw.circle(game.get_game().displayer.canvas, (0, 255, 255), position.displayed_position(self.obj.pos),
+                       int(23 / game.get_game().player.get_screen_scale()),
+                       int(15 / game.get_game().player.get_screen_scale()))
+
+class Pierce(projectiles.Projectiles.PlatinumWand):
+    DAMAGE_AS = 'pierce'
+    IMG = 'items_null'
+    DMG_RATE = 4
+    COL = (0, 255, 255)
+    DMG_TYPE = damages.DamageTypes.PIERCING
+    ENABLE_IMMUNE = 0
+    DURATION = 1000
+    LIMIT_VEL = -100
+    DEL = True
+
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.obj = projectiles.WeakProjectileMotion(self.obj.pos, 0)
+        self.obj.MASS = 10
+        self.obj.FRICTION = 1
+        self.obj.velocity.clear()
+        self.obj.force.clear()
+        self.obj.velocity += vector.Vector2D(self.rot, 100)
+
+    def update(self):
+        super().update()
+        tar, _ = self.get_closest_entity()
+        if tar is not None:
+            self.obj.apply_force(vector.Vector2D(vector.coordinate_rotation(*(tar.obj.pos - self.obj.pos)), 5))
+        pg.draw.circle(game.get_game().displayer.canvas, (255, 255, 255), position.displayed_position(self.obj.pos),
+                       int(45 / game.get_game().player.get_screen_scale()))
+        pg.draw.circle(game.get_game().displayer.canvas, (0, 255, 255), position.displayed_position(self.obj.pos),
+                       int(23 / game.get_game().player.get_screen_scale()),
+                       int(15 / game.get_game().player.get_screen_scale()))

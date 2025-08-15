@@ -36,6 +36,15 @@ THAUMATURGY_RECIPES = [
     (['life_hood', 'life_cloak', 'life_hboots', 'talent_fruit', 'poise_necklace', 'moonflower'],
      inventory.Recipe({'thaumaturgy': 1, 'life_hood': 1, 'life_cloak': 1, 'life_hboots': 1, 'talent_fruit': 1,
                        'poise_necklace': 1,'moonflower': 1}, 'bioic_thaumaturgy')),
+    (['ration_helmet', 'ration_chestplate', 'ration_boots', 'proof', 'winds_anklet', 'cute_watch'],
+     inventory.Recipe({'ration_helmet': 1, 'ration_chestplate': 1, 'ration_boots': 1,
+                      'proof': 1, 'winds_anklet': 1, 'cute_watch': 1}, 'logos_thaumaturgy'),),
+    (['heaven_wooden_headgear', 'heaven_wooden_chestplate', 'heaven_wooden_leggings', 'heaven_shotgun',
+      'holy_condense_wand', 'the_roving_chord'],
+     inventory.Recipe(
+         {'heaven_wooden_headgear': 1, 'heaven_wooden_chestplate': 1, 'heaven_wooden_leggings': 1,
+          'heaven_shotgun': 1, 'holy_condense_wand': 1, 'the_roving_chord': 1}, 'dendro_thaumaturgy'),
+     )
 ]
 
 
@@ -90,6 +99,10 @@ class Player:
         ('Collect essences', ['time_essence', 'substance_essence', 'wierd_essence', 'light_essence',
                               'time_fountain', 'substance_fountain', 'celestial_fountain'], 7),
         ('Find MYSELF', ['my_soul'], 1),
+        ('Find the karma', ['reason', 'result'], 2),
+        ('Merge the final ingot', ['the_final_ingot'], 1),
+        ('Collect the final...', ['death_fountain', 'no_fountain'], 2)
+
     ]
 
     def __init__(self):
@@ -257,7 +270,7 @@ class Player:
     def get_max_screen_scale(self):
         ACCESSORY_SIZE = {'aimer': 1.5, 'winds_necklace': 1.1, 'cowboy_hat': 1.4, 'photon_aimer': 4.5,
                           'cloudy_glasses': 1.2, 'chaos_evileye': 8, 'horizon_goggles': 20,
-                          'fate_alignment_amulet': 30}
+                          'fate_alignment_amulet': 30, '_developer_tool__sight': 999}
         t = 1.0
         for i in range(len(self.accessories)):
             if self.accessories[i] in ACCESSORY_SIZE.keys():
@@ -408,9 +421,13 @@ class Player:
         if self.major_usage > 1.5:
             self.major_usage = 0
         self.p_data.append(f'{arm} armor, usage of major accessory: {int(self.major_usage * 100)}%')
-        self.talent = min(self.talent + 0.005 + math.sqrt(self.max_talent) / 2000 + (self.max_talent - self.talent) / 1000, self.max_talent)
+        self.talent = min(self.talent + 0.005 + math.sqrt(self.max_talent) / 2000 + (self.max_talent - self.talent) / 1000, self.max_talent * (1 + int(self.profile.point_wisdom ** 1.1) / 800))
         self.hp_sys.pos = self.obj.pos
         self.attack = math.sqrt(self.calculate_damage() * self.calculate_data('damage', rate_data=True, rate_multiply=True))
+
+        mn = self.mana / self.max_mana
+        if mn <= 1:
+            self.attack *= 1 - (1 - mn) ** 2
         self.strike = 0.08 + math.sqrt(max(0, self.calculate_data('crit', False))) / 100
         self.attacks = [self.calculate_melee_damage() * self.calculate_data('melee_damage', rate_data=True, rate_multiply=True),
                         self.calculate_ranged_damage() * self.calculate_data('ranged_damage', rate_data=True, rate_multiply=True),
@@ -419,7 +436,7 @@ class Player:
                         self.calculate_data('hallow_damage', rate_data=True, rate_multiply=True),
                         self.calculate_data('pacify_damage', rate_data=True, rate_multiply=True)]
         for i in range(len(self.attacks)):
-            self.attacks[i] = math.sqrt(self.attacks[i])
+            self.attacks[i] = math.sqrt(max(0, self.attacks[i]))
         if 'black_hole_pluvial' in self.accessories:
             for e in game.get_game().entities:
                 px, py = self.obj.pos[0] - e.obj.pos[0], self.obj.pos[1] - e.obj.pos[1]
@@ -452,19 +469,22 @@ class Player:
                                           1000))
                         e.hp_sys.enable_immume()
 
-        self.attack *= 1 + (random.random() < self.strike) * (1 + self.strike) ** 2
         self.p_data.append(f'{1000 / game.get_game().clock.last_tick:.2f}fps')
-        self.p_data.append(f'Magic Damage: {int(self.attacks[2] * self.attack * 100) / 100}x')
-        self.p_data.append(f'Ranged Damage: {int(self.attacks[1] * self.attack * 100) / 100}x')
-        self.p_data.append(f'Melee Damage: {int(self.attacks[0] * self.attack * 100) / 100}x')
+        self.p_data.append(f'Magic Damage: {int(self.attacks[2] * self.attack * 100)}%')
+        self.p_data.append(f'Ranged Damage: {int(self.attacks[1] * self.attack * 100)}%')
+        self.p_data.append(f'Melee Damage: {int(self.attacks[0] * self.attack * 100)}%')
         if game.get_game().chapter >= 1:
-            self.p_data.append(f'Octave Damage: {int(self.attacks[3] * self.attack * 100) / 100}x')
-            self.p_data.append(f'Hallow Damage: {int(self.attacks[4] * self.attack * 100) / 100}x')
-            self.p_data.append(f'Pacify Damage: {int(self.attacks[5] * self.attack * 100) / 100}x')
+            self.p_data.append(f'Octave Damage: {int(self.attacks[3] * self.attack * 100)}%')
+            self.p_data.append(f'Hallow Damage: {int(self.attacks[4] * self.attack * 100)}%')
+            self.p_data.append(f'Pacify Damage: {int(self.attacks[5] * self.attack * 100)}%')
         self.p_data.append(f'Attack: {int(self.attack * 100) / 100}x')
+        self.attack *= 1 + (random.random() < self.strike) * (1 + self.strike) ** 2
+        self.hp_sys.resistances[damages.DamageTypes.TOUCHING] = .8 / (self.calculate_data('damage_absorb', rate_data=True, rate_multiply=True) - .2)
+        self.hp_sys.resistances[damages.DamageTypes.MAGICAL] = .8 / (self.calculate_data('damage_absorb', rate_data=True, rate_multiply=True) - .2)
+        self.p_data.append(f'{100 - self.hp_sys.resistances[damages.DamageTypes.TOUCHING] * 100:.2f}% damage absorbed, {self.hp_sys.DODGE_RATE * 100:.2f}% chance to dodge')
         self.p_data.append(f'Critical: {int(self.strike * 10000) / 100}%, {int((1 + (1 + self.strike) ** 2) * 10000) / 100}% damage')
         self.obj.SPEED = self.calculate_data('speed', rate_data=True, rate_multiply=True) * 80 * self.calculate_speed()
-        self.hp_sys.DODGE_RATE = ((self.calculate_speed() - 1) * 100) ** .7 / 100 + bool(self.afterimage_shadow) + self.calculate_data('dodge_rate', rate_data=False)
+        self.hp_sys.DODGE_RATE = max(0, 1 - 1 / (((self.calculate_speed() - 1) * 100) ** .7 / 100 + self.calculate_data('dodge_rate', rate_data=True, rate_multiply=True)) + bool(self.afterimage_shadow))
         self.obj.FRICTION = max(0, 1 - 0.1 * self.calculate_data('air_res', rate_data=True, rate_multiply=True) * (20 ** self.z))
         self.obj.MASS = max(40, 80 + self.calculate_data('mass', False))
         self.p_data.append(f'Agility {int(self.obj.SPEED / 2) / 10}N')
@@ -474,29 +494,47 @@ class Player:
             game.get_game().dialog.dialog('The Quark Ghost prevents you from accelerating!')
         self.splint_distance = self.calculate_data('splint', False)
         if self.splint_distance:
-            self.p_data.append(f'Splint distance {self.splint_distance}')
+            self.p_data.append(f'Sprint distance {self.splint_distance}')
         self.splint_cd = self.calculate_data('splint_cd', True, rate_multiply=True) * 80
         if self.splint_distance:
-            self.p_data.append(f'Splint cd {self.splint_cd}s')
+            self.p_data.append(f'Sprint cd {self.splint_cd}s')
+            self.splint_t = int(self.splint_t)
             if self.splint_t > 0:
                 self.splint_t -= 1
             elif self.splint_t == 0:
-                for d in [pg.K_w, pg.K_a, pg.K_s, pg.K_d]:
-                    if d in game.get_game().get_keys():
-                        self.splint_t = -1
-            elif self.splint_t > -10:
-                self.splint_t -= 1
                 for i, d in enumerate([pg.K_w, pg.K_a, pg.K_s, pg.K_d]):
                     if d in game.get_game().get_keys():
-                        self.splint_t = self.splint_cd
-                        rt = [0, 90, 180, 270]
-                        self.obj.apply_force(vector.Vector(rt[i], self.splint_distance * 120))
+                        self.splint_t = -1 - i
+                        break
+            elif self.splint_t > -10:
+                f = 0
+                for d in [pg.K_w, pg.K_a, pg.K_s, pg.K_d]:
+                    if d in game.get_game().get_keys():
+                        f = 1
+                if not f:
+                    self.splint_t -= 10
             else:
-                self.splint_t = 0
+                i = (9 - self.splint_t % 10) % 10
+                if self.splint_t < -400:
+                    self.splint_t = 11
+                rt = [0, 270, 180, 90]
+                i = max(0, min(3, i))
+                d = [pg.K_w, pg.K_a, pg.K_s, pg.K_d][i]
+                if d in game.get_game().get_keys():
+                    self.splint_t = self.splint_cd
+                    self.obj.velocity += vector.Vector(rt[i], self.splint_distance * 4)
+                    if 'logos_thaumaturgy' in self.accessories:
+                        self.hp_sys.effect(effects.LogosThaumaturgy(3, 3))
+                else:
+                    self.splint_t -= 10
         self.p_data.append(f'Speed {int(self.obj.velocity.get_net_value() / 2) / 10}ms^-1 '
                            f'{int(self.obj.velocity.get_net_rotation())}deg')
         self.p_data.append(f'Friction {-int(100 - self.obj.FRICTION * 100)}%')
         self.p_data.append(f'Mass {int(self.obj.MASS)}kg')
+        if 'dendro_thaumaturgy' in self.accessories:
+            self.hp_sys.MAXIMUM_DAMAGE = self.hp_sys.max_hp * .99
+        else:
+            self.hp_sys.MAXIMUM_DAMAGE = constants.INFINITY
         for w in weapons.WEAPONS.values():
             try:
                 if w.domain_open:
@@ -508,6 +546,13 @@ class Player:
         mtp_regen = self.calculate_data('mentality_regen', False)
         self.REGENERATION = 0.015 + self.calculate_regeneration() + self.calculate_data('regen', rate_data=False) / 1000 * game.get_game().clock.last_tick
         self.MAGIC_REGEN = self.calculate_magic_regeneration() * (0.04 + self.calculate_data('mana_regen', rate_data=False) / 120.0)
+
+        mn = self.mana / self.max_mana
+        if mn <= 1:
+            self.MAGIC_REGEN *= mn
+            self.REGENERATION *= 1 - (1 - mn) ** 2
+            self.domain_size *= 1 - (1 - mn) ** 3
+            self.ntcs.append(f'Low Mana: Power -{int(100 * (1 - mn) ** 2)}%')
         ins_regen = (.8 + self.calculate_data('ins_regen', rate_data=False) / 1000 * game.get_game().clock.last_tick) * self.calculate_magic_regeneration()
         max_ins = self.calculate_data('max_ins', False)
         max_mana = self.calculate_data('max_mana', False)
@@ -557,8 +602,14 @@ class Player:
         if game.get_game().server is not None:
             self.ntcs.append(f'Server on {game.get_game().server.host}, port {game.get_game().server.port}.')
         self.hp_sys.heal(self.REGENERATION)
-        self.mana = min(self.mana + self.MAGIC_REGEN, self.max_mana + max_mana)
+        self.mana = min(self.mana + self.MAGIC_REGEN, self.max_mana + max_mana + int(self.profile.point_wisdom ** 1.1) / 2)
         displayer = game.get_game().displayer
+        tx, ty = self.obj.pos + self.obj.velocity
+        if game.get_game().get_biome((int(tx) // game.get_game().CHUNK_SIZE + 120,
+                                       int(ty) // game.get_game().CHUNK_SIZE + 120)) == 'ancient_wall':
+            self.obj.SPEED /= 10
+            self.obj.velocity *= 0
+            self.ntcs.append('u r stuck bro')
         self.obj.update()
         self.ax, self.ay = game.get_game().get_anchor()
         pos = position.displayed_position(self.obj.pos)
@@ -589,7 +640,7 @@ class Player:
             entity.entity_get_surface.cache_clear()
             projectiles.projectile_get_surface.cache_clear()
         if pg.K_MINUS in game.get_game().get_pressed_keys():
-            self.scale = max(self.scale - 0.05, 0.8)
+            self.scale = max(self.scale - 0.05, 0.1)
             entity.entity_get_surface.cache_clear()
             projectiles.projectile_get_surface.cache_clear()
         if inventory.TAGS['magic_weapon'] in inventory.ITEMS[w.name.replace(' ', '_')].tags:
@@ -1045,6 +1096,7 @@ class Player:
                 if _entity.obj.TOUCHING_DAMAGE and not self.hp_sys.is_immune:
                     s_hp = self.hp_sys.hp
                     self.hp_sys.damage(_entity.obj.TOUCHING_DAMAGE, damages.DamageTypes.TOUCHING)
+                    _entity.on_hit(self)
                     e_hp = self.hp_sys.hp
                     self.hp_sys.enable_immume()
                     px, py = _entity.obj.pos
@@ -1162,7 +1214,6 @@ class Player:
                 f = 1
                 for ss in s:
                     if not game.get_game().player.inventory.is_enough(inventory.ITEMS[ss]) and not ss in self.accessories:
-                        print(ss)
                         f = 0
                         break
                 if f and e not in inventory.RECIPES:
@@ -1422,7 +1473,7 @@ class Player:
                                     self.accessories[i].replace(' ', '_'), str(i), '1', 1,
                                     selected=i == self.sel_accessory)
             l = 12
-            lr = 4 + {0: 0, 1: 1, 2: 2, 3: 4, 4: 6, 5: 1, 6: 2, 7: 3, 8: 4, 9: 0}[game.get_game().stage]
+            lr = 4 + {0: 0, 1: 1, 2: 2, 3: 4, 4: 6, 5: 1, 6: 2, 7: 3, 8: 4, 9: 0, 10: 2}[game.get_game().stage]
             self.inv_capacity = lr * l
             for i in range(lr):
                 for j in range(l):
@@ -1484,6 +1535,23 @@ class Player:
                                     s_b = '_heaven_metal_set_bonus'
                                 elif not len([1 for a in acc if not str.startswith(a, 'heaven_wooden')]):
                                     s_b = '_heaven_wooden_set_bonus'
+                                elif not len([1 for a in acc if not str.startswith(a, 'destroy')]):
+                                    s_b = '_destroy_set_bonus'
+                                elif not len([1 for a in acc if not str.startswith(a, 'create')]):
+                                    s_b = '_create_set_bonus'
+                                elif not len([1 for a in acc if not str.startswith(a, 'ancient')]):
+                                    if self.accessories[0].endswith('helmet'):
+                                        s_b = '_ancient_set_bonus_helmet'
+                                    elif self.accessories[0].endswith('headgear'):
+                                         s_b = '_ancient_set_bonus_headgear'
+                                    else:
+                                        s_b = '_ancient_set_bonus_hood'
+                                elif not len([1 for a in acc[1:] if not str.startswith(a, 'purple_clay')]):
+                                    s_b = '_purple_clay_set_bonus'
+                                elif not len([1 for a in acc if not str.startswith(a, 'performance')]):
+                                    s_b = '_performance_set_bonus'
+                                elif not len([1 for a in acc if not str.startswith(a, 'surviving')]):
+                                    s_b = '_surviving_set_bonus'
                                 else:
                                     s_b = 'null'
                                 if len(self.accessories) < 11:
@@ -1815,6 +1883,30 @@ class Player:
                         elif item.id == 'intestine':
                             if len([1 for e in game.get_game().player.hp_sys.effects if type(e) is effects.CurseSnow]):
                                 entity.entity_spawn(underia3.ToxicLargeIntestine, 2000, 2000, 0, 1145, 100000)
+                        elif item.id == 'bombombomb':
+                            if len([1 for e in game.get_game().player.hp_sys.effects if type(e) is effects.CurseSand]):
+                                entity.entity_spawn(underia3.BombardinoCrocodilo, 2000, 2000, 0, 1145, 100000)
+                        elif item.id == 'suspicious_rune_eye':
+                            entity.entity_spawn(underia3.PetrifiedWitness, 2000, 2000, 0, 1145, 100000)
+
+                        elif item.id == 'hope_sign':
+                            its = {'karmic_helmet': 'e_karmic_helmet', 'karmic_chestplate': 'e_karmic_chestplate', 'karmic_greaves': 'e_karmic_greaves',
+                                     'galaxy_broadsword': 'e_galaxy_broadsword'}
+                            '''
+                                                  , 'turning_point': 'e_turning_point', 'climax': 'e_climax', 
+                             'resolution': 'e_resolution', 'rising_action': 'e_rising_action', 'falling_action': 'e_falling_action'}
+                             '''
+                            if len(self.covered_items):
+                                it = random.choice(self.covered_items)
+                                if it in its:
+                                    self.inventory.add_item(inventory.ITEMS[its[it]])
+                                    self.covered_items.remove(it)
+                                    self.inventory.remove_item(item)
+                                else:
+                                    game.get_game().dialog.dialog('...', 'But nothing happened.')
+                            else:
+                                game.get_game().dialog.dialog('...', 'But nothing happened.')
+
                         elif item.id == 'muse_core':
                             if self.max_inspiration < 800:
                                 self.max_inspiration = 800

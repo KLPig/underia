@@ -23,33 +23,63 @@ ITEMS = {
 
     'lychee_core_shard': inventory.Inventory.Item('Lychee Core Shard', '', 'lychee_core_shard', 3, [inventory.TAGS['item']]),
 
+    'shard_of_create': inventory.Inventory.Item('Shard of Create', 'col3f0000A new life.', 'shard_of_create', 4, [inventory.TAGS['item']]),
+    'shard_of_destroy': inventory.Inventory.Item('Shard of Destroy', 'col00003fAn instant death.', 'shard_of_destroy', 4, [inventory.TAGS['item']]),
+    'ancient_rune_shard': inventory.Inventory.Item('Ancient Rune Shard', 'Emits a ancient but familiar light.', 'ancient_rune_shard', 5, [inventory.TAGS['item']]),
+    'feather_of_sing': inventory.Inventory.Item('Feather of Singing', '', 'feather_of_sing', 5, [inventory.TAGS['item']]),
+    'feather_of_dance': inventory.Inventory.Item('Feather of Dance', '', 'feather_of_dance', 5, [inventory.TAGS['item']]),
+    'feather_of_rap': inventory.Inventory.Item('Feather of Rap', '', 'feather_of_rap', 5, [inventory.TAGS['item']]),
+    'feather_of_basketball': inventory.Inventory.Item('Feather of Basketball', '', 'feather_of_basketball', 5, [inventory.TAGS['item']]),
+    'brain_rotter': inventory.Inventory.Item('Brain Rotter', 'Even worse?', 'brain_rotter', 5, [inventory.TAGS['item']]),
+
+    'hope_dust': inventory.Inventory.Item('Hope Dust', 'rainbowPower to make that miracle happen again.', 'hope_dust', 6, [inventory.TAGS['item']]),
+    'hope_sign': inventory.Inventory.Item('Hope Sign', 'rainbowLet these all back.', 'hope_sign', 6, [inventory.TAGS['item']]),
+
     'wooden_rope': inventory.Inventory.Item('Wooden Rope', '', 'wooden_rope', 0, [inventory.TAGS['item']]),
+
+    'ancient_key': inventory.Inventory.Item('Ancient Key', 'Enter the ancient city, or chaos disciple will summon.', 'ancient_key', 5, [inventory.TAGS['item']]),
 
     'enchanted_book': inventory.Inventory.Item('Enchanted Book', '+30 maximum MP forever', 'enchanted_book', 2, [inventory.TAGS['item']]),
 
-    'feather_amulet': inventory.Inventory.Item('Feather Amulet', 'Resistant to tree curse.\n-20% air resistance\n-10kg\n+20% speed',
+    'feather_amulet': inventory.Inventory.Item('Feather Amulet', 'Resistant to tree curse.\nYou feel you\'re lighter.[cmd]\n-20% air resistance\n-10kg\n+20% speed',
                                                'feather_amulet', 1, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
-    'poise_necklace': inventory.Inventory.Item('Poise Necklace', 'Resistant to snow curse.\n+60 additional maximum mana\n+10 magic defense',
+    'black_leather_gloves': inventory.Inventory.Item('Black Leather Gloves', 'You looks formal.\n+9% melee damage\n+19% critical', 'black_leather_gloves', 2, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
+    'black_bow_tie': inventory.Inventory.Item('Black Bow Tie', 'You looks formal.\n+30% pacify time\n+40 additional maximum mana', 'black_bow_tie', 2, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
+    'black_socks': inventory.Inventory.Item('Black Socks', '+50% speed\n-10kg\nChance to dodge attacks.[cmd]\n+5% dodge rate', 'black_socks', 2, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
+    'e_wings': inventory.Inventory.Item('Wings', '+150% speed\n-10% air resistance\n80% wing control', 'e_wings', 3, [inventory.TAGS['item'], inventory.TAGS['wings']]),
+    'cute_watch': inventory.Inventory.Item('Cute Watch', 'A pink watch.[cmd]\n+20% pacify time\n+20% pacify damage.\nRarely drops from lychee.', 'cute_watch', 1,
+                                            [inventory.TAGS['item'], inventory.TAGS['accessory']]),
+    'poise_necklace': inventory.Inventory.Item('Poise Necklace', 'Resistant to snow curse.\n+60 additional maximum mana\n+5/sec regeneration',
                                                'poise_necklace', 1, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
-    'poison_shackle': inventory.Inventory.Item('Poison Shackle', '200kg\n-10/sec regeneration\n+50% damage\n+40 touching defense',
+    'poison_shackle': inventory.Inventory.Item('Poison Shackle', '200kg\nHeavy but protective.[cmd]\n-10/sec regeneration\n+50% damage\n+40 touching defense',
                                                 'poison_shackle', 2, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
-    'healthy_product': inventory.Inventory.Item('Healthy Product', '+15/sec regeneration\nWhen HP < 50%, -30/sec regeneration.',
+    'healthy_product': inventory.Inventory.Item('Healthy Product', '+15/sec regeneration\n..., but may kill you.[cmd]\nWhen HP < 50%, -30/sec regeneration.',
                                                 'healthy_product', 2,
-                                               [inventory.TAGS['item'], inventory.TAGS['accessory']]),
-    'toxic_wing': inventory.Inventory.Item('Toxic Wing', '+80% speed\n-20% air resistance\n50% wing control\n-10/sec regeneration',
+                                                [inventory.TAGS['item'], inventory.TAGS['accessory']]),
+    'toxic_wing': inventory.Inventory.Item('Toxic Wing', '+80% speed\n-20% air resistance\n50% wing control\nCost a few hp/sec.[cmd]\n-10/sec regeneration',
                                  'toxic_wing', 2, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
 
     'brainrot_necklace': inventory.Inventory.Item('Brainrot Necklace', 'Resistant to sand curse.\n+8 touching defense',
                                                    'brainrot_necklace', 2, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
-    'mind_anchor': inventory.Inventory.Item('Mind Anchor', '100kg\n+150% speed\n-50% karma reduce\nWhen MP < 10%, +50/sec mana regeneration',
+    'mind_anchor': inventory.Inventory.Item('Mind Anchor', '100kg\nFix your mind from chaos.[cmd]\n+250% speed\n-50% karma reduce\nWhen MP < 10%, +10/sec mana regeneration',
                                             'mind_anchor', 2, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
     'mystery_glove': inventory.Inventory.Item('Mystery Glove', '+20% melee damage\n+5% critical',
                                              'mystery_glove', 2, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
     'tuner': inventory.Inventory.Item('Tuner', '+300 additional maximum inspiration\n+1 poet bonus time',
                                        'tuner', 2, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
+    'e_rune_gloves': inventory.Inventory.Item('Rune Gloves', '+32% melee damage\n18% damage absorb', 'e_rune_gloves', 5, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
+    'rune_aimer': inventory.Inventory.Item('Rune Aimer', '+48% ranged damage\n+9% dodge rate\nIncrease strike but decrease attack speed.[cmd]\n+40% critical\n+10 attack speed', 'rune_aimer', 5, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
+
+    'balanced_sheath': inventory.Inventory.Item('Balanced Sheath', '+160 touching defense\n+110 magic defense\nGrants melee damage.\n'
+                                                                   'Y: Switch attack mode, grants attack but decrease chance to dodge.[cmd]\n'
+                                                                   '+45% melee damage\n+10/sec regeneration\n+18% critical', 'balanced_sheath',
+                                                4, [inventory.TAGS['item'], inventory.TAGS['accessory'], inventory.TAGS['major_accessory']]),
+
+    'twin_crystal': inventory.Inventory.Item('Twin Crystal', 'When MP < 50%, +20/sec mana regeneration\nWhen MP > 50%, +150 additional maximum mana\n'
+                                                             'When HP < 50%, +40 magic defense\nWhen HP > 50%, +20% damage', 'twin_crystal', 4, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
 
     'clear_crystal__snow': inventory.Inventory.Item('Clear Crystal: Snow',
-                                                    'Using mana to gain regeneration.[cmd]\n'
+                                                    'Using mana/sec to gain regeneration.[cmd]\n'
                                                     'When MP > 25%, -5/sec mana regeneration\n'
                                                     'When MP > 50%, -5/sec mana regeneration\n'
                                                     'When MP > 75%, -5/sec mana regeneration\n'
@@ -61,7 +91,7 @@ ITEMS = {
                                                       'clear_crystal__snow', 2, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
 
     'lychee_core': inventory.Inventory.Item('Lychee Core',
-                                            'Using mana to gain speed and critical.[cmd]\n'
+                                            'Using mana/sec to gain speed and critical.[cmd]\n'
                                             'When MP > 25%, -5/sec mana regeneration\n'
                                             'When MP > 50%, -5/sec mana regeneration\n'
                                             'When MP > 75%, -5/sec mana regeneration\n'
@@ -75,7 +105,31 @@ ITEMS = {
                                             'When MP > 75%, +8% critical\n'
                                             'When MP > 100%, +8% critical', 'lychee_core', 3,
                                             [inventory.TAGS['item'], inventory.TAGS['accessory']]),
+    'winds_anklet': inventory.Inventory.Item('Wind\'s Anklet', 'Immune to tree curse.\n-30% air resistance\n-20 kg\n+30% speed',
+                                               'winds_anklet', 3, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
 
+    'white_ribbon': inventory.Inventory.Item('White Ribbon', 'Resistant to snow curse.\n+30/sec mana regeneration\ncol7fffffRarely drops from lychee/purple clay pot',
+                                              'white_ribbon', 2, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
+    'pink_ribbon': inventory.Inventory.Item('Pink Ribbon', 'Resistant to tree curse.\n+12 touching defense\ncol7fffffRarely drops from poison chicken/poise walker',
+                                             'pink_ribbon', 2, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
+    'twin_ribbon': inventory.Inventory.Item('Twin Ribbon', 'Resistance to tree curse\nResistance to snow curse\n+35% damage absorb',
+                                             'twin_ribbon', 4, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
+
+    'amber_card': inventory.Inventory.Item('Amber Card', 'Resistant to sand curse.\n+8% critical\nRarely drops from boneca ambalabu/la vaca saturno saturnita/bombardino crododilo',
+                                            'amber_card', 2, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
+    'silver_card': inventory.Inventory.Item('Silver Card', 'Resistant to sand curse.\n+13% critical\n+7% damage',
+                                            'silver_card', 2, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
+    'golden_card': inventory.Inventory.Item('Golden Card', 'Resistant to sand curse.\n+24% critical\n+12% damage\n+5/sec regeneration',
+                                            'golden_card', 3, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
+    'diamond_card': inventory.Inventory.Item('Diamond Card', 'Resistant to sand curse.\n+45% critical\n+22% damage\n+8/sec regeneration\n+10/sec mana regeneration',
+                                     'diamond_card', 4, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
+
+    'life_amulet': inventory.Inventory.Item('Life Amulet', 'Resistant to tree curse.\n+100 touching defense\n+100 magic defense\n+50% damage\n'
+                                                           'Increase all stats.[cmd]\n+100% speed\n+35% critical\n+10/sec regeneration\n+20/sec mana regeneration\n+200/sec inspiration regeneration',
+                                                'life_amulet', 1, [inventory.TAGS['item'], inventory.TAGS['accessory'], inventory.TAGS['major_accessory']]),
+    'magic_treasure_book': inventory.Inventory.Item('Magic Treasure Book', '+18 touching defense\n+24 magic defense\n+80 additional maximum mana\n'
+                                                                           '+10/sec mana regeneration\n+18% damage', 'magic_treasure_book', 2,
+                                                    [inventory.TAGS['item'], inventory.TAGS['accessory']]),
     'purple_clay_sheath': inventory.Inventory.Item('Purple Clay Sheath',
                                                    'Resistant to tree curse.\n50kg\n'
                                                    '+20% speed\n+75 touching defense\n+80 magic defense\n'
@@ -131,20 +185,46 @@ ITEMS = {
                                       [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
     'observe': inventory.Inventory.Item('Observe', 'Watch, and check.', 'observe', 3,
                                         [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'critical_thinking': inventory.Inventory.Item('Critical Thinking', 'Get the key point.', 'critical_thinking', 3,
+                                                 [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'longer_intestine': inventory.Inventory.Item('Longer Intestine', '', 'longer_intestine', 3,
+                                                   [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']],
+                                                 specify_img='longer_intestine_img'),
+
+    'destroy': inventory.Inventory.Item('Destroy', 'Deal double damage to >90% hp enemy.\nEnemy is about unable to dodge your attack.', 'destroy',
+                                        4, [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'generate': inventory.Inventory.Item('Generate', 'A lower hp rate will deal more damage, maximum 5x.\nIncrease non-bosses\' max hp.', 'generate',
+                                            4, [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'ancient_swiftsword': inventory.Inventory.Item('Ancient Swiftsword', '', 'ancient_swiftsword', 5,
+                                                    [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'feather_feather_sword': inventory.Inventory.Item('Feather Feather Sword', '', 'feather_feather_sword', 5,
+                                                        [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'confuse': inventory.Inventory.Item('Confuse', 'What will happen? I forgot.', 'confuse', 5,
+                                          [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
 
     'e_wooden_bow': inventory.Inventory.Item('Wooden Bow', '', 'e_wooden_bow', 0,
                                              [inventory.TAGS['item'], inventory.TAGS['weapon'],
                                               inventory.TAGS['bow']]),
+    'hand_of_social': inventory.Inventory.Item('Hand of Social', 'Human-eating, hand of social, dark psychology, humanity\'s secret.', 'hand_of_social', 2,
+                                                 [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['bow']]),
     'lychee_bow': inventory.Inventory.Item('Lychee Bow', 'Bow with lychee arrows.', 'lychee_bow', 1,
                                            [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['bow']]),
     'e_pistol': inventory.Inventory.Item('Pistol', '', 'e_pistol', 2, [inventory.TAGS['item'], inventory.TAGS['weapon'],
                                                                        inventory.TAGS['gun']]),
+    'sniper': inventory.Inventory.Item('Sniper', 'Rarely drops from formal chicken.', 'sniper', 2, [inventory.TAGS['item'], inventory.TAGS['weapon'],
+                                                                     inventory.TAGS['gun']]),
     'purple_clay_kuangkuang': inventory.Inventory.Item('Purple Clay Kuangkuang', '', 'purple_clay_kuangkuang', 2,
                                                          [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['bow']]),
-    'lychee_piercer': inventory.Inventory.Item('Lychee Piercer', 'Freeze nearby entities.', 'lychee_piercer', 3,
+    'pollutant': inventory.Inventory.Item('Pollutant', 'It aims itself.', 'pollutant', 2,
+                                            [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['bow']]),
+    'lychee_piercer': inventory.Inventory.Item('Lychee Piercer', 'Freeze nearby entities.', 'lychee_piercer', 2,
                                                [inventory.TAGS['item']]),
-    'lychee_twinblade': inventory.Inventory.Item('Lychee Twinblade', 'SEALED[I]', 'lychee_twinblade', 3,
+    'lychee_twinblade': inventory.Inventory.Item('Lychee Twinblade', 'SEALED[I]', 'lychee_twinblade', 2,
                                                  [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['knife']]),
+    'heavens_broken_knife': inventory.Inventory.Item('Heaven\'s Broken Knife', 'It\'s a broken knife, but it\'s still sharp.', 'heavens_broken_knife', 2,
+                                                      [inventory.TAGS['item']]),
+    'earths_twinblade': inventory.Inventory.Item('Earth\'s Twinblade', 'SEALED[II]\nRight button attack to absorb energy from the environment.\ncoldfff7fCurrent ability: Nothing special...', 'earths_twinblade', 3,
+                                                  [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['knife']]),
     'poise_bow': inventory.Inventory.Item('Poise Bow', '', 'poise_bow', 1,
                                            [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['bow']]),
     'poise_submachine_gun': inventory.Inventory.Item('Poise Submachine Gun', '', 'poise_submachine_gun', 1,
@@ -157,6 +237,12 @@ ITEMS = {
                                                 inventory.TAGS['ammo_arrow']]),
     'e_bullet': inventory.Inventory.Item('Bullet', '', 'e_bullet', 0, [inventory.TAGS['item'], inventory.TAGS['ammo'],
                                                                      inventory.TAGS['ammo_bullet']]),
+    'feather_arrow': inventory.Inventory.Item('Feather Arrow', 'Deal 50% damage, but penetrate 300% of damage value.', 'feather_arrow', 1,
+                                               [inventory.TAGS['item'], inventory.TAGS['ammo'], inventory.TAGS['ammo_arrow']]),
+    'toxic_arrow': inventory.Inventory.Item('Toxic Arrow', 'Suddenly separated to several arrows.', 'toxic_arrow', 2,
+                                             [inventory.TAGS['item'], inventory.TAGS['ammo'], inventory.TAGS['ammo_arrow']]),
+    'rotten_arrow': inventory.Inventory.Item('Rotten Arrow', 'Pierce through 2 targets.', 'rotten_arrow', 2,
+                                             [inventory.TAGS['item'], inventory.TAGS['ammo'], inventory.TAGS['ammo_arrow']]),
 
     'e_wooden_wand': inventory.Inventory.Item('Wooden Wand', '', 'e_wooden_wand', 0,
                                               [inventory.TAGS['item'], inventory.TAGS['weapon'],
@@ -193,6 +279,26 @@ ITEMS = {
                                                        'Under the "bless" of the snows, summon the large intestine.\n'
                                                        'Suggested level: 2(uncommon)', 'intestine', 2,
                                        [inventory.TAGS['item']]),
+    'bombombomb': inventory.Inventory.Item('Bombombomb', '...abababababbab\n'
+                                                          'Under the "bless" of the sand, summon the bombombomb.\n'
+                                                         'Suggested level: 3(rare)', 'bombombomb', 3,
+                                             [inventory.TAGS['item']]),
+    'suspicious_rune_eye': inventory.Inventory.Item('Suspicious Rune Eye', 'The lost...\nSummon the Petrified Witness\n'
+                                                                           'Suggested level: 5(very rare)', 'suspicious_rune_eye', 5,
+                                                      [inventory.TAGS['item']]),
+
+    'abyss_ranseur': inventory.Inventory.Item('Abyss Ranseur', 'Tags target.', 'abyss_ranseur', 4,
+                                               [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'abyss_gaze': inventory.Inventory.Item('Abyss\' Gaze', 'Shoots 5 arrows at once.', 'abyss_gaze', 4,
+                                            [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['bow']]),
+    'abyss_fury': inventory.Inventory.Item('Abyss\' Fury', 'Summons chaos bomb.', 'abyss_fury', 4,
+                                            [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['magic_weapon'],
+                                             inventory.TAGS['magic_element_chaos'], inventory.TAGS['magic_lv_3']]),
+
+    'insights': inventory.Inventory.Item('Insights', '', 'insights', 6,
+                                         [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'pierce': inventory.Inventory.Item('Pierce', '', 'pierce', 6,
+                                        [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['gun']]),
 
     'hoverplume_headgear': inventory.Inventory.Item('Hoverplume Head Gear', '5 armor\n+18% speed', 'hoverplume_headgear', 1,
                                                        [inventory.TAGS['item'], inventory.TAGS['head'], inventory.TAGS['accessory']]),
@@ -211,6 +317,24 @@ ITEMS = {
                                              [inventory.TAGS['item'], inventory.TAGS['leg'], inventory.TAGS['accessory']]),
     '_life_set_bonus': inventory.Inventory.Item('Life Armor Set Bonus', '+120 additional maximum mana\nWhen MP < 20%, +40/sec mana regeneration', '_life_set_bonus',
                                                 1, [inventory.TAGS['item'], inventory.TAGS['accessory']], specify_img='null'),
+
+    'purple_clay_chestplate': inventory.Inventory.Item('Purple Clay Chestplate', '8 armor\n+8% ranged damage\n+10 attack speed\n+35% critical', 'purple_clay_chestplate', 2,
+                                                         [inventory.TAGS['item'], inventory.TAGS['body'], inventory.TAGS['accessory']]),
+    'purple_clay_leggings': inventory.Inventory.Item('Purple Clay Leggings', '6 armor\n+5% ranged damage\n+50% speed', 'purple_clay_leggings', 2,
+                                                      [inventory.TAGS['item'], inventory.TAGS['leg'], inventory.TAGS['accessory']]),
+    '_purple_clay_set_bonus': inventory.Inventory.Item('Purple Clay Armor Set Bonus', '+10% ranged damage', '_purple_clay_set_bonus',
+                                                        1, [inventory.TAGS['item'], inventory.TAGS['accessory']], specify_img='null'),
+
+    'surviving_mask': inventory.Inventory.Item('Surviving Mask', '6 armor\n+12% critical', 'surviving_mask', 2,
+                                                 [inventory.TAGS['item'], inventory.TAGS['head'], inventory.TAGS['accessory']]),
+    'surviving_battlegear': inventory.Inventory.Item('Surviving Battlegear', '7 armor\n+9% ranged damage\n+18% critical', 'surviving_battlegear', 2,
+                                                      [inventory.TAGS['item'], inventory.TAGS['body'], inventory.TAGS['accessory']]),
+    'surviving_battleplate': inventory.Inventory.Item('Surviving Battleplate', '16 armor\n+25% melee damage', 'surviving_battleplate', 2,
+                                                       [inventory.TAGS['item'], inventory.TAGS['body'], inventory.TAGS['accessory']]),
+    'surviving_greaves': inventory.Inventory.Item('Surviving Greaves', '6 armor\n+50% speed', 'surviving_greaves', 2,
+                                                   [inventory.TAGS['item'], inventory.TAGS['leg'], inventory.TAGS['accessory']]),
+    '_surviving_set_bonus': inventory.Inventory.Item('Surviving Armor Set Bonus', '+15/sec regeneration', '_surviving_set_bonus',
+                                                      1, [inventory.TAGS['item'], inventory.TAGS['accessory']], specify_img='null'),
 
     'concept_hat': inventory.Inventory.Item('Concept Hat', '4 armor\n+6% octave damage\n+50/sec inspiration regeneration', 'concept_hat', 2,
                                              [inventory.TAGS['item'], inventory.TAGS['head'], inventory.TAGS['accessory']]),
@@ -252,6 +376,59 @@ ITEMS = {
     '_heaven_wooden_set_bonus': inventory.Inventory.Item('Heaven Wooden Armor Set Bonus', '-30% karma reduce', '_heaven_wooden_set_bonus',
                                                 2, [inventory.TAGS['item'], inventory.TAGS['accessory']], specify_img='null'),
 
+    'destroy_helmet': inventory.Inventory.Item('Destroy Helmet', '27 armor\n+20% damage\n+20% critical', 'destroy_helmet', 4,
+                                               [inventory.TAGS['item'], inventory.TAGS['head'], inventory.TAGS['accessory']]),
+    'destroy_chestplate': inventory.Inventory.Item('Destroy Chestplate', '31 armor\n+15 magic defense\n+20% pacify time', 'destroy_chestplate', 4,
+                                          [inventory.TAGS['item'], inventory.TAGS['body'], inventory.TAGS['accessory']]),
+    'destroy_leggings': inventory.Inventory.Item('Destroy Leggings', '22 armor\n+50% speed\n-10% air resistance\n+3% dodge rate', 'destroy_leggings', 4,
+                                       [inventory.TAGS['item'], inventory.TAGS['leg'], inventory.TAGS['accessory']]),
+    '_destroy_set_bonus': inventory.Inventory.Item('Destroy Armor Set Bonus', '+50% damage\n-15 touching defense', '_destroy_set_bonus',
+                                                   4, [inventory.TAGS['item'], inventory.TAGS['accessory']], specify_img='null'),
+
+    'create_hood': inventory.Inventory.Item('Create Hood', '14 armor\n+100 additional maximum mana\n+20/sec mana regeneration\n+10/sec regeneration', 'create_hood', 4,
+                                           [inventory.TAGS['item'], inventory.TAGS['head'], inventory.TAGS['accessory']]),
+    'create_cloak': inventory.Inventory.Item('Create Cloak', '20 armor\n+80/sec inspiration regeneration\n800 additional maximum inspiration\n+10% damage', 'create_cloak', 4,
+                                             [inventory.TAGS['item'], inventory.TAGS['body'], inventory.TAGS['accessory']]),
+    'create_boots': inventory.Inventory.Item('Create Boots', '16 armor\n+80% hallow damage\n-50% karma reduce\n-30% air resistance', 'create_boots', 4,
+                                             [inventory.TAGS['item'], inventory.TAGS['leg'], inventory.TAGS['accessory']]),
+    '_create_set_bonus': inventory.Inventory.Item('Create Armor Set Bonus', '+100/sec mana regeneration\n-10 magic defense', '_create_set_bonus',
+                                                   4, [inventory.TAGS['item'], inventory.TAGS['accessory']], specify_img='null'),
+
+    'ancient_helmet': inventory.Inventory.Item('Ancient Helmet', '55 armor\n+32% melee damage\n+7 touching defense', 'ancient_helmet', 4,
+                                               [inventory.TAGS['item'], inventory.TAGS['head'], inventory.TAGS['accessory']]),
+    'ancient_headgear': inventory.Inventory.Item('Ancient Headgear', '32 armor\n+25% ranged damage\n+18% critical', 'ancient_headgear', 4,
+                                                  [inventory.TAGS['item'], inventory.TAGS['head'], inventory.TAGS['accessory']]),
+    'ancient_hood': inventory.Inventory.Item('Ancient Hood', '8 armor\n+22% magic damage\n+150 additional maximum mana', 'ancient_hood', 4,
+                                              [inventory.TAGS['item'], inventory.TAGS['head'], inventory.TAGS['accessory']]),
+    'ancient_plate_mail': inventory.Inventory.Item('Ancient Plate Mail', '35 armor\n+10 magic defense\n+27% damage', 'ancient_plate_mail', 4,
+                                                    [inventory.TAGS['item'], inventory.TAGS['body'], inventory.TAGS['accessory']]),
+    'ancient_leggings': inventory.Inventory.Item('Ancient Leggings', '20 armor\n+50% speed\n+12% critical', 'ancient_leggings', 4,
+                                       [inventory.TAGS['item'], inventory.TAGS['leg'], inventory.TAGS['accessory']]),
+    '_ancient_set_bonus_helmet': inventory.Inventory.Item('Ancient Armor Set Bonus', '9% damage absorb\n+20 magic defense', '_ancient_set_bonus_helmet',
+                                                          4, [inventory.TAGS['item'], inventory.TAGS['accessory']], specify_img='null'),
+    '_ancient_set_bonus_headgear': inventory.Inventory.Item('Ancient Armor Set Bonus', '-50% air resistance\n-50% splint cd\n-20 attack speed', '_ancient_set_bonus_headgear',
+                                                   4, [inventory.TAGS['item'], inventory.TAGS['accessory']], specify_img='null'),
+    '_ancient_set_bonus_hood': inventory.Inventory.Item('Ancient Armor Set Bonus', '+30/sec mana regeneration\n+5/sec regeneration', '_ancient_set_bonus_hood',
+                                                        4, [inventory.TAGS['item'], inventory.TAGS['accessory']], specify_img='null'),
+
+    'performance_formal_hat': inventory.Inventory.Item('Performance Formal Hat', '24 armor\n+25% octave damage\n+100 sec inspiration regeneration', 'performance_formal_hat', 5,
+                                                      [inventory.TAGS['item'], inventory.TAGS['head'], inventory.TAGS['accessory']]),
+    'performance_neat_suit': inventory.Inventory.Item('Performance Neat Suit', '38 armor\n+25% critical\n+20% damage\n+100 additional maximum mana', 'performance_neat_suit', 5,
+                                                     [inventory.TAGS['item'], inventory.TAGS['body'], inventory.TAGS['accessory']]),
+    'performance_rompers': inventory.Inventory.Item('Performance Rompers', '18 armor\n+35% ranged damage\n+100% speed', 'performance_rompers', 5,
+                                                    [inventory.TAGS['item'], inventory.TAGS['leg'], inventory.TAGS['accessory']]),
+    '_performance_set_bonus': inventory.Inventory.Item('Performance Armor Set Bonus', '+30% dodge rate\n-50% damage absorb', '_performance_set_bonus',
+                                              5, [inventory.TAGS['item'], inventory.TAGS['accessory']], specify_img='null'),
+
+    'e_karmic_helmet': inventory.Inventory.Item('Hope: Karmic Helmet', '30 armor\nrainbowBoth damage and critical increased by 45%[cmd]\n+45% damage\n+45% critical', 'e_karmic_helmet', 7,
+                                                [inventory.TAGS['item'], inventory.TAGS['head'], inventory.TAGS['accessory']], specify_img='karmic_helmet'),
+    'e_karmic_chestplate': inventory.Inventory.Item('Hope: Karmic Chestplate', '45 armor\nrainbowIncreased life, mana and inspiration.[cmd]\n+10/sec regeneration\n+30/sec mana regeneration\n+70 sec inspiration regeneration\n'
+                                                                         '+200 additional maximum mana\n+1000 additional maximum inspiration', 'e_karmic_chestplate', 7,
+                                                    [inventory.TAGS['item'], inventory.TAGS['body'], inventory.TAGS['accessory']], specify_img='karmic_chestplate'),
+    'e_karmic_greaves': inventory.Inventory.Item('Hope: Karmic Greaves', '25 armor\nrainbowWith effects of wings.\nrainbowEnable sprint.[cmd]\n+80 sprint\n-60% sprint cd\n-50% air resistance\n'
+                                                                   '+150% speed\n+20% dodge rate\n+40% wing control', 'e_karmic_greaves', 7,
+                                                 [inventory.TAGS['item'], inventory.TAGS['leg'], inventory.TAGS['accessory']], specify_img='karmic_greaves'),
+
     'thaumaturgy': inventory.Inventory.Item('Thaumaturgy', 'Ring of spirit.', 'thaumaturgy', 1,
                                             [inventory.TAGS['item'], inventory.TAGS['accessory']]),
     'pluma_thaumaturgy': inventory.Inventory.Item('Pluma Thaumaturgy', '+8% dodge rate\nReleases feather according to speed, deal melee damage.',
@@ -259,6 +436,18 @@ ITEMS = {
                                          [inventory.TAGS['item'], inventory.TAGS['accessory']]),
     'bioic_thaumaturgy': inventory.Inventory.Item('Bioic Thaumaturgy', 'Summon a slowly-regenerating shield.', 'bioic_thaumaturgy', 2,
                                          [inventory.TAGS['item'], inventory.TAGS['accessory']]),
+    'logos_thaumaturgy': inventory.Inventory.Item('Logos Thaumaturgy', '-20% air resistance\nEnable sprinting, sprinting makes you more likely to strike.[cmd]\n+50 splint', 'logos_thaumaturgy', 3,
+                                                  [inventory.TAGS['item'], inventory.TAGS['accessory']]),
+    'dendro_thaumaturgy': inventory.Inventory.Item('Dendro Thaumaturgy', '+12% damage absorb\nMaximum damage is restricted to 99% maximum HP.', 'dendro_thaumaturgy', 3,
+                                                   [inventory.TAGS['item'], inventory.TAGS['accessory']]),
+
+    'e_galaxy_broadsword': inventory.Inventory.Item('Hope: Galaxy Broadsword', 'rainbowThe galaxy has already headbowed you.', 'e_galaxy_broadsword', 7,
+                                                     [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']], specify_img='galaxy_broadsword'),
+
+    'lost__growth_eater': inventory.Inventory.Item('Lost: Growth Eater', 'col7fffffThe lost weapon.\nCut off lines.', 'lost__growth_eater', 3,
+                                                   [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']], specify_img='life_devourer'),
+    'lost__star_broadsword': inventory.Inventory.Item('Lost: Star Broadsword', 'col7fffffThe lost weapon.', 'lost__star_broadsword', 3,
+                                                      [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']], specify_img='galaxy_broadsword'),
 
     '_rune_altar': inventory.Inventory.Item('Rune Altar', 'Require to be close to rune altar.', '_rune_altar', 1,
                                             [inventory.TAGS['item']]),
@@ -287,7 +476,10 @@ RECIPES = [
     inventory.Recipe({'e_wooden_hammer': 1, 'e_wood': 50, 'lychee_shard': 3}, 'life_cloak'),
     inventory.Recipe({'e_wooden_hammer': 1, 'e_wood': 20, 'lychee_shard': 2}, 'life_hboots'),
 
+    inventory.Recipe({'e_wooden_hammer': 1, 'e_wood': 50, 'lychee_shard': 10}, 'life_amulet'),
+
     inventory.Recipe({'book': 1, 'magic_pen': 1}, 'enchanted_book'),
+    inventory.Recipe({'book': 1, 'magic_pen': 5, 'purple_clay': 2, 'lychee_shard': 2}, 'magic_treasure_book'),
     inventory.Recipe({'book': 1, 'magic_pen': 1, 'lychee_shard': 8}, 'lychee_spike'),
     inventory.Recipe({'book': 1, 'magic_pen': 1, 'brainrot': 20, 'mystery_soul': 8}, 'brainstorm'),
 
@@ -301,10 +493,18 @@ RECIPES = [
     inventory.Recipe({'e_wooden_hammer': 1, 'chisel': 1, 'e_wood': 44, 'lychee_shard': 3}, 'the_roving_chord'),
 
     inventory.Recipe({'e_wooden_hammer': 1, 'lychee_shard': 4, 'purple_clay': 8}, 'purple_clay_broad_blade'),
-    inventory.Recipe({'e_wooden_hammer': 1, 'lychee_shard': 1, 'purple_clay': 2}, 'e_bullet', 200),
+    inventory.Recipe({'e_wooden_hammer': 1, 'lychee_shard': 1, 'purple_clay': 2}, 'e_bullet', 100),
     inventory.Recipe({'e_wooden_hammer': 1, 'lychee_shard': 2, 'purple_clay': 6, 'e_feather': 2}, 'e_pistol'),
     inventory.Recipe({'e_wooden_hammer': 1, 'lychee_shard': 4, 'purple_clay': 5, 'e_feather': 10}, 'purple_clay_kuangkuang'),
     inventory.Recipe({'e_wooden_hammer': 1, 'lychee_shard': 15, 'purple_clay': 15}, 'purple_clay_sheath'),
+
+    inventory.Recipe({'e_wooden_hammer': 1, 'e_wooden_arrow': 50, 'lychee_shard': 1, 'purple_clay': 1, 'e_feather': 5}, 'feather_arrow', 50),
+    inventory.Recipe({'e_wooden_hammer': 1, 'e_wooden_arrow': 10, 'e_poison_powder': 1}, 'toxic_arrow', 10),
+    inventory.Recipe({'e_wooden_hammer': 1, 'e_wooden_arrow': 60, 'carrion': 1}, 'toxic_arrow', 60),
+    inventory.Recipe({'e_wooden_hammer': 1, 'e_wooden_arrow': 30, 'brainrot': 1}, 'rotten_arrow', 30),
+
+    inventory.Recipe({'e_wooden_hammer': 1, 'lychee_shard': 10, 'purple_clay': 12}, 'purple_clay_chestplate'),
+    inventory.Recipe({'e_wooden_hammer': 1, 'lychee_shard': 8, 'purple_clay': 10}, 'purple_clay_leggings'),
 
     inventory.Recipe({'e_wooden_hammer': 1, 'lychee_shard': 5, 'e_poison_powder': 30, 'carrion': 10}, 'poison_quiver'),
     inventory.Recipe({'e_wooden_hammer': 1, 'lychee_shard': 8, 'e_poison_powder': 10, 'carrion': 5}, 'poison_shackle'),
@@ -314,6 +514,14 @@ RECIPES = [
 
     inventory.Recipe({'e_wooden_hammer': 1, 'lychee_shard': 20, 'e_poison_powder': 20}, 'poise_bow'),
     inventory.Recipe({'e_wooden_hammer': 1, 'lychee_shard': 20, 'e_poison_powder': 40, 'carrion': 10}, 'poise_submachine_gun'),
+    inventory.Recipe({'e_wooden_hammer': 1, 'e_poison_powder': 50, 'carrion': 20}, 'longer_intestine'),
+
+    inventory.Recipe({'lychee_twinblade': 1, 'heavens_broken_knife': 2}, 'earths_twinblade'),
+
+    inventory.Recipe({'e_wooden_hammer': 1, 'e_poison_powder': 20, 'carrion': 15}, 'surviving_mask'),
+    inventory.Recipe({'e_wooden_hammer': 1, 'e_poison_powder': 35, 'carrion': 25}, 'surviving_battlegear'),
+    inventory.Recipe({'e_wooden_hammer': 1, 'e_poison_powder': 35, 'carrion': 25}, 'surviving_battleplate'),
+    inventory.Recipe({'e_wooden_hammer': 1, 'e_poison_powder': 15, 'carrion': 10}, 'surviving_greaves'),
 
     inventory.Recipe({'e_wooden_hammer': 1, 'mystery_shard': 45, 'brainrot': 20}, 'mystery_sword'),
     inventory.Recipe({'e_wooden_hammer': 1, 'mystery_shard': 75, 'brainrot': 10}, 'mystery_spear'),
@@ -331,6 +539,7 @@ RECIPES = [
     inventory.Recipe({'hammer_of_rational': 1, 'lychee_core_shard': 5, 'lychee_shard': 30, 'purple_clay': 10}, 'lychee_twinblade'),
     inventory.Recipe({'hammer_of_rational': 1, 'lychee_core_shard': 5, 'lychee_shard': 10}, 'proof'),
     inventory.Recipe({'hammer_of_rational': 1, 'lychee_core_shard': 5, 'lychee_shard': 10}, 'observe'),
+    inventory.Recipe({'hammer_of_rational': 1, 'lychee_core_shard': 3, 'lychee_shard': 12}, 'winds_anklet'),
 
     inventory.Recipe({'hammer_of_rational': 1, 'lychee_core_shard': 10, 'purple_clay': 25}, 'ration_helmet'),
     inventory.Recipe({'hammer_of_rational': 1, 'lychee_core_shard': 15, 'purple_clay': 45}, 'ration_chestplate'),
@@ -342,11 +551,66 @@ RECIPES = [
 
     inventory.Recipe({'e_wooden_hammer': 1, 'lychee_shard': 15, 'purple_clay': 10, 'e_feather': 10}, 'lychee'),
     inventory.Recipe({'e_wooden_hammer': 1, 'e_poison_powder': 15, 'carrion': 20}, 'intestine'),
+    inventory.Recipe({'e_wooden_hammer': 1, 'brainrot': 99, 'mystery_shard': 30, 'mystery_soul': 10}, 'bombombomb'),
+
+    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 12}, 'destroy'),
+    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_create': 12}, 'generate'),
+
+    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 15}, 'destroy_helmet'),
+    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 25}, 'destroy_chestplate'),
+    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 15}, 'destroy_leggings'),
+
+    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_create': 15}, 'create_hood'),
+    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_create': 25}, 'create_cloak'),
+    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_create': 15}, 'create_boots'),
+
+    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 20, 'ancient_rune_shard': 40}, 'ancient_helmet'),
+    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 10, 'shard_of_create': 10, 'ancient_rune_shard': 40}, 'ancient_headgear'),
+    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_create': 20, 'ancient_rune_shard': 40}, 'ancient_hood'),
+    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_create': 12, 'shard_of_destroy': 12, 'ancient_rune_shard': 45}, 'ancient_plate_mail'),
+    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_create': 6, 'shard_of_destroy': 6, 'ancient_rune_shard': 30}, 'ancient_leggings'),
+
+    inventory.Recipe({'hammer_of_rational': 1, 'lychee_shard': 12, 'feather_of_sing': 8}, 'performance_formal_hat'),
+    inventory.Recipe({'hammer_of_rational': 1, 'lychee_shard': 16, 'feather_of_rap': 8}, 'performance_neat_suit'),
+    inventory.Recipe({'hammer_of_rational': 1, 'lychee_shard': 8, 'feather_of_dance': 8}, 'performance_rompers'),
+
+    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_create': 2, 'mystery_soul': 5, 'lychee_core_shard': 2}, 'ancient_key'),
+    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 2, 'mystery_soul': 5, 'carrion': 10, 'purple_clay': 3}, 'ancient_key'),
+
+    inventory.Recipe({'white_ribbon': 1, 'pink_ribbon': 1, 'shard_of_create': 4}, 'twin_ribbon'),
+    inventory.Recipe({'white_ribbon': 1, 'pink_ribbon': 1, 'shard_of_destroy': 4}, 'twin_ribbon'),
+
+    inventory.Recipe({'amber_card': 5}, 'silver_card'),
+    inventory.Recipe({'amber_card': 6, 'shard_of_create': 1, 'shard_of_destroy': 1}, 'silver_card', 2),
+
+    inventory.Recipe({'silver_card': 4}, 'golden_card'),
+    inventory.Recipe({'silver_card': 2, 'shard_of_create': 5, 'shard_of_destroy': 5}, 'golden_card'),
+
+    inventory.Recipe({'golden_card': 3}, 'diamond_card'),
+    inventory.Recipe({'golden_card': 2, 'shard_of_create': 30, 'shard_of_destroy': 30}, 'diamond_card'),
+
+    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_create': 30, 'shard_of_destroy': 30}, 'twin_crystal'),
+    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_create': 20, 'shard_of_destroy': 45}, 'balanced_sheath'),
+
+    inventory.Recipe({'hammer_of_rational': 1, 'ancient_rune_shard': 35}, 'e_rune_gloves'),
+    inventory.Recipe({'hammer_of_rational': 1, 'ancient_rune_shard': 40}, 'rune_aimer'),
+    inventory.Recipe({'hammer_of_rational': 1, 'ancient_rune_shard': 150}, 'suspicious_rune_eye'),
+    inventory.Recipe({'hammer_of_rational': 1, 'ancient_rune_shard': 50, 'mystery_shard': 20}, 'ancient_swiftsword'),
+    inventory.Recipe({'hammer_of_rational': 1, 'feather_sword': 5, 'feather_of_basketball': 20}, 'feather_feather_sword'),
+
+    inventory.Recipe({'hammer_of_rational': 1, 'brainrot': 100}, 'brain_rotter'),
+    inventory.Recipe({'hammer_of_rational': 1, 'brain_rotter': 60, 'mystery_shard': 30, 'mystery_soul': 50}, 'confuse'),
+
+    inventory.Recipe({'hammer_of_rational': 1, 'ancient_rune_shard': 100, 'hope_dust': 2}, 'hope_sign'),
 
     inventory.Recipe({'_rune_altar': 1, 'thaumaturgy': 1, 'hoverplume_headgear': 1, 'hoverplume_back': 1, 'hoverplume_kneepads': 1,
                       'feather_sword': 1, 'feather_amulet': 1, 'toxic_wing': 1}, 'pluma_thaumaturgy'),
     inventory.Recipe({'_rune_altar': 1, 'thaumaturgy': 1, 'life_hood': 1, 'life_cloak': 1, 'life_hboots': 1,
                       'poise_necklace': 1, 'talent_fruit': 1, 'moonflower': 1}, 'bioic_thaumaturgy'),
+    inventory.Recipe({'_rune_altar': 1, 'ration_helmet': 1, 'ration_chestplate': 1, 'ration_boots': 1,
+                      'proof': 1, 'winds_anklet': 1, 'cute_watch': 1}, 'logos_thaumaturgy'),
+    inventory.Recipe({'_rune_altar': 1, 'heaven_wooden_headgear': 1, 'heaven_wooden_chestplate': 1, 'heaven_wooden_leggings': 1,
+                      'heaven_shotgun': 1, 'holy_condense_wand': 1, 'the_roving_chord': 1}, 'dendro_thaumaturgy'),
 ]
 
 inventory.RECIPES.extend(RECIPES)

@@ -76,3 +76,6 @@ class Dialogger:
             text = self.font.render(txt, True, (255, 255, 255))
             self.target_surface.blit(text, (self.dialog_rect.left + self.size * 5 // 2,
                                             self.dialog_rect.top + self.size // 2 + i * (self.size + 10)))
+
+    def is_done(self):
+        return not len(self.curr_text)

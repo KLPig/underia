@@ -267,7 +267,8 @@ class PlayerProfile:
             ['...', 'This is the \'adventure\'.', 'In a story, we will have the adventurer and the evil dragon.',
              '...', 'And also, get enough power from that flower.', 'You know what I\'m talking about.', '...anyway.'],
             ['...', '...anyway.'],
-            ['...', 'Let\'s change a new "scene".']
+            ['...', 'Let\'s change a new "scene".', 'Zhi Ni Tai Mei', 'SB'],
+            ['...', 'ABABABABABABABAB']
         ]
         if not t:
             self.point_wisdom = 0
@@ -287,6 +288,9 @@ class PlayerProfile:
             game.get_game().player.max_mana = 30
             game.get_game().player.max_talent = 0
             game.get_game().player.inventory.items = {}
+            if t == 5:
+                game.get_game().player.inventory.items = {'platinum_mask': 1, 'platinum_chestplate': 1, 'platinum_greaves': 1,
+                                                          'submachine_gun': 1, 'bullet': 200, 'hermes_boots': 1, 'recipe_book': 1}
             game.get_game().player.accessories = 10 * ['null']
             game.get_game().player.weapons = 4 * [weapons.WEAPONS['null']]
             game.get_game().player.ammo = ('null', 0)

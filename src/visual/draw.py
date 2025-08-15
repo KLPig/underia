@@ -5,6 +5,9 @@ def line(window, color, start_pos, end_pos, width=1):
         pg.draw.circle(window, color, start_pos, width)
         return
     gradient = (end_pos[1] - start_pos[1] + 10 ** -5) / (end_pos[0] - start_pos[0] + 10 ** -5)
+    if (start_pos[0] < 0 or start_pos[0] > window.get_width()) and (end_pos[0] < 0 or end_pos[0] > window.get_width()) and \
+        (start_pos[1] < 0 or start_pos[1] > window.get_height()) and (end_pos[1] < 0 or end_pos[1] > window.get_height()):
+        return
     if start_pos[0] < 0:
         start_pos = (0, int(start_pos[1] - gradient * start_pos[0]))
     if end_pos[0] < 0:
@@ -24,7 +27,7 @@ def line(window, color, start_pos, end_pos, width=1):
         end_pos = (int(end_pos[0] + ((1 / gradient) * (window.get_height() - end_pos[1]))), window.get_height())
     start_pos = (max(0, min(window.get_width(), start_pos[0])), max(0, min(window.get_height(), start_pos[1])))
     end_pos = (max(0, min(window.get_width(), end_pos[0])), max(0, min(window.get_height(), end_pos[1])))
-    pg.draw.line(window, color, start_pos, end_pos, width)
+    pg.draw.line(window, color, start_pos, end_pos, int(width))
 
 def l_rect(window, color, st_pos, en_pos, width=1):
     sx, sy = st_pos

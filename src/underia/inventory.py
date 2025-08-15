@@ -92,8 +92,8 @@ class Inventory:
                 cdata['poison_res'] = float(desc.removesuffix('%poisondamagereceived'))
             elif desc.endswith('splint'):
                 cdata['splint'] = int(desc.removesuffix('splint'))
-            elif desc.endswith('%splintcooldown'):
-                cdata['splint_cd'] = int(desc.removesuffix('%splintcooldown'))
+            elif desc.endswith('%splintcd'):
+                cdata['splint_cd'] = int(desc.removesuffix('%splintcd'))
             elif desc.endswith('additionalmaximummana'):
                 cdata['max_mana'] = int(desc.removesuffix('additionalmaximummana'))
             elif desc.endswith('additionalmaximuminspiration'):
@@ -102,6 +102,8 @@ class Inventory:
                 cdata['grenade_scat'] = 1
             elif desc.endswith('spoetbonustime'):
                 cdata['gain_duration'] = int(desc.removesuffix('spoetbonustime'))
+            elif desc.endswith('%damageabsorb'):
+                cdata['damage_absorb'] = int(desc.removesuffix('%damageabsorb'))
 
             elif desc.endswith('treecurse'):
                 cdata['tree_curse'] = 1
@@ -244,8 +246,10 @@ class Inventory:
                 d = f"{weapon.knock_back} knockback\n" + d
                 for dmg, val in weapon.damages.items():
                     dt = 'damage'
+                    mn = game.get_game().player.mana / game.get_game().player.max_mana
                     _dmg = (val * game.get_game().player.calculate_damage() *
-                            game.get_game().player.calculate_data('damage', rate_data=True, rate_multiply=True))
+                            game.get_game().player.calculate_data('damage', rate_data=True, rate_multiply=True) *
+                            ((1 - (1 - mn) ** 2) if mn < 1 else 1))
                     if TAGS['magic_weapon'] in self.tags:
                         _dmg *= game.get_game().player.attacks[2]
                     elif TAGS['poet_weapon'] in self.tags:
@@ -287,6 +291,7 @@ class Inventory:
                 d = 'col7f7fff<Hypnotist>\n' + d
             if TAGS['weapon'] in self.tags and constants.DIFFICULTY > 1:
                 weapon = weapons.WEAPONS[self.id]
+                d += '\n'
                 d += 'col7fff7fMastery: +100% charge speed\n'
                 if issubclass(type(weapon), weapons.SweepWeapon):
                     d += 'col7fff7fMastery: Disable immune time\n'
@@ -394,6 +399,7 @@ TAGS = {
     'magic_element_time': Inventory.Item.Tag('magic_element_time', 'time magic'),
     'magic_element_space': Inventory.Item.Tag('magic_element_space', 'space magic'),
     'magic_element_hallow': Inventory.Item.Tag('magic_element_hallow', 'hallow magic'),
+    'magic_element_chaos': Inventory.Item.Tag('magic_element_chaos', 'chaos magic'),
 
     'magic_lv_1': Inventory.Item.Tag('magic_lv_1', 'LV.I'),
     'magic_lv_2': Inventory.Item.Tag('magic_lv_2', 'LV.II'),
@@ -408,6 +414,9 @@ TAGS = {
 }
 items_dict: dict[str, Inventory.Item] = {
     'null': Inventory.Item('null', '', 'null', 0, [TAGS['item']]),
+
+    '_developer_tool__sight': Inventory.Item('Developer Tool - Sight', 'dt', '_developer_tool__sight', 0, [TAGS['accessory']], specify_img='null'),
+    '_developer_tool__speed': Inventory.Item('Developer Tool - Speed', 'dt\n+1000% speed', '_developer_tool__speed', 0, [TAGS['accessory']], specify_img='null'),
 
     'recipe_book': Inventory.Item('Recipe Book', 'Find related recipes', 'recipe_book', 0, [TAGS['item']]),
 
@@ -489,7 +498,7 @@ items_dict: dict[str, Inventory.Item] = {
     'saint_steel_ingot': Inventory.Item('Saint Steel Ingot', '', 'saint_steel_ingot', 6, [TAGS['item']]),
     'daedalus_ingot': Inventory.Item('Daedalus\' Ingot', '', 'daedalus_ingot', 6, [TAGS['item']]),
     'dark_ingot': Inventory.Item('Dark Ingot', '', 'dark_ingot', 6, [TAGS['item']]),
-    'soul_of_integrity': Inventory.Item('Soul of Integrity', 'Power of the honest being.', 'soul_of_integrity', 6,
+    'soul_of_integrity': Inventory.Item('Soul of Integrity', 'Power of honest being.', 'soul_of_integrity', 6,
                                         [TAGS['item']]),
     'soul_of_bravery': Inventory.Item('Soul of Bravery', 'Power of fearless.', 'soul_of_bravery', 6, [TAGS['item']]),
     'soul_of_kindness': Inventory.Item('Soul of Kindness', 'Power of mercy.', 'soul_of_kindness', 6, [TAGS['item']]),
@@ -520,11 +529,11 @@ items_dict: dict[str, Inventory.Item] = {
     'light_essence': Inventory.Item('Light Essence', 'A spark of light.', 'light_essence', 9, [TAGS['item']]),
     'scorch_core': Inventory.Item('Scorch Core', 'Controller of Temperature', 'scorch_core', 9, [TAGS['item']]),
     'curse_core': Inventory.Item('Curse Core', 'Controller of Demon', 'curse_core', 9, [TAGS['item']]),
-    'my_soul': Inventory.Item('MY Soul', 'MY soul, MY will.\nYou cannot be improved then.', 'my_soul', 9, [TAGS['item'], TAGS['workstation']]),
-    'reason': Inventory.Item('Reason', 'Where it starts.', 'reason', 10, [TAGS['item']]),
-    'result': Inventory.Item('Result', 'How it ends.', 'result', 10, [TAGS['item']]),
+    'my_soul': Inventory.Item('MY Soul', 'colff0000MY soul, MY will.\nYou cannot be improved then.', 'my_soul', 9, [TAGS['item'], TAGS['workstation']]),
+    'reason': Inventory.Item('Reason', 'colff0000Where it starts.', 'reason', 10, [TAGS['item']]),
+    'result': Inventory.Item('Result', 'colff0000How it ends.', 'result', 10, [TAGS['item']]),
     'the_final_ingot': Inventory.Item('The Final Ingot',
-                                      'Looks rainbow in color, glows with the power of cause and effect.', 'the_final_ingot', 11, [TAGS['item']]),
+                                      'rainbowNo matter the past or the future, you are the immortal being.', 'the_final_ingot', 11, [TAGS['item']]),
     'the_final_soul': Inventory.Item('The Final Soul', 'Your finale of THIS journey.\nThe power better than everything.', 'the_final_soul', 12, [TAGS['item']]),
     'murders_knife': Inventory.Item('Murder\'s Knife', 'Deal physical damage of 10% maximum hp\nIt means of a start of a genocide.', 'murders_knife', 13, [TAGS['item'], TAGS['weapon']]),
     'savior': Inventory.Item('Savior', 'Make a shield of 100% maximum hp\nIt means a start of pacifier', 'savior', 13, [TAGS['item'], TAGS['weapon'], TAGS['magic_weapon'],
@@ -584,7 +593,7 @@ items_dict: dict[str, Inventory.Item] = {
                                  [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'doctor_expeller': Inventory.Item('Doctor Expeller', 'Daily apple, daily non-doctor.', 'doctor_expeller', 3,
                                        [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
-    'nights_edge': Inventory.Item('Night\'s Edge', 'The sunset has gone, it now night...', 'nights_edge', 4,
+    'nights_edge': Inventory.Item('Night\'s Edge', 'colff7fffThe sunset has gone, it\'s now night...', 'nights_edge', 4,
                                   [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'storm_swift_sword': Inventory.Item('Storm Swift Sword', 'Press Q to sprint.\n0 mana cost', 'storm_swift_sword', 4,
                                           [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
@@ -597,14 +606,14 @@ items_dict: dict[str, Inventory.Item] = {
     'balanced_stabber': Inventory.Item('Balanced Stabber',
                                        'The power of the evil and the hallow are balanced.\n\n\'Make it under the hallow to enhance\'',
                                        'balanced_stabber', 5, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
-    'excalibur': Inventory.Item('Excalibur', 'The legendary sword of hallow.', 'excalibur', 6,
+    'excalibur': Inventory.Item('Excalibur', 'colffff7fThe legendary sword of hallow.', 'excalibur', 6,
                                 [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
-    'true_excalibur': Inventory.Item('True Excalibur', 'Inviolable hallow.', 'true_excalibur', 7,
+    'true_excalibur': Inventory.Item('True Excalibur', 'col7f7f00Inviolable hallow.', 'true_excalibur', 7,
                                      [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'wooden_club': Inventory.Item('Wooden Club', '', 'wooden_club', 6, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'remote_sword': Inventory.Item('Remote Sword', '', 'remote_sword', 6,
                                     [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
-    'true_nights_edge': Inventory.Item('True Night\'s Edge', 'Inviolable dark.', 'true_nights_edge', 7,
+    'true_nights_edge': Inventory.Item('True Night\'s Edge', 'col7f007fInviolable dark.', 'true_nights_edge', 7,
                                        [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'muramasa': Inventory.Item('Muramasa', 'Ghost\'s blade.', 'muramasa', 7, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'perseverance_sword': Inventory.Item('Perseverance Sword', 'Ignore the distance.', 'perseverance_sword', 6,
@@ -617,15 +626,15 @@ items_dict: dict[str, Inventory.Item] = {
                                    [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'wilson_knife': Inventory.Item('Wilson Knife', 'Designed by wilson', 'wilson_knife', 8,
                                    [TAGS['item'], TAGS['weapon'],  TAGS['melee_weapon']]),
-    'the_blade': Inventory.Item('The Blade', 'The mighty of this blade is not necessary to say.',
+    'the_blade': Inventory.Item('The Blade', 'col007f00The mighty of this blade is not necessary to say.',
                                 'the_blade', 8, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
-    'demon_blade__muramasa': Inventory.Item('Demon Blade: Muramasa', 'The terror of this blade is not necessary to say.',
+    'demon_blade__muramasa': Inventory.Item('Demon Blade: Muramasa', 'col7f0000The terror of this blade is not necessary to say.',
                                              'demon_blade__muramasa', 8, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'uncanny_valley': Inventory.Item('Uncanny Valley', 'Closer, scarier.', 'uncanny_valley', 9,
                                       [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'hour_hand': Inventory.Item('Hour Hand', 'A spin, a time.', 'hour_hand', 9,
                                  [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
-    'quark_rusher': Inventory.Item('Quark Rusher', 'The power of the quarks is unlimited.', 'quark_rusher', 9,
+    'quark_rusher': Inventory.Item('Quark Rusher', '', 'quark_rusher', 9,
                                    [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
 
     'spikeflower': Inventory.Item('Spikeflower', '', 'spikeflower', 0,
@@ -635,7 +644,7 @@ items_dict: dict[str, Inventory.Item] = {
     'fur_spear': Inventory.Item('Fur Spear', 'Shoots several fur, each dealing 8% damage.', 'fur_spear', 2, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'blood_pike': Inventory.Item('Blood Pike', '', 'blood_pike', 2, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'firite_spear': Inventory.Item('Firite Spear', '', 'firite_spear', 2, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
-    'nights_pike': Inventory.Item('Night\'s Pike', 'The sunset has gone, it now night...', 'nights_pike', 4,
+    'nights_pike': Inventory.Item('Night\'s Pike', 'colff7fffThe sunset has gone, it now night...', 'nights_pike', 4,
                                   [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'energy_spear': Inventory.Item('Energy Spear', 'Contained unparalleled energy.', 'energy_spear', 6,
                                    [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
@@ -650,23 +659,23 @@ items_dict: dict[str, Inventory.Item] = {
     'lysis': Inventory.Item('Lysis', 'Unbelievable explosion.', 'lysis', 9, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'star_wrath': Inventory.Item('Star Wrath', 'The wingdings from the starry sky.', 'star_wrath', 9,
                                   [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
-    'galaxy_broadsword': Inventory.Item('Galaxy Broadsword', 'Bring this sword to mastery the galaxy.', 'galaxy_broadsword', 11,
+    'galaxy_broadsword': Inventory.Item('Galaxy Broadsword', 'rainbowGalaxy headbows to you.', 'galaxy_broadsword', 11,
                                           [TAGS['item'], TAGS['weapon'], TAGS['ce_item'], TAGS['melee_weapon']]),
-    'eternal_echo': Inventory.Item('Eternal Echo', 'The galaxy\'s fallen to an end, remaining endless echo.', 'eternal_echo', 12,
+    'eternal_echo': Inventory.Item('Eternal Echo', 'rainbowGalaxy ends, with silent echos.', 'eternal_echo', 12,
                                    [TAGS['item'], TAGS['weapon'], TAGS['ce_item'], TAGS['melee_weapon']]),
-    'star_of_devotion': Inventory.Item('Star of Devotion', 'Under the star, is all in faith.', 'star_of_devotion', 12,
+    'star_of_devotion': Inventory.Item('Star of Devotion', 'rainbowUnder the star, is all in faith.', 'star_of_devotion', 12,
                                         [TAGS['item'], TAGS['weapon'], TAGS['ce_item'], TAGS['melee_weapon']]),
-    'highlight': Inventory.Item('Highlight', 'The unforgettable moment.', 'highlight', 11,
+    'highlight': Inventory.Item('Highlight', 'rainbowThe unforgettable moment.', 'highlight', 11,
                                  [TAGS['item'], TAGS['weapon'], TAGS['ce_item'], TAGS['melee_weapon']]),
-    'turning_point': Inventory.Item('Turning Point', 'The conflict will happen.', 'turning_point', 11,
+    'turning_point': Inventory.Item('Turning Point', 'rainbowThe conflict will happen.', 'turning_point', 11,
                                      [TAGS['item'], TAGS['weapon'], TAGS['ce_item'], TAGS['melee_weapon']]),
 
-    'prophecy': Inventory.Item('Prophecy', 'STATE I\nIt impossible to change', 'prophecy', 11,
+    'prophecy': Inventory.Item('Prophecy', 'STATE I\nrainbowIt impossible to change', 'prophecy', 11,
                                [TAGS['item'], TAGS['weapon'], TAGS['ce_item'], TAGS['melee_weapon']]),
-    'prophecy_ii': Inventory.Item('Prophecy', 'STATE II\n...without DETERMINATION.', 'prophecy_ii', 11,
+    'prophecy_ii': Inventory.Item('Prophecy', 'STATE II\nrainbow...without DETERMINATION.', 'prophecy_ii', 11,
                                   [TAGS['item'], TAGS['weapon'], TAGS['ce_item'], TAGS['melee_weapon']]),
 
-    'zenith': Inventory.Item('Zenith', 'Where the sky is.', 'zenith', 12,
+    'zenith': Inventory.Item('Zenith', 'rainbowThe world admits you.\nrainbowYour damage is restricted toward the weak enemies.\nrainbowYour power really matters.', 'zenith', 12,
                              [TAGS['item'], TAGS['weapon'], TAGS['ce_item'], TAGS['melee_weapon']]),
 
     'arrow_thrower': Inventory.Item('Arrow Thrower', '', 'arrow_thrower', 0,
@@ -704,7 +713,7 @@ items_dict: dict[str, Inventory.Item] = {
                                      [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
     'magma_assaulter': Inventory.Item('Magma Assaulter', 'When shooting, press Q to sprint back.', 'magma_assaulter', 2,
                                       [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
-    'shadow': Inventory.Item('shadow', 'When there\'s light, there\'s dark.', 'shadow', 4,
+    'shadow': Inventory.Item('shadow', 'colff7fffWhen there\'s light, there\'s dark.', 'shadow', 4,
                              [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
     'palladium_gun': Inventory.Item('Palladium Gun', '', 'palladium_gun', 5,
                                     [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
@@ -712,7 +721,7 @@ items_dict: dict[str, Inventory.Item] = {
     'titanium_gun': Inventory.Item('Titanium Gun', '', 'titanium_gun', 5, [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
     'dark_exploder': Inventory.Item('Dark Exploder', '', 'dark_exploder', 5,
                                      [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
-    'true_shadow': Inventory.Item('True Shadow', 'Not the others, \'Pong! Nobody left.\'', 'true_shadow', 7,
+    'true_shadow': Inventory.Item('True Shadow', 'col7f007fNot the others, \'Pong! Nobody left.\'', 'true_shadow', 7,
                                   [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
     'shotgun': Inventory.Item('Shotgun', 'Why a ranger should stand close?\nShoot three times.', 'shotgun', 6, [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
     'justice_shotgun': Inventory.Item('Justice Shotgun', 'Stand closer?', 'justice_shotgun', 7,
@@ -869,7 +878,7 @@ items_dict: dict[str, Inventory.Item] = {
     'tornado': Inventory.Item('Tornado', 'Pops out enemy nearby.', 'tornado', 3,
                                [TAGS['item'], TAGS['weapon'], TAGS['magic_weapon'], TAGS['magic_element_air'],
                                 TAGS['magic_lv_3']]),
-    'midnights_wand': Inventory.Item('Midnight\'s Wand', 'All darkness...\nShoots several night energy.', 'midnights_wand', 4,
+    'midnights_wand': Inventory.Item('Midnight\'s Wand', 'colff7fffAll darkness...\nShoots several night energy.', 'midnights_wand', 4,
                                      [TAGS['item'], TAGS['weapon'], TAGS['magic_weapon'], TAGS['magic_element_dark'],
                                       TAGS['magic_lv_4']]),
     'spiritual_destroyer': Inventory.Item('Spiritual Destroyer', 'Shoots a stronger energy pulse.\n\'Destroy the mark to enhance\'',
@@ -1216,13 +1225,13 @@ items_dict: dict[str, Inventory.Item] = {
                                          [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
 
     'karmic_helmet': Inventory.Item('Karmic Helmet', '120 armor\n+15% damage\n+15%critical\n+15% speed\n+15/sec regeneration\n+30/sec mana regeneration\n'
-                                                     '+30/sec mentality regeneration\n+15% domain size\n+15% speed\n+150 additonal maximum mana', 'karmic_helmet', 11,
+                                                     '+30/sec mentality regeneration\n+15% domain size\n+15% speed\n+150 additional maximum mana', 'karmic_helmet', 11,
                                         [TAGS['item'], TAGS['accessory'], TAGS['head']]),
     'karmic_chestplate': Inventory.Item('Karmic Chestplate', '160 armor\n+20% damage\n+20% critical\n+20% speed\n+20/sec regeneration\n+40/sec mana regeneration\n'
-                                                       '+40/sec mentality regeneration\n+20% domain size\n+20% speed\n+200 additonal maximum mana', 'karmic_chestplate', 11,
+                                                       '+40/sec mentality regeneration\n+20% domain size\n+20% speed\n+200 additional maximum mana', 'karmic_chestplate', 11,
                                         [TAGS['item'], TAGS['accessory'], TAGS['body']]),
     'karmic_leggings': Inventory.Item('Karmic Leggings', '80 armor\n+10% damage\n+10% critical\n+10% speed\n+10/sec regeneration\n+20/sec mana regeneration\n'
-                                                     '+20/sec mentality regeneration\n+10% domain size\n+10% speed\n+100 additonal maximum mana', 'karmic_leggings', 11,
+                                                     '+20/sec mentality regeneration\n+10% domain size\n+10% speed\n+100 additional maximum mana', 'karmic_leggings', 11,
                                         [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
 
     'hallowed_helmet': Inventory.Item('Hallowed Helmet', '22 armor\n+10% pacify time\n+10% melee damage', 'hallowed_helmet', 7,
@@ -1494,7 +1503,7 @@ items_dict: dict[str, Inventory.Item] = {
     'chaos_quiver': Inventory.Item('Chaos Quiver', '10kg\n+90% ranged damage\n+45% critical\n+280 touching defense\n+360 magic defense'
                                                    '\n+50/sec regeneration\n+110/sec mana regeneration\n+220% speed', 'chaos_quiver',
                                    9, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
-    'chaos_evileye': Inventory.Item('Chaos Evileye', '-10 attack speed\n+40% critical\n+100 additonal maximum mana',
+    'chaos_evileye': Inventory.Item('Chaos Evileye', '-10 attack speed\n+40% critical\n+100 additional maximum mana',
                                     'chaos_evileye', 9, [TAGS['item'], TAGS['accessory'], TAGS['see2']]),
     'starnight_gloves': Inventory.Item('Starnight Gloves', '+50% melee damage\n+40% magic damage\n-10 attack speed\n+20/sec mana regeneration\n+10/sec regeneration\n+15% critical',
                                        'starnight_gloves', 9, [TAGS['item'], TAGS['accessory']]),
@@ -1544,7 +1553,7 @@ items_dict: dict[str, Inventory.Item] = {
                                                                                        '+50/sec regeneration\n+500% domain size\n+10/sec mentality regeneration\n+80% speed\n+400 additional maximum mana\n'
                                                                                        '+36% critical\nWhen using melee to hit enemy, deal additionally 1% thinking damage, 0.5% chance to kill it.', 'grasp_of_the_infinite_corridor',
                                                      10, [TAGS['item'], TAGS['accessory']]),
-    'karmic_trail_boots': Inventory.Item('Karmic Trail Boots', 'Prints down the path of karma.\n188kg\n-25% air resistance\n+450% speed\n+18% damage\n+32% critical\n+500 splint\n-95% splint cd\n'
+    'karmic_trail_boots': Inventory.Item('Karmic Trail Boots', 'Prints down the path of karma.\n188kg\n-25% air resistance\n+450% speed\n+18% damage\n+32% critical\n+200 splint\n-95% splint cd\n'
                                                                '+15/sec regeneration\nYour footprint will deal damage to enemies.',
                                           'karmic_trail_boots', 10, [TAGS['item'], TAGS['accessory']]),
     'fate_alignment_amulet': Inventory.Item('Fate Alignment Amulet', 'The path of destiny.\n+50% speed\n+88% critical\n+80 touching defense\n120 magic defense\n'
@@ -1561,7 +1570,7 @@ items_dict: dict[str, Inventory.Item] = {
                                        'Say the right words, do the right thing.\n90kg\n+120 touching defense\n+330 magic defense\n'
                                        '+320/sec mana regeneration\n+180% domain size\n+30/sec mentality regeneration\n+120% speed\n'
                                        '+30% damage\n+108% magic damage\n+200% speed\n+90/sec regeneration\n+25% critical\n+800 splint\n'
-                                       '-50% splint cooldown\nY: Use 32x of mana cost of current weapon, summoning 50 projectiles',
+                                       '-50% splint cd\nY: Use 32x of mana cost of current weapon, summoning 50 projectiles',
                                        'integrity_amulet', 10, [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
     'perseverance_amulet': Inventory.Item('Perseverance Amulet', 'Never give up.\n200kg\n+350% speed\n+110% melee damage\n+35% damage\n'
                                                                  '+18% critical\n+480 touching defense\n+360 magic defense\n+50/sec regeneration\n'
@@ -1802,6 +1811,7 @@ items_dict: dict[str, Inventory.Item] = {
     'finale__earth_core': Inventory.Item('Finale: Earth Core', 'The finale is the the start.\nStart Chapter 3.', 'finale__earth_core', 13, [TAGS['item']]),
 
     'invalid': Inventory.Item('Invalid Item', 'Invalid item', 'invalid', 0, []),
+
 }
 
 
@@ -1859,7 +1869,6 @@ class Recipe:
             if ITEMS[it].rarity == mr and inv.is_enough(ITEMS[it]):
                 return not self.is_valid(inv)
         return False
-
 
 RECIPES = [
     Recipe({'wood': 15}, 'wooden_hammer'),

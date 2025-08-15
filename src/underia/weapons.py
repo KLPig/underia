@@ -95,11 +95,14 @@ class Weapon:
     def on_idle(self):
         pass
 
+    def draw(self):
+        imr = self.d_img.get_rect(center=position.displayed_position(
+            (self.x + game.get_game().player.obj.pos[0], self.y + game.get_game().player.obj.pos[1])))
+        game.get_game().displayer.canvas.blit(self.d_img, imr)
+
     def update(self):
         if self.display:
-            imr = self.d_img.get_rect(center=position.displayed_position(
-                (self.x + game.get_game().player.obj.pos[0], self.y + game.get_game().player.obj.pos[1])))
-            game.get_game().displayer.canvas.blit(self.d_img, imr)
+            self.draw()
         if self.timer > 1:
             self.on_attack()
             self.combo += 1
@@ -565,6 +568,54 @@ class StormStabber(ThiefWeapon):
                 game.get_game().player.obj.velocity.add(vector.Vector(vector.coordinate_rotation(mx, my),
                                                                       vector.distance(mx, my) // 4))
 
+class Whip(Weapon):
+    def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, length: int, size: int, auto_fire: bool = False):
+        super().__init__(name, damages, kb, img, speed, at_time, auto_fire)
+        self.size = size
+        self.length = length
+        self.st_pos = 800 // self.length
+        self.tgt_pos = 0
+        self.collides = []
+
+    def draw(self):
+        super().draw()
+        self.collides.clear()
+        pos = vector.Vector2D()
+        ar = self.st_pos * (1 - math.sin((1 - self.timer / self.at_time) * math.pi) ** 3) * (-1 if self.timer > self.at_time / 2 else 1)
+        rot = self.tgt_pos
+        size = self.size - abs(ar) / self.st_pos * self.size / 3
+        for i in range(self.length):
+            rot += ar
+            pos += vector.Vector2D(dr=rot, dt=size - size * 2 * i / self.length // 5)
+            self.collides.append(pos)
+            sf = game.get_game().graphics['items_' + self.name.replace(' ', '_') + '_whip']
+            sf = projectiles.projectile_get_surface(rot, 1 / (size - size * i / self.length * .8) * 50 * game.get_game().player.get_screen_scale(), sf)
+            sr = sf.get_rect(center=position.displayed_position(pos + game.get_game().player.obj.pos))
+            game.get_game().displayer.canvas.blit(sf, sr)
+
+    def on_start_attack(self):
+        super().on_start_attack()
+        tp = vector.Vector2D(0, 0, *position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))) - game.get_game().player.obj.pos
+        self.tgt_pos = vector.coordinate_rotation(*tp)
+
+    def on_attack(self):
+        ar = self.st_pos * math.sin(self.timer / self.at_time * math.pi) * (-1 if self.timer > self.at_time / 2 else 1)
+        self.set_rotation(int(self.tgt_pos + ar))
+        super().on_attack()
+        self.damage()
+
+    def damage(self):
+        for p_pos in self.collides:
+            pos = game.get_game().player.obj.pos + p_pos
+            for e in game.get_game().entities:
+                if vector.distance(*(pos - e.obj.pos)) < self.size * 10:
+                    for t, d in self.damages.items():
+                        e.hp_sys.damage(d * game.get_game().player.attack * game.get_game().player.attacks[0], t)
+                    if not e.hp_sys.is_immune:
+                        e.obj.apply_force(vector.Vector(self.tgt_pos, self.knock_back * 120000 / e.obj.MASS))
+                    if self.ENABLE_IMMUNE:
+                        e.hp_sys.enable_immume()
+
 class Spear(Weapon):
     ATTACK_SOUND = 'attack_sweep'
 
@@ -575,6 +626,7 @@ class Spear(Weapon):
         self.forward_speed = forward_speed
         self.poss = 0
         self.ddata = [copy.copy(damages), 1, forward_speed]
+        self.tgt_pos = 0
 
     def on_idle(self):
         super().on_idle()
@@ -596,6 +648,7 @@ class Spear(Weapon):
         self.face_to(px, py)
         self.forward(-self.st_pos / 2)
         self.poss =  -self.st_pos / 2
+        self.tgt_pos = self.rot
 
     def on_end_attack(self):
         super().on_end_attack()
@@ -625,7 +678,8 @@ class Spear(Weapon):
 
     def on_attack(self):
         self.forward(self.timer - self.at_time // 2)
-        self.forward(self.forward_speed // 2)
+        self.forward(self.forward_speed // 2 * (1 if self.timer > self.at_time // 2 else -1))
+        self.set_rotation(self.tgt_pos + int(10 * math.sin(self.timer / self.at_time * math.pi * 2)))
         self.poss += self.forward_speed // 2
         super().on_attack()
         self.damage()
@@ -692,6 +746,16 @@ class ComplexWeapon(Weapon):
         self.sweep.update()
         super().update()
 
+    def on_idle(self):
+        self.spear.display = False
+        self.sweep.display = True
+
+    def on_attack(self):
+        if self.spear.timer:
+            self.sweep.display = False
+        if self.sweep.timer:
+            self.spear.display = True
+        super().on_attack()
 
 class AutoSweepWeapon(SweepWeapon):
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, rot_speed: int,
@@ -1678,6 +1742,41 @@ class EZenith(Blade):
         super().on_idle()
         self.display = abs(self.x) > 50 or abs(self.y) > 50
 
+    def damage(self):
+        if self.rot_speed > 0:
+            rot_range = range(int(self.rot - self.rot_speed), int(self.rot + self.rot_speed + 1))
+        else:
+            rot_range = range(int(self.rot - self.rot_speed), int(self.rot + self.rot_speed - 1), -1)
+        for e in game.get_game().entities:
+            dps = e.obj.pos
+            px = dps[0] - self.x - game.get_game().player.obj.pos[0]
+            py = dps[1] - self.y - game.get_game().player.obj.pos[1]
+            r = int(vector.coordinate_rotation(px, py)) % 360
+            if r in rot_range or r + 360 in rot_range or (
+                    self.double_sided and ((r + 180) % 360 in rot_range or r + 180 in rot_range)):
+                if vector.distance(px, py) < self.img.get_width() * self.scale + (
+                (e.img.get_width() + e.img.get_height()) // 2 if e.img is not None else 10):
+                    for t, d in self.damages.items():
+                        e.hp_sys.damage(d * game.get_game().player.attack * game.get_game().player.attacks[self.DMG_AS_IDX], t)
+                    if not e.hp_sys.is_immune:
+                        rf = vector.coordinate_rotation(px + self.x, py + self.y)
+                        e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS
+                                                        if self.knock_back * 60000 < e.obj.MASS else
+                                                        self.knock_back * 600000 / e.obj.MASS))
+                    if 'matters_touch' in game.get_game().player.accessories:
+                        e.obj.MASS *= 1.01
+                    if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
+                        if not e.IS_MENACE and not e.VITAL:
+                            e.hp_sys.damage(e.hp_sys.max_hp / 10, dmg.DamageTypes.THINKING)
+                            if random.randint(0, 10) == 0:
+                                e.hp_sys.hp = 0
+                        else:
+                            e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), dmg.DamageTypes.THINKING)
+                    if self.ENABLE_IMMUNE:
+                        if constants.DIFFICULTY > 1:
+                            e.hp_sys.enable_immume()
+
+
 class Zenith(Blade):
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, rot_speed: int,
                  st_pos: int):
@@ -1703,12 +1802,15 @@ class Zenith(Blade):
             z.ueff = self.sk_cd < self.sk_mcd - self.at_time
         super().on_attack()
         self.tick += 1
-        self.cutting_effect(16, *EZenith.COLS[self.zeniths[0].idx])
+        self.cutting_effect(8, *EZenith.COLS[self.zeniths[0].idx])
         if self.tick % 2 == 0:
             self.zeniths[0].attack()
+            self.zeniths[0].damages = self.damages
             self.zeniths.append(self.zeniths.pop(0))
 
     def update(self):
+        self.damages[dmg.DamageTypes.PHYSICAL] = 45 * game.get_game().player.attack ** 2 * game.get_game().player.attacks[0]
+        self.damages[dmg.DamageTypes.THINKING] = 15 * game.get_game().player.attack ** 3 * game.get_game().player.attacks[0]
         super().update()
         for z in self.zeniths:
             z.update()
@@ -3161,7 +3263,7 @@ class DaedelusStormbow(Bow):
             game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
         mx, my = position.relative_position(
             position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
-        for i in range(3):
+        for i in range(random.randint(0, 2)):
             x, y = mx + random.randint(-500, 500), -game.get_game().displayer.SCREEN_HEIGHT // 2 - 200
             p = projectiles.AMMOS[game.get_game().player.ammo[0]]((x + game.get_game().player.obj.pos[0],
                                                                    y + game.get_game().player.obj.pos[1]),
@@ -3184,7 +3286,7 @@ class TrueDaedalusStormbow(Bow):
             game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
         mx, my = position.relative_position(
             position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
-        for i in range(8):
+        for i in range(random.randint(0, 2)):
             x, y = mx + random.randint(-800, 800), -game.get_game().displayer.SCREEN_HEIGHT // 2 - 200
             p = projectiles.AMMOS[game.get_game().player.ammo[0]]((x + game.get_game().player.obj.pos[0],
                                                                    y + game.get_game().player.obj.pos[1]),
@@ -3615,7 +3717,7 @@ def set_weapons():
         'bloody_sword': BloodySword('bloody sword', {dmg.DamageTypes.PHYSICAL: 56}, 0.2,
                                     'items_weapons_bloody_sword', 2,
                                     10, 20, 100, auto_fire=True),
-        'obsidian_sword': Blade('obsidian sword', {dmg.DamageTypes.PHYSICAL: 108}, 0.3,
+        'obsidian_sword': Blade('obsidian sword', {dmg.DamageTypes.PHYSICAL: 40}, 0.3,
                                 'items_weapons_obsidian_sword', 2, 8, 40, 180),
         'swwwword': Swwwword('swwwword', {dmg.DamageTypes.PHYSICAL: 188}, 0.4,
                              'items_weapons_swwwword', 2, 8, 40, 200),
@@ -3636,11 +3738,11 @@ def set_weapons():
         'spiritual_stabber': SpiritualStabber('spiritual stabber', {dmg.DamageTypes.PHYSICAL: 120}, 0.5,
                                               'items_weapons_spiritual_stabber',
                                               2, 6, 40, 170),
-        'palladium_sword': Blade('palladium sword', {dmg.DamageTypes.PHYSICAL: 108}, 1,
+        'palladium_sword': Blade('palladium sword', {dmg.DamageTypes.PHYSICAL: 120}, 1,
                                  'items_weapons_palladium_sword', 1, 4, 50, 80),
-        'mithrill_sword': Blade('mithrill sword', {dmg.DamageTypes.PHYSICAL: 120}, 2,
+        'mithrill_sword': Blade('mithrill sword', {dmg.DamageTypes.PHYSICAL: 240}, 2,
                                 'items_weapons_mithrill_sword', 1, 8, 30, 160),
-        'titanium_sword': Blade('titanium sword', {dmg.DamageTypes.PHYSICAL: 137}, 2.5,
+        'titanium_sword': Blade('titanium sword', {dmg.DamageTypes.PHYSICAL: 320}, 2.5,
                                 'items_weapons_titanium_sword', 1, 10, 40, 200),
         'rune_blade': RuneBlade('rune blade', {dmg.DamageTypes.PHYSICAL: 95}, 0.5,
                                 'items_weapons_rune_blade', 1, 5, 50, 150, True),
@@ -3694,24 +3796,24 @@ def set_weapons():
                        6, 6, 20, 120),
         'star_wrath': StarWrath('star wrath', {dmg.DamageTypes.PHYSICAL: 540}, 16, 'items_weapons_star_wrath',
                                 0, 5, 60, 120),
-        'galaxy_broadsword': GalaxyBroadsword('galaxy broadsword', {dmg.DamageTypes.PHYSICAL: 3500, dmg.DamageTypes.THINKING: 1200}, 38,
+        'galaxy_broadsword': GalaxyBroadsword('galaxy broadsword', {dmg.DamageTypes.PHYSICAL: 4500, dmg.DamageTypes.THINKING: 3500}, 38,
                                                'items_weapons_galaxy_broadsword',
                                                0, 8, 45, 200),
-        'eternal_echo': EternalEcho('eternal echo', {dmg.DamageTypes.PHYSICAL: 3000, dmg.DamageTypes.THINKING: 2400}, 45,
+        'eternal_echo': EternalEcho('eternal echo', {dmg.DamageTypes.PHYSICAL: 4500, dmg.DamageTypes.THINKING: 4000}, 45,
                                                'items_weapons_eternal_echo',
                                                0, 8, 45, 200),
-        'star_of_devotion': StarOfDevotion('star of devotion', {dmg.DamageTypes.PHYSICAL: 2800, dmg.DamageTypes.THINKING: 2600}, 45,
+        'star_of_devotion': StarOfDevotion('star of devotion', {dmg.DamageTypes.PHYSICAL: 5500, dmg.DamageTypes.THINKING: 3500}, 45,
                                              'items_weapons_star_of_devotion',
                                              0, 6, 60, 200),
         'quark_rusher': QuarkRusher('quark rusher', {dmg.DamageTypes.PHYSICAL: 4800, dmg.DamageTypes.THINKING: 2400}, 15,
                                        'items_weapons_quark_rusher',
                                        5, 45, 30, 200),
 
-        'highlight': Highlight('highlight', {dmg.DamageTypes.PHYSICAL: 800, dmg.DamageTypes.THINKING: 800}, 16, 'items_weapons_highlight',
+        'highlight': Highlight('highlight', {dmg.DamageTypes.PHYSICAL: 1600, dmg.DamageTypes.THINKING: 1600}, 16, 'items_weapons_highlight',
                                0, 3, 30, 60, auto_fire=True),
-        'turning_point': ComplexWeapon('turning point', {dmg.DamageTypes.PHYSICAL: 3000, dmg.DamageTypes.THINKING: 3600},
+        'turning_point': ComplexWeapon('turning point', {dmg.DamageTypes.PHYSICAL: 5000, dmg.DamageTypes.THINKING: 6000},
                                        {dmg.DamageTypes.PHYSICAL: 5000}, 45, 'items_weapons_turning_point',
-                                       1, 6, 4, 70, 280, 180, 400,
+                                       1, 3, 2, 130, 280, 400, 400,
                                        True, [0, 0, 0, 0, 1, 1], TurningPointSweep, TurningPointSpear),
 
         'spikeflower': Spear('spikeflower', {dmg.DamageTypes.PHYSICAL: 5}, 1.8, 'items_weapons_spikeflower',
@@ -3747,7 +3849,7 @@ def set_weapons():
         'prophecy_ii': ProphecyII('prophecy ii', {dmg.DamageTypes.PHYSICAL: 4500, dmg.DamageTypes.THINKING: 1500}, 15, 'items_weapons_prophecy_ii',
                                 1, 7, 70, 300, auto_fire=True),
 
-        'zenith': Zenith('zenith', {dmg.DamageTypes.PHYSICAL: 2999, dmg.DamageTypes.THINKING: 3999}, 10, 'items_weapons_zenith',
+        'zenith': Zenith('zenith', {dmg.DamageTypes.PHYSICAL: 0, dmg.DamageTypes.THINKING: 0}, .01, 'items_weapons_zenith',
                         0, 6, 50, 200),
 
         'bow': Bow('bow', {dmg.DamageTypes.PIERCING: 3}, 0.1, 'items_weapons_bow',
@@ -3779,7 +3881,7 @@ def set_weapons():
                                               0, 2, 500, auto_fire=True, ammo_save_chance=1 / 4),
         'forward_bow': ForwardBow('forward bow', {dmg.DamageTypes.PIERCING: 160}, 0.5, 'items_weapons_forward_bow',
                                   0, 7, 150, auto_fire=True, ammo_save_chance=1 / 2),
-        'true_daedalus_stormbow': TrueDaedalusStormbow('true daedalus stormbow', {dmg.DamageTypes.PIERCING: 128}, 0.5,
+        'true_daedalus_stormbow': TrueDaedalusStormbow('true daedalus stormbow', {dmg.DamageTypes.PIERCING: 88}, 0.5,
                                                        'items_weapons_true_daedalus_stormbow',
                                                        0, 3, 1000, auto_fire=True, ammo_save_chance=1 / 3),
         'bow_of_sanction': Bow('bow of sanction', {dmg.DamageTypes.PIERCING: 1800}, 0.5, 'items_weapons_bow_of_sanction',
@@ -3792,7 +3894,7 @@ def set_weapons():
         'resolution': Resolution('resolution', {dmg.DamageTypes.PIERCING: 720}, 0.5, 'items_weapons_resolution',
                                   0, 2, 2200, True, ammo_save_chance=3 / 4),
 
-        'pistol': Gun('pistol', {dmg.DamageTypes.PIERCING: 12}, 0.1, 'items_weapons_pistol',
+        'pistol': Gun('pistol', {dmg.DamageTypes.PIERCING: 48}, 0.1, 'items_weapons_pistol',
                       3, 15, 15, precision=2),
         'rifle': Gun('rifle', {dmg.DamageTypes.PIERCING: 18}, 0.2, 'items_weapons_rifle',
                      6, 6, 20, auto_fire=True, precision=4),
@@ -3815,8 +3917,8 @@ def set_weapons():
                            5, 10, 5000, auto_fire=True, precision=2),
         'shotgun': Shotgun('shotgun', {dmg.DamageTypes.PIERCING: 540}, 0.1, 'items_weapons_shotgun',
                             3, 8, 1000, auto_fire=True, precision=12, ammo_save_chance=2 / 3),
-        'justice_shotgun': Shotgun('justice shotgun', {dmg.DamageTypes.PIERCING: 450}, 0.1, 'items_weapons_justice_shotgun',
-                                   1, 2, 500, auto_fire=True, precision=25, ammo_save_chance=3 / 4),
+        'justice_shotgun': Shotgun('justice shotgun', {dmg.DamageTypes.PIERCING: 120}, 0.1, 'items_weapons_justice_shotgun',
+                                   2, 2, 500, auto_fire=True, precision=25, ammo_save_chance=3 / 4),
         'climax': Climax('climax', {dmg.DamageTypes.PIERCING: 240}, 0.5, 'items_weapons_climax',
                       0, 0, 8000, auto_fire=True, precision=1, tail_col=(255, 0, 0), ammo_save_chance=4 / 5),
 
@@ -3887,7 +3989,7 @@ def set_weapons():
                                          'items_weapons_spiritual_knife', 0, 6, 48, 144, 8, 2000),
         'daedalus_knife': ThiefWeapon('daedalus knife', {dmg.DamageTypes.PIERCING: 132}, 0.5,
                                        'items_weapons_daedalus_knife', 0, 4, 50, 150, 4, 2000),
-        'daedalus_twinknife': ThiefDoubleKnife('daedalus twinknife', {dmg.DamageTypes.PIERCING: 160}, 0.5,
+        'daedalus_twinknife': ThiefDoubleKnife('daedalus twinknife', {dmg.DamageTypes.PIERCING: 100}, 0.5,
                                                ('items_weapons_spiritual_knife', 'items_weapons_daedalus_knife'),
                                                0, 5, 40, 120, 6, 1800,
                                                (((200, 200, 200), (100, 100, 255)), ((255, 100, 100), (100, 100, 255))), 3),

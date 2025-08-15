@@ -1,8 +1,10 @@
 # Underia
 # Copyright (c) KLpig 2025, under the BSD 2-Clause License
 # For more information, see ./LICENSE
+import math
 import os
 import pickle
+
 import pygame as pg
 import random
 import time
@@ -194,6 +196,14 @@ try:
             game.player.afterimage_shadow
         except AttributeError:
             game.player.afterimage_shadow = 0
+        try:
+            game.fun
+        except AttributeError:
+            game.fun = random.randint(1, 13)
+        try:
+            game.further_entities
+        except AttributeError:
+            game.further_entities = {}
         while len(game.player.accessories) < 9:
             game.player.accessories.insert(0, 'null')
         while len(game.player.accessories) < 10:
@@ -277,6 +287,13 @@ def update():
         game.player.mana = max(game.player.mana, min(game.player.max_mana, game.player.mana + 40))
     for u in updates:
         exec(u)
+    if sum([len(v) for v in game.further_entities.values()]) > 1000:
+        ks = sorted(game.further_entities.items(),
+                    key=lambda x:physics.distance(game.player.obj.pos, (x[0][0] * underia.Entities.ENTITY_DUMP_CHUNK,
+                                                                        x[0][1] * underia.Entities.ENTITY_DUMP_CHUNK)),
+                    reverse=True)
+        for j in range(len(ks) // 3):
+            game.further_entities[ks[j][0]] = []
     bm = 'blood moon' in game.world_events
     if game.chapter == 1:
         if len(game.hallow_points) > 5:
@@ -306,12 +323,27 @@ def update():
         if d > 8000 + (entity.VITAL or entity.IS_MENACE) * 8000 or (d > 1200 + (entity.IS_MENACE or entity.VITAL) * 1200 and
                                                   not entity.is_suitable(game.get_biome())):
             game.entities.remove(entity)
-            del entity
+            if not entity.IS_MENACE and not entity.VITAL and not entity.obj.IS_OBJECT:
+                entity.dump_process()
+
+                ddp = (int(entity.obj.pos[0] / underia.Entities.ENTITY_DUMP_CHUNK),
+                      int(entity.obj.pos[1] / underia.Entities.ENTITY_DUMP_CHUNK))
+                if ddp not in game.further_entities:
+                    game.further_entities[ddp] = []
+                game.further_entities[ddp].append(entity)
+    for xx in range(-10, 10):
+        for yy in range(-10, 10):
+            xx += game.player.obj.pos[0] // underia.Entities.ENTITY_DUMP_CHUNK
+            yy += game.player.obj.pos[1] // underia.Entities.ENTITY_DUMP_CHUNK
+            if (xx, yy) in game.further_entities and len(game.further_entities[(xx, yy)]):
+                for entity in game.further_entities[(xx, yy)]:
+                    entity.load_process()
+                    game.entities.append(entity)
+                game.further_entities[(xx, yy)].clear()
     for entity in game.drop_items:
         d = physics.distance(entity.obj.pos[0] - game.player.obj.pos[0], entity.obj.pos[1] - game.player.obj.pos[1])
-        if d > 2000 + entity.rarity * 1000:
+        if d > 5000 + entity.rarity * 2000:
             game.drop_items.remove(entity)
-            del entity
     if game.chapter <= 1:
         if game.get_biome() == 'forest':
             if 5 > game.stage > 1:
@@ -490,29 +522,49 @@ def update():
         biome = game.get_biome()
         night = game.day_time > 0.75 or game.day_time < 0.2
 
-        underia.entity_spawn(underia3.Chicken, 3000, 5000, target_number=12 - night * 5, rate=4)
-        underia.entity_spawn(underia3.ManaChicken, 3000, 5000, target_number=1 + night * 3, rate=2)
+        ac = game.stage - 9
 
-        underia.entity_spawn(underia3.RuneAltar, 3000, 5000, target_number=1, rate=.1)
-        if night:
-            underia.entity_spawn(underia3.PurpleClayPot, 3200, 5000, target_number=18, rate=.1)
-        if biome == 'forest':
-            underia.entity_spawn(underia3.Tree, 1000, 2000, target_number=25, rate=6)
-        elif biome == 'rainforest':
-            underia.entity_spawn(underia3.Lychee, 1500, 4500, target_number=8, rate=6)
-            underia.entity_spawn(underia3.Tree, 1000, 2000, target_number=28, rate=6)
-        elif biome == 'desert':
-            underia.entity_spawn(underia3.DeadTree, 1000, 2000, target_number=18, rate=6)
-            underia.entity_spawn(underia3.BonecaAmbalabu, 2000, 4000, target_number=17, rate=2)
-            underia.entity_spawn(underia3.LaVacaSaturnoSaturnita, 2000, 4000, target_number=3, rate=.02 * night)
-        elif biome == 'snowland':
-            underia.entity_spawn(underia3.PoisonCentipede, 2000, 2500, target_number=2, rate=3)
-            underia.entity_spawn(underia3.PoisonChicken, 1000, 4000, target_number=4, rate=8)
-            underia.entity_spawn(underia3.PoiseWalker, 3000, 4000, target_number=1, rate=.01 * night)
-        elif biome == 'heaven':
-            underia.entity_spawn(underia3.HGoblinFighter, 1000, 2000, target_number=8, rate=6)
-            underia.entity_spawn(underia3.HGoblinRanger, 3000, 5000, target_number=15, rate=6)
-            underia.entity_spawn(underia3.HGoblinThief, 2000, 4000, target_number=5, rate=6)
+        if game.dimension == 'overworld':
+            underia.entity_spawn(underia3.Chicken, 3000, 5000, target_number=12 - night * 5, rate=4)
+            underia.entity_spawn(underia3.ManaChicken, 3000, 5000, target_number=3 + night * 3, rate=2)
+            if ac > 0:
+                underia.entity_spawn(underia3.EliteChicken, 3000, 5000, target_number=3, rate=2)
+                if biome.endswith('forest'):
+                    underia.entity_spawn(underia3.ChickenSinger, 3000, 5000, target_number=2, rate=1)
+                    underia.entity_spawn(underia3.ChickenDancer, 3000, 5000, target_number=4, rate=1)
+                    underia.entity_spawn(underia3.ChickenRapper, 3000, 5000, target_number=2, rate=1)
+
+            if night:
+                underia.entity_spawn(underia3.PurpleClayPot, 3200, 5000, target_number=18, rate=.8)
+            if biome == 'forest':
+                underia.entity_spawn(underia3.Tree, 1000, 2000, target_number=25, rate=6)
+            elif biome == 'rainforest':
+                underia.entity_spawn(underia3.Lychee, 1500, 4500, target_number=8, rate=6)
+                underia.entity_spawn(underia3.Tree, 1000, 2000, target_number=28, rate=6)
+            elif biome == 'desert':
+                underia.entity_spawn(underia3.DeadTree, 1000, 2000, target_number=18, rate=6)
+                underia.entity_spawn(underia3.BonecaAmbalabu, 2000, 4000, target_number=17, rate=2)
+                if ac > 0:
+                    underia.entity_spawn(underia3.LaVacaSaturnoSaturnita, 1000, 2000, target_number=18, rate=5)
+                else:
+                    underia.entity_spawn(underia3.LaVacaSaturnoSaturnita, 2000, 4000, target_number=3, rate=.02 * night)
+
+            elif biome == 'snowland':
+                underia.entity_spawn(underia3.PoisonCentipede, 2000, 2500, target_number=2, rate=3)
+                underia.entity_spawn(underia3.PoisonChicken, 1000, 4000, target_number=4, rate=8)
+                underia.entity_spawn(underia3.PoiseWalker, 3000, 4000, target_number=2, rate=.05 * night)
+            elif biome == 'heaven':
+                underia.entity_spawn(underia3.HGoblinFighter, 1000, 2000, target_number=8, rate=6)
+                underia.entity_spawn(underia3.HGoblinRanger, 3000, 5000, target_number=15, rate=6)
+                underia.entity_spawn(underia3.HGoblinThief, 2000, 4000, target_number=5, rate=6)
+            elif biome == 'ancient':
+                underia.entity_spawn(underia3.RuneAltar, 3000, 5000, target_number=4, rate=1)
+                underia.entity_spawn(underia3.AncientStone, 3000, 5000, target_number=4, rate=1)
+                underia.entity_spawn(underia3.RuneGuard, 1000, 3000, target_number=14 + night * 5, rate=6 + ac * 14)
+        else:
+            underia.entity_spawn(underia3.RuneAltar, 3000, 5000, target_number=4, rate=1)
+            underia.entity_spawn(underia3.RuneGuard, 1000, 3000, target_number=22, rate=10)
+            underia.entity_spawn(underia3.RuneFlower, 1000, 3000, target_number=22, rate=10)
 
 if addr is not None:
     game.client = web.Client(addr, 1145)
@@ -526,7 +578,6 @@ if addr is not None:
     g = random.randint(max(0, 105 - r), min(360 - r, 255))
     b = 360 - r - g
     game.client.player_id = start_data.pid
-
 
 if constants.WEB_DEPLOY:
     import asyncio
@@ -565,8 +616,16 @@ else:
             try_delete_attribute(game.player.profile, 'font')
             try_delete_attribute(game.player.profile, 'font_s')
             try_delete_attribute(game.player.profile, 'dialogger')
+            try_delete_attribute(game, 'mus_text')
             game.events = []
             game.projectiles = []
+            for e in game.entities:
+                e.dump_process()
+                dp = (int(e.obj.pos[0] / underia.Entities.ENTITY_DUMP_CHUNK),
+                      int(e.obj.pos[1] / underia.Entities.ENTITY_DUMP_CHUNK))
+                if dp not in game.further_entities:
+                    game.further_entities[dp] = []
+                game.further_entities[dp].append(e)
             game.entities = []
             for w in game.player.weapons:
                 game.player.inventory.add_item(underia.ITEMS[w.name.replace(" ", "_")])
@@ -577,7 +636,12 @@ else:
             with open(resources.get_save_path(game.save), 'wb') as w:
                 w.write(game_pickle)
                 w.close()
-            game_data_pickle = pickle.dumps(underia.GameData(game.player.profile))
+            gd = underia.GameData(game.player.profile)
+            if os.path.exists(resources.get_save_path(game.save.replace('.pkl', '.data.pkl'))):
+                with open(resources.get_save_path(game.save.replace('.pkl', '.data.pkl')), 'rb') as f:
+                    lgd: underia.GameData = pickle.loads(f.read())
+                    gd.name = lgd.name
+            game_data_pickle = pickle.dumps(gd)
             with open(resources.get_save_path(game.save.replace('.pkl', '.data.pkl')), 'wb') as w:
                 w.write(game_data_pickle)
                 w.close()
