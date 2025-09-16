@@ -381,9 +381,9 @@ class BloodflowerAI(CloseBloodflowerAI):
             py = player.pos[1] - self.pos[1]
             if vector.distance(px, py) < 800:
                 if self.timer > 20:
-                    self.apply_force(vector.Vector(vector.coordinate_rotation(px, py), 120))
+                    self.apply_force(vector.Vector(vector.coordinate_rotation(px, py), 180))
                 else:
-                    self.apply_force(vector.Vector(vector.coordinate_rotation(px, py) + self.prot, 180))
+                    self.apply_force(vector.Vector(vector.coordinate_rotation(px, py) + self.prot, 60))
                 if self.touched_player:
                     self.timer = 0
                     self.prot = random.randint(150, 210)
@@ -1248,7 +1248,7 @@ class WorldsTreeAI(MonsterAI):
                                            vector.distance(ax, ay) * 6 + 8000))
 
 @functools.lru_cache(maxsize=int(constants.MEMORY_USE * .1))
-def entity_get_surface(display_mode, rot, scale, img):
+def entity_get_surface(display_mode, rot, scale, img, alpha=255):
     if img is None or img.get_width() + img.get_height() > 30 * scale:
         if display_mode == Entities.DisplayModes.DIRECTIONAL:
             d_img = pg.transform.rotate(img, rot)
@@ -1259,7 +1259,10 @@ def entity_get_surface(display_mode, rot, scale, img):
                 d_img = img
         else:
             d_img = img
-        return pg.transform.scale(d_img,(d_img.get_width() / scale, d_img.get_height() / scale)) if d_img is not None else None
+        sd = pg.transform.scale(d_img,(d_img.get_width() / scale, d_img.get_height() / scale)) if d_img is not None else None
+        if alpha != 255:
+            sd.set_alpha(alpha)
+        return sd
     else:
         return pg.Surface((img.get_width() / scale, img.get_height() / scale))
 
@@ -4709,7 +4712,7 @@ class Entities:
         NAME = 'Heaven Goblin Fighter'
         DISPLAY_MODE = 2
         LOOT_TABLE = LootTable([
-            IndividualLoot('wooden_stick', 0.09, 1, 1),
+            IndividualLoot('wooden_club', 0.09, 1, 1),
             IndividualLoot('spikeball', 0.09, 1, 1),
             IndividualLoot('heaven_shotgun', 0.12, 1, 1)
             ])
@@ -4735,7 +4738,7 @@ class Entities:
         NAME = 'Heaven Goblin Thief'
         DISPLAY_MODE = 2
         LOOT_TABLE = LootTable([
-            IndividualLoot('wooden_stick', 0.09, 1, 1),
+            IndividualLoot('wooden_club', 0.09, 1, 1),
             IndividualLoot('spikeball', 0.09, 1, 1),
             ])
 
@@ -4760,7 +4763,7 @@ class Entities:
         NAME = 'Heaven Goblin Ranger'
         DISPLAY_MODE = 2
         LOOT_TABLE = LootTable([
-            IndividualLoot('wooden_stick', 0.09, 1, 1),
+            IndividualLoot('wooden_club', 0.09, 1, 1),
             IndividualLoot('spikeball', 0.09, 1, 1),
             IndividualLoot('heaven_shotgun', 0.12, 1, 1)
             ])
@@ -4905,18 +4908,21 @@ class Entities:
             self.this_no = []
             self.wave = 0
             self.hp_sys(op='config', immune=True)
+            for i in range(5):
+                self.NUMBERS[i] = int(self.NUMBERS[i] * [1, 1, 2, 5][constants.DIFFICULTY])
 
         def on_update(self):
             self.NAME = 'The Heaven Goblins(Wave %d)' % (self.wave + 1)
             self.obj.pos << (game.get_game().player.obj.pos[0],
                             game.get_game().player.obj.pos[1] - 1000)
             self.tick += 1
-            if self.tick % 10 == 1 and len(self.goblins) < self.NUMBERS[self.wave] * 2:
+            if self.tick % (4 - self.wave // 2) == 1 and len(self.goblins) < self.NUMBERS[self.wave] * 2:
                 px, py = game.get_game().player.obj.pos
                 ax, ay = vector.rotation_coordinate(random.randint(0, 360))
-                dt = random.randint(800, 1200)
+                dt = random.randint(500, 1200)
                 ps = px + ax * dt, py + ay * dt
-                if (not random.randint(0, 10) or not len(self.goblins)) and self.wave == 4:
+                if ((not random.randint(0, 50) or not len(self.goblins)) and self.wave == 4 and
+                        len([1 for e in self.goblins if e.hp_sys.hp > 0]) < 20 + constants.DIFFICULTY * 5):
                     self.goblins.append(Entities.Orge(ps))
                 elif not random.randint(0, 3) and self.wave > 1:
                     self.goblins.append(Entities.HeavenGoblinRanger(ps))
@@ -4926,7 +4932,7 @@ class Entities:
                     self.goblins.append(Entities.HeavenGoblinFighter(ps))
                 game.get_game().entities.append(self.goblins[-1])
             self.hp_sys.max_hp = self.NUMBERS[self.wave]
-            self.hp_sys.hp = self.NUMBERS[self.wave] - sum([e.hp_sys.hp <= 0 for e in self.goblins])
+            self.hp_sys.hp = max(0, self.NUMBERS[self.wave] - sum([1 - e.hp_sys.hp / e.hp_sys.max_hp for e in self.goblins]))
             if self.hp_sys.hp <= 0:
                 if self.wave < 4:
                     self.wave += 1
@@ -4943,53 +4949,71 @@ class Entities:
         IS_MENACE = True
         BOSS_NAME = 'The Heaven Intruder'
 
+        NUMBERS = [40, 60, 60, 80, 100]
+
         def __init__(self, pos):
             super().__init__(pos, game.get_game().graphics['entity_goblin_wave'], BuildingAI, 120)
             self.obj.IS_OBJECT = False
             self.goblins = []
             self.tick = 0
-            self.hp_sys.max_hp = 140
-            self.hp_sys.hp = 140
+            self.this_no = []
+            self.wave = 0
+            self.hp_sys(op='config', immune=True)
+            for i in range(5):
+                self.NUMBERS[i] = int(self.NUMBERS[i] * [1, 1, 2, 5][constants.DIFFICULTY])
 
-        def update(self):
-            self.obj.pos << game.get_game().player.obj.pos
+        def on_update(self):
+            self.NAME = 'The Heaven Goblins(Wave %d)' % (self.wave + 1)
+            self.obj.pos << (game.get_game().player.obj.pos[0],
+                             game.get_game().player.obj.pos[1] - 1000)
             self.tick += 1
-            if self.tick % 10 == 1 and len(self.goblins) < 320:
-                px, py = self.obj.pos
+            if self.tick % (4 - self.wave // 2) == 1 and len(self.goblins) < self.NUMBERS[self.wave] * 2:
+                px, py = game.get_game().player.obj.pos
                 ax, ay = vector.rotation_coordinate(random.randint(0, 360))
-                dt = random.randint(800, 1000)
+                dt = random.randint(500, 1200)
                 ps = px + ax * dt, py + ay * dt
-                if not random.randint(0, 4):
-                    self.goblins.append(Entities.HeavenGoblinPoet(ps))
-                elif not random.randint(0, 3):
-                    self.goblins.append(Entities.HeavenGoblinPriest(ps))
-                elif not random.randint(0, 3):
-                    self.goblins.append(Entities.HeavenGoblinFighter(ps))
-                elif random.randint(0, 1):
-                    self.goblins.append(Entities.HeavenGoblinThief(ps))
-                else:
+                if (not random.randint(0, 50) or not len(self.goblins)) and self.wave in [2, 4] and len(
+                        [1 for e in self.goblins if e.hp_sys.hp > 0]) < 20 + constants.DIFFICULTY * 5:
+                    self.goblins.append(Entities.Orge(ps))
+                elif not random.randint(0, 3) and self.wave > 1:
                     self.goblins.append(Entities.HeavenGoblinRanger(ps))
+                elif not random.randint(0, 1) and self.wave not in [0, 2]:
+                    self.goblins.append(Entities.HeavenGoblinThief(ps))
+                elif not random.randint(0, 1) and self.wave not in [0, 1]:
+                    self.goblins.append(Entities.HeavenGoblinPoet(ps))
+                elif not random.randint(0, 1) and self.wave not in [0, 1, 2]:
+                    self.goblins.append(Entities.HeavenGoblinPriest(ps))
+                else:
+                    self.goblins.append(Entities.HeavenGoblinFighter(ps))
                 game.get_game().entities.append(self.goblins[-1])
-            self.hp_sys.hp = 140 - sum([e.hp_sys.hp <= 0 for e in self.goblins])
+            self.hp_sys.max_hp = self.NUMBERS[self.wave]
+            self.hp_sys.hp = max(0, self.NUMBERS[self.wave] - sum([1 - e.hp_sys.hp / e.hp_sys.max_hp for e in self.goblins]))
+            if self.hp_sys.hp <= 0:
+                if self.wave < 4:
+                    self.wave += 1
+                    self.goblins.clear()
+                    self.hp_sys.hp = self.NUMBERS[self.wave]
             self.goblins = [g for g in self.goblins if vector.distance(g.obj.pos[0] - self.obj.pos[0],
-                                                                        g.obj.pos[1] - self.obj.pos[1]) < 1100 ** 2]
+                                                                       g.obj.pos[1] - self.obj.pos[1]) < (
+                                        1300 + g.IS_MENACE * 2700) ** 2]
+
 
     class SnowDrake(Entity):
-        NAME = 'Snow Drake'
-        DISPLAY_MODE = 3
-        LOOT_TABLE = LootTable([
-            IndividualLoot('soul_of_coldness', 0.9, 5, 12),
-            IndividualLoot('evil_ingot', 0.9, 2, 5),
-        ])
+            NAME = 'Snow Drake'
+            DISPLAY_MODE = 3
+            LOOT_TABLE = LootTable([
+                IndividualLoot('soul_of_coldness', 0.9, 5, 12),
+                IndividualLoot('evil_ingot', 0.9, 2, 5),
+            ])
 
-        SOUND_HURT = 'sticky'
-        SOUND_DEATH = 'monster'
+            SOUND_HURT = 'sticky'
+            SOUND_DEATH = 'monster'
 
-        def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_snowdrake'], SnowDrakeAI, 2500)
-            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 10
-            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 15
-            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 18
+            def __init__(self, pos):
+                super().__init__(pos, game.get_game().graphics['entity_snowdrake'], SnowDrakeAI, 2500)
+                self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 10
+                self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 15
+                self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 18
 
     class IceCap(Entity):
         NAME = 'Ice Cap'
@@ -6091,6 +6115,7 @@ class Entities:
         NAME = 'Times'
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([])
+        VITAL = True
 
         def __init__(self, pos, rot):
             super().__init__(pos, game.get_game().graphics['entity_times'], FastBulletAI, 10 ** 9)
@@ -6098,6 +6123,7 @@ class Entities:
             self.obj.rot = rot
             self.obj.speed = 5000
             self.tick = 0
+            self.hp_sys.IMMUNE = True
 
         def t_draw(self):
             if self.tick >= 10:
@@ -6133,11 +6159,12 @@ class Entities:
             self.obj.MASS = 1000
             self.tick = 0
             self.obj.IS_OBJECT = False
+            self.hp_sys.IMMUNE = True
 
         def t_draw(self):
             super().t_draw()
             self.tick += 1
-            if self.tick < 10:
+            if self.tick < [40, 30, 15, 10][constants.DIFFICULTY]:
                 pg.draw.circle(game.get_game().displayer.canvas, (255, 0, 0),
                                position.displayed_position(self.obj.pos), 50 / game.get_game().player.get_screen_scale(),
                                5)
@@ -6154,6 +6181,7 @@ class Entities:
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 50:
                 game.get_game().player.hp_sys.damage(700, damages.DamageTypes.MAGICAL)
+                game.get_game().player.hp_sys.damage(700, damages.DamageTypes.TOUCHING)
                 game.get_game().player.hp_sys.enable_immume()
                 self.hp_sys.hp = 0
 
@@ -6267,7 +6295,7 @@ class Entities:
         def __init__(self, pos, hp_sys, no: int):
             super().__init__(pos, game.get_game().graphics[f'entity_clock{no}'], BuildingAI, hp_sys=hp_sys)
             self.obj.MASS = 5000
-            self.obj.TOUCHING_DAMAGE = 900
+            self.obj.TOUCHING_DAMAGE = 0
             self.obj.IS_OBJECT = False
 
     class CLOCK(Entity):
@@ -6289,36 +6317,33 @@ class Entities:
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 50
             self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 50
             self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 25
-            self.obj.TOUCHING_DAMAGE = 9999
+            self.obj.TOUCHING_DAMAGE = 1999
             self.phase = 0
             self.tick = 0
             self.rt = 0
             self.dt = 0
             self.nums = [Entities.TimeNumeral(self.obj.pos, self.hp_sys, i) for i in range(1, 13)]
-            for e in self.nums:
-                game.get_game().entities.append(e)
+            self.ins = False
 
         def on_update(self):
+            if not self.ins:
+                self.ins = True
+                for e in self.nums:
+                    game.get_game().entities.append(e)
             super().on_update()
             self.tick += 1
             if self.phase == 0:
                 self.rt += 3
-                if self.tick < 100:
-                    self.dt += 12
+                if self.tick < 30:
+                    self.dt += 500
+                if self.tick > 60:
+                    self.dt -= 225
                 if self.tick > 120:
                     self.tick = 0
                     self.phase = 1
-                    for e in self.nums:
-                        e.obj.IS_OBJECT = True
+                    game.get_game().player.hp_sys.effect(effects.TimeDomain(1000000, constants.DIFFICULTY * 5 + 1))
             else:
                 px, py = game.get_game().player.obj.pos
-                px -= self.obj.pos[0]
-                py -= self.obj.pos[1]
-                if vector.distance(px, py) > self.dt:
-                    ap = self.dt / vector.distance(px, py)
-                    game.get_game().player.obj.pos << (self.obj.pos[0] + ap * px, self.obj.pos[1] + ap * py)
-                    px *= ap
-                    py *= ap
                 if self.phase == 1:
                     if self.tick % 32 == 1:
                         game.get_game().entities.append(Entities.Times(self.obj.pos, vector.coordinate_rotation(px, py)))
@@ -6403,11 +6428,46 @@ class Entities:
                     self.phase += 1
                     self.set_rotation(self.rot)
                 self.rt += 3 + self.phase * 30
-                self.dt = int(1500 + 300 * math.sin(self.tick / 10))
+
+        def t_draw(self):
+            if game.get_game().player.open_inventory:
+                game.get_game().player.open_inventory = False
+                game.get_game().dialog.dialog('You are too afraid to open your inventory.')
+            if self.hp_sys.hp <= 1 and self.dt > 0:
+                self.dt = max(0, self.dt - 20)
+                self.hp_sys.hp = 1
+                self.obj.TOUCHING_DAMAGE = 0
+                game.get_game().player.hp_sys.effects.clear()
+            elif self.hp_sys.hp <= 1:
+                self.hp_sys.hp = 0
+            elif self.phase:
+                self.dt = int(1500 + 300 * math.sin(self.tick / 30 * math.pi))
+            if self.phase != 0 or (self.phase == 0 and self.tick > 60):
+                px, py = game.get_game().player.obj.pos
+                px -= self.obj.pos[0]
+                py -= self.obj.pos[1]
+                if vector.distance(px, py) > self.dt:
+                    ap = self.dt / vector.distance(px, py)
+                    game.get_game().player.obj.pos << (self.obj.pos[0] + ap * px, self.obj.pos[1] + ap * py)
+                    px *= ap
+                    py *= ap
+                pg.draw.circle(game.get_game().displayer.canvas, (0, int(20 + math.sin(self.tick / 30 * math.pi) * 20),
+                                                                  int(20 + math.sin(self.tick / 30 * math.pi) * 20)), position.displayed_position(self.obj.pos),
+                               int(self.dt / game.get_game().player.get_screen_scale()))
+                pg.draw.circle(game.get_game().displayer.canvas, (0, 255, 255), position.displayed_position(self.obj.pos),
+                               int(self.dt / game.get_game().player.get_screen_scale()), 15)
+            elif 30 < self.tick < 60:
+                sf = pg.Surface(game.get_game().displayer.canvas.get_size(), pg.SRCALPHA)
+                sf.fill((0, 0, 0))
+                sf.set_alpha((self.tick - 30) * 255 // 30)
+                game.get_game().displayer.canvas.blit(sf, (0, 0))
             for i, e in enumerate(self.nums):
                 ax, ay = vector.rotation_coordinate(self.rt % 360 + i * 30)
-                e.obj.pos << (self.obj.pos[0] + ax * self.dt,
-                             self.obj.pos[1] + ay * self.dt)
+                if self.dt < 10000:
+                    e.obj.pos << (self.obj.pos[0] + ax * self.dt,
+                                 self.obj.pos[1] + ay * self.dt)
+
+            super().t_draw()
 
     class MATTER(Entity):
         NAME = 'MATTERS'
@@ -6439,32 +6499,25 @@ class Entities:
             self.dt = 0
             self.cdt = 0
             self.set_rotation(self.rot)
+            self.hp_sys.IMMUNE = True
 
         def on_update(self):
             super().on_update()
-            self.cdt = (self.cdt + self.dt * 8) // 2
-
-            pg.draw.circle(game.get_game().displayer.canvas, (0, 0, 255),
-                           position.displayed_position(self.obj.pos), self.cdt / game.get_game().player.get_screen_scale(),
-                           5)
-            if self.hp_sys.hp < self.hp_sys.max_hp * (1 - self.phase / 9):
-                self.phase += 1
-                self.cdt -= 400
+            self.cdt = (self.cdt * 8 + self.dt) // 9
             self.tick += 1
-            if self.phase:
-                px, py = game.get_game().player.obj.pos
-                px -= self.obj.pos[0]
-                py -= self.obj.pos[1]
-                if vector.distance(px, py) > self.cdt:
-                    ap = self.cdt / vector.distance(px, py)
-                    game.get_game().player.obj.pos << (self.obj.pos[0] + ap * px, self.obj.pos[1] + ap * py)
-                    px *= ap
-                    py *= ap
+
+            if self.hp_sys.hp < self.hp_sys.max_hp * (1 - self.phase / 9) and self.phase:
+                self.phase += 1
+                self.dt -= [300, 400, 500, 600][constants.DIFFICULTY]
+
+            if self.phase > 0:
+                self.hp_sys.IMMUNE = False
             if self.phase == 0:
                 if self.tick <= 120:
-                    self.dt = self.tick * 5
+                    self.dt = self.tick * 50
                 else:
                     self.phase = 1
+                    game.get_game().player.hp_sys.effect(effects.MatterDomain(1000000, constants.DIFFICULTY * 5 + 1))
             elif self.phase == 1:
                 self.dt = 6000
                 if self.tick % 32 == 1:
@@ -6532,13 +6585,41 @@ class Entities:
                         vx, vy = vector.rotation_coordinate(random.randint(0, 360))
                         game.get_game().entities.append(Entities.Thing((self.obj.pos[0] + vx * dt,
                                                                         self.obj.pos[1] + vy * dt)))
-            else:
+            elif self.phase == 9:
                 if self.tick % 3 == 1:
                     for _ in range(16):
                         dt = random.randint(0, self.cdt)
                         vx, vy = vector.rotation_coordinate(random.randint(0, 360))
                         game.get_game().entities.append(Entities.Thing((self.obj.pos[0] + vx * dt,
                                                                         self.obj.pos[1] + vy * dt)))
+
+        def t_draw(self):
+            if game.get_game().player.open_inventory:
+                game.get_game().player.open_inventory = False
+                game.get_game().dialog.dialog('You are too afraid to open your inventory.')
+            if self.hp_sys.hp <= 1 and self.cdt != 0:
+                self.dt = 0
+                self.obj.IS_OBJECT = False
+                self.phase = 10
+                game.get_game().player.hp_sys.effects.clear()
+            elif self.hp_sys.hp <= 1:
+                self.hp_sys.hp = 0
+
+            if self.phase > 0:
+                px, py = game.get_game().player.obj.pos
+                px -= self.obj.pos[0]
+                py -= self.obj.pos[1]
+                if vector.distance(px, py) > self.cdt:
+                    ap = self.cdt / vector.distance(px, py)
+                    game.get_game().player.obj.pos << (self.obj.pos[0] + ap * px, self.obj.pos[1] + ap * py)
+                    px *= ap
+                    py *= ap
+            pg.draw.circle(game.get_game().displayer.canvas, (0, 0, 0),
+                           position.displayed_position(self.obj.pos), self.cdt / game.get_game().player.get_screen_scale())
+            pg.draw.circle(game.get_game().displayer.canvas, (0, 0, 255),
+                           position.displayed_position(self.obj.pos), self.cdt / game.get_game().player.get_screen_scale(),
+                           15)
+            super().t_draw()
 
     class SunEye(Entity):
         NAME = 'Sun Eye'

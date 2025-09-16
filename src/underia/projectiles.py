@@ -109,8 +109,9 @@ class Projectiles:
 
         def draw(self):
             displayer = game.get_game().displayer
-            imr = self.d_img.get_rect(center=position.displayed_position((self.obj.pos[0], self.obj.pos[1])))
-            displayer.canvas.blit(self.d_img, imr)
+            if 'get_rect' in dir(self.d_img):
+                imr = self.d_img.get_rect(center=position.displayed_position((self.obj.pos[0], self.obj.pos[1])))
+                displayer.canvas.blit(self.d_img, imr)
 
     class ThiefWeapon(Projectile):
         NAME = 'Thief\'s Projectile'
@@ -261,14 +262,14 @@ class Projectiles:
             if not game.get_game().displayer.canvas.get_rect().collidepoint(position.displayed_position(self.obj.pos)):
                 self.dead = True
             if type(self) is Projectiles.Glow:
-                for entity in game.get_game().entities:
-                    if imr.collidepoint(entity.obj.pos[0], entity.obj.pos[1]) or entity.d_img.get_rect(
-                            center=entity.obj.pos.to_value()).collidepoint(self.obj.pos[0], self.obj.pos[1]):
-                        entity.hp_sys.damage(weapons.WEAPONS['glowing_splint'].damages[
+                for ee in game.get_game().entities:
+                    if imr.collidepoint(ee.obj.pos[0], ee.obj.pos[1]) or ee.d_img.get_rect(
+                            center=ee.obj.pos.to_value()).collidepoint(self.obj.pos[0], self.obj.pos[1]):
+                        ee.hp_sys.damage(weapons.WEAPONS['glowing_splint'].damages[
                                                  damages.DamageTypes.MAGICAL] * game.get_game().player.attack *
-                                             game.get_game().player.attacks[2],
-                                             damages.DamageTypes.MAGICAL)
-                        entity.hp_sys.effect(effects.Burning(5, weapons.WEAPONS['glowing_splint'].damages[
+                                         game.get_game().player.attacks[2],
+                                         damages.DamageTypes.MAGICAL)
+                        ee.hp_sys.effect(effects.Burning(5, weapons.WEAPONS['glowing_splint'].damages[
                             damages.DamageTypes.MAGICAL] * game.get_game().player.attack * game.get_game().player.attacks[
                                                                  2] // 10 + 1))
                         self.damage_particle()
@@ -1272,7 +1273,7 @@ class Projectiles:
                                                                                                          DamageTypes.MAGICAL: 2,
                                                                                                          DamageTypes.ARCANE: 2}[self.DMG_TYPE]],
                                      self.DMG_TYPE)
-                    ee.hp_sys.enable_immume()
+                    ee.hp_sys.enable_immume(self.ENABLE_IMMUNE)
             if self.tick > self.DURATION:
                 self.dead = True
             self.tick += 1
@@ -1614,7 +1615,7 @@ class Projectiles:
             self.obj.FRICTION = 1
 
         def update(self):
-            self.poss.append(self.obj.pos)
+            self.poss.append(self.obj.pos.to_value())
             if len(self.poss) > 8:
                 self.poss.pop(0)
             for i in range(len(self.poss) - 1):
@@ -1995,7 +1996,7 @@ class Projectiles:
                 self.rt += 8
             ax, ay = vector.rotation_coordinate(self.rt)
             self.obj.pos << (self.op[0] + ax * self.dt, self.op[1] + ay * self.dt)
-            self.poss.append(self.obj.pos)
+            self.poss.append(self.obj.pos.to_value())
             if len(self.poss) > 8:
                 self.poss.pop(0)
             for i in range(len(self.poss) - 1):
@@ -2112,7 +2113,7 @@ class Projectiles:
             else:
                 self.obj.pos << (self.obj.pos[0] + self.ax * 120 / (self.tick + 1),
                                 self.obj.pos[1] + self.ay * 120 / (self.tick + 1))
-            self.poss.append(self.obj.pos)
+            self.poss.append(self.obj.pos.to_value())
             if len(self.poss) > 8:
                 self.poss.pop(0)
             self.cols.append(self.cols.pop(0))
@@ -2402,8 +2403,9 @@ class Projectiles:
         TAIL_COLOR = (255, 255, 255)
         SPEED_RATE = 1.0
         DURATION = 80
+        ENABLE_IMMUNE = 0
 
-        def __init__(self, pos, rotation, speed, damage):
+        def __init__(self, pos, rotation, speed, damage, kb=0):
             self.obj = ProjectileMotion(pos, rotation, (speed + self.SPEED) * self.SPEED_RATE)
             self.dmg = damage + self.DAMAGES
             self.img = game.get_game().graphics['projectiles_' + self.IMG]
@@ -2413,6 +2415,7 @@ class Projectiles:
             self.tick = 0
             self.set_rotation(rotation)
             self.ps = [pos]
+            self.kb = kb
 
         def update(self):
             if self.TAIL_SIZE:
@@ -2471,10 +2474,14 @@ class Projectiles:
                 if ee.ueid in cd:
                     continue
                 if (vector.distance(ee.obj.pos[0] - x, ee.obj.pos[1] - y) <
-                        (ee.d_img.get_width() + ee.d_img.get_height() + self.d_img.get_width() + self.d_img.get_height()) / 4 + 80):
+                        (ee.d_img.get_width() + ee.d_img.get_height() + self.d_img.get_width() + self.d_img.get_height()) / 4 + 80) and not ee.hp_sys.is_immune:
                     ee.hp_sys.damage(
                         self.dmg * game.get_game().player.attack * game.get_game().player.attacks[1],
                         damages.DamageTypes.PIERCING)
+                    if self.ENABLE_IMMUNE:
+                        ee.hp_sys.enable_immume(self.ENABLE_IMMUNE)
+
+                    ee.obj.apply_force(vector.Vector(self.rot, self.kb * 120000 / ee.obj.MASS))
                     if self.DELETE:
                         self.dead = True
                     else:
@@ -2507,21 +2514,19 @@ class Projectiles:
         NAME = 'Bullet'
         DAMAGES = 12
         SPEED = 210
-        IMG = 'bullet'
+        IMG = 'null'
         TAIL_SIZE = 1
-        TAIL_WIDTH = 2
+        TAIL_WIDTH = 3
         TAIL_COLOR = (127, 127, 127)
         SPEED_RATE = 0.6
 
     class PlatinumBullet(Bullet):
         DAMAGES = 16
-        IMG = 'platinum_bullet'
         TAIL_COLOR = (150, 150, 200)
 
     class Plasma(Bullet):
         DAMAGES = 35
         SPEED = 120
-        IMG = 'plasma'
         TAIL_COLOR = (255, 0, 0)
         TAIL_SIZE = 2
 
@@ -2533,7 +2538,6 @@ class Projectiles:
     class SnowBall(Bullet):
         DAMAGES = -20
         SPEED = 500
-        IMG ='snow_ball'
         TAIL_SIZE = 5
         TAIL_WIDTH = 2
         TAIL_COLOR = (255, 255, 255)
@@ -2541,13 +2545,11 @@ class Projectiles:
     class RockBullet(Bullet):
         DAMAGES = 60
         SPEED = 20
-        IMG = 'rock_bullet'
         TAIL_COLOR = (255, 200, 127)
 
     class ShadowBullet(Bullet):
         DAMAGES = 24
         SPEED = 100
-        IMG = 'shadow_bullet'
         AIMING = 0.3
         TAIL_COLOR = (50, 0, 50)
         TAIL_SIZE = 3
@@ -2887,7 +2889,6 @@ class Projectiles:
     class Seperator(Bullet):
         DAMAGES = 0
         SPEED = 200
-        IMG = 'seperator'
         TAIL_SIZE = 3
         TAIL_WIDTH = 4
         TAIL_COLOR = (0, 0, 255)

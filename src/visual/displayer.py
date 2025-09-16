@@ -80,7 +80,9 @@ class Displayer:
                                           0.5)
         self.light_engine.update(self.canvas)
         self.light_engine.clear()
-        self.light_engine.ambient_light = self.night_darkness_color
+        r, g, b = self.night_darkness_color
+        sr, sg, sb, sa = self.light_engine.ambient_light
+        self.light_engine.ambient_light = ((r + sr * 4) // 5, (g + sg * 4) // 5, (b + sb * 4) // 5, sa)
 
     def add_blocking(self, rect: pg.Rect):
         if not constants.LIGHTING:

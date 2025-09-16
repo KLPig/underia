@@ -4,9 +4,11 @@ import random
 import time
 from functools import lru_cache
 import asyncio
+from math import gamma
+
 import pygame as pg
 
-import resources, visual, constants, physics, web, underia3
+import resources, visual, constants, physics, web, underia3, values
 from underia import player, entity, projectiles, weapons, inventory, dialog, styles
 import perlin_noise
 import underia.settings as settings
@@ -17,7 +19,7 @@ MUSICS = {
     'waterfall': ['forest0', 'rainforest0', 'desert0', 'snowland0', 'heaven0', 'heaven1', 'inner0', 'wither1'],
     'fields': ['forest1', 'rainforest1', 'snowland1', 'forest0'],
     'empty': ['hell0', 'hell1', 'forest1', 'rainforest1', 'battle', 'hallow0', 'hallow1', 'wither0', 'wither1',
-              'life_forest0', 'life_forest1'],
+              'life_forest0', 'life_forest1', 'ocean0', 'ocean1'],
     'snow': ['snowland0', 'snowland1', 'hallow0', 'hallow1'],
     #'here_we_are': ['inner0', 'inner1'],
     'amalgam': ['inner0', 'inner1', 'none0', 'none1', 'wither0', 'wither1'],
@@ -121,6 +123,8 @@ class Game:
     def get_night_color(self, time_days: float):
         if len([1 for e in self.entities if type(e) is entity.Entities.AbyssEye]):
             return 255, 200, 200
+        if len([1 for e in self.entities if type(e) is entity.Entities.CLOCK]):
+            return 0, 50, 50
         if 0.2 < time_days <= 0.3:
             r = int(255 * (time_days - 0.2) / 0.1)
             g = int(255 * (time_days - 0.2) / 0.1)
@@ -142,7 +146,11 @@ class Game:
             g = 127 - int(127 * (time_days - 0.75) / 0.05)
             b = 0
         else:
-            r = 0 if 'blood moon' not in self.world_events else 100
+            r = 0 if 'blood moon' not in self.world_events else 200
+            g = 0
+            b = 0
+        if self.get_biome() == 'hell' and self.chapter == 2:
+            r = 255
             g = 0
             b = 0
         if 'aimer' in self.player.accessories or 'photon_aimer' in self.player.accessories:
@@ -153,7 +161,7 @@ class Game:
             r = 255 - (255 - r) * 2 // 3
             g = 255 - (255 - g) * 2 // 3
             b = 255 - (255 - b) * 2 // 3
-        if 'fate_alignment_amulet' in self.player.accessories:
+        if 'fate_alignment_amulet' in self.player.accessories or self.chapter > 1:
             r = 255 - (255 - r) // 3
             g = 255 - (255 - g) // 3
             b = 255 - (255 - b) // 3
@@ -264,7 +272,7 @@ class Game:
             if x % 40 == 0:
                 self._display_progress((x + 200) / 400, 0)
 
-    def play_sound(self, sound: str, vol=1.0, stop_if_need=False, fadeout=0):
+    def play_sound(self, sound: str, vol=1.0, stop_if_need=True, fadeout=0):
         self.sounds[sound].set_volume(vol * constants.SOUND_VOL)
         if self.sounds[sound].get_num_channels():
             if stop_if_need:
@@ -299,6 +307,8 @@ class Game:
             return 'heaven'
         if len([1 for e in self.entities if type(e) is entity.Entities.ReincarnationTheWorldsTree]):
             return 'life_forest'
+        if len([1 for e in self.entities if type(e) is entity.Entities.MATTER]):
+            return 'hell'
         if len([1 for e in self.entities if type(e) in [entity.Entities.Jevil, entity.Entities.Jevil2, entity.Entities.OblivionAnnihilator]]) or \
                 self.player.inventory.is_enough(inventory.ITEMS['chaos_heart']):
             return 'inner'
@@ -353,7 +363,9 @@ class Game:
                     idx = 7
         if self.chapter == 2:
             if (pos[1] - 120) * self.CHUNK_SIZE < -80000:
-                idx=8
+                idx = 8
+        if idx != 1 and len([1 for e in self.entities if type(e) in [underia3.TralaleroTralala]]):
+            return 'ocean'
         biome = lvs[idx]
         if b:
             no_of_decor = [4, 7, 10, 8, 4, 3, 6, 5, 0][idx]
@@ -400,7 +412,7 @@ class Game:
         cols = {'hell': (255, 0, 0), 'desert': (255, 191, 63), 'forest': (0, 255, 0), 'rainforest': (127, 255, 0),
                 'snowland': (255, 255, 255), 'heaven': (127, 127, 255), 'inner': (0, 0, 0), 'none': (0, 0, 0),
                 'hallow': (0, 255, 255), 'wither': (50, 0, 0), 'life_forest': (50, 127, 0), 'ancient': (50, 0, 0),
-                'ancient_city': (255, 200, 128), 'ancient_wall': (100, 50, 0)}
+                'ancient_city': (255, 200, 128), 'ancient_wall': (100, 50, 0), 'ocean': (0, 0, 255)}
         if not self.graphics.is_loaded('nbackground_hell') or self.graphics['nbackground_hell'].get_width() != bg_size:
             for k in cols.keys():
                 self.graphics['nbackground_' + k] = pg.transform.scale(self.graphics['background_' + k],
@@ -625,51 +637,50 @@ class Game:
             for i in range(len(menace.PHASE_SEGMENTS) + 1):
                 fill_uncoloured = (227, 105, 86)
                 fill_coloured = (207, 255, 112)
-                if i >= c_phase:
-                    pg.draw.circle(self.displayer.canvas, fill_coloured, (x - 380 + 50 * i, y - 100), 20)
-                else:
-                    pg.draw.circle(self.displayer.canvas, fill_uncoloured, (x - 380 + 50 * i, y - 100), 20)
-                border = (242, 166, 94)
                 tt = math.sin(self.day_time * 1000)
                 ct = math.cos(self.day_time * 1000)
                 if 'CHAOS' in dir(menace):
                     fill_uncoloured = (tt * 120 + 127, tt * 120 + 127, tt * 120 + 127)
                     fill_coloured = (tt * -120 + 127, tt * -120 + 127, tt * -120 + 127)
                     border = (tt * 50 + 55, 0, ct * 50 + 55)
-                pg.draw.circle(self.displayer.canvas, border, (x - 380 + 50 * i, y - 100), 20, width=8)
+                if i >= c_phase:
+                    pg.draw.circle(self.displayer.canvas, fill_coloured, (x - 580 + 50 * i, y - 100), 20)
+                else:
+                    pg.draw.circle(self.displayer.canvas, fill_uncoloured, (x - 580 + 50 * i, y - 100), 20)
+                border = (242, 166, 94)
+                pg.draw.circle(self.displayer.canvas, border, (x - 580 + 50 * i, y - 100), 20, width=8)
                 t_p = menace.hp_sys.hp / menace.hp_sys.max_hp
                 pc_p = menace.hp_sys.pacify / menace.hp_sys.max_hp
                 pp_p = menace.hp_sys.pacify / (menace.hp_sys.max_hp - menace.hp_sys.hp) if menace.hp_sys.hp < menace.hp_sys.max_hp else 0
-                t_l = 800 - 50 * len(menace.PHASE_SEGMENTS) - 80
+                t_l = 1200 - 50 * len(menace.PHASE_SEGMENTS) - 80
                 sp = [0] + menace.PHASE_SEGMENTS + [1]
                 sp_e = sp[-c_phase - 1]
                 sp_s = sp[-c_phase - 2]
                 r_p = ((menace.hp_sys.hp - sp_s * menace.hp_sys.max_hp) /
                        (sp_e * menace.hp_sys.max_hp - sp_s * menace.hp_sys.max_hp))
                 pg.draw.rect(self.displayer.canvas, fill_uncoloured,
-                             (x + 400 - t_l, y - 120, t_l, 40))
+                             (x + 600 - t_l, y - 120, t_l, 40))
                 pg.draw.rect(self.displayer.canvas, fill_coloured,
-                             (x + 400 - t_l, y - 120, int(t_l * t_p), 40))
+                             (x + 600 - t_l, y - 120, int(t_l * t_p), 40))
                 pg.draw.rect(self.displayer.canvas, (0, 255, 255),
-                             (x + 400 - int(t_l * pc_p), y - 120, int(t_l * pc_p), 40))
+                             (x + 600 - int(t_l * pc_p), y - 120, int(t_l * pc_p), 40))
                 pg.draw.rect(self.displayer.canvas, border,
-                             (x + 400 - t_l, y - 120, t_l, 40), width=8, border_radius=3)
-                if not menace.hp_sys.IMMUNE:
-                    tf = self.displayer.ffont.render(str(int(t_p * 100)) + '%', True, (0, 0, 0))
-                    tfr = tf.get_rect(midright=(x + 400 - 10, y - 100))
-                    self.displayer.canvas.blit(tf, tfr)
-                    tf = self.displayer.ffont.render(str(int(t_p * 100)) + '%', True, (255, 255, 255))
-                    tfr = tf.get_rect(midright=(x + 400 - 15, y - 105))
-                    self.displayer.canvas.blit(tf, tfr)
+                             (x + 600 - t_l, y - 120, t_l, 40), width=8, border_radius=3)
+                tf = self.displayer.ffont.render(str(int(t_p * 100)) + '%', True, (0, 0, 0))
+                tfr = tf.get_rect(midright=(x + 600 - 10, y - 100))
+                self.displayer.canvas.blit(tf, tfr)
+                tf = self.displayer.ffont.render(str(int(t_p * 100)) + '%', True, (255, 255, 255))
+                tfr = tf.get_rect(midright=(x + 600 - 15, y - 105))
+                self.displayer.canvas.blit(tf, tfr)
                 pg.draw.rect(self.displayer.canvas, fill_uncoloured,
-                             (x - 400, y - 50, 800, 60))
+                             (x - 600, y - 50, 1200, 60))
                 pg.draw.rect(self.displayer.canvas, fill_coloured,
-                             (x - 400, y - 50, int(800 * r_p), 60))
+                             (x - 600, y - 50, int(1200 * r_p), 60))
                 pg.draw.rect(self.displayer.canvas, border,
-                             (x - 400, y - 50, 800, 60), width=8, border_radius=3)
+                             (x - 600, y - 50, 1200, 60), width=8, border_radius=3)
                 ft = self.displayer.font.render(f'{styles.text(menace.NAME)}' + (f'({int(menace.hp_sys.hp)}/{int(menace.hp_sys.max_hp)})' if not menace.hp_sys.IMMUNE else ''),
                                                 True, (0, 0, 0))
-                ftr = ft.get_rect(midright=(x + 360, y - 20))
+                ftr = ft.get_rect(midright=(x + 560, y - 20))
                 self.displayer.canvas.blit(ft, ftr)
             y -= 140
         if self.map_open:

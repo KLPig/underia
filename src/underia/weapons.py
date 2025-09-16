@@ -140,7 +140,7 @@ class Weapon:
                         self.attack()
                         if random.random() < 0.25:
                             game.get_game().player.mana = min(game.get_game().player.max_mana,
-                                                              game.get_game().player.mana + self.mana_cost / 2)
+                                                              game.get_game().player.mana + int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True)) / 2)
                 else:
                     self.combo = -1
 
@@ -2139,7 +2139,7 @@ class MagicWeapon(Weapon):
             self.sk_mcd = speed + at_time
 
     def on_start_attack(self):
-        if game.get_game().player.mana < self.mana_cost:
+        if game.get_game().player.mana < int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True)):
             self.timer = 0
             return
         if self.sk_cd:
@@ -2151,7 +2151,10 @@ class MagicWeapon(Weapon):
         game.get_game().projectiles.append(
             self.projectile((self.x + game.get_game().player.obj.pos[0], self.y + game.get_game().player.obj.pos[1]),
                             self.rot))
-        game.get_game().player.mana -= self.mana_cost
+        game.get_game().player.mana -= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True))
+        game.get_game().player.hp_sys.effect(effects.WeakManaI([.5, 1, 3, 6][constants.DIFFICULTY], 1))
+        if constants.DIFFICULTY:
+            game.get_game().player.hp_sys.effect(effects.ManaDrain([0, 3, 6, 10][constants.DIFFICULTY], 1))
 
 class PoetWeapon(MagicWeapon):
     ATTACK_SOUND = None
@@ -2225,7 +2228,7 @@ class PoetWeapon(MagicWeapon):
         self.heavy = heavy
 
     def on_start_attack(self):
-        if game.get_game().player.mana < self.mana_cost or game.get_game().player.inspiration < self.inspiration_cost:
+        if game.get_game().player.mana < int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True)) or game.get_game().player.inspiration < self.inspiration_cost:
             self.timer = 0
             return
         if self.sk_cd:
@@ -2247,7 +2250,7 @@ class PoetWeapon(MagicWeapon):
             self.projectile((self.x + game.get_game().player.obj.pos[0], self.y + game.get_game().player.obj.pos[1]),
                             vector.coordinate_rotation(*position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
         )))
-        game.get_game().player.mana -= self.mana_cost
+        game.get_game().player.mana -= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True))
         game.get_game().player.inspiration -= self.inspiration_cost
         if self.timer:
             self.timer = self.at_time * tones[self.at_t][1] * 2 - 1
@@ -2280,14 +2283,17 @@ class PriestHealer(MagicWeapon):
         self.karma_gain = karma_gain
 
     def on_start_attack(self):
-        if game.get_game().player.mana < self.mana_cost:
+        game.get_game().player.hp_sys.effect(effects.WeakManaI([.5, 1, 3, 6][constants.DIFFICULTY], 1))
+        if constants.DIFFICULTY:
+            game.get_game().player.hp_sys.effect(effects.ManaDrain([0, 6, 12, 20][constants.DIFFICULTY], 1))
+        if game.get_game().player.mana < int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True)):
             self.timer = 0
             return
         if self.sk_cd:
             self.timer = 0
             return
         self.sk_cd = self.sk_mcd
-        game.get_game().player.mana -= self.mana_cost
+        game.get_game().player.mana -= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True))
         game.get_game().player.good_karma = min(game.get_game().player.good_karma + self.karma_gain, self.karma_gain * 30 // (self.at_time + self.cd + 1))
         game.get_game().player.hp_sys.heal(self.amount + game.get_game().player.calculate_data('heal_amount', False))
 
@@ -2357,12 +2363,15 @@ class TargetDummy(MagicWeapon):
         self.dm = None
 
     def on_start_attack(self):
-        if game.get_game().player.mana < self.mana_cost:
+        game.get_game().player.hp_sys.effect(effects.WeakManaI([.5, 1, 3, 6][constants.DIFFICULTY], 1))
+        if constants.DIFFICULTY:
+            game.get_game().player.hp_sys.effect(effects.ManaDrain([0, 3, 6, 10][constants.DIFFICULTY], 1))
+        if game.get_game().player.mana < int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True)):
             self.timer = 0
             return
         self.face_to(
             *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
-        game.get_game().player.mana -= self.mana_cost
+        game.get_game().player.mana -= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True))
 
     def on_attack(self):
         if self.dm is None:
@@ -2383,22 +2392,28 @@ class Teleporter(MagicWeapon):
         self.teleport_range = teleport_range
 
     def on_start_attack(self):
+        game.get_game().player.hp_sys.effect(effects.WeakManaI([.5, 1, 3, 6][constants.DIFFICULTY], 1))
+        if constants.DIFFICULTY:
+            game.get_game().player.hp_sys.effect(effects.ManaDrain([0, 6, 12, 20][constants.DIFFICULTY], 1))
         mx, my = position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
         if vector.distance(mx, my) > self.teleport_range:
             self.timer = 0
             return
-        if game.get_game().player.mana < self.mana_cost:
+        if game.get_game().player.mana < int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True)):
             self.timer = 0
             return
-        game.get_game().player.mana -= self.mana_cost
+        game.get_game().player.mana -= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True))
         game.get_game().player.obj.pos << (game.get_game().player.obj.pos[0] + mx, game.get_game().player.obj.pos[1] + my)
 
 class ChaosKiller(MagicWeapon):
     def on_start_attack(self):
-        if game.get_game().player.mana < self.mana_cost:
+        game.get_game().player.hp_sys.effect(effects.WeakManaI([.5, 1, 3, 6][constants.DIFFICULTY], 1))
+        if constants.DIFFICULTY:
+            game.get_game().player.hp_sys.effect(effects.ManaDrain([0, 3, 6, 10][constants.DIFFICULTY], 1))
+        if game.get_game().player.mana < int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True)):
             self.timer = 0
             return
-        game.get_game().player.mana -= self.mana_cost
+        game.get_game().player.mana -= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True))
         els = [e for e in game.get_game().entities if e.obj.IS_OBJECT]
         els.extend([e for e in game.get_game().entities if e.IS_MENACE])
         el = len(els)
@@ -2414,12 +2429,15 @@ class EvilMagicWeapon(MagicWeapon):
         self.hp_cost = hp_cost
 
     def on_start_attack(self):
-        if game.get_game().player.mana < self.mana_cost or game.get_game().player.hp_sys.hp <= self.hp_cost or self.sk_cd:
+        game.get_game().player.hp_sys.effect(effects.WeakManaI([.5, 1, 3, 6][constants.DIFFICULTY], 1))
+        if constants.DIFFICULTY:
+            game.get_game().player.hp_sys.effect(effects.ManaDrain([0, 3, 6, 10][constants.DIFFICULTY], 1))
+        if game.get_game().player.mana < int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True)) or game.get_game().player.hp_sys.hp <= self.hp_cost or self.sk_cd:
             self.timer = 0
             return
         self.sk_cd = self.sk_mcd
         game.get_game().player.hp_sys.hp -= self.hp_cost
-        game.get_game().player.mana -= self.mana_cost
+        game.get_game().player.mana -= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True))
         self.face_to(*position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
         game.get_game().projectiles.append(
             self.projectile((self.x + game.get_game().player.obj.pos[0], self.y + game.get_game().player.obj.pos[1]),
@@ -2427,9 +2445,12 @@ class EvilMagicWeapon(MagicWeapon):
 
 class Tornado(MagicWeapon):
     def on_start_attack(self):
-        if game.get_game().player.mana >= self.mana_cost and not self.sk_cd:
+        game.get_game().player.hp_sys.effect(effects.WeakManaI([.5, 1, 3, 6][constants.DIFFICULTY], 1))
+        if constants.DIFFICULTY:
+            game.get_game().player.hp_sys.effect(effects.ManaDrain([0, 3, 6, 10][constants.DIFFICULTY], 1))
+        if game.get_game().player.mana >= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True)) and not self.sk_cd:
             self.sk_cd = self.sk_mcd
-            game.get_game().player.mana -= self.mana_cost
+            game.get_game().player.mana -= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True))
             for e in game.get_game().entities:
                 ex = e.obj.pos[0] - game.get_game().player.obj.pos[0]
                 ey = e.obj.pos[1] - game.get_game().player.obj.pos[1]
@@ -2446,14 +2467,14 @@ class SweepMagicWeapon(SweepWeapon):
         self.mana_cost = mana_cost
 
     def on_start_attack(self):
-        if game.get_game().player.mana < self.mana_cost:
+        if game.get_game().player.mana < int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True)):
             self.timer = 0
             return
-        game.get_game().player.mana -= self.mana_cost
+        game.get_game().player.mana -= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True))
         super().on_start_attack()
 
 class MagicSet(Weapon):
-    PRESET_KEY_SET = 'uiopgjklb'
+    PRESET_KEY_SET = 'uiopghjklbnm,.'
 
     def __init__(self, name, img_index, element_feature, spell_name, style=0):
         super().__init__(name, {dmg.DamageTypes.MAGICAL: 540}, 0, img_index, 1, 0, False)
@@ -2530,8 +2551,8 @@ class MagicSet(Weapon):
                     sz = lvs[lv[0].value.removeprefix('LV.').lower()]
                     self.sz = (self.sz * 5 + sz ** 2 * 3) // 6
                     if sz == 12:
-                        if game.get_game().player.mana > self.mana_cost:
-                            game.get_game().player.mana -= self.mana_cost
+                        if game.get_game().player.mana > int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True)):
+                            game.get_game().player.mana -= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True))
                         else:
                             self.at_in = None
                             self.sz = 0
@@ -2552,10 +2573,13 @@ class ArcaneWeapon(MagicWeapon):
         self.talent_cost = talent_cost
 
     def on_start_attack(self):
+        game.get_game().player.hp_sys.effect(effects.WeakManaI([.5, 1, 3, 6][constants.DIFFICULTY], 1))
+        if constants.DIFFICULTY:
+            game.get_game().player.hp_sys.effect(effects.ManaDrain([0, 1.5, 3, 5][constants.DIFFICULTY], 1))
         if game.get_game().player.talent < self.talent_cost:
             self.timer = 0
             return
-        if game.get_game().player.mana < self.mana_cost:
+        if game.get_game().player.mana < int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True)):
             self.timer = 0
             return
         if self.sk_cd:
@@ -2567,7 +2591,7 @@ class ArcaneWeapon(MagicWeapon):
         game.get_game().projectiles.append(
             self.projectile((self.x + game.get_game().player.obj.pos[0], self.y + game.get_game().player.obj.pos[1]),
                             self.rot))
-        game.get_game().player.mana -= self.mana_cost
+        game.get_game().player.mana -= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True))
         self.sk_cd = self.sk_mcd
         game.get_game().player.talent -= self.talent_cost
 
@@ -2594,14 +2618,14 @@ class Domain(ArcaneWeapon):
     def update(self):
         self.domain_tick += 1
         if self.domain_open:
-            lm, lt = self.mana_cost, self.talent_cost
+            lm, lt = int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True)), self.talent_cost
             self.mana_cost *= game.get_game().player.domain_size
             self.talent_cost *= game.get_game().player.domain_size
-            if game.get_game().player.mana < self.mana_cost or game.get_game().player.talent < self.talent_cost:
+            if game.get_game().player.mana < int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True)) or game.get_game().player.talent < self.talent_cost:
                 self.domain_open = False
                 self.domain_tick = 0
                 return
-            game.get_game().player.mana -= self.mana_cost
+            game.get_game().player.mana -= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True))
             game.get_game().player.talent -= self.talent_cost
             self.mana_cost, self.talent_cost = lm, lt
             pg.draw.circle(game.get_game().displayer.canvas, self.domain_color,
@@ -2776,7 +2800,7 @@ class ForbiddenCurseTime(ArcaneWeapon):
         if game.get_game().player.talent < self.talent_cost:
             self.timer = 0
             return
-        if game.get_game().player.mana < self.mana_cost:
+        if game.get_game().player.mana < int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True)):
             self.timer = 0
             return
         if self.sk_cd:
@@ -2784,7 +2808,7 @@ class ForbiddenCurseTime(ArcaneWeapon):
             return
         self.sk_cd = self.sk_mcd
         game.get_game().player.talent -= self.talent_cost
-        game.get_game().player.mana -= self.mana_cost
+        game.get_game().player.mana -= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True))
         self.face_to(
             *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
         fps = constants.FPS
@@ -2797,12 +2821,15 @@ class ForbiddenCurseTime(ArcaneWeapon):
 
 class ToyKnife(MagicWeapon):
     def on_start_attack(self):
-        if game.get_game().player.mana < self.mana_cost:
+        game.get_game().player.hp_sys.effect(effects.WeakManaI([.5, 1, 3, 6][constants.DIFFICULTY], 1))
+        if constants.DIFFICULTY:
+            game.get_game().player.hp_sys.effect(effects.ManaDrain([0, 3, 6, 10][constants.DIFFICULTY], 1))
+        if game.get_game().player.mana < int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True)):
             self.timer = 0
             return
         self.face_to(
             *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
-        game.get_game().player.mana -= self.mana_cost
+        game.get_game().player.mana -= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True))
         pg.draw.circle(game.get_game().displayer.canvas, (0, 255, 255),
                        position.displayed_position(game.get_game().player.obj.pos), 600, width=5)
         for e in game.get_game().entities:
@@ -2822,7 +2849,10 @@ class MidnightsWand(MagicWeapon):
         self.pts = []
 
     def on_start_attack(self):
-        if game.get_game().player.mana < self.mana_cost:
+        game.get_game().player.hp_sys.effect(effects.WeakManaI([.5, 1, 3, 6][constants.DIFFICULTY], 1))
+        if constants.DIFFICULTY:
+            game.get_game().player.hp_sys.effect(effects.ManaDrain([0, 3, 6, 10][constants.DIFFICULTY], 1))
+        if game.get_game().player.mana < int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True)):
             self.timer = 0
             return
         if self.sk_cd:
@@ -2849,7 +2879,7 @@ class MidnightsWand(MagicWeapon):
             game.get_game().projectiles.append(p)
             self.pts.append((player.obj.pos[0] + self.x, player.obj.pos[1] + self.y))
         self.x, self.y = 0, 0
-        game.get_game().player.mana -= self.mana_cost
+        game.get_game().player.mana -= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True))
 
     def on_attack(self):
         super().on_attack()
@@ -2862,20 +2892,23 @@ class Hematology(MagicWeapon):
                          30, auto_fire, 'Blood Regeneration')
 
     def on_start_attack(self):
-        if game.get_game().player.mana < self.mana_cost:
+        game.get_game().player.hp_sys.effect(effects.WeakManaI([.5, 1, 3, 6][constants.DIFFICULTY], 1))
+        if constants.DIFFICULTY:
+            game.get_game().player.hp_sys.effect(effects.ManaDrain([0, 9, 18, 30][constants.DIFFICULTY], 1))
+        if game.get_game().player.mana < int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True)):
             self.timer = 0
             return
-        game.get_game().player.mana -= self.mana_cost
+        game.get_game().player.mana -= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True))
         self.face_to(
             *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
         game.get_game().player.hp_sys.heal(30)
 
 class Savior(ArcaneWeapon):
     def on_start_attack(self):
-        if game.get_game().player.mana < self.mana_cost or game.get_game().player.talent < self.talent_cost:
+        if game.get_game().player.mana < int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True)) or game.get_game().player.talent < self.talent_cost:
             self.timer = 0
             return
-        game.get_game().player.mana -= self.mana_cost
+        game.get_game().player.mana -= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True))
         game.get_game().player.talent -= self.talent_cost
         self.face_to(
             *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
@@ -2893,6 +2926,9 @@ class LifeWand(MagicWeapon):
                              int(game.get_game().player.hp_sys.max_hp - game.get_game().player.hp_sys.hp) * 2)
 
     def on_start_attack(self):
+        game.get_game().player.hp_sys.effect(effects.WeakManaI([.5, 1, 3, 6][constants.DIFFICULTY], 1))
+        if constants.DIFFICULTY:
+            game.get_game().player.hp_sys.effect(effects.ManaDrain([0, 3, 6, 10][constants.DIFFICULTY], 1))
         hp_lft = game.get_game().player.hp_sys.max_hp - game.get_game().player.hp_sys.hp
         mana_avail = game.get_game().player.mana
         game.get_game().player.mana -= min(mana_avail // 2, hp_lft) * 2
@@ -2909,21 +2945,27 @@ class AzureGuard(MagicWeapon):
                            width=int(1 + v // 20), radius=240)
 
     def on_start_attack(self):
-        if game.get_game().player.mana < self.mana_cost:
+        game.get_game().player.hp_sys.effect(effects.WeakManaI([.5, 1, 3, 6][constants.DIFFICULTY], 1))
+        if constants.DIFFICULTY:
+            game.get_game().player.hp_sys.effect(effects.ManaDrain([0, 3, 6, 10][constants.DIFFICULTY], 1))
+        if game.get_game().player.mana < int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True)):
             self.timer = 0
             return
         if len([v for n, v in game.get_game().player.hp_sys.shields if n == 'azure_guard']):
             self.timer = 0
             return
-        game.get_game().player.mana -= self.mana_cost
+        game.get_game().player.mana -= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True))
         game.get_game().player.hp_sys.shields.append(('azure_guard', 100))
 
 class EarthWall(MagicWeapon):
     def on_start_attack(self):
-        if game.get_game().player.mana < self.mana_cost:
+        game.get_game().player.hp_sys.effect(effects.WeakManaI([.5, 1, 3, 6][constants.DIFFICULTY], 1))
+        if constants.DIFFICULTY:
+            game.get_game().player.hp_sys.effect(effects.ManaDrain([0, 3, 6, 10][constants.DIFFICULTY], 1))
+        if game.get_game().player.mana < int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True)):
             self.timer = 0
             return
-        game.get_game().player.mana -= self.mana_cost
+        game.get_game().player.mana -= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True))
         e_w = 256
         for ar in [15, 18, 20, 30]:
             w = e_w / 2 / math.sin(math.radians(ar / 2))
@@ -2951,8 +2993,8 @@ class Bow(Weapon):
         self.spd = self.ddata[1]
         self.ddata = [self.precision, self.spd]
         self.scale = 3 - 2 * 1.2 ** (-self.strike / 50)
-        self.precision = int(self.ddata[0] / self.scale ** 1.5)
-        self.spd = int(self.ddata[1] * self.scale ** 3)
+        self.precision = int(self.ddata[0] / self.scale ** 3)
+        self.spd = int(self.ddata[1] * self.scale ** 5)
         self.display = True
         mx, my = position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
         rot = vector.cartesian_to_polar(mx, my)[0]
@@ -2989,7 +3031,7 @@ class Bow(Weapon):
         pj = projectiles.AMMOS[game.get_game().player.ammo[0]]((self.x + game.get_game().player.obj.pos[0],
                                                                self.y + game.get_game().player.obj.pos[1]),
                                                               self.rot + random.uniform(-self.precision, self.precision), self.spd,
-                                                              self.damages[dmg.DamageTypes.PIERCING])
+                                                              self.damages[dmg.DamageTypes.PIERCING], self.knock_back)
         if self.tail_col is not None:
             pj.TAIL_COLOR = self.tail_col
             pj.TAIL_SIZE = max(pj.TAIL_SIZE, self.ts)
@@ -3586,19 +3628,19 @@ class Astigmatism(Weapon):
             self.using_beam.rot = self.rot
             self.using_beam.update()
         self.cb += 1
-        if (game.get_game().player.mana >= self.mana_cost and
+        if (game.get_game().player.mana >= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True)) and
                 1 in game.get_game().get_pressed_mouse()):
             self.timer = 5
-            game.get_game().player.mana -= self.mana_cost
+            game.get_game().player.mana -= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True))
 
 
     def on_start_attack(self):
         super().on_start_attack()
         self.cb = 0
-        if game.get_game().player.mana < self.mana_cost:
+        if game.get_game().player.mana < int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True)):
             self.timer = 0
             return
-        game.get_game().player.mana -= self.mana_cost
+        game.get_game().player.mana -= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True))
 
 class GreatForbiddenCurseLight(Weapon):
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, mana_cost: int,
@@ -3654,21 +3696,21 @@ class GreatForbiddenCurseLight(Weapon):
             self.using_beam.rot = self.rot
             self.using_beam.update()
         self.cb += 1
-        if (game.get_game().player.mana >= self.mana_cost
+        if (game.get_game().player.mana >= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True))
                 and game.get_game().player.talent >= self.talent_cost and
                 1 in game.get_game().get_pressed_mouse()):
             self.timer = 5
-            game.get_game().player.mana -= self.mana_cost
+            game.get_game().player.mana -= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True))
             game.get_game().player.talent -= self.talent_cost
 
 
     def on_start_attack(self):
         super().on_start_attack()
         self.cb = 0
-        if game.get_game().player.mana < self.mana_cost or game.get_game().player.talent < self.talent_cost:
+        if game.get_game().player.mana < int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True)) or game.get_game().player.talent < self.talent_cost:
             self.timer = 0
             return
-        game.get_game().player.mana -= self.mana_cost
+        game.get_game().player.mana -= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True))
         game.get_game().player.talent -= self.talent_cost
 
 
@@ -4149,10 +4191,10 @@ def set_weapons():
         'life_wand': LifeWand('life_wand', 'item_weapons_life_wand', 2, 8, True),
 
         'lights_bible': MagicSet('lights_bible', 'items_weapons_lights_bible',
-                                 lambda w: (inventory.TAGS['magic_element_light'] in inventory.ITEMS[w.name.replace(' ', '_')].tags),
+                                 lambda w: (inventory.TAGS['magic_element_light'] in inventory.ITEMS[w.name.replace(' ', '_')].tags) and game.get_game().player.inventory.is_enough(inventory.ITEMS[w.name.replace(' ', '_')]),
                                  'Pseudo Sun'),
         'energy_bible': MagicSet('energy_bible', 'items_weapons_energy_bible',
-                                 lambda w: (inventory.TAGS['magic_element_energy'] in inventory.ITEMS[w.name.replace(' ', '_')].tags),
+                                 lambda w: (inventory.TAGS['magic_element_energy'] in inventory.ITEMS[w.name.replace(' ', '_')].tags) and game.get_game().player.inventory.is_enough(inventory.ITEMS[w.name.replace(' ', '_')]),
                                  'Energy Pulse', 1),
         'chaos_teleporter': Teleporter('chaos_teleporter', {}, 1, 'items_weapons_chaos_teleporter',
                                        19, 1, 1000, 300, False, 'Chaos Teleport'),

@@ -14,6 +14,8 @@ import resources, visual, physics, underia, mods, legend, constants, web
 import values
 from underia import good_words
 import underia3
+from underia3 import BloodMoon
+
 if not constants.WEB_DEPLOY:
     import saves_chooser, modloader
 
@@ -289,8 +291,8 @@ def update():
         exec(u)
     if sum([len(v) for v in game.further_entities.values()]) > 1000:
         ks = sorted(game.further_entities.items(),
-                    key=lambda x:physics.distance(game.player.obj.pos, (x[0][0] * underia.Entities.ENTITY_DUMP_CHUNK,
-                                                                        x[0][1] * underia.Entities.ENTITY_DUMP_CHUNK)),
+                    key=lambda x:physics.distance(*(game.player.obj.pos - (x[0][0] * underia.Entities.ENTITY_DUMP_CHUNK,
+                                                                        x[0][1] * underia.Entities.ENTITY_DUMP_CHUNK))),
                     reverse=True)
         for j in range(len(ks) // 3):
             game.further_entities[ks[j][0]] = []
@@ -524,6 +526,9 @@ def update():
 
         ac = game.stage - 9
 
+        if 'blood moon' in game.world_events and not len([1 for ee in game.entities if type(ee) is underia3.BloodMoon]):
+            game.entities.append(BloodMoon(game.player.obj.pos - (0, 10000)))
+
         if game.dimension == 'overworld':
             underia.entity_spawn(underia3.Chicken, 3000, 5000, target_number=12 - night * 5, rate=4)
             underia.entity_spawn(underia3.ManaChicken, 3000, 5000, target_number=3 + night * 3, rate=2)
@@ -545,7 +550,9 @@ def update():
                 underia.entity_spawn(underia3.DeadTree, 1000, 2000, target_number=18, rate=6)
                 underia.entity_spawn(underia3.BonecaAmbalabu, 2000, 4000, target_number=17, rate=2)
                 if ac > 0:
-                    underia.entity_spawn(underia3.LaVacaSaturnoSaturnita, 1000, 2000, target_number=18, rate=5)
+                    underia.entity_spawn(underia3.LaVacaSaturnoSaturnita, 1000, 2000, target_number=6, rate=1)
+                    underia.entity_spawn(underia3.ChimpanziniBananini, 1000, 3000, target_number=4, rate=3)
+                    underia.entity_spawn(underia3.TrippiTroppi, 1000, 3000, target_number=7, rate=2)
                 else:
                     underia.entity_spawn(underia3.LaVacaSaturnoSaturnita, 2000, 4000, target_number=3, rate=.02 * night)
 
@@ -557,6 +564,7 @@ def update():
                 underia.entity_spawn(underia3.HGoblinFighter, 1000, 2000, target_number=8, rate=6)
                 underia.entity_spawn(underia3.HGoblinRanger, 3000, 5000, target_number=15, rate=6)
                 underia.entity_spawn(underia3.HGoblinThief, 2000, 4000, target_number=5, rate=6)
+                underia.entity_spawn(underia3.HOrge, 3000, 4000, target_number=2, rate=.03)
             elif biome == 'ancient':
                 underia.entity_spawn(underia3.RuneAltar, 3000, 5000, target_number=4, rate=1)
                 underia.entity_spawn(underia3.AncientStone, 3000, 5000, target_number=4, rate=1)

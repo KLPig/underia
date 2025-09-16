@@ -1,0 +1,95 @@
+/* 基础样式 */
+body {
+    background: #1a1a1a;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', system-ui;
+    line-height: 1.6;
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* 百科主容器 */
+.monster-wiki {
+    background: #2d2d2d;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+/* 标题样式 */
+.wiki-header h1 {
+    color: #ff5555;
+    border-bottom: 2px solid #ff4444;
+    padding-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(255,85,85,0.3);
+}
+
+/* 基本信息样式 */
+.basic-info .defense-list {
+    list-style: none;
+    padding-left: 1rem;
+}
+.stat-value {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+/* 阶段系统动态样式 */
+.phase-card {
+    background: #363636;
+    border-left: 4px solid #666;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 6px;
+    transition: transform 0.2s;
+}
+.phase-card:hover {
+    transform: translateX(8px);
+}
+.phase-alert {
+    border-color: #ff9800;
+    background: #403010;
+}
+.phase-critical {
+    border-color: #f44336;
+    background: #4a2020;
+}
+
+/* 代码块样式 */
+.code-block {
+    background: #252525;
+    padding: 1rem;
+    border-radius: 6px;
+    font-family: 'Consolas', monospace;
+    border: 1px solid #404040;
+    overflow-x: auto;
+}
+.code-comment {
+    color: #888;
+}
+.code-highlight {
+    color: #8bc34a;
+    font-weight: bold;
+}
+
+/* 难度标识 */
+.difficulty-tag {
+    background: #f44336;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+/* 交互元素 */
+.ai-features {
+    list-style: none;
+    padding-left: 0;
+}
+.ai-features li {
+    padding: 0.5rem;
+    background: rgba(255,255,255,0.05);
+    margin: 0.5rem 0;
+    border-radius: 4px;
+}

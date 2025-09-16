@@ -196,6 +196,16 @@ class Weak(Effect):
     DESC = '-99.5% melee damage\n-99.5% ranged damage\n-99.5% magic damage'
     CORRESPONDED_ELEMENT = elements.ElementTypes.DARK
 
+class MatterDomain(Aberration):
+    IMG = 'matter_domain'
+    NAME = 'Matter Domain'
+    DESC = 'Weights of matter press you down\nContinuously dealing damage\n-40% critical\n+300kg\n+100% air resistance'
+
+class TimeDomain(Aberration):
+    IMG = 'time_domain'
+    NAME = 'Time Domain'
+    DESC = 'Time is slowing you down\nContinuously dealing damage\n-25% damage\n-100 magic defense\n+50% mana cost'
+
 class Bleeding(Effect):
     IMG = 'bleeding'
     NAME = 'Bleeding'
@@ -477,3 +487,13 @@ class LogosThaumaturgy(Effect):
     NAME = 'Logos Thaumaturgy'
     IMG = 'logos_thaumaturgy'
     DESC = '+100% critical'
+
+class WeakManaI(Effect):
+    NAME = 'Weak Mana'
+    IMG = 'weak_mana'
+    DESC = 'Decreased mana regeneration'
+
+class ManaDrain(Effect):
+    NAME = 'Mana Drain'
+    IMG = 'weak_mana'
+    DESC = 'Decreased mana regeneration'

@@ -104,7 +104,8 @@ class Inventory:
                 cdata['gain_duration'] = int(desc.removesuffix('spoetbonustime'))
             elif desc.endswith('%damageabsorb'):
                 cdata['damage_absorb'] = int(desc.removesuffix('%damageabsorb'))
-
+            elif desc.endswith('%manacost'):
+                cdata['mana_cost'] = int(desc.removesuffix('%manacost'))
             elif desc.endswith('treecurse'):
                 cdata['tree_curse'] = 1
             elif desc.endswith('snowcurse'):
@@ -206,12 +207,12 @@ class Inventory:
                 weapon: weapons.MagicWeapon = weapons.WEAPONS[self.id]
                 d = f"{[t.value.upper() for t in self.tags if t.name.startswith('magic_element_')][0]} "\
                     f"{[t.value for t in self.tags if t.name.startswith('magic_lv_')][0]}: {weapon.spell_name}"
-                d = f"{weapon.mana_cost} mana cost\n" + d
+                d = f"{int(weapon.mana_cost * game.get_game().player.calculate_data('mana_cost', True, rate_multiply=True))} mana cost\n" + d
             if TAGS['arcane_weapon'] in self.tags:
                 weapon = weapons.WEAPONS[self.id]
                 d = f"{weapon.talent_cost} talent cost\n" + d
                 if weapon.mana_cost:
-                    d = f"{weapon.mana_cost} mana cost\n" + d
+                    d = f"{int(weapon.mana_cost * game.get_game().player.calculate_data('mana_cost', True, rate_multiply=True))} mana cost\n" + d
             if TAGS['healing_potion'] in self.tags:
                 d = 'Auto-healing potion(Key:H)\n' + d
             if TAGS['magic_potion'] in self.tags:
@@ -224,7 +225,7 @@ class Inventory:
                 d = f"Gain ally with the following effect:\n" + d
                 d = f"Get back {int(weapon.back_rate * 100)}% of inspiration cost\n" + d
                 d = f"When first hit," + d
-                d = f"{weapon.mana_cost} mana cost\n" + d
+                d = f"{int(weapon.mana_cost * game.get_game().player.calculate_data('mana_cost', True, rate_multiply=True))} mana cost\n" + d
                 d = f"{weapon.inspiration_cost} inspiration cost\n" + d
             if TAGS['bow'] in self.tags or TAGS['gun'] in self.tags:
                 weapon = weapons.WEAPONS[self.id]
@@ -1400,7 +1401,7 @@ items_dict: dict[str, Inventory.Item] = {
                                      'winds_necklace', 2, [TAGS['item'], TAGS['accessory']]),
     'rune_cross': Inventory.Item('Rune Cross', '2kg\n+12% magic damage\n+12/sec mana regeneration',
                                   'rune_cross', 3, [TAGS['item'], TAGS['accessory']]),
-    'rune_gloves': Inventory.Item('Rune Gloves', '5kg\n+12% melee damage\n+12% critical\n+22 touching defense',
+    'rune_gloves': Inventory.Item('Rune Gloves', '5kg\n+18% melee damage\n+12% critical\n+22 touching defense',
                                   'rune_gloves', 3, [TAGS['item'], TAGS['accessory']]),
     'rune_eye': Inventory.Item('Rune Eye', '10kg\n+12% ranged damage\n+80% speed',
                                 'rune_eye', 3, [TAGS['item'], TAGS['accessory']]),

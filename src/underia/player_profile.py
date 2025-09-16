@@ -248,27 +248,19 @@ class PlayerProfile:
         self.avail_points += 20
         dialogues = [
             ['[PRESS Z TO CONTINUE]',
-             'Are you, here?', 'Are we connected?', '...', 'Nice.', 'Let\'s move on.', '...',
-             'This is your soul.', 'Your essence of humanity.', 'Now, you should give this soul some \'GIFT\'',
-             'Let\'s do it.'],
-            ['Are you here again?', 'Why are you here?', '...', 'Well, let\'s don\'t talk about it first.',
-             'Again, you will get some \'AWARD\'.', 'Let\'s do it.'],
-            ['Hello, again.', 'You may find some tips before, ..', '.. but you won\'t find any now.',
-             'You know why?', '.. as you are SPECIAL.', 'Nobody will process your path like YOU do.', '...',
-             'However, \'CHOOSE\' for your soul.'],
-            ['Heya.', 'I know your name, CHARA, right?', 'You probably killed that deformed flower.',
-             'Let\'s give you a hint.', 'Original chaos leads you for another world.', '...', 'Anyway.'],
-            ['Finally.', 'You\'ve been finding souls.', 'And you finally find yours.', '...',
-             'Think, where are you from?', 'How did it begin?', 'How will it end?', '...', 'Make your \'CHOICE\'.'],
+             'THIS IS A PROPHECY', 'A PROPHECY OF HOPE', 'A PROPHECY OF FATE',
+             'SO, LET EVERYTHING JUST HAPPEN...'],
+            ['NOW, NOW...', 'EVERYTHING\'S READY...', 'ADVENTURER STARTS THE JOURNEY TO SOULS...'],
+            ['LIGHTS GLOWS,..', 'SHADOW FLIES,..', 'CHAOS EXISTS BETWEEN THEM...', 'ADVENTURER UNDERSTANDS THE POWER OF GROWTH...'],
+            ['CHAOS WAS GOT...', 'BUT NEVER ENDS...', 'THE OVERPOWERED GODS, ..', '..SHOULD BE KILLED.'],
+            ['ADVENTURER FIND IT SOULS...', 'CONCLUDE ALL THE JOURNEY...', '..TO A SIMPLE "INGOT".'],
             ['[AFTER YOU\'VE RESET THE TIMELINE, \nEVERYTHING WILL BE GONE.]', '[PLEASE STOP AND THINK BEFORE IT ALL ENDS.]',
-             '[...]', 'This expression...', 'Are you here, again?', 'Alright.', 'Lets move on.'],
-            ['...', 'It\'s you.', 'Let\'s move on.', '..?', 'Wait,', 'I\'ve observed that the world is changing.',
-             'The holy and the evil are coming.', '...', 'You must save this world.'],
-            ['...', 'This is the \'adventure\'.', 'In a story, we will have the adventurer and the evil dragon.',
-             '...', 'And also, get enough power from that flower.', 'You know what I\'m talking about.', '...anyway.'],
-            ['...', '...anyway.'],
-            ['...', 'Let\'s change a new "scene".', 'Zhi Ni Tai Mei', 'SB'],
-            ['...', 'ABABABABABABABAB']
+             '[...]', 'AN OLD END...', 'A NEW START...', 'EVERYTHING WILL RESTART, AGAIN...'],
+            ['HALLOW, EVIL...', 'CORRUPTED OVER THE LAND...', '...OVER THIS MOTTLED LAND...'],
+            ['BEYONDS THE MYTH...', 'DRAGONS FLEW OVER THE SKY...', 'ADVENTURER PUT THEIR KNIFES INSIDE THE DRAGON\'S BODY...'],
+            ['DOES IT ALL ENDS AGAIN?', 'IS THESE ACTIONS MEANINGFUL?', 'I DON\'T KNOW...', 'THEY DON\'T KNOW...'],
+            ['THE TRUE CHAOS, ...', 'IS INVADING...', 'ADVENTURER FOUND THEIR PAST, ...', '... THE ANCIENT ...'],
+            ['CROSS THROUGH DIMENSION...']
         ]
         if not t:
             self.point_wisdom = 0
@@ -337,10 +329,10 @@ class PlayerProfile:
             if stage == 0 and self.dialogger.curr_text == '':
                 stage = 1
                 target_soul_x = window.get_width() // 4
-                self.dialogger.push_dialog('Give this soul some traits.')
+                self.dialogger.dialog('THIS SOUL SHOULD BE STRONGER.')
             if stage == 1:
-                texts = ['%d free points', '- wisdom   + %d +%.1f%c mana reg.', '- strength + %d +%.1f%c damage   ',
-                         '- agility  + %d +%.1f%c speed    ']
+                texts = ['%d free points', '%3d -  wisdom  + %5d pts', '%3d - strength + %5d pts',
+                         '%3d - agility  + %5d pts']
                 if sum(points) == 30:
                     texts.append('[PRESS Z TO CONTINUE]')
                 texts[0] = texts[0] % (30 - sum(points))
@@ -348,7 +340,7 @@ class PlayerProfile:
                     texts[i + 1] =  (texts[i + 1] %
                                      (points[i], round((points[i] + [self.point_wisdom,
                                                                     self.point_strength,
-                                                                    self.point_agility][i]) ** 1.1 / 4, 1), '%'))
+                                                                    self.point_agility][i]) ** 1.1 * 25, 0)))
                 for i, t in enumerate(texts):
                     if i == selected_point + 1:
                         color = (255, 255, 0)

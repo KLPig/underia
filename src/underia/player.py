@@ -6,7 +6,7 @@ import pygame as pg
 from physics import mover, vector
 from resources import position, cursors, errors, path
 from underia import game, styles, inventory, weapons, entity, projectiles, player_profile, notebook
-from values import hp_system, damages, effects
+from values import hp_system, damages, effects, WeakManaI, ManaDrain
 import constants
 from visual import draw, fade_circle as fc
 import underia3
@@ -161,6 +161,7 @@ class Player:
         self.afterimage_shadow = 0
         self.inv_capacity = 48
         self.tick = 0
+        self.inv_pos = 0
 
     def calculate_regeneration(self):
         ACCESSORY_REGEN = {}
@@ -311,6 +312,16 @@ class Player:
         return 0.08
 
     def update(self):
+        try:
+            self.inv_pos
+        except AttributeError:
+            self.inv_pos = 0
+        if self.open_inventory:
+            self.inv_pos = self.inv_pos * 5 // 6
+        elif self.inv_pos < 900:
+            self.inv_pos = (self.inv_pos * 9 + 1000) // 10
+        else:
+            self.inv_pos = (self.inv_pos * 9 + 2000) // 10
         self.tick += 1
         self.ntcs = []
         self.p_data = []
@@ -337,6 +348,14 @@ class Player:
             self.hp_sys.effect(effects.RangedReinforceIII(5, 1))
         if 'ranged_reinforce_iv' in self.profile.select_skill:
             self.hp_sys.effect(effects.RangedReinforceIV(5, 1))
+        if 'magic_reinforce_i' in self.profile.select_skill:
+            self.hp_sys.effect(effects.MagicReinforceI(5, 1))
+        if 'magic_reinforce_ii' in self.profile.select_skill:
+            self.hp_sys.effect(effects.MagicReinforceII(5, 1))
+        if 'magic_reinforce_iii' in self.profile.select_skill:
+            self.hp_sys.effect(effects.MagicReinforceIII(5, 1))
+        if 'magic_reinforce_iv' in self.profile.select_skill:
+            self.hp_sys.effect(effects.MagicReinforceIV(5, 1))
         am = self.calculate_data('wing_control', False) / 100
         if pg.K_SPACE in game.get_game().get_pressed_keys():
             self.z = (self.z * 2 - am) / 3
@@ -492,6 +511,7 @@ class Player:
             entity.entity_spawn(entity.Entities.QuarkGhost, 2000, 2000, 0, 1145, 100000)
             self.obj.velocity.clear()
             game.get_game().dialog.dialog('The Quark Ghost prevents you from accelerating!')
+        self.p_data.append(f'{self.calculate_data("mana_cost", True, rate_multiply=True) * 100:.0f}% mana cost')
         self.splint_distance = self.calculate_data('splint', False)
         if self.splint_distance:
             self.p_data.append(f'Sprint distance {self.splint_distance}')
@@ -546,7 +566,10 @@ class Player:
         mtp_regen = self.calculate_data('mentality_regen', False)
         self.REGENERATION = 0.015 + self.calculate_regeneration() + self.calculate_data('regen', rate_data=False) / 1000 * game.get_game().clock.last_tick
         self.MAGIC_REGEN = self.calculate_magic_regeneration() * (0.04 + self.calculate_data('mana_regen', rate_data=False) / 120.0)
-
+        if len([1 for ef in self.hp_sys.effects if type(ef) is WeakManaI]):
+            self.MAGIC_REGEN *= 0.5
+        if len([1 for ef in self.hp_sys.effects if type(ef) is ManaDrain]):
+            self.MAGIC_REGEN *= 0.5
         mn = self.mana / self.max_mana
         if mn <= 1:
             self.MAGIC_REGEN *= mn
@@ -908,6 +931,7 @@ class Player:
             game.get_game().projectiles = []
             game.get_game().damage_texts = []
             self.obj.pos << (0, 0)
+        self.weapons[self.sel_weapon].update()
 
     def ui(self):
         self.in_ui = False
@@ -1467,9 +1491,9 @@ class Player:
                 styles.item_mouse(10 + i * 60, 190, ww.name.replace(' ', '_'), str(i), '1', 0.75)
         except AttributeError:
             pass
-        if self.open_inventory:
+        if self.open_inventory or self.inv_pos < 1500:
             for i in range(len(self.accessories)):
-                styles.item_display(10 + i * 90, game.get_game().displayer.SCREEN_HEIGHT - 90,
+                styles.item_display(10 + i * 90 - self.inv_pos, game.get_game().displayer.SCREEN_HEIGHT - 90,
                                     self.accessories[i].replace(' ', '_'), str(i), '1', 1,
                                     selected=i == self.sel_accessory)
             l = 12
@@ -1482,7 +1506,7 @@ class Player:
                     else:
                         item, amount = 'null', ''
                     item = inventory.ITEMS[item]
-                    styles.item_display(10 + i * 85, game.get_game().displayer.SCREEN_HEIGHT - 180 - j * 85,
+                    styles.item_display(10 + i * 85 - self.inv_pos, game.get_game().displayer.SCREEN_HEIGHT - 180 - j * 85,
                                         item.id, '', str(amount), 1)
             for i in range(lr):
                 for j in range(l):
@@ -1491,9 +1515,9 @@ class Player:
                     else:
                         item, amount = 'null', ''
                     item = inventory.ITEMS[item]
-                    styles.item_mouse(10 + i * 85, game.get_game().displayer.SCREEN_HEIGHT - 180 - j * 85, item.id,
+                    styles.item_mouse(10 + i * 85 - self.inv_pos, game.get_game().displayer.SCREEN_HEIGHT - 180 - j * 85, item.id,
                                       '', str(amount), 1)
-                    rect = pg.Rect(10 + i * 85, game.get_game().displayer.SCREEN_HEIGHT - 180 - j * 85, 80, 80)
+                    rect = pg.Rect(10 + i * 85 - self.inv_pos, game.get_game().displayer.SCREEN_HEIGHT - 180 - j * 85, 80, 80)
                     if rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
                         if pg.K_q in game.get_game().get_keys():
                             if item.id != 'null':
@@ -1531,6 +1555,10 @@ class Player:
                                         s_b = '_concept_set_bonus_mask'
                                 elif not len([1 for a in acc if not str.startswith(a, 'ration')]):
                                     s_b = '_ration_set_bonus'
+                                elif not len([1 for a in acc if not str.startswith(a, 'evil')]):
+                                    s_b = '_evil_set_bonus'
+                                elif not len([1 for a in acc if not str.startswith(a, 'nightmare')]):
+                                    s_b = '_nightmare_set_bonus'
                                 elif not len([1 for a in acc if not str.startswith(a, 'heaven_metal')]):
                                     s_b = '_heaven_metal_set_bonus'
                                 elif not len([1 for a in acc if not str.startswith(a, 'heaven_wooden')]):
@@ -1888,6 +1916,8 @@ class Player:
                                 entity.entity_spawn(underia3.BombardinoCrocodilo, 2000, 2000, 0, 1145, 100000)
                         elif item.id == 'suspicious_rune_eye':
                             entity.entity_spawn(underia3.PetrifiedWitness, 2000, 2000, 0, 1145, 100000)
+                        elif item.id == 'nike_shoes':
+                            entity.entity_spawn(underia3.TralaleroTralala, 2000, 2000, 0, 1145, 100000)
 
                         elif item.id == 'hope_sign':
                             its = {'karmic_helmet': 'e_karmic_helmet', 'karmic_chestplate': 'e_karmic_chestplate', 'karmic_greaves': 'e_karmic_greaves',
@@ -2056,9 +2086,9 @@ class Player:
                                 status.append('crash')
                         self.in_ui = True
             for i in range(len(self.accessories)):
-                styles.item_mouse(10 + i * 90, game.get_game().displayer.SCREEN_HEIGHT - 90,
+                styles.item_mouse(10 + i * 90 - self.inv_pos, game.get_game().displayer.SCREEN_HEIGHT - 90,
                                   self.accessories[i].replace(' ', '_'), str(i), '1', 1)
-                rect = pg.Rect(10 + i * 90, game.get_game().displayer.SCREEN_HEIGHT - 90, 90, 90)
+                rect = pg.Rect(10 + i * 90 - self.inv_pos, game.get_game().displayer.SCREEN_HEIGHT - 90, 90, 90)
                 if rect.collidepoint(game.get_game().displayer.reflect(
                         *pg.mouse.get_pos())) and 1 in game.get_game().get_mouse_press():
                     self.sel_accessory = i
@@ -2067,7 +2097,7 @@ class Player:
             nx = displayer.canvas.get_width() - 180
             ny = displayer.canvas.get_height() / 2
 
-            note_rect = pg.Rect(nx - 100, ny - 180, 60, 60)
+            note_rect = pg.Rect(nx - 100 + self.inv_pos // 3, ny - 180, 60, 60)
             for i in range(game.get_game().chapter + 1):
                 im = game.get_game().graphics['background_ui_note']
                 if not note_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
@@ -2087,7 +2117,7 @@ class Player:
                         notebook.show_notebook(i)
                 note_rect.y += 60
 
-            nx = displayer.canvas.get_width() - 180
+            nx = displayer.canvas.get_width() - 180 + self.inv_pos // 3
             ny = displayer.canvas.get_height() / 2
 
             rec_rect = pg.Rect(nx - 30, ny - 30, 60, 60)
@@ -2136,16 +2166,16 @@ class Player:
                 if pg.K_DOWN in game.get_game().get_keys():
                     self.sel_recipe = (self.sel_recipe + 1) % len(self.recipes)
                 cur_recipe = self.recipes[self.sel_recipe]
-                styles.item_display(game.get_game().displayer.SCREEN_WIDTH - 260,
+                styles.item_display(game.get_game().displayer.SCREEN_WIDTH - 260 + self.inv_pos // 3,
                                     game.get_game().displayer.SCREEN_HEIGHT - 170,
                                     cur_recipe.result, str(self.sel_recipe + 1), str(cur_recipe.crafted_amount), 2)
                 i = 0
                 for item, amount in cur_recipe.material.items():
                     styles.item_display(
-                        game.get_game().displayer.SCREEN_WIDTH - 20 - 80 * (1 + len(cur_recipe.material)) + 80 * i,
+                        game.get_game().displayer.SCREEN_WIDTH - 20 - 80 * (1 + len(cur_recipe.material)) + 80 * i + self.inv_pos // 3,
                         game.get_game().displayer.SCREEN_HEIGHT - 250, item, '', str(amount), 1)
                     i += 1
-                if pg.Rect(game.get_game().displayer.SCREEN_WIDTH - 260, game.get_game().displayer.SCREEN_HEIGHT - 170,
+                if pg.Rect(game.get_game().displayer.SCREEN_WIDTH - 260 + self.inv_pos // 3, game.get_game().displayer.SCREEN_HEIGHT - 170,
                            160, 160).collidepoint(game.get_game().displayer.reflect(
                         *pg.mouse.get_pos())) and 1 in game.get_game().get_mouse_press():
                     rc = cur_recipe
@@ -2163,24 +2193,24 @@ class Player:
                     for i in range(-10, 10):
                         s = (self.sel_recipe + i + len(self.recipes)) % len(self.recipes)
                         cur_recipe = self.recipes[s]
-                        styles.item_display(displayer.SCREEN_WIDTH - 10 - 80, displayer.SCREEN_HEIGHT // 2 + i * 90 - 40,
+                        styles.item_display(displayer.SCREEN_WIDTH - 10 - 80 + self.inv_pos // 3, displayer.SCREEN_HEIGHT // 2 + i * 90 - 40,
                                             cur_recipe.result, str(s + 1), str(cur_recipe.crafted_amount), 1 if i else 1.2)
                         i += 1
                     cur_recipe = self.recipes[self.sel_recipe]
-                    styles.item_mouse(game.get_game().displayer.SCREEN_WIDTH - 260,
+                    styles.item_mouse(game.get_game().displayer.SCREEN_WIDTH - 260 + self.inv_pos // 3,
                                       game.get_game().displayer.SCREEN_HEIGHT - 170,
                                       cur_recipe.result, str(self.sel_recipe + 1), str(cur_recipe.crafted_amount), 2,
                                       anchor='right')
                     i = 0
                     for item, amount in cur_recipe.material.items():
                         styles.item_mouse(
-                            game.get_game().displayer.SCREEN_WIDTH - 20 - 80 * (1 + len(cur_recipe.material)) + 80 * i,
+                            game.get_game().displayer.SCREEN_WIDTH - 20 - 80 * (1 + len(cur_recipe.material)) + 80 * i + self.inv_pos // 3,
                             game.get_game().displayer.SCREEN_HEIGHT - 250, item, '', str(amount), 1, anchor='right')
                         i += 1
                     for i in range(-10, 10):
                         s = (self.sel_recipe + i + len(self.recipes)) % len(self.recipes)
                         cur_recipe = self.recipes[s]
-                        styles.item_mouse(displayer.SCREEN_WIDTH - 90, displayer.SCREEN_HEIGHT // 2 + i * 80 - 40,
+                        styles.item_mouse(displayer.SCREEN_WIDTH - 90, displayer.SCREEN_HEIGHT // 2 + i * 80 - 40 + self.inv_pos // 3,
                                           cur_recipe.result, str(s + 1), str(cur_recipe.crafted_amount), 1, anchor='right')
                         r = pg.Rect(displayer.SCREEN_WIDTH - 90, displayer.SCREEN_HEIGHT // 2 + i * 80 - 40, 80, 80)
                         if r.collidepoint(game.get_game().displayer.reflect(
@@ -2349,4 +2379,3 @@ class Player:
             pg.mouse.set_visible(not mouse_text)
         else:
             pg.mouse.set_visible(self.weapons[self.sel_weapon].name in ['null', 'arrow_thrower'])
-            self.weapons[self.sel_weapon].update()

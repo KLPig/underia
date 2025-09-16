@@ -67,12 +67,15 @@ class LightingEngine:
         if len(color) == 3:
             color = color + (255,)
 
+        r, g, b = color[:3]
+        lightness = max(0.0001, 0.2126 * (r / 255) + 0.7152 * (g / 255) + 0.0722 * (b / 255))
+
         self.lights.append({
             'type': 'point',
             'color': color,
             'pos': scaled_pos,
-            'radius': scaled_radius,
-            'power': max(0.0, min(1.0, power))
+            'radius': scaled_radius * 2,
+            'power': max(0.0, min(1.0, power / lightness / 3))
         })
 
     def update(self, surface):
