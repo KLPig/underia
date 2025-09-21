@@ -681,7 +681,7 @@ class SpeedIncreaseMagicWeapon(NewMagicWeapon):
         game.get_game().player.hp_sys.effect(effects.WeakManaI([.5, 1, 3, 6][constants.DIFFICULTY], 1))
         if constants.DIFFICULTY:
             game.get_game().player.hp_sys.effect(effects.ManaDrain([0, 3, 6, 10][constants.DIFFICULTY], 1))
-        if game.get_game().player.mana < int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True)):
+        if game.get_game().player.mana < round(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True),1):
             self.timer = 0
             return
         if self.sk_cd:
@@ -694,7 +694,7 @@ class SpeedIncreaseMagicWeapon(NewMagicWeapon):
                             self.rot)
         pj.obj.MASS /= self.scale ** 1.5
         game.get_game().projectiles.append(pj)
-        game.get_game().player.mana -= int(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True))
+        game.get_game().player.mana -= round(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True),1)
 
 class MysterySwiftswordSpear(weapons.Spear):
     def on_start_attack(self):
@@ -1071,6 +1071,10 @@ WEAPONS = {
                                        img='items_weapons_organ_wand', speed=4, at_time=5,
                                        projectile=projectiles.OrganWand, mana_cost=50, auto_fire=True,
                                        spell_name='Quick Organ'),
+    'nyxs_dim_star_wand': weapons.MagicWeapon(name='nyxs dim star wand', damages={damages.DamageTypes.MAGICAL: 8000}, kb=0,
+                                               img='items_weapons_nyxs_dim_star_wand', speed=9, at_time=9,
+                                               projectile=projectiles.DimStar, mana_cost=200, auto_fire=True,
+                                               spell_name='The Dim Star'),
 
     'wooden_flute': weapons.PoetWeapon(name='wooden flute', damages={damages.DamageTypes.OCTAVE: 90}, kb=2,
                                        img='items_weapons_wooden_flute', speed=0, at_time=5, projectile=projectiles.WoodenFlute,
@@ -1106,7 +1110,7 @@ WEAPONS = {
                             auto_fire=True),
     'abyss_fury': weapons.MagicWeapon(name='abyss fury', damages={damages.DamageTypes.MAGICAL: 500}, kb=5,
                               img='items_weapons_abyss_fury', speed=1, at_time=4, projectile=projectiles.AbyssFury,
-                              mana_cost=25, auto_fire=True, spell_name='Abyss Fury'),
+                              mana_cost=65, auto_fire=True, spell_name='Abyss Fury'),
 
     'miracle_crystal_blade': MiracleCrystalBlade(name='miracle crystal blade', damages={damages.DamageTypes.PHYSICAL: 1800}, kb=20,
                                                   img='items_weapons_miracle_crystal_blade', speed=1, at_time=10, rot_speed=50,
@@ -1131,7 +1135,7 @@ WEAPONS = {
     'pierce': Pierce(name='pierce', damages={damages.DamageTypes.PIERCING: 1200}, kb=10, img='items_weapons_pierce',
                      speed=2, at_time=2, precision=3, projectile_speed=1000, auto_fire=True),
     'mystery': weapons.MagicWeapon(name='mystery', damages={damages.DamageTypes.MAGICAL: 1800}, kb=10, img='items_weapons_mystery',
-                           speed=25, at_time=25, projectile=projectiles.Mystery, mana_cost=250, auto_fire=True),
+                           speed=25, at_time=25, projectile=projectiles.Mystery, mana_cost=450, auto_fire=True),
 }
 
 for k, v in WEAPONS.items():

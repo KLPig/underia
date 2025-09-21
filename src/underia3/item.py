@@ -104,6 +104,22 @@ ITEMS = {
                                                                  'Y: Switch dodge mode, decrease damage but also chance for enemy to attack you.[cmd]\n'
                                                                  '+35% ranged damage\n+24% critical\n+50% speed', 'balanced_cloak',
                                                 4, [inventory.TAGS['item'], inventory.TAGS['accessory'], inventory.TAGS['major_accessory']]),
+    'abyss_texture': inventory.Inventory.Item('Abyss Texture', '+100 touching defense\n+90 magic defense\nGrants magic damage.\nReduce mana costs\n'
+                                                                 'Y: Dark\'s defense.[cmd]\n'
+                                                                 '+45% magic damage\n-20% mana cost\n+200 additional maximum mana\n-20% karma reduce.', 'abyss_texture',
+                                                5, [inventory.TAGS['item'], inventory.TAGS['accessory'], inventory.TAGS['major_accessory']]),
+    'spaced_sheath': inventory.Inventory.Item('Spaced Sheath', '+220 touching defense\n+140 magic defense\nGrants melee damage.\n'
+                                                                 'Myths weapon upgraded.[cmd]\n'
+                                                                 '+75% melee damage\n+25/sec regeneration\n+24% critical\n+5 attack speed', 'spaced_sheath',
+                                                5, [inventory.TAGS['item'], inventory.TAGS['accessory'], inventory.TAGS['major_accessory']]),
+    'appolos_ring': inventory.Inventory.Item('Appolos Ring', '+180 touching defense\n+120 magic defense\nGrants ranged damage.\n+25% dodge rate\n'
+                                                             'Y: Shoots strong scorching arrows.[cmd]\n'
+                                                             '+60% ranged damage\n+55% critical\n+100% speed', 'appolos_ring',
+                                                6, [inventory.TAGS['item'], inventory.TAGS['accessory'], inventory.TAGS['major_accessory']]),
+    'daydream_texture': inventory.Inventory.Item('Daydream Texture', '+140 touching defense\n+200 magic defense\nGrants magic damage.\n'
+                                                                 'Myths wands upgraded.[cmd]\n'
+                                                                 '+55% magic damage\n+10/sec mana regeneration\n+300 additional maximum mana\n-10% karma reduce\n+50/sec inspiration regeneration\n-30% mana cost', 'daydream_texture',
+                                                 6, [inventory.TAGS['item'], inventory.TAGS['accessory'], inventory.TAGS['major_accessory']]),
 
     'twin_crystal': inventory.Inventory.Item('Twin Crystal', 'When MP < 50%, +20/sec mana regeneration\nWhen MP > 50%, +150 additional maximum mana\n'
                                                              'When HP < 50%, +40 magic defense\nWhen HP > 50%, +20% damage', 'twin_crystal', 4, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
@@ -157,7 +173,7 @@ ITEMS = {
     'life_amulet': inventory.Inventory.Item('Life Amulet', 'Resistant to tree curse.\n+100 touching defense\n+100 magic defense\n+50% damage\n'
                                                            'Increase all stats.[cmd]\n+100% speed\n+35% critical\n+10/sec regeneration\n+20/sec mana regeneration\n+200/sec inspiration regeneration\n-30% mana cost',
                                                 'life_amulet', 1, [inventory.TAGS['item'], inventory.TAGS['accessory'], inventory.TAGS['major_accessory']]),
-    'magic_treasure_book': inventory.Inventory.Item('Magic Treasure Book', '+18 touching defense\n+24 magic defense\n+80 additional maximum mana\n'
+    'magic_treasure_book': inventory.Inventory.Item('Magic Treasure Book', '+40 touching defense\n+64 magic defense\n+80 additional maximum mana\n'
                                                                            '+10/sec mana regeneration\n+18% damage\n-15% mana cost', 'magic_treasure_book', 2,
                                                     [inventory.TAGS['item'], inventory.TAGS['accessory']]),
     'purple_clay_sheath': inventory.Inventory.Item('Purple Clay Sheath',
@@ -169,6 +185,9 @@ ITEMS = {
                                               'Resistant to snow curse.\n+30 touching defense\n'
                                               '+30 magic defense\n+20% ranged damage\n+10% critical\n+50% speed', 'poison_quiver', 2,
                                               [inventory.TAGS['item'], inventory.TAGS['accessory'], inventory.TAGS['major_accessory']]),
+    'scarlett_sheath': inventory.Inventory.Item('Scarlett Sheath', '+40% speed\n+120 touching defense\n+95 magic defense\n'
+                                                                   '+36% melee damage\n+10/sec regeneration',
+                                                 'scarlett_sheath', 3, [inventory.TAGS['item'], inventory.TAGS['accessory'], inventory.TAGS['major_accessory']]),
     'moonflower': inventory.Inventory.Item('Moonflower', 'Rarely drops from tree/mana chicken/la vaca saturno saturnita\nReference: Plant vs. Zombies 2\n+25 touching defense\n+30 magic defense\n-10% magic damage\n+20% karma reduce\n'
                                                          'Magic & Priest weapon will be used twice, 25% chance to recover 50% of the mana cost\n+20/sec mana regeneration',
                                             'moonflower', 3, [inventory.TAGS['item'], inventory.TAGS['accessory'], inventory.TAGS['major_accessory']]),
@@ -176,6 +195,10 @@ ITEMS = {
                                                    '20kg\n'
                                                    '+50% speed\n+100 touching defense\n+120 magic defense\n'
                                                    '+30% melee damage\n+10/sec regenration\nRarely drops from the blood moon', 'bloody_hand', 3,
+                                                    [inventory.TAGS['item'], inventory.TAGS['accessory'], inventory.TAGS['major_accessory']]),
+    'bloody_texture': inventory.Inventory.Item('Bloody Texture', ''
+                                                   '+60 touching defense\n+80 magic defense\n'
+                                                   '+30% magic damage\n-20% mana cost\n-10/sec regeneration\n+200 additional maximum mana', 'bloody_texture', 3,
                                                     [inventory.TAGS['item'], inventory.TAGS['accessory'], inventory.TAGS['major_accessory']]),
 
     'e_wooden_hammer': inventory.Inventory.Item('Wooden Hammer', '', 'e_wooden_hammer',
@@ -347,6 +370,9 @@ ITEMS = {
     'organ_wand': inventory.Inventory.Item('Organ Wand', 'Summon a chain of projectile.', 'organ_wand', 2,
                                              [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['magic_weapon'],
                                               inventory.TAGS['magic_element_life'], inventory.TAGS['magic_lv_2']]),
+    'nyxs_dim_star_wand': inventory.Inventory.Item('Nyx\'s Dim Star Wand', 'Summon groups of stars.', 'nyxs_dim_star_wand', 3,
+                                                    [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['magic_weapon'],
+                                                     inventory.TAGS['magic_element_dark'], inventory.TAGS['magic_lv_3']]),
 
     'wooden_flute': inventory.Inventory.Item('Wooden Flute', '', 'wooden_flute', 1,
                                               [inventory.TAGS['item'], inventory.TAGS['weapon'],
