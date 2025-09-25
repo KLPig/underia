@@ -2660,7 +2660,7 @@ class Entities:
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 36:
                 game.get_game().player.hp_sys.damage(68, damages.DamageTypes.MAGICAL)
                 game.get_game().player.hp_sys.effect(effects.Burning(4, 4))
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
 
     class ProtectApple(Entity):
@@ -2788,7 +2788,7 @@ class Entities:
                 game.get_game().player.hp_sys.damage(88, damages.DamageTypes.MAGICAL)
                 if not game.get_game().player.hp_sys.is_immune:
                     game.get_game().player.obj.apply_force(vector.Vector(self.rot, 120))
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
 
     class SandStormAttack(MagmaKingFireball):
@@ -2797,7 +2797,7 @@ class Entities:
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 36:
                 game.get_game().player.hp_sys.damage(77, damages.DamageTypes.MAGICAL)
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
 
     class HeavenGuard(Entity):
@@ -3012,7 +3012,7 @@ class Entities:
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 36:
                 game.get_game().player.hp_sys.damage(144, damages.DamageTypes.MAGICAL)
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
 
     class TruthlessCurse(Entity):
@@ -3034,7 +3034,7 @@ class Entities:
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 36:
                 game.get_game().player.hp_sys.damage(360, damages.DamageTypes.MAGICAL)
                 game.get_game().player.hp_sys.effect(effects.TruthlessCurse(2, 30))
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
 
     class FaithlessCurse(Entity):
@@ -3056,7 +3056,7 @@ class Entities:
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 36:
                 game.get_game().player.hp_sys.damage(280, damages.DamageTypes.MAGICAL)
                 game.get_game().player.hp_sys.effect(effects.FaithlessCurse(20, 1))
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
 
     class SpadeBullet(Entity):
@@ -3078,7 +3078,7 @@ class Entities:
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 50:
                 game.get_game().player.hp_sys.damage(540, damages.DamageTypes.MAGICAL)
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
 
     class AlmondBullet(Entity):
@@ -3100,7 +3100,7 @@ class Entities:
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 50:
                 game.get_game().player.hp_sys.damage(540, damages.DamageTypes.MAGICAL)
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
 
     class BombBullet(Entity):
@@ -3141,7 +3141,7 @@ class Entities:
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 50:
                 game.get_game().player.hp_sys.damage(480, damages.DamageTypes.MAGICAL)
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
 
     class Seed(Entity):
@@ -3165,7 +3165,7 @@ class Entities:
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 320:
                 game.get_game().player.hp_sys.damage(360, damages.DamageTypes.MAGICAL)
                 game.get_game().player.hp_sys.effect(effects.Poison(5, 24))
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
 
     class SpikeBall(Entity):
@@ -3189,7 +3189,7 @@ class Entities:
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 220:
                 game.get_game().player.hp_sys.damage(640, damages.DamageTypes.MAGICAL)
                 game.get_game().player.hp_sys.effect(effects.Poison(8, 45))
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
 
     class CardBomb(Entity):
@@ -3243,7 +3243,7 @@ class Entities:
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 36:
                 game.get_game().player.hp_sys.damage(360, damages.DamageTypes.MAGICAL)
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
 
     class DevilsMark(Entity):
@@ -3270,7 +3270,7 @@ class Entities:
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < self.d_img.get_width() / 2:
                 game.get_game().player.hp_sys.damage(360, damages.DamageTypes.MAGICAL)
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
 
     class Lazer(Entity):
         NAME = 'Lazer'
@@ -3294,7 +3294,7 @@ class Entities:
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 36:
                 game.get_game().player.hp_sys.damage(188, damages.DamageTypes.MAGICAL)
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
 
     class FireBreath(Entity):
@@ -3340,7 +3340,7 @@ class Entities:
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < r:
                 game.get_game().player.hp_sys.damage(640, damages.DamageTypes.MAGICAL)
                 game.get_game().player.hp_sys.effect(effects.Burning(10, 3))
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
 
     class IceBreath(Entity):
         NAME = 'Dragon Breath: Ice'
@@ -3387,7 +3387,7 @@ class Entities:
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < r:
                 game.get_game().player.hp_sys.damage(680, damages.DamageTypes.MAGICAL)
                 game.get_game().player.hp_sys.effect(effects.Freezing(7, 3))
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
 
     class DarkBreath(Entity):
         NAME = 'Dragon Breath: Dark'
@@ -3434,7 +3434,7 @@ class Entities:
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < r:
                 game.get_game().player.hp_sys.damage(750, damages.DamageTypes.MAGICAL)
                 game.get_game().player.hp_sys.effect(effects.Darkened(5, 3))
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
 
     class LightBreath(Entity):
         NAME = 'Dragon Breath: Light'
@@ -3482,7 +3482,7 @@ class Entities:
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < r:
                 game.get_game().player.hp_sys.damage(960, damages.DamageTypes.MAGICAL)
                 game.get_game().player.hp_sys.effect(effects.Enlightened(7, 3))
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
 
     class MechanicBreath(Entity):
         NAME = 'Dragon Breath: Mechanic'
@@ -3532,7 +3532,7 @@ class Entities:
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < r:
                 game.get_game().player.hp_sys.damage(1280, damages.DamageTypes.MAGICAL)
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
 
     class CyberBreath(Entity):
         NAME = 'Dragon Breath: Cyber'
@@ -3578,7 +3578,7 @@ class Entities:
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < r:
                 game.get_game().player.hp_sys.damage(1140, damages.DamageTypes.MAGICAL)
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
 
     class UniSpike(Lazer):
         NAME = 'Uni-Spike'
@@ -3598,7 +3598,7 @@ class Entities:
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 36:
                 game.get_game().player.hp_sys.damage(158, damages.DamageTypes.MAGICAL)
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
 
     class IceShard(Lazer):
@@ -3619,7 +3619,7 @@ class Entities:
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 60:
                 game.get_game().player.hp_sys.damage(228, damages.DamageTypes.MAGICAL)
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
 
     class WitherSkull(Lazer):
@@ -3648,7 +3648,7 @@ class Entities:
                                    self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 300:
                     game.get_game().player.hp_sys.damage(120, damages.DamageTypes.MAGICAL)
                     game.get_game().player.hp_sys.effect(effects.Wither(10, 5))
-                    game.get_game().player.hp_sys.enable_immume()
+                    game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
 
     class LifeShard(Lazer):
@@ -3673,7 +3673,7 @@ class Entities:
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 300:
                 game.get_game().player.hp_sys.damage(255, damages.DamageTypes.MAGICAL)
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
 
     class PoisonSaliva(Lazer):
@@ -3695,7 +3695,7 @@ class Entities:
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 36:
                 game.get_game().player.hp_sys.damage(220, damages.DamageTypes.MAGICAL)
                 game.get_game().player.hp_sys.effect(effects.Sticky(6, 10))
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
 
     class GoblinArrow(Lazer):
@@ -3712,7 +3712,7 @@ class Entities:
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 36:
                 game.get_game().player.hp_sys.damage(168, damages.DamageTypes.MAGICAL)
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
 
     class GoblinOctave(Lazer):
@@ -3733,7 +3733,7 @@ class Entities:
                 if game.get_game().player.hp_sys.is_immune:
                     return
                 game.get_game().player.hp_sys.damage(144, damages.DamageTypes.MAGICAL)
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
 
     class AbyssRune(Entity):
         NAME = 'Abyss Rune'
@@ -4857,7 +4857,7 @@ class Entities:
                 if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                    self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 200:
                     game.get_game().player.hp_sys.damage(215, damages.DamageTypes.MAGICAL)
-                    game.get_game().player.hp_sys.enable_immume()
+                    game.get_game().player.hp_sys.enable_immune()
             self.tick += 1
 
     class Orge(Entity):
@@ -6146,7 +6146,7 @@ class Entities:
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 80:
                 game.get_game().player.hp_sys.damage(640, damages.DamageTypes.MAGICAL)
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
 
     class Thing(Entity):
@@ -6182,7 +6182,7 @@ class Entities:
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 50:
                 game.get_game().player.hp_sys.damage(700, damages.DamageTypes.MAGICAL)
                 game.get_game().player.hp_sys.damage(700, damages.DamageTypes.TOUCHING)
-                game.get_game().player.hp_sys.enable_immume()
+                game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
 
     class SunFire(Entity):

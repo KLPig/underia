@@ -947,7 +947,7 @@ class LycheeKok(entity.Entities.Lazer):
             game.get_game().player.hp_sys.damage(150, damages.DamageTypes.MAGICAL)
             if constants.DIFFICULTY >= 2:
                 game.get_game().player.hp_sys.effect(effects.Freezing(constants.DIFFICULTY * 3 - 5, 1))
-            game.get_game().player.hp_sys.enable_immume()
+            game.get_game().player.hp_sys.enable_immune()
             self.hp_sys.hp = 0
 
 class ToxicIntestine(entity.Entities.WormEntity):
@@ -1826,7 +1826,7 @@ class PhantomEye(Entity):
                     self.hp_sys.hp = 0
                 if not game.get_game().player.hp_sys.is_immune:
                     game.get_game().player.hp_sys.damage(400, damages.DamageTypes.MAGICAL)
-                    game.get_game().player.hp_sys.enable_immume()
+                    game.get_game().player.hp_sys.enable_immune()
 
 
 class PetrifiedWitness(Entity):
@@ -2075,7 +2075,7 @@ class WaterTyphoon(Entity):
         if vector.distance(*(game.get_game().player.obj.pos - self.obj.pos)) < 200 * self.size ** 2:
             if not game.get_game().player.hp_sys.is_immune:
                 game.get_game().player.hp_sys.damage(100, damages.DamageTypes.MAGICAL, penetrate=600)
-                game.get_game().player.hp_sys.enable_immume(.5)
+                game.get_game().player.hp_sys.enable_immune(.5)
 
 class OceanTornado(Entity):
     def __init__(self, pos, mode=0, leng=4000):

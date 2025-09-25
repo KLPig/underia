@@ -322,7 +322,7 @@ class SweepWeapon(Weapon):
                             e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), dmg.DamageTypes.THINKING)
                     if self.ENABLE_IMMUNE:
                         if constants.DIFFICULTY > 1:
-                            e.hp_sys.enable_immume()
+                            e.hp_sys.enable_immune()
 
 class MurderersKnife(SweepWeapon):
     def damage(self):
@@ -343,7 +343,7 @@ class MurderersKnife(SweepWeapon):
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
                         e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS))
-                    e.hp_sys.enable_immume()
+                    e.hp_sys.enable_immune()
 
 class RemoteWeapon(SweepWeapon):
     def update(self):
@@ -614,7 +614,7 @@ class Whip(Weapon):
                     if not e.hp_sys.is_immune:
                         e.obj.apply_force(vector.Vector(self.tgt_pos, self.knock_back * 120000 / e.obj.MASS))
                     if self.ENABLE_IMMUNE:
-                        e.hp_sys.enable_immume()
+                        e.hp_sys.enable_immune()
 
 class Spear(Weapon):
     ATTACK_SOUND = 'attack_sweep'
@@ -700,7 +700,7 @@ class Spear(Weapon):
                     if not e.hp_sys.is_immune:
                         e.obj.apply_force(vector.Vector(r, self.knock_back * 120000 / e.obj.MASS))
                     if self.ENABLE_IMMUNE:
-                        e.hp_sys.enable_immume()
+                        e.hp_sys.enable_immune()
 
 class SwiftSword(Spear):
     def update(self):
@@ -810,7 +810,7 @@ class Pickaxe(AutoSweepWeapon):
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
                         e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS))
-                    e.hp_sys.enable_immume()
+                    e.hp_sys.enable_immune()
 
 class LifeWoodenSword(Blade):
     def on_start_attack(self):
@@ -855,7 +855,7 @@ class PerseveranceSword(Blade):
                     e.hp_sys.damage(d * game.get_game().player.attack * game.get_game().player.attacks[0], t)
                 if not e.hp_sys.is_immune:
                     e.obj.apply_force(vector.Vector(r, self.knock_back * 120000 / e.obj.MASS))
-                e.hp_sys.enable_immume()
+                e.hp_sys.enable_immune()
 
 
 class BlackHoleSword(Blade):
@@ -1582,7 +1582,7 @@ class EEternalEcho(Blade):
                     else:
                         e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), dmg.DamageTypes.THINKING)
                 if self.ENABLE_IMMUNE:
-                    e.hp_sys.enable_immume()
+                    e.hp_sys.enable_immune()
 
 class EternalEcho(Blade):
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, rot_speed: int,
@@ -1774,7 +1774,7 @@ class EZenith(Blade):
                             e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), dmg.DamageTypes.THINKING)
                     if self.ENABLE_IMMUNE:
                         if constants.DIFFICULTY > 1:
-                            e.hp_sys.enable_immume()
+                            e.hp_sys.enable_immune()
 
 
 class Zenith(Blade):
@@ -2347,7 +2347,7 @@ class PacifistWeapon(Weapon):
                     rf = vector.coordinate_rotation(px + self.x, py + self.y)
                     e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS))
                 if self.ENABLE_IMMUNE:
-                    e.hp_sys.enable_immume()
+                    e.hp_sys.enable_immune()
 
 class SummonerWeapon(MagicWeapon):
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int,

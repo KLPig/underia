@@ -159,7 +159,7 @@ class EarthsTwinbladeForest(projectiles.Projectiles.NightsEdge):
                                                    ee.obj.pos[1] - self.obj.pos[1])
                     ee.obj.velocity += vector.Vector2D(r, kb)
                     self.DMG_RATE *= self.DECAY_RATE
-                ee.hp_sys.enable_immume(self.ENABLE_IMMUNE)
+                ee.hp_sys.enable_immune(self.ENABLE_IMMUNE)
                 self.damage_particle()
                 break
 
@@ -368,7 +368,7 @@ class RottenArrow(U3Arrow):
                 ee.hp_sys.damage(
                     self.dmg * game.get_game().player.attack * game.get_game().player.attacks[1],
                     damages.DamageTypes.PIERCING)
-                ee.hp_sys.enable_immume(.5)
+                ee.hp_sys.enable_immune(.5)
                 if not self.tc:
                     self.dead = True
                 else:
@@ -506,7 +506,7 @@ class EarthsTwinbladeSnow(projectiles.Projectiles.ThiefWeapon):
                                              damages.DamageTypes.PIERCING] * game.get_game().player.attack *
                                      game.get_game().player.attacks[1], damages.DamageTypes.PIERCING)
                     ee.hp_sys.effect(effects.Frozen(1.5, 1))
-                    ee.hp_sys.enable_immume(2.5)
+                    ee.hp_sys.enable_immune(2.5)
                 self.dead = self.dead or self.DEAD_DELETE
 
 class EarthsTwinblade(projectiles.Projectiles.ThiefWeapon):
@@ -561,7 +561,7 @@ class WoodenFlute(projectiles.Projectiles.PlatinumWand):
                                      game.get_game().player.attacks[3], damages.DamageTypes.OCTAVE,
                                      )
                 if self.ENABLE_IMMUNE:
-                    entity.hp_sys.enable_immume()
+                    entity.hp_sys.enable_immune()
                 if not self.hit:
                     self.hit = True
                 else:
@@ -659,7 +659,7 @@ class AbyssRanseur(projectiles.Projectiles.PlatinumWand):
             if self.tk % 15 == 0:
                 self.tar.hp_sys.damage(weapons.WEAPONS[self.DAMAGE_AS].damages[self.DMG_TYPE] * game.get_game().player.attack *
                                        game.get_game().player.attacks[0] * self.DMG_RATE * .2, self.DMG_TYPE, penetrate=100)
-                self.tar.hp_sys.enable_immume(self.ENABLE_IMMUNE)
+                self.tar.hp_sys.enable_immune(self.ENABLE_IMMUNE)
             return
         kb = weapons.WEAPONS[self.DAMAGE_AS].knock_back
         for ee in game.get_game().entities:
@@ -675,7 +675,7 @@ class AbyssRanseur(projectiles.Projectiles.PlatinumWand):
                                                    ee.obj.pos[1] - self.obj.pos[1])
                     ee.obj.apply_force(vector.Vector(r, kb * 120000 / ee.obj.MASS))
                     self.DMG_RATE *= self.DECAY_RATE
-                ee.hp_sys.enable_immume(self.ENABLE_IMMUNE)
+                ee.hp_sys.enable_immune(self.ENABLE_IMMUNE)
                 self.damage_particle()
                 self.tar = ee
                 self.ap = self.obj.pos - ee.obj.pos
@@ -918,7 +918,7 @@ class MiracleCrystalBlade(projectiles.Projectiles.PlatinumWand):
                                                ee.obj.pos[1] - self.obj.pos[1])
                 ee.obj.apply_force(vector.Vector(r, kb * 120000 / ee.obj.MASS))
                 self.DMG_RATE *= self.DECAY_RATE
-                ee.hp_sys.enable_immume(self.ENABLE_IMMUNE)
+                ee.hp_sys.enable_immune(self.ENABLE_IMMUNE)
                 self.damage_particle()
                 self.d_eno.append((self.tick, ee.ENO))
 

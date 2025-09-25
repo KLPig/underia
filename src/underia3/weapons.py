@@ -154,7 +154,7 @@ class Destroy(weapons.Blade):
                             e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
                     if self.ENABLE_IMMUNE:
                         if constants.DIFFICULTY > 1:
-                            e.hp_sys.enable_immume()
+                            e.hp_sys.enable_immune()
 
 class Generate(weapons.Blade):
     def damage(self):
@@ -194,7 +194,7 @@ class Generate(weapons.Blade):
                             e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
                     if self.ENABLE_IMMUNE:
                         if constants.DIFFICULTY > 1:
-                            e.hp_sys.enable_immume()
+                            e.hp_sys.enable_immune()
 
 class MuraKumo(weapons.Blade):
     def __init__(self, *args, **kwargs):
@@ -269,7 +269,7 @@ class MuraKumo(weapons.Blade):
                             e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
                     if self.ENABLE_IMMUNE:
                         if constants.DIFFICULTY > 1:
-                            e.hp_sys.enable_immume()
+                            e.hp_sys.enable_immune()
             if r in arot_range or r + 360 in arot_range or (
                     self.double_sided and ((r + 180) % 360 in arot_range or r + 180 in arot_range)):
                 if vector.distance(px, py) < 3000 * self.scale + (
@@ -383,7 +383,7 @@ class Bident(weapons.Spear):
                     if not e.hp_sys.is_immune:
                         e.obj.apply_force(vector.Vector(r, self.knock_back * 120000 / e.obj.MASS))
                     if self.ENABLE_IMMUNE:
-                        e.hp_sys.enable_immume()
+                        e.hp_sys.enable_immune()
 
 class FeatherSword(weapons.Blade):
     def on_start_attack(self):
@@ -405,7 +405,7 @@ class PoiseBlade(weapons.Blade):
             if vector.distance(*(e.obj.pos - game.get_game().player.obj.pos)) < 500:
                 if not e.hp_sys.is_immune:
                     e.hp_sys.damage(self.damages[damages.DamageTypes.PHYSICAL] * .3, damages.DamageTypes.TRUE, 80)
-                    e.hp_sys.enable_immume()
+                    e.hp_sys.enable_immune()
 
 class LycheeBow(weapons.Bow):
     def on_start_attack(self):

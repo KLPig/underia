@@ -407,7 +407,7 @@ class Projectiles:
                                                        ee.obj.pos[1] - self.obj.pos[1])
                         ee.obj.apply_force(vector.Vector(r, kb * 120000 / ee.obj.MASS))
                         self.DMG_RATE *= self.DECAY_RATE
-                    ee.hp_sys.enable_immume(self.ENABLE_IMMUNE)
+                    ee.hp_sys.enable_immune(self.ENABLE_IMMUNE)
                     self.damage_particle()
                     break
 
@@ -591,7 +591,7 @@ class Projectiles:
                                          game.get_game().player.attacks[3], damages.DamageTypes.OCTAVE,
                                          )
                     if self.ENABLE_IMMUNE:
-                        entity.hp_sys.enable_immume()
+                        entity.hp_sys.enable_immune()
                     if not self.hit:
                         self.hit = True
                     else:
@@ -682,7 +682,7 @@ class Projectiles:
                                          game.get_game().player.attacks[3], damages.DamageTypes.OCTAVE,
                                          )
                     if self.ENABLE_IMMUNE:
-                        entity.hp_sys.enable_immume()
+                        entity.hp_sys.enable_immune()
                     if not self.hit:
                         self.hit = True
                     else:
@@ -722,7 +722,7 @@ class Projectiles:
                                          game.get_game().player.attacks[3], damages.DamageTypes.OCTAVE,
                                          )
                     if self.ENABLE_IMMUNE:
-                        entity.hp_sys.enable_immume()
+                        entity.hp_sys.enable_immune()
                     if not self.hit:
                         self.hit = True
                     else:
@@ -806,7 +806,7 @@ class Projectiles:
                                          game.get_game().player.attacks[3], damages.DamageTypes.OCTAVE,
                                          )
                     if self.ENABLE_IMMUNE:
-                        entity.hp_sys.enable_immume()
+                        entity.hp_sys.enable_immune()
                     if not self.hit:
                         self.hit = True
                     else:
@@ -925,7 +925,7 @@ class Projectiles:
                                          game.get_game().player.attacks[3], damages.DamageTypes.OCTAVE,
                                          )
                     if self.ENABLE_IMMUNE:
-                        entity.hp_sys.enable_immume()
+                        entity.hp_sys.enable_immune()
                     if not self.hit:
                         self.hit = True
                     else:
@@ -1004,7 +1004,7 @@ class Projectiles:
                         weapons.WEAPONS[self.DAMAGE_AS].damages[self.DMG_TYPE] * game.get_game().player.attack *
                         game.get_game().player.attacks[2], self.DMG_TYPE)
                     if self.ENABLE_IMMUNE:
-                        ee.hp_sys.enable_immume()
+                        ee.hp_sys.enable_immune()
 
     class CactusWand(MagicCircle):
         DAMAGE_AS = 'cactus_wand'
@@ -1273,7 +1273,7 @@ class Projectiles:
                                                                                                          DamageTypes.MAGICAL: 2,
                                                                                                          DamageTypes.ARCANE: 2}[self.DMG_TYPE]],
                                      self.DMG_TYPE)
-                    ee.hp_sys.enable_immume(self.ENABLE_IMMUNE)
+                    ee.hp_sys.enable_immune(self.ENABLE_IMMUNE)
             if self.tick > self.DURATION:
                 self.dead = True
             self.tick += 1
@@ -1463,7 +1463,7 @@ class Projectiles:
                                                                                                  DamageTypes.MAGICAL: 2,
                                                                                                  DamageTypes.ARCANE: 2}[self.DMG_TYPE]], self.DMG_TYPE)
                     e.hp_sys.effect(effects.Burning(15, int(weapons.WEAPONS[self.DAMAGE_AS].damages[self.DMG_TYPE] / 15)))
-                    e.hp_sys.enable_immume()
+                    e.hp_sys.enable_immune()
 
     class IceDragonBreath(Projectile):
         DAMAGE_AS = 'ice_dragon_breath_wand'
@@ -1504,7 +1504,7 @@ class Projectiles:
                                                                                                  DamageTypes.ARCANE: 2}[self.DMG_TYPE]], self.DMG_TYPE)
                     if random.randint(0, 12) == 0:
                         e.hp_sys.effect(effects.Frozen(weapons.WEAPONS[self.DAMAGE_AS].damages[self.DMG_TYPE] / 100, 3))
-                    e.hp_sys.enable_immume()
+                    e.hp_sys.enable_immune()
 
     class DarkDragonBreath(Projectile):
         DAMAGE_AS = 'dark_dragon_breath_wand'
@@ -1549,7 +1549,7 @@ class Projectiles:
                                          DamageTypes.MAGICAL: 2,
                                          DamageTypes.ARCANE: 2}[self.DMG_TYPE]], self.DMG_TYPE)
                     e.obj.TOUCHING_DAMAGE *= .995
-                    e.hp_sys.enable_immume()
+                    e.hp_sys.enable_immune()
 
     class LightDragonBreath(Projectile):
         DAMAGE_AS = 'light_dragon_breath_wand'
@@ -1594,7 +1594,7 @@ class Projectiles:
                                          DamageTypes.MAGICAL: 2,
                                          DamageTypes.ARCANE: 2}[self.DMG_TYPE]], self.DMG_TYPE)
                     e.hp_sys.defenses[DamageTypes.MAGICAL] -= 2
-                    e.hp_sys.enable_immume()
+                    e.hp_sys.enable_immune()
 
     class MagistersWand(Projectile):
         COLS = [(255, 0, 0), (0, 255, 255), (255, 255, 100), (100, 0, 100)]
@@ -1860,7 +1860,7 @@ class Projectiles:
                     if not e.hp_sys.is_immune:
                         e.hp_sys.damage(weapons.WEAPONS['fruit_wand'].damages[damages.DamageTypes.MAGICAL] *\
                                          game.get_game().player.attack * game.get_game().player.attacks[0], damages.DamageTypes.MAGICAL)
-                        e.hp_sys.enable_immume()
+                        e.hp_sys.enable_immune()
 
     class Seraph(Projectile):
         def __init__(self, pos, rotation):
@@ -2352,7 +2352,7 @@ class Projectiles:
                     e.hp_sys.damage(weapons.WEAPONS['the_true_gods_penalty'].damages[damages.DamageTypes.HALLOW] *\
                                      game.get_game().player.attack * game.get_game().player.attacks[4] * rate,
                                     damages.DamageTypes.HALLOW)
-                    e.hp_sys.enable_immume()
+                    e.hp_sys.enable_immune()
 
     class HolyLight(Projectile):
         def __init__(self, pos, rotation):
@@ -2386,7 +2386,7 @@ class Projectiles:
                     e.hp_sys.damage(weapons.WEAPONS['holy_light'].damages[damages.DamageTypes.HALLOW] *\
                                      game.get_game().player.attack * game.get_game().player.attacks[4] * rate,
                                     damages.DamageTypes.HALLOW)
-                    e.hp_sys.enable_immume()
+                    e.hp_sys.enable_immune()
 
     class Bones(Projectile):
         pass
@@ -2479,7 +2479,7 @@ class Projectiles:
                         self.dmg * game.get_game().player.attack * game.get_game().player.attacks[1],
                         damages.DamageTypes.PIERCING)
                     if self.ENABLE_IMMUNE:
-                        ee.hp_sys.enable_immume(self.ENABLE_IMMUNE)
+                        ee.hp_sys.enable_immune(self.ENABLE_IMMUNE)
 
                     ee.obj.apply_force(vector.Vector(self.rot, self.kb * 120000 / ee.obj.MASS))
                     if self.DELETE:

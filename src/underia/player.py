@@ -486,7 +486,7 @@ class Player:
                         e.obj.apply_force(
                             vector.Vector(vector.coordinate_rotation(e_p[0] - e.obj.pos[0], e_p[1] - e.obj.pos[1]),
                                           1000))
-                        e.hp_sys.enable_immume()
+                        e.hp_sys.enable_immune()
 
         self.p_data.append(f'{1000 / game.get_game().clock.last_tick:.2f}fps')
         self.p_data.append(f'Magic Damage: {int(self.attacks[2] * self.attack * 100)}%')
@@ -1122,7 +1122,7 @@ class Player:
                     self.hp_sys.damage(_entity.obj.TOUCHING_DAMAGE, damages.DamageTypes.TOUCHING)
                     _entity.on_hit(self)
                     e_hp = self.hp_sys.hp
-                    self.hp_sys.enable_immume()
+                    self.hp_sys.enable_immune()
                     px, py = _entity.obj.pos
                     px -= self.obj.pos[0]
                     py -= self.obj.pos[1]
@@ -1401,7 +1401,7 @@ class Player:
                 if vector.distance(self.obj.pos[0] - e.obj.pos[0], self.obj.pos[1] - e.obj.pos[1]) < 200:
                     if not e.hp_sys.is_immune:
                         e.hp_sys.damage(w.damages[damages.DamageTypes.PIERCING] * self.attack * self.attacks[1], damages.DamageTypes.PIERCING)
-                        e.hp_sys.enable_immume()
+                        e.hp_sys.enable_immune()
             vr = 180 - self.obj.velocity.get_net_rotation()
             sp = int(te[0].tick * 50 * self.obj.SPEED / self.obj.MASS)
             ps1 = []
@@ -1435,7 +1435,7 @@ class Player:
                     if not e.hp_sys.is_immune:
                         e.hp_sys.damage(w.damages[damages.DamageTypes.PIERCING] * self.attack * self.attacks[1],
                                         damages.DamageTypes.PIERCING)
-                        e.hp_sys.enable_immume()
+                        e.hp_sys.enable_immune()
             vr = 180 - self.obj.velocity.get_net_rotation()
             sp = int(te[0].tick * 50 * self.obj.SPEED / self.obj.MASS)
             ps1 = []

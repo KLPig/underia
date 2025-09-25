@@ -34,6 +34,8 @@ ITEMS = {
     'feather_of_basketball': inventory.Inventory.Item('Feather of Basketball', '', 'feather_of_basketball', 5, [inventory.TAGS['item']]),
     'brain_rotter': inventory.Inventory.Item('Brain Rotter', 'Even worse?', 'brain_rotter', 5, [inventory.TAGS['item']]),
 
+    'stone_of_faith': inventory.Inventory.Item('Stone of Faith', 'rainbowMake fantasy to truth.', 'stone_of_faith', 6, [inventory.TAGS['item']]),
+
     'hope_dust': inventory.Inventory.Item('Hope Dust', 'rainbowPower to make that miracle happen again.', 'hope_dust', 6, [inventory.TAGS['item']]),
     'hope_sign': inventory.Inventory.Item('Hope Sign', 'rainbowLet these all back.', 'hope_sign', 6, [inventory.TAGS['item']]),
     'rhapsoda': inventory.Inventory.Item('Rhapsoda', 'rainbowThe condense of fantastic daydream.', 'rhapsoda', 6, [inventory.TAGS['item']]),
@@ -733,6 +735,9 @@ RECIPES = [
     inventory.Recipe({'hammer_of_rational': 1, 'ancient_rune_shard': 50, 'mystery_shard': 20}, 'ancient_swiftsword'),
     inventory.Recipe({'hammer_of_rational': 1, 'feather_sword': 5, 'feather_of_basketball': 20}, 'feather_feather_sword'),
     inventory.Recipe({'hammer_of_rational': 1, 'ancient_rune_shard': 50, 'hope_dust': 2, 'cloth': 20, 'brain_rotter': 50}, 'nike_shoes'),
+
+    inventory.Recipe({'hammer_of_rational': 1, 'feather_of_sing': 1, 'feather_of_dance': 1, 'feather_of_rap': 1, 'feather_of_basketball': 1,
+                      'hope_dust': 2, 'create_shard': 5}, 'stone_of_faith'),
 
     inventory.Recipe({'hammer_of_rational': 1, 'brainrot': 100}, 'brain_rotter'),
     inventory.Recipe({'hammer_of_rational': 1, 'brain_rotter': 60, 'mystery_shard': 30, 'mystery_soul': 50}, 'confuse'),

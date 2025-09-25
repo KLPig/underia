@@ -130,7 +130,7 @@ class HPSystem:
         if self.hp <= 0:
             self.hp = 0
 
-    def enable_immume(self, t=1.0):
+    def enable_immune(self, t=1.0):
         self.is_immune = self.IMMUNE_TIME * t
 
     def update(self):
@@ -200,7 +200,7 @@ class SubHPSystem(HPSystem):
         self.hp_sys.damage(*args, **kwargs)
 
     def enable_immume(self, t=1.0):
-        self.hp_sys.enable_immume(t)
+        self.hp_sys.enable_immune(t)
 
     def effect(self, effect):
         self.hp_sys.effect(effect)
