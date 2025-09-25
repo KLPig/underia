@@ -988,3 +988,54 @@ class Durendal(projectiles.Projectiles.PlatinumWand):
         pg.draw.circle(game.get_game().displayer.canvas, self.COL, position.displayed_position(self.obj.pos),
                        radius=int((100 + 20 * math.sin(self.tick / 50 * math.pi)) / game.get_game().player.get_screen_scale()))
 
+class DimStar(projectiles.Projectiles.PlatinumWand):
+    IMG = 'items_null'
+    DAMAGE_AS = 'nyxs_dim_star_wand'
+    ENABLE_IMMUNE = 3
+    LIMIT_VEL = -1
+    DURATION = 600
+    DMG_TYPE = damages.DamageTypes.MAGICAL
+    DMG_RATE = 1
+    DEL = False
+    COL = (100, 50, 100)
+
+    DD_ROT = 0
+
+    def draw(self):
+        pg.draw.circle(game.get_game().displayer.canvas, self.COL, position.displayed_position(self.obj.pos),
+                       radius=int(30 / game.get_game().player.get_screen_scale()))
+
+    def __init__(self, pos, rot, t=2):
+        if t == 0:
+            DimStar.DD_ROT += 10
+        else:
+            DimStar.DD_ROT += 60
+            game.get_game().projectiles.append(DimStar(pos, rot, t - 1))
+        super().__init__(pos, rot)
+        self.obj = projectiles.WeakProjectileMotion(self.obj.pos, 0)
+        self.obj.MASS = 10
+        self.obj.FRICTION = 1
+        self.obj.velocity.clear()
+        self.obj.force.clear()
+        self.tp = vector.Vector2D(0, 0, *pos)
+        self.tick = 0
+        self.dr = DimStar.DD_ROT
+        self.dp = 0
+
+    def damage(self):
+        if self.tick % 150 < 50:
+            super().damage()
+
+    def update(self):
+        super().update()
+        if self.tick % 150 < 50:
+            tg, _ = self.get_closest_entity()
+            if tg is not None:
+                self.tp = tg.obj.pos.to_value()
+            if self.dp < self.tick // 150:
+                self.dp += 1
+                self.dr += 180
+        else:
+            self.dr += min(5, (self.tick % 150 - 50) // 10)
+        self.obj.pos = (vector.Vector2D(self.dr, 400) + self.tp + 5 * self.obj.pos) / 6
+

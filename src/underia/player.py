@@ -266,6 +266,8 @@ class Player:
         if 'un-mana-regen' in data_idx:
             if data_idx == 'mana_regen':
                 val = -self.max_mana
+        if data_idx == 'mana_cost':
+            val *= .5437
         return val
 
     def get_max_screen_scale(self):

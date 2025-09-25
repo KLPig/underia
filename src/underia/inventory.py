@@ -207,12 +207,12 @@ class Inventory:
                 weapon: weapons.MagicWeapon = weapons.WEAPONS[self.id]
                 d = f"{[t.value.upper() for t in self.tags if t.name.startswith('magic_element_')][0]} "\
                     f"{[t.value for t in self.tags if t.name.startswith('magic_lv_')][0]}: {weapon.spell_name}"
-                d = f"{int(weapon.mana_cost * game.get_game().player.calculate_data('mana_cost', True, rate_multiply=True))} mana cost\n" + d
+                d = f"{weapon.mana_cost * game.get_game().player.calculate_data('mana_cost', True, rate_multiply=True):.1f} mana cost\n" + d
             if TAGS['arcane_weapon'] in self.tags:
                 weapon = weapons.WEAPONS[self.id]
                 d = f"{weapon.talent_cost} talent cost\n" + d
                 if weapon.mana_cost:
-                    d = f"{int(weapon.mana_cost * game.get_game().player.calculate_data('mana_cost', True, rate_multiply=True))} mana cost\n" + d
+                    d = f"{weapon.mana_cost * game.get_game().player.calculate_data('mana_cost', True, rate_multiply=True):.1f} mana cost\n" + d
             if TAGS['healing_potion'] in self.tags:
                 d = 'Auto-healing potion(Key:H)\n' + d
             if TAGS['magic_potion'] in self.tags:
@@ -225,7 +225,7 @@ class Inventory:
                 d = f"Gain ally with the following effect:\n" + d
                 d = f"Get back {int(weapon.back_rate * 100)}% of inspiration cost\n" + d
                 d = f"When first hit," + d
-                d = f"{int(weapon.mana_cost * game.get_game().player.calculate_data('mana_cost', True, rate_multiply=True))} mana cost\n" + d
+                d = f"{weapon.mana_cost * game.get_game().player.calculate_data('mana_cost', True, rate_multiply=True):.1f} mana cost\n" + d
                 d = f"{weapon.inspiration_cost} inspiration cost\n" + d
             if TAGS['bow'] in self.tags or TAGS['gun'] in self.tags:
                 weapon = weapons.WEAPONS[self.id]
