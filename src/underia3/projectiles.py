@@ -5,7 +5,7 @@ import pygame as pg
 from underia import projectiles, game, weapons, entity
 from values import damages, effects
 from physics import vector
-from visual import draw, particle_effects as pef
+from visual import draw, particle_effects as pef, effects as eff
 from resources import position
 import random
 
@@ -291,6 +291,16 @@ class Observe(projectiles.Projectiles.Beam):
     DURATION = 10
     FOLLOW_PLAYER = False
     CUT_EFFECT = True
+
+class Gemini(projectiles.Projectiles.Beam):
+    WIDTH = 50
+    DAMAGE_AS = 'gemini'
+    COLOR = (0, 255, 255)
+    DMG_TYPE = damages.DamageTypes.PIERCING
+    DURATION = 8
+    FACE_TO_MOUSE = True
+    DMG_RATE = .5
+    ENABLE_IMMUNE = 3
 
 class U3Arrow(projectiles.Projectiles.Arrow):
     SPEED_RATE = .15
@@ -1038,4 +1048,103 @@ class DimStar(projectiles.Projectiles.PlatinumWand):
         else:
             self.dr += min(5, (self.tick % 150 - 50) // 10)
         self.obj.pos = (vector.Vector2D(self.dr, 400) + self.tp + 5 * self.obj.pos) / 6
+
+class MerlinWand(projectiles.Projectiles.PlatinumWand):
+    IMG = 'items_null'
+    DAMAGE_AS = 'merlins_wand'
+    ENABLE_IMMUNE = 1
+    LIMIT_VEL = -1
+    DURATION = 800
+    DEL = False
+    DR = 1
+    DRC = 1
+    LIGHT_R_RATE = 4.5
+    LIGHT_E_RATE = .65
+
+    def __init__(self, pos, rot, t=1):
+        super().__init__(pos, rot)
+        self.obj = projectiles.WeakProjectileMotion(self.obj.pos, 0)
+        self.obj.MASS = 10
+        self.obj.FRICTION = 1
+        self.obj.velocity.clear()
+        self.obj.force.clear()
+        self.sp, self.sr = pos, rot
+        self.poss = []
+        self.dr = 1 if t == 1 else -1
+        self.tdr = MerlinWand.DRC % 2
+        if t:
+            game.get_game().projectiles.append(MerlinWand(pos, rot, 0))
+            # MerlinWand.DRC += 1
+            MerlinWand.DR += 1
+
+    def update(self):
+        super().update()
+        self.poss.append(self.obj.pos.to_value())
+        if len(self.poss) > 20:
+            self.poss.pop(0)
+
+        if self.dr > 0:
+
+            if int(math.degrees(self.tick / 12)) % 180 > int(math.degrees(self.tick / 12 + .2) % 180):
+                ep = vector.Vector2D(self.sr, self.tick * 18) + self.sp
+                for i in range(random.randint(2, 3)):
+                    game.get_game().projectiles.append(MerlinWandParticle(ep, random.randint(0, 360)))
+
+        self.obj.pos = vector.Vector2D() + self.sp + vector.Vector2D(self.sr, self.tick * 18) + vector.Vector2D(self.sr + 90, math.sin(self.tick / 12) * 200 * self.dr)
+
+    def draw(self):
+        self.COL = (0, 150, 255) if (((self.dr > 0) != (MerlinWand.DR % 2)) != self.tdr) else (255, 150, 0)
+        for i in range(len(self.poss) - 1):
+            eff.pointed_curve(self.COL,
+                              self.poss[i:i+2],
+                              int(i / game.get_game().player.get_screen_scale()),
+                              i * 255 // len(self.poss))
+
+class MerlinWandParticle(projectiles.Projectiles.PlatinumWand):
+    IMG = 'items_null'
+    DAMAGE_AS = 'merlins_wand'
+    ENABLE_IMMUNE = 3
+    LIMIT_VEL = -1
+    DURATION = 100
+    DMG_RATE = .5
+    LIGHT_R_RATE = 3.0
+    LIGHT_E_RATE = .65
+
+    def __init__(self, pos, rot):
+        super().__init__(pos, rot)
+        self.obj = projectiles.WeakProjectileMotion(self.obj.pos, 0)
+        self.obj.MASS = 10
+        self.obj.FRICTION = 1
+        self.obj.velocity.clear()
+        self.obj.force.clear()
+        self.sp, self.sr = pos, rot
+        self.poss = []
+        self.de = []
+        for e in game.get_game().entities:
+            if abs(e.obj.pos - self.obj.pos) < 100:
+                self.de.append(e.ENO)
+
+
+    def update(self):
+        super().update()
+        self.poss.append(self.obj.pos.to_value())
+        if len(self.poss) > 12:
+            self.poss.pop(0)
+
+        self.obj.pos = vector.Vector2D() + self.sp + vector.Vector2D(self.sr, self.tick * 8 - self.tick ** 2 * 2 // 25)
+
+
+    def draw(self):
+        for i in range(len(self.poss) - 1):
+            eff.pointed_curve((200, 200, 200),
+                              self.poss[i:i+2],
+                              int(i * 4 / game.get_game().player.get_screen_scale()),
+                              i * 255 // len(self.poss))
+
+    def damage(self):
+        for e in game.get_game().entities:
+            if abs(e.obj.pos - self.obj.pos) < 100 and e.ENO in self.de:
+                return
+        super().damage()
+
 

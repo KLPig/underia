@@ -9,7 +9,7 @@ from math import gamma
 import pygame as pg
 
 import resources, visual, constants, physics, web, underia3, values
-from underia import player, entity, projectiles, weapons, inventory, dialog, styles
+from underia import player, entity, projectiles, weapons, inventory, dialog, styles, animation
 import perlin_noise
 import underia.settings as settings
 
@@ -212,6 +212,7 @@ class Game:
         time.sleep(0.001)
 
     def setup(self):
+        self.player.shield_break = 0
         self.dimension = 'overworld'
         self.must_st = -1
         self.mus_text = None
@@ -312,7 +313,7 @@ class Game:
         if len([1 for e in self.entities if type(e) in [entity.Entities.Jevil, entity.Entities.Jevil2, entity.Entities.OblivionAnnihilator]]) or \
                 self.player.inventory.is_enough(inventory.ITEMS['chaos_heart']):
             return 'inner'
-        if pos[0] ** 2 + pos[1] ** 2 < 50000:
+        if pos[0] ** 2 + pos[1] ** 2 < 5000:
             return 'forest'
         if pos[1] < -100000 and self.chapter == 2:
             return 'inner'
@@ -381,11 +382,13 @@ class Game:
     def get_player_objects(self) -> list[physics.Mover]:
         return [self.player.obj] + self.p_obj
 
-    @lru_cache(maxsize=int(constants.MEMORY_USE * .05))
-    def get_chunked_images(self, biomes, bg_size):
-        cols = {'hell': (255, 0, 0), 'desert': (255, 191, 63), 'forest': (0, 255, 0), 'rainforest': (127, 255, 0),
+    YCOLS = {'hell': (255, 0, 0), 'desert': (255, 191, 63), 'forest': (0, 255, 0), 'rainforest': (127, 255, 0),
                 'snowland': (255, 255, 255), 'heaven': (127, 127, 255), 'inner': (0, 0, 0), 'none': (0, 0, 0),
                 'hallow': (0, 255, 255)}
+
+    @lru_cache(maxsize=int(constants.MEMORY_USE * .05))
+    def get_chunked_images(self, biomes, bg_size):
+        cols = Game.YCOLS
         size = len(biomes)
         surf = pg.Surface((size * bg_size, size * bg_size), pg.SRCALPHA)
         surf.set_alpha(255)
@@ -417,7 +420,7 @@ class Game:
             for k in cols.keys():
                 self.graphics['nbackground_' + k] = pg.transform.scale(self.graphics['background_' + k],
                                                                        (bg_size, bg_size))
-        if pg.K_TAB in self.pressed_keys:
+        if pg.K_TAB in self.get_keys():
             self.map_open = not self.map_open
         if self.get_biome() != self.last_biome[0]:
             self.last_biome = (self.last_biome[0], self.last_biome[1] + 1)
@@ -465,6 +468,8 @@ class Game:
         self.update_map()
 
     def update(self):
+        for a in animation.ANIMATIONS:
+            a.update()
         if self.client is not None and not self.client.started:
             loop = asyncio.get_event_loop()
             loop.create_task(self.client.start())
@@ -684,21 +689,48 @@ class Game:
                 self.displayer.canvas.blit(ft, ftr)
             y -= 140
         if self.map_open:
-            sf = pg.Surface((500, 500), pg.SRCALPHA)
-            for i in range(-50, 50):
-                for j in range(-50, 50):
+            sf = pg.Surface((800, 800), pg.SRCALPHA)
+            bg_size = 200 if self.dimension == 'overworld' else int(400 / self.player.get_screen_scale())
+            chunk_size = 3
+            bg_ax = int(self.player.ax / self.player.get_screen_scale()) % (bg_size * chunk_size)
+            bg_ay = int(self.player.ay / self.player.get_screen_scale()) % (bg_size * chunk_size)
+            stt = {}
+            rf = []
+            for i in range(-20, 20):
+                for j in range(-20, 20):
                     try:
-                        ps = (self.chunk_pos[0] + int(i / self.player.get_screen_scale()),
-                              self.chunk_pos[1] + int(j / self.player.get_screen_scale()))
-                        self.get_biome(ps)
-                        vl = self.map_ns[ps]
-                        col = (int(255 * vl), int(255 * vl), int(255 * vl))
+                        cx, cy = resources.real_position((i * 3 - bg_ax + bg_size // 2, j * 3 - bg_ay + bg_size // 2))
+                        ps = ((cx + i * 3 * bg_size * self.player.get_screen_scale()) // self.CHUNK_SIZE + 120,
+                              (cy + j * 3 * bg_size * self.player.get_screen_scale()) // self.CHUNK_SIZE + 120)
+                        if ps in self.map_ns:
+                            ll = self.get_biome(ps)
+                            col = Game.YCOLS[ll]
+                        elif i and not j and (i - 1, j) not in rf:
+                            col = stt[(i - 1, j)]
+                            rf.append((i, j))
+                        elif not i and j and (i, j - 1) not in rf:
+                            col = stt[(i, j - 1)]
+                            rf.append((i, j))
+                        elif i and j:
+                            s1 = stt[(i, j - 1)] if (i, j - 1) not in rf else (0, 0, 0)
+                            s2 = stt[(i - 1, j)] if (i - 1, j) not in rf else (0, 0, 0)
+                            if s1 == (0, 0, 0):
+                                rs = s2
+                            elif s2 == (0, 0, 0):
+                                rs = s1
+                            else:
+                                rs = random.choice([s1, s2])
+                            col = rs
+                            rf.append((i, j))
+                        else:
+                            col = (0, 0, 0)
                     except KeyError:
                         col = (0, 0, 0)
-                    pg.draw.rect(sf, col, (i * 10, j * 10, 10, 10))
+                    pg.draw.rect(sf, col, (i * 40 + 400, j * 40 + 400, 40, 40))
+                    stt[(i, j)] = col
             if constants.USE_ALPHA:
                 sf.set_alpha(200)
-            self.displayer.canvas.blit(sf, (self.displayer.SCREEN_WIDTH // 2 - 250, self.displayer.SCREEN_HEIGHT // 2 - 250))
+            self.displayer.canvas.blit(sf, (self.displayer.SCREEN_WIDTH // 2 - 400, self.displayer.SCREEN_HEIGHT // 2 - 400))
         if not self.player.in_ui:
             w = self.player.weapons[self.player.sel_weapon]
             im = self.graphics['items_' + inventory.ITEMS[w.name.replace(' ', '_')].img]

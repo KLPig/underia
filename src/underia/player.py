@@ -162,6 +162,7 @@ class Player:
         self.inv_capacity = 48
         self.tick = 0
         self.inv_pos = 0
+        self.shield_break = 0.0
 
     def calculate_regeneration(self):
         ACCESSORY_REGEN = {}
@@ -314,6 +315,7 @@ class Player:
         return 0.08
 
     def update(self):
+        self.shield_break *= [.6, .9, .96, .99][constants.DIFFICULTY]
         try:
             self.inv_pos
         except AttributeError:
@@ -598,11 +600,12 @@ class Player:
             self.p_data.append(f'Good Karma: {int(self.good_karma)}')
         self.good_karma = max(0, self.good_karma - karma_reduce)
         self.inspiration = min(self.inspiration + ins_regen, self.max_inspiration + max_ins)
-        self.hp_sys.defenses[damages.DamageTypes.TOUCHING] = self.calculate_data('touch_def', False) + arm * 2
-        self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = self.calculate_data('phys_def', False)
-        self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = self.calculate_data('mag_def', False)
+        self.hp_sys.defenses[damages.DamageTypes.TOUCHING] = (self.calculate_data('touch_def', False) + arm * 2) * (1 - self.shield_break / 100) ** .8
+        self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = self.calculate_data('phys_def', False) * (1 - self.shield_break / 100) ** .5
+        self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = self.calculate_data('mag_def', False) * (1 - self.shield_break / 100) ** 1.0
         self.p_data.append(f'Magical Defense: {int(self.hp_sys.defenses[damages.DamageTypes.MAGICAL])}')
         self.p_data.append(f'Touch Defense: {int(self.hp_sys.defenses[damages.DamageTypes.TOUCHING])}')
+        self.p_data.append(f'Break: {self.shield_break:.1f}%')
         if len([1 for eff in self.hp_sys.effects if eff.NAME == 'Gravity']):
             self.obj.apply_force(vector.Vector(180, 200))
         if pg.K_e in game.get_game().get_keys():
@@ -1119,9 +1122,15 @@ class Player:
             if self.obj.object_collision(_entity.obj, (_entity.img.get_width() + _entity.img.get_height()) // 4 + 50):
                 _entity.obj.touched_player = True
                 _entity.on_damage_player()
+                if 'lt' in dir(_entity) and self.tick - getattr(_entity, 'lt') <= self.hp_sys.IMMUNE_TIME * 5:
+                    continue
+                setattr(_entity, 'lt', self.tick)
                 if _entity.obj.TOUCHING_DAMAGE and not self.hp_sys.is_immune:
                     s_hp = self.hp_sys.hp
                     self.hp_sys.damage(_entity.obj.TOUCHING_DAMAGE, damages.DamageTypes.TOUCHING)
+                    self.shield_break = min(100, self.shield_break + _entity.obj.TOUCHING_DAMAGE /
+                                            max(20, self.hp_sys.defenses[damages.DamageTypes.TOUCHING]) *
+                                            self.hp_sys.resistances[damages.DamageTypes.TOUCHING] ** .5 * 20)
                     _entity.on_hit(self)
                     e_hp = self.hp_sys.hp
                     self.hp_sys.enable_immune()

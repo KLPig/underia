@@ -563,6 +563,44 @@ class SuperNova(weapons.Gun):
         if self.st >= 25:
             self.cd = min(self.cd + 1, 24)
 
+class Gemini(weapons.Gun):
+    ATTACK_SOUND = 'attack_quickshot'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ammo = None
+        self.st = 0
+
+    def on_start_attack(self):
+        if game.get_game().player.ammo_bullet[1]:
+            self.ammo = game.get_game().player.ammo_bullet
+            game.get_game().player.ammo_bullet = ('energy_arrow', 1)
+        super().on_start_attack()
+        if self.st < 0:
+            beam = projectiles.Gemini(game.get_game().player.obj.pos, self.rot)
+            beam.WIDTH = abs(self.st) // 2 + 10
+            beam.DMG_RATE = min(2.0, .5 + abs(self.st) / 40) / 2
+            game.get_game().projectiles.append(beam)
+
+    def on_end_attack(self):
+        super().on_end_attack()
+        if self.ammo is not None:
+            game.get_game().player.ammo_bullet = self.ammo
+            self.ammo = None
+        if self.cd:
+            self.st = 0
+        else:
+            self.st -= 2
+        self.cd = max(0, self.cd - 1)
+
+    def on_idle(self):
+        super().on_idle()
+        self.st += 1
+        if self.st >= 25:
+            self.cd = min(self.cd + 1, 18)
+        if self.st < -60:
+            self.st += 40
+
 class Pollutant(weapons.Bow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1033,6 +1071,12 @@ WEAPONS = {
     'ullr_bow': UllrBow(name='ullr bow', damages={damages.DamageTypes.PIERCING: 6000}, kb=10,
                         img='items_weapons_ullr_bow', speed=3, at_time=10, projectile_speed=1000,
                         auto_fire=True, precision=0),
+    'gemini': Gemini(name='gemini', damages={damages.DamageTypes.PIERCING: 1600}, kb=10,
+                     img='items_weapons_gemini', speed=18, at_time=4, projectile_speed=1200,
+                     auto_fire=True, precision=0),
+    'eden': weapons.Gun(name='eden', damages={damages.DamageTypes.PIERCING: 50000}, kb=50,
+                         img='items_weapons_eden', speed=120, at_time=30, projectile_speed=300,
+                         auto_fire=True, precision=0),
 
 
     'e_wooden_wand': weapons.MagicWeapon(name='e wooden wand', damages={damages.DamageTypes.MAGICAL: 40}, kb=2,
@@ -1075,6 +1119,12 @@ WEAPONS = {
                                                img='items_weapons_nyxs_dim_star_wand', speed=9, at_time=9,
                                                projectile=projectiles.DimStar, mana_cost=200, auto_fire=True,
                                                spell_name='The Dim Star'),
+    'merlins_wand': weapons.MagicWeapon(name='merlins wand', damages={damages.DamageTypes.MAGICAL: 5000}, kb=0,
+                                        img='items_weapons_merlins_wand', speed=12, at_time=16,
+                                        projectile=projectiles.MerlinWand, mana_cost=350, auto_fire=True,
+                                        spell_name='Merlin\'s Talent'),
+    'merlins_great_wand': weapons.MagicSet(name='merlins great wand', img_index='merlins_great_wand', element_feature=lambda w: w.name in ['merlins_wand'],
+                                           spell_name='Merlin\'s Great Wand'),
 
     'wooden_flute': weapons.PoetWeapon(name='wooden flute', damages={damages.DamageTypes.OCTAVE: 90}, kb=2,
                                        img='items_weapons_wooden_flute', speed=0, at_time=5, projectile=projectiles.WoodenFlute,

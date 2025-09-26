@@ -1681,6 +1681,57 @@ class ChickenRapper(Chicken):
                            self.ds / game.get_game().player.get_screen_scale(), 2 * (not self.hp_sys.IMMUNE))
         super().t_draw()
 
+class DeathWhisperChickenAI(entity.MonsterAI):
+    IS_OBJECT = True
+    MASS = 1200
+    FRICTION = .93
+    TOUCHING_DAMAGE = 700
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.state = 0
+        self.cc = 300
+        self.tick = 0
+        self.lr = 0
+        self.tp = vector.Vector2D()
+
+    def on_update(self):
+        super().on_update()
+        tar = self.cur_target
+        if self.tick < self.cc:
+            if tar is not None:
+                rr = vector.coordinate_rotation(*(tar.pos - self.pos))
+                nt = (self.cc - self.tick) * (rr - self.lr)
+                self.tp = vector.Vector2D(nt + self.lr, 2000 + constants.DIFFICULTY * 1000)
+                self.lr = rr
+        elif self.tick < self.cc + 20:
+            self.pos = (self.tp + self.pos * 6) / 7
+        elif random.randint(0, self.tick - self.cc) > 60:
+            self.IS_OBJECT = True
+            self.tick = 0
+        else:
+            if self.tick % 5 == 0:
+                self.IS_OBJECT = random.randint(0, 1)
+
+
+
+class DeathWhisperChicken(Chicken):
+    DIVERSITY = False
+    CHAOS = True
+
+    IS_MENACE = True
+    NAME = 'The Death Whisper Chicken'
+
+    LOOT_TABLE = [
+        entity.IndividualLoot('spot', 1, 8, 15),
+    ]
+
+    def __init__(self, pos):
+        super(Chicken, self).__init__(pos, game.get_game().graphics[f'entity3_death_whisper_chicken'], DeathWhisperChickenAI, hp=300000)
+        for r in self.hp_sys.resistances.resistances.keys():
+            self.hp_sys.resistances.resistances[r] *= .3
+
+
 class PetrifiedWitnessAI(entity.MonsterAI):
     MASS = 5000
     FRICTION = .95

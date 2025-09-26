@@ -2520,7 +2520,7 @@ class MagicSet(Weapon):
                            width=2)
         super().update()
         self.weapons = [w for w in WEAPONS.values() if
-                        self.element_feature(w) and w != self.name] #and
+                        self.element_feature(w)] #and
                         #w.name in game.get_game().player.inventory.items.keys()]
         self.sel = min(self.sel, len(self.weapons) - 1)
         if self.weapons[self.sel] is not self:

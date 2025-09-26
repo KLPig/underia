@@ -378,6 +378,8 @@ class Projectiles:
         LIMIT_VEL = 3.0
         ENABLE_IMMUNE = True
         DECAY_RATE = 0.95
+        LIGHT_R_RATE = 1.0
+        LIGHT_E_RATE = 1.0
 
         def __init__(self, pos, rotation):
             super().__init__(pos, rotation)
@@ -390,8 +392,8 @@ class Projectiles:
             self.damage()
 
         def damage(self):
-            game.get_game().displayer.point_light(self.COL, position.displayed_position(self.obj.pos), 2.5,
-                                                  (self.d_img.get_width() + self.d_img.get_height()) * .55)
+            game.get_game().displayer.point_light(self.COL, position.displayed_position(self.obj.pos), 2.5 * self.LIGHT_E_RATE,
+                                                  (self.d_img.get_width() + self.d_img.get_height()) * .55 * self.LIGHT_R_RATE)
             kb = weapons.WEAPONS[self.DAMAGE_AS].knock_back
             for ee in game.get_game().entities:
                 if (vector.distance(ee.obj.pos[0] - self.obj.pos[0], ee.obj.pos[1] - self.obj.pos[1]) <
@@ -1206,6 +1208,7 @@ class Projectiles:
         FACE_TO_MOUSE = False
         ENABLE_IMMUNE = True
         CUT_EFFECT = False
+        DMG_RATE = 1.0
 
         def __init__(self, pos, rotation):
             ax, ay = vector.rotation_coordinate(rotation)
@@ -1271,7 +1274,7 @@ class Projectiles:
                                      game.get_game().player.attack * game.get_game().player.attacks[{DamageTypes.PHYSICAL: 0,
                                                                                                          DamageTypes.PIERCING: 1,
                                                                                                          DamageTypes.MAGICAL: 2,
-                                                                                                         DamageTypes.ARCANE: 2}[self.DMG_TYPE]],
+                                                                                                         DamageTypes.ARCANE: 2}[self.DMG_TYPE]] * self.DMG_RATE,
                                      self.DMG_TYPE)
                     ee.hp_sys.enable_immune(self.ENABLE_IMMUNE)
             if self.tick > self.DURATION:

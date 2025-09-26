@@ -35,6 +35,7 @@ ITEMS = {
     'brain_rotter': inventory.Inventory.Item('Brain Rotter', 'Even worse?', 'brain_rotter', 5, [inventory.TAGS['item']]),
 
     'stone_of_faith': inventory.Inventory.Item('Stone of Faith', 'rainbowMake fantasy to truth.', 'stone_of_faith', 6, [inventory.TAGS['item']]),
+    'spot': inventory.Inventory.Item('Spot', 'col7f7f7fThe surging malices are restless.', 'spot', 6, [inventory.TAGS['item']]),
 
     'hope_dust': inventory.Inventory.Item('Hope Dust', 'rainbowPower to make that miracle happen again.', 'hope_dust', 6, [inventory.TAGS['item']]),
     'hope_sign': inventory.Inventory.Item('Hope Sign', 'rainbowLet these all back.', 'hope_sign', 6, [inventory.TAGS['item']]),
@@ -320,6 +321,10 @@ ITEMS = {
                                           [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['gun']]),
     'supernova': inventory.Inventory.Item('Supernova', 'Chance to use energy bullet.', 'supernova', 4,
                                            [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['gun']]),
+    'gemini': inventory.Inventory.Item('Gemini', 'Shoots energy bullets.\nContinuously shoot to summon beams.', 'gemini', 7,
+                                          [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['gun']]),
+    'eden': inventory.Inventory.Item('\'EDEN\'', '', 'eden', 6,
+                                          [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['gun']]),
     'hope_scorch_bow': inventory.Inventory.Item('Hope Scorch Bow', '', 'hope_scorch_bow', 7,
                                                  [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['bow']]),
     'gandiva': inventory.Inventory.Item('Gandiva', '', 'gandiva', 7,
@@ -372,9 +377,17 @@ ITEMS = {
     'organ_wand': inventory.Inventory.Item('Organ Wand', 'Summon a chain of projectile.', 'organ_wand', 2,
                                              [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['magic_weapon'],
                                               inventory.TAGS['magic_element_life'], inventory.TAGS['magic_lv_2']]),
-    'nyxs_dim_star_wand': inventory.Inventory.Item('Nyx\'s Dim Star Wand', 'Summon groups of stars.', 'nyxs_dim_star_wand', 3,
+    'nyxs_dim_star_wand': inventory.Inventory.Item('Nyx\'s Dim Star Wand', 'Summon groups of stars.', 'nyxs_dim_star_wand', 6,
                                                     [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['magic_weapon'],
                                                      inventory.TAGS['magic_element_dark'], inventory.TAGS['magic_lv_3']]),
+    'merlins_wand': inventory.Inventory.Item('Merlin\'s Talent', 'Summon a pair of projectiles.', 'merlins_wand', 6,
+                                               [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['magic_weapon'],
+                                                inventory.TAGS['magic_element_time'], inventory.TAGS['magic_lv_3']]),
+'''
+    'merlins_great_wand': inventory.Inventory.Item('Merlin\'s Great Talent', 'Set of Merlin\'s magics.', 'merlins_great_wand', 6,
+                                                    [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['magic_weapon'],
+                                                     inventory.TAGS['magic_element_time'], inventory.TAGS['magic_lv_3']]),
+'''
 
     'wooden_flute': inventory.Inventory.Item('Wooden Flute', '', 'wooden_flute', 1,
                                               [inventory.TAGS['item'], inventory.TAGS['weapon'],

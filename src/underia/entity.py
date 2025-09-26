@@ -2475,7 +2475,7 @@ class Entities:
             super().on_update()
             self.tick += 1
             if game.get_game().stage + constants.DIFFICULTY >= 2:
-                if self.tick % (120 - max(20, constants.DIFFICULTY + game.get_game().stage) * 20):
+                if self.tick % (120 - max(20, constants.DIFFICULTY + game.get_game().stage) * 20) * 5 == 0:
                     pp = game.get_game().player.obj.pos
                     self.obj.pos = pp + vector.Vector2D(random.randint(0, 360), random.randint(100, 400))
 
