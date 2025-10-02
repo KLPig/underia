@@ -4,7 +4,7 @@ import numpy
 import pygame as pg
 
 import constants
-from underia import entity, game
+from underia import entity, game, inventory
 from physics import vector
 from values import damages, effects, hp_system
 from visual import draw
@@ -1179,7 +1179,7 @@ class ChaosBomb(entity.Entities.Entity):
     NAME = 'Chaos Bomb'
     DIVERSITY = False
 
-    def __init__(self, pos, rot, action=0, dmg=50):
+    def __init__(self, pos, rot, action=0, dmg=50, drr=False):
         super().__init__(pos, game.get_game().graphics['entity_null'], entity.BuildingAI, hp=1)
         self.mp = []
         self.action = action
@@ -1187,6 +1187,7 @@ class ChaosBomb(entity.Entities.Entity):
         self.obj.MASS = 30
         self.obj.FRICTION = .92
         self.dmg = dmg
+        self.drr = drr
         self.obj.IS_OBJECT = False
         self.tick = 0
 
@@ -1204,8 +1205,10 @@ class ChaosBomb(entity.Entities.Entity):
         if len(self.mp) > [15, 15, 20, 30][constants.DIFFICULTY]:
             self.mp.pop(0)
         for i in range(len(self.mp) - 1):
-            draw.line(game.get_game().displayer.canvas, (255 * i // len(self.mp), 0, 0), position.displayed_position(self.mp[i]),
-                      position.displayed_position(self.mp[i + 1]), i * 10 // len(self.mp) + 1)
+            draw.line(game.get_game().displayer.canvas, (255 * i // len(self.mp) * (not self.drr), 0, 255 * i // len(self.mp) * self.drr), position.displayed_position(self.mp[i]),
+                      position.displayed_position(self.mp[i + 1]), i * (10 + self.drr * 20) // len(self.mp) + 1)
+        if self.drr:
+            pg.draw.circle(game.get_game().displayer.canvas, (0, 0, 255), position.displayed_position(self.obj.pos), 15)
         if self.action in [0, 2]:
             self.obj.apply_force(vector.Vector2D(self.rot, 300 if not self.action else 100))
         elif self.action in [1, 3]:
@@ -1215,11 +1218,11 @@ class ChaosBomb(entity.Entities.Entity):
             self.obj.apply_force(ap * (100 if constants.DIFFICULTY < 3 else 150))
         self.hp_sys.hp -= .005
         for i in range(0, len(self.mp), 4):
-            game.get_game().displayer.point_light((255, 100, 100), position.displayed_position(self.mp[i]), 3, 10 + i * 3)
+            game.get_game().displayer.point_light((255, 100, 100) if not self.drr else (100, 100, 255), position.displayed_position(self.mp[i]), 3, 10 + i * 3)
             if vector.distance(*(game.get_game().player.obj.pos - self.mp[i])) < 100:
-                game.get_game().player.hp_sys.max_hp = max(20, game.get_game().player.hp_sys.max_hp - self.dmg // [50, 20, 10, 8][constants.DIFFICULTY])
+                game.get_game().player.hp_sys.max_hp = max(20, game.get_game().player.hp_sys.max_hp - self.dmg * (1 + self.drr * 4) // [50, 20, 10, 8][constants.DIFFICULTY])
                 if self.action != 3:
-                    game.get_game().player.hp_sys.damage(self.dmg / 2, damages.DamageTypes.MAGICAL, penetrate=self.dmg * 5)
+                    game.get_game().player.hp_sys.damage(self.dmg * (0.5 if not self.drr else 4), damages.DamageTypes.MAGICAL, penetrate=self.dmg * 5)
                 self.hp_sys.hp = 0
 
 
@@ -1236,14 +1239,16 @@ class ChaosDisciple(entity.Entities.Entity):
     DEFEATED = False
 
     def __init__(self, pos):
+        self.rr = game.get_game().player.inventory.is_enough(inventory.ITEMS['dark_matter'])
+
         self.PHASE_SEGMENTS = [.9999, .99995]
         game.get_game().player.hp_sys.effect(effects.ExtremeTerror(10 ** 8, 1))
         super().__init__(pos, game.get_game().graphics['entity3_chaos_disciple'], entity.BuildingAI,
                          hp=12 * 10 ** 9)
         for r in self.hp_sys.resistances.resistances.keys():
-            self.hp_sys.resistances[r] *= 91
+            self.hp_sys.resistances[r] *= 91 if not self.rr else 3
             self.hp_sys.defenses[r] = 0
-        self.hp_sys.DODGE_RATE = .8
+        self.hp_sys.DODGE_RATE = .8 if not self.rr else .1
         self.hp_sys.IMMUNE = True
         self.tick = 0
         self.phase = -1
@@ -1256,11 +1261,13 @@ class ChaosDisciple(entity.Entities.Entity):
         self.obj.TOUCHING_DAMAGE = 250
         self.dp1 = []
         self.dp2 = []
+        self.dp3 = []
+        self.dp4 = []
 
         self.pjs = []
         self.ddp = (0, 0)
         self.dr = 100
-        game.get_game().player.hp_sys.max_hp = 250
+        game.get_game().player.hp_sys.max_hp = 250 + self.rr * 1250
 
     def t_draw(self):
         if self.phase != 4:
@@ -1273,24 +1280,46 @@ class ChaosDisciple(entity.Entities.Entity):
         self.obj.TOUCHING_DAMAGE = game.get_game().player.hp_sys.max_hp * .6
         self.dp1.append(self.obj.pos + vector.Vector2D(self.rot, self.dr))
         self.dp2.append(self.obj.pos + vector.Vector2D(self.rot, -self.dr))
+        self.dp3.append(self.obj.pos + vector.Vector2D(self.rot + 90, self.dr))
+        self.dp4.append(self.obj.pos + vector.Vector2D(self.rot - 90, self.dr))
         if len(self.dp1) > 20:
             self.dp1.pop(0)
             self.dp2.pop(0)
+            self.dp3.pop(0)
+            self.dp4.pop(0)
         for i in range(len(self.dp1) - 1):
             draw.line(game.get_game().displayer.canvas,
                       (255 * i / len(self.dp1), 255 * i / len(self.dp1), 255 * i / len(self.dp1)),
                       position.displayed_position(self.dp1[i]), position.displayed_position(self.dp1[i + 1]), i + 1)
             draw.line(game.get_game().displayer.canvas,
-                      (255 * i / len(self.dp1), 255 * i / len(self.dp1), 255 * i / len(self.dp1)),
+                      (255 - 255 * i / len(self.dp1), 255 - 255 * i / len(self.dp1), 255 - 255 * i / len(self.dp1)),
                       position.displayed_position(self.dp2[i]), position.displayed_position(self.dp2[i + 1]), i + 1)
+            if self.rr:
+                draw.line(game.get_game().displayer.canvas,
+                          (100 * i / len(self.dp1), 0, 0),
+                          position.displayed_position(self.dp3[i]), position.displayed_position(self.dp3[i + 1]), i + 1)
+                draw.line(game.get_game().displayer.canvas,
+                          (0, 0, 100 * i / len(self.dp1)),
+                          position.displayed_position(self.dp4[i]), position.displayed_position(self.dp4[i + 1]), i + 1)
         pg.draw.circle(game.get_game().displayer.canvas, (255, 255, 255), position.displayed_position(self.dp1[-1]), 10)
-        pg.draw.circle(game.get_game().displayer.canvas, (255, 255, 255), position.displayed_position(self.dp2[-1]), 10)
+        pg.draw.circle(game.get_game().displayer.canvas, (0, 0, 0), position.displayed_position(self.dp2[-1]), 10)
+        if self.rr:
+            pg.draw.circle(game.get_game().displayer.canvas, (100, 0, 0), position.displayed_position(self.dp3[-1]), 10)
+            pg.draw.circle(game.get_game().displayer.canvas, (0, 0, 100), position.displayed_position(self.dp4[-1]), 10)
         if self.phase == -1:
             self.phase = 0
             if not self.DEFEATED:
-                game.get_game().dialog.dialog('...', '...A...AN...ARRAYER?...', '...INTERESTING...',
-                                              '...AND..SELECTED...BY...UNDERIA...?', '...HEH...HEH...HEH...',
-                                              '...GREAT...', '...THEN...GO...ON...', '...AND BE KILLED!..')
+                if self.rr:
+
+                    game.get_game().dialog.dialog('...ARRAYER...', '...I FEEL THE POWER OF IT...',
+                                                  '...THE \'DARK\' MATTER...', '...INTERESTING...',
+                                                  '...YOU HAVE THE CHANCE TO MAKE ME TREAT YOU..',
+                                                  '...A BIT MORE FOCUSED!')
+                else:
+                    game.get_game().dialog.dialog('...', '...A...AN...ARRAYER?...', '...INTERESTING...',
+                                                  '...AND..SELECTED...BY...UNDERIA...?', '...HEH...HEH...HEH...',
+                                                  '...GREAT...', '...THEN...GO...ON...', '...AND BE KILLED!..')
+
         elif self.phase == 0 and game.get_game().dialog.is_done():
             self.IS_MENACE = True
             self.hp_sys.IMMUNE = False
@@ -1306,7 +1335,7 @@ class ChaosDisciple(entity.Entities.Entity):
                     if self.state == 0:
                         self.obj.pos += ap * (20 + 20 * math.sin(math.radians(self.rot)))
                         if self.tick % 30 == 0:
-                            self.pjs.append(ChaosBomb(self.obj.pos, self.rot, 1, 50))
+                            self.pjs.append(ChaosBomb(self.obj.pos, self.rot, 1, 50, drr=self.rr))
                     elif self.state == 1:
                         if self.tick % int(50 - 30 * math.sin(math.radians(self.rot))) == 0:
                             self.play_sound('create')
@@ -1315,16 +1344,16 @@ class ChaosDisciple(entity.Entities.Entity):
                             self.obj.velocity = -ar / 20
                             aar = random.randint(0, 60)
                             for r in range(0, 360, 360 // int(4 + 2 * math.sin(self.rot))):
-                                self.pjs.append(ChaosBomb(self.obj.pos, r + aar, 2, 50))
+                                self.pjs.append(ChaosBomb(self.obj.pos, r + aar, 2, 50, drr=self.rr))
                     elif self.state == 2:
                         self.obj.pos = game.get_game().player.obj.pos + (math.sin(math.radians(self.rot)) * 200, -1200)
                         if self.tick % 20 == 0:
                             ap = game.get_game().player.obj.pos - self.obj.pos
-                            self.pjs.append(ChaosBomb(self.obj.pos, vector.coordinate_rotation(*ap), 0, 50))
+                            self.pjs.append(ChaosBomb(self.obj.pos, vector.coordinate_rotation(*ap), 0, 50, drr=self.rr))
                     elif self.state == 3:
                         if self.tick % 10 == 0:
                             for r in range(int(self.rot), int(self.rot) + 360, 90):
-                                self.pjs.append(ChaosBomb(self.obj.pos, r, 0, 50))
+                                self.pjs.append(ChaosBomb(self.obj.pos, r, 0, 50, drr=self.rr))
                     else:
                         pass
             else:
@@ -1341,7 +1370,7 @@ class ChaosDisciple(entity.Entities.Entity):
                     self.obj.pos += ap * (40 + 20 * math.sin(math.radians(self.rot)))
                     if self.tick % 30 == 0:
                         for _ in range(4):
-                            self.pjs.append(ChaosBomb(self.obj.pos, random.randint(0, 360), 1, 60))
+                            self.pjs.append(ChaosBomb(self.obj.pos, random.randint(0, 360), 1, 60, drr=self.rr))
                 elif self.state == 1:
                     if self.tick % int(30 - 10 * math.sin(math.radians(self.rot))) == 0:
                         self.play_sound('create')
@@ -1350,24 +1379,24 @@ class ChaosDisciple(entity.Entities.Entity):
                         self.obj.velocity = -ar / 20
                         aar = random.randint(0, 60)
                         for r in range(0, 360, 360 // [2, 3, 4, 5, 6, 9][int(4 + 2 * math.sin(self.rot))]):
-                            self.pjs.append(ChaosBomb(self.obj.pos, r + aar, 2, 60))
+                            self.pjs.append(ChaosBomb(self.obj.pos, r + aar, 2, 60, drr=self.rr))
                 elif self.state == 2:
                     self.obj.pos = game.get_game().player.obj.pos + (math.sin(math.radians(self.rot)) * 800, -1500)
                     if self.tick % 30 == 0:
                         ap = game.get_game().player.obj.pos - self.obj.pos
                         for ar in range(-60, 61, 30):
-                            self.pjs.append(ChaosBomb(self.obj.pos, ar + vector.coordinate_rotation(*ap), 0, 60))
+                            self.pjs.append(ChaosBomb(self.obj.pos, ar + vector.coordinate_rotation(*ap), 0, 60, drr=self.rr))
                 elif self.state == 3:
                     if self.tick % 15 == 0:
                         for r in range(int(self.rot), int(self.rot) + 360, 72):
-                            self.pjs.append(ChaosBomb(self.obj.pos, r, 0, 60))
+                            self.pjs.append(ChaosBomb(self.obj.pos, r, 0, 60, drr=self.rr))
                 else:
                     aap = vector.Vector2D(180 + self.rot, 1500)
                     self.obj.pos = vector.Vector2D(0, 0, *self.ddp) + aap
                     if self.tick % 5 == 0:
                         self.pjs.append(ChaosBomb(self.obj.pos, self.rot, 2, 40))
                         for ar in range(90, 271, 30):
-                            self.pjs.append(ChaosBomb(self.obj.pos, self.rot + ar, 0, 80))
+                            self.pjs.append(ChaosBomb(self.obj.pos, self.rot + ar, 0, 80, drr=self.rr))
                 if self.state != 4:
                     self.ddp = game.get_game().player.obj.pos.to_value()
         self.tick += 1
@@ -1379,21 +1408,24 @@ class ChaosDisciple(entity.Entities.Entity):
                 game.get_game().dialog.dialog('INTEREST..ING...', 'VERY INTERESTING...')
                 ChaosDisciple.DEFEATED = True
         if self.phase == 1:
-            if game.get_game().player.hp_sys.max_hp <= 500:
-                game.get_game().player.hp_sys.max_hp = min(game.get_game().player.hp_sys.max_hp + 1, 500)
+            if game.get_game().player.hp_sys.max_hp <= 500 + self.rr * 2000:
+                game.get_game().player.hp_sys.max_hp = min(game.get_game().player.hp_sys.max_hp + 1 + self.rr * 19, 500 + self.rr * 2000)
             else:
-                game.get_game().player.hp_sys.heal(2)
+                game.get_game().player.hp_sys.heal(2 + self.rr * 8)
             self.hp_sys.heal(1000)
             if self.tick % 20 == 0:
                 rr = random.randint(0, 360)
                 self.pjs.append(ChaosBomb(self.obj.pos + vector.Vector2D(rr, 2000), rr + 180,
-                                          2, 70))
+                                          2, 70, drr=self.rr))
             if self.hp_sys.hp >= self.hp_sys.max_hp and game.get_game().dialog.is_done():
                 self.hp_sys.IMMUNE = False
                 self.phase = 2
-                self.hp_sys.DODGE_RATE -= .2
+                self.hp_sys.DODGE_RATE = 0
+                for d in self.hp_sys.defenses.defences.keys():
+                    self.hp_sys.defenses[d] += 1000
+                    self.hp_sys.resistances[d] /= 3
                 for i in range(0, 360, 20):
-                    self.pjs.append(ChaosBomb(self.obj.pos, i, 1, 60))
+                    self.pjs.append(ChaosBomb(self.obj.pos, i, 1, 60, drr=self.rr))
                 self.PHASE_SEGMENTS.pop(-1)
         if self.phase == 2 and self.hp_sys.hp < self.hp_sys.max_hp * self.PHASE_SEGMENTS[-1]:
             self.phase = 3 if constants.DIFFICULTY > 1 else 4
@@ -1413,14 +1445,15 @@ class ChaosDisciple(entity.Entities.Entity):
                 game.get_game().player.obj.pos = self.obj.pos + pp
             game.get_game().player.hp_sys.max_hp = 500
             if self.tick % 2 == 0:
-                self.pjs.append(ChaosBomb(self.obj.pos, random.randint(0, 360), 1, 100))
+                self.pjs.append(ChaosBomb(self.obj.pos, random.randint(0, 360), 1, 100, drr=self.rr))
             if self.tick > 1500:
                 self.phase = 4
                 game.get_game().player.hp_sys.max_hp = 200
                 game.get_game().player.hp_sys.effects.clear()
-                cc = random.choice(['shard_of_create', 'shard_of_destroy'])
-                for _ in range(4):
-                    game.get_game().drop_items.append(entity.Entities.DropItem(self.obj.pos, cc, random.randint(8, 12)))
+                for __ in range(1 + 3 * self.rr):
+                    cc = random.choice(['shard_of_create', 'shard_of_destroy'])
+                    for _ in range(4 - 3 * self.rr):
+                        game.get_game().drop_items.append(entity.Entities.DropItem(self.obj.pos, cc, random.randint(8, 12) * (1 + self.rr)))
                 if constants.DIFFICULTY >= 2:
                     for k in random.choices(['abyss_ranseur', 'abyss_gaze', 'abyss_fury'], k=constants.DIFFICULTY - 1):
                         game.get_game().drop_items.append(entity.Entities.DropItem(self.obj.pos, k, 1))
@@ -1542,6 +1575,7 @@ class EliteChicken(Chicken):
         entity.IndividualLoot('e_feather', .3, 5, 25),
         entity.SelectionLoot([('feather_of_sing', 1, 2), ('feather_of_dance', 1, 2), ('feather_of_rap', 1, 2), ('feather_of_basketball', 1, 2)], 1, 2),
         entity.IndividualLoot('feather_sword', .02, 1, 1),
+        entity.IndividualLoot('dark_distortion', .01, 1, 1),
         ])
 
     def __init__(self, pos):
@@ -1563,6 +1597,7 @@ class ChickenSinger(Chicken):
         entity.IndividualLoot('e_feather', .3, 5, 25),
         entity.IndividualLoot('feather_of_sing', 1, 4, 8),
         entity.IndividualLoot('feather_sword', .02, 1, 1),
+        entity.IndividualLoot('dark_distortion', .01, 1, 1),
         entity.IndividualLoot('feather_of_basketball', .05, 10, 40),
         ])
 
@@ -1616,6 +1651,7 @@ class ChickenDancer(Chicken):
         entity.IndividualLoot('e_feather', .3, 5, 25),
         entity.IndividualLoot('feather_of_dance', 1, 4, 8),
         entity.IndividualLoot('feather_sword', .02, 1, 1),
+        entity.IndividualLoot('dark_distortion', .01, 1, 1),
         entity.IndividualLoot('feather_of_basketball', .05, 10, 40),
         ])
 
@@ -1644,6 +1680,7 @@ class ChickenRapper(Chicken):
         entity.IndividualLoot('e_feather', .3, 5, 25),
         entity.IndividualLoot('feather_of_rap', 1, 4, 8),
         entity.IndividualLoot('feather_sword', .02, 1, 1),
+        entity.IndividualLoot('dark_distortion', .01, 1, 1),
         entity.IndividualLoot('feather_of_basketball', .05, 10, 40),
         ])
 
@@ -1686,33 +1723,121 @@ class DeathWhisperChickenAI(entity.MonsterAI):
     MASS = 1200
     FRICTION = .93
     TOUCHING_DAMAGE = 700
+    SIGHT_DISTANCE = 99999
 
     def __init__(self, *args):
         super().__init__(*args)
         self.state = 0
         self.cc = 300
         self.tick = 0
-        self.lr = 0
         self.tp = vector.Vector2D()
+        self.lp = vector.Vector2D()
+        self.pp = vector.Vector2D()
+        self.op = vector.Vector2D()
+        self.nr = False
+        self.dd = 2000 + constants.DIFFICULTY * 500
+        self.wh = []
 
     def on_update(self):
-        super().on_update()
         tar = self.cur_target
         if self.tick < self.cc:
+            self.op = self.pos.to_value()
             if tar is not None:
-                rr = vector.coordinate_rotation(*(tar.pos - self.pos))
-                nt = (self.cc - self.tick) * (rr - self.lr)
-                self.tp = vector.Vector2D(nt + self.lr, 2000 + constants.DIFFICULTY * 1000)
-                self.lr = rr
+                self.pp = (tar.pos + self.pp * 12) / 13
+                rr = vector.coordinate_rotation(*(self.pp - self.pos))
+                self.tp = self.pos + vector.Vector2D(rr, self.dd)
+                self.nr = abs(self.pp - self.pos) > self.dd
         elif self.tick < self.cc + 20:
             self.pos = (self.tp + self.pos * 6) / 7
-        elif random.randint(0, self.tick - self.cc) > 60:
-            self.IS_OBJECT = True
-            self.tick = 0
         else:
-            if self.tick % 5 == 0:
-                self.IS_OBJECT = random.randint(0, 1)
+            if tar is not None:
+                ap = tar.pos - self.op
+                if self.nr:
+                    if abs(ap) < self.dd:
+                        tar.pos = vector.Vector2D() + self.op + ap / abs(ap) * self.dd
+                    if abs(ap) > self.dd * 2:
+                        tar.pos = vector.Vector2D() + self.op + ap / abs(ap) * self.dd * 2
+                else:
+                    if abs(ap) > self.dd:
+                        tar.pos = vector.Vector2D() + self.op + ap / abs(ap) * self.dd
+                self.pp = (tar.pos + self.pp * 21) / 22
+            self.apply_force(vector.Vector2D(vector.coordinate_rotation(*(self.pp - self.pos)), 9000))
+            if random.randint(0, self.tick - self.cc) > self.cc * 7 // 2:
+                self.IS_OBJECT = True
+                self.tick = 0
+            else:
+                if self.tick % 5 == 0:
+                    self.IS_OBJECT = random.randint(0, 1)
+        self.tick += 1
 
+
+class DeathWhisper(Entity):
+    DISPLAY_MODE = 0
+    DIVERSITY = False
+
+    def __init__(self, pos, rot=0, action=0):
+        super().__init__(pos, game.get_game().graphics['entity3_death_whisper'], entity.BuildingAI, hp=800000)
+        self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 600
+        self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 600
+        self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 600
+        self.hp_sys.defenses[damages.DamageTypes.OCTAVE] = 600
+        self.hp_sys.defenses[damages.DamageTypes.HALLOW] = 600
+        self.hp_sys.defenses[damages.DamageTypes.PACIFY] = 600
+        self.action = action
+        self.poss = []
+        self.set_rotation(rot)
+        self.st_pos = (pos[0], pos[1])
+        self.bk = 0
+        self.dmg = True
+
+        self.obj.MASS = 30
+        self.tick = 0
+        self.obj.FRICTION = .9
+        if self.action == 1:
+            self.obj.FRICTION = 1.01
+        elif self.action == 2:
+            self.obj.FRICTION = 1
+            self.obj.apply_force(vector.Vector2D(rot, 1000))
+
+    def t_draw(self):
+        self.tick += 1
+        if self.action:
+            self.hp_sys.hp -= self.hp_sys.max_hp * (8 - constants.DIFFICULTY) / 1500
+        if self.bk:
+            self.dmg = False
+            self.obj.pos = (self.obj.pos * 5 + self.st_pos) / 6
+            if vector.distance(*(self.obj.pos - self.st_pos)) < 200:
+                self.hp_sys.hp = 0
+        elif self.action == 1:
+            pp = game.get_game().player.obj.pos
+            self.obj.apply_force(vector.Vector2D(vector.coordinate_rotation(*(pp - self.obj.pos)), 15))
+        elif self.action == 2:
+            self.obj.apply_force(vector.Vector2D(-self.rot, 10))
+        elif self.action == 3:
+            self.obj.pos += vector.Vector2D(self.rot, 20)
+            self.obj.pos += vector.Vector2D(self.rot + 90, math.sin(self.tick / 10) / 10)
+        self.obj.update()
+        self.poss.append(self.obj.pos.to_value())
+        if len(self.poss) > 10:
+            self.poss.pop(0)
+        sc = len(self.poss) / 10 * (.6 + constants.DIFFICULTY * .4)
+        for i in range(len(self.poss) - 1):
+            draw.line(game.get_game().displayer.canvas, (i * 100 // len(self.poss), 0, 0), position.displayed_position(self.poss[i]),
+                      position.displayed_position(self.poss[i+1]),
+                      int(i * 40 * sc // len(self.poss) / game.get_game().player.get_screen_scale()))
+        pg.draw.circle(game.get_game().displayer.canvas, (100, 0, 0),
+                       position.displayed_position(self.obj.pos), int(20 * sc / game.get_game().player.get_screen_scale()))
+        self.damage()
+
+    def damage(self):
+        if self.dmg:
+            pp = game.get_game().player.obj.pos
+            if abs(pp - self.obj.pos) < 50 * (.6 + constants.DIFFICULTY * .4):
+                if self.action:
+                    self.hp_sys.hp = 0
+                if not game.get_game().player.hp_sys.is_immune:
+                    game.get_game().player.hp_sys.damage(600, damages.DamageTypes.MAGICAL)
+                    game.get_game().player.hp_sys.enable_immune()
 
 
 class DeathWhisperChicken(Chicken):
@@ -1722,14 +1847,62 @@ class DeathWhisperChicken(Chicken):
     IS_MENACE = True
     NAME = 'The Death Whisper Chicken'
 
-    LOOT_TABLE = [
+    LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('e_feather', .3, 5, 10),
         entity.IndividualLoot('spot', 1, 8, 15),
-    ]
+    ])
+
+    PHASE_SEGMENTS = [.2, .7]
 
     def __init__(self, pos):
         super(Chicken, self).__init__(pos, game.get_game().graphics[f'entity3_death_whisper_chicken'], DeathWhisperChickenAI, hp=300000)
         for r in self.hp_sys.resistances.resistances.keys():
             self.hp_sys.resistances.resistances[r] *= .3
+        self.phase = 0
+        self.obj.tick = 0
+        self.obj.cc = 300
+        self.wh = []
+
+    def draw(self):
+        if self.hp_sys.hp < self.hp_sys.max_hp * 0.7 and self.phase == 0:
+            self.phase = 1
+            self.obj.SPEED *= 1.5
+            self.obj.cc -= 80
+        if self.hp_sys.hp < self.hp_sys.max_hp * 0.2 and self.phase == 1 and constants.DIFFICULTY > 1:
+            self.phase = 2
+            self.obj.SPEED *= 1.5
+            self.obj.cc -= 80
+            for r in self.hp_sys.resistances.resistances.keys():
+                self.hp_sys.resistances.resistances[r] *= .3
+            self.obj.dd -= 1000
+        for t in self.wh:
+            t.t_draw()
+            if t.hp_sys.hp <= 1:
+                self.wh.remove(t)
+        if self.phase == 2:
+            if self.obj.dd >= 3500 - constants.DIFFICULTY * 1000:
+                self.obj.dd -= 15
+        pg.draw.circle(game.get_game().displayer.canvas, (100, 0, 0), position.displayed_position(self.obj.tp), int(200 / game.get_game().player.get_screen_scale()), 2)
+        pg.draw.circle(game.get_game().displayer.canvas, (0, 0, 0), position.displayed_position(self.obj.pp),
+                       int(200 / game.get_game().player.get_screen_scale()), 2)
+        if self.obj.tick == self.obj.cc + 10:
+            for r in range(0, 360, 30 if self.phase < 2 else 15):
+                self.wh.append(DeathWhisper(self.obj.pos, r, 3))
+        if self.obj.tick > self.obj.cc + 20:
+            pg.draw.circle(game.get_game().displayer.canvas, (0, 0, 0), position.displayed_position(self.obj.op),
+                           int(self.obj.dd / game.get_game().player.get_screen_scale()),
+                           int(min(25, self.obj.tick // 4 - self.obj.cc // 4 - 5) / game.get_game().player.get_screen_scale()) + 1)
+            pg.draw.circle(game.get_game().displayer.canvas, (0, 0, 0), position.displayed_position(self.obj.op),
+                           int(2 * self.obj.dd / game.get_game().player.get_screen_scale()),
+                           int(min(25, self.obj.tick // 4 - self.obj.cc // 4 - 5) / game.get_game().player.get_screen_scale()) + 1)
+            if self.obj.tick % 120 == 0 and self.phase >= 1 and constants.DIFFICULTY > 0:
+                for r in range(0, 360, 25 - constants.DIFFICULTY * 5):
+                    self.wh.append(DeathWhisper(vector.Vector2D(r, self.obj.dd) + self.obj.op, r, 1))
+            elif self.obj.tick % 15 == 0:
+                self.wh.append(DeathWhisper(self.obj.pos, 0, 1))
+
+
+        super().draw()
 
 
 class PetrifiedWitnessAI(entity.MonsterAI):

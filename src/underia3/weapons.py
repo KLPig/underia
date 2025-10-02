@@ -41,6 +41,12 @@ class WingBlade(weapons.Blade):
         self.vel *= 0.85
         self.vel -= vector.Vector2D(0, 0, self.x, self.y) / 50
 
+class CelestialPiercer(weapons.Spear):
+    def on_start_attack(self):
+        super().on_start_attack()
+        game.get_game().projectiles.append(projectiles.CelestialPiercer(game.get_game().player.obj.pos,
+                                                                        self.rot))
+
 class Muramasa(weapons.Muramasa):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -419,6 +425,28 @@ class LycheeBow(weapons.Bow):
                 'ammo_save', False) / 100:
             game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
         pj = projectiles.LycheeArrow((self.x + game.get_game().player.obj.pos[0],
+                                      self.y + game.get_game().player.obj.pos[1]),
+                                     self.rot + random.uniform(-self.precision, self.precision),
+                                     self.spd + proj.AMMOS[game.get_game().player.ammo[0]].SPEED,
+                                     self.damages[damages.DamageTypes.PIERCING] + proj.AMMOS[game.get_game().player.ammo[0]].DAMAGES)
+        if self.tail_col is not None:
+            pj.TAIL_COLOR = self.tail_col
+            pj.TAIL_SIZE = max(pj.TAIL_SIZE, 3)
+            pj.TAIL_WIDTH = max(pj.TAIL_WIDTH, 3)
+        game.get_game().projectiles.append(pj)
+
+class GravitySlingshot(weapons.Bow):
+    def on_start_attack(self):
+        self.face_to(
+            *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+        if game.get_game().player.ammo[0] not in proj.AMMOS or not game.get_game().player.ammo[1]:
+            self.timer = 0
+            return
+        if game.get_game().player.ammo[
+            1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data(
+                'ammo_save', False) / 100:
+            game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
+        pj = projectiles.GravityArrow((self.x + game.get_game().player.obj.pos[0],
                                       self.y + game.get_game().player.obj.pos[1]),
                                      self.rot + random.uniform(-self.precision, self.precision),
                                      self.spd + proj.AMMOS[game.get_game().player.ammo[0]].SPEED,
@@ -991,6 +1019,12 @@ WEAPONS = {
     'e_muramasa': Muramasa(name='e muramasa', damages={damages.DamageTypes.PHYSICAL: 880}, kb=10,
                           img='items_weapons_e_muramasa', speed=1, at_time=8, rot_speed=50, st_pos=250,
                            _type=1),
+    'celestial_piercer': CelestialPiercer(name='celestial piercer', damages={damages.DamageTypes.PHYSICAL: 3200}, kb=15,
+                                          img='items_weapons_celestial_piercer', speed=3, at_time=5, st_pos=200,
+                                          forward_speed=60, auto_fire=True),
+    'substance_rend_sword': weapons.Blade('substance rend sword', {damages.DamageTypes.PHYSICAL: 12000}, 35,
+                                          'items_weapons_substance_rend_sword', speed=1, at_time=4, st_pos=300,
+                                          rot_speed=90),
 
     'proof': Proof(name='proof', damages={damages.DamageTypes.PHYSICAL: 60}, kb=2, img='items_weapons_proof',
                    speed=8, at_time=2, rot_speed=30, st_pos=15),
@@ -1071,6 +1105,9 @@ WEAPONS = {
     'ullr_bow': UllrBow(name='ullr bow', damages={damages.DamageTypes.PIERCING: 6000}, kb=10,
                         img='items_weapons_ullr_bow', speed=3, at_time=10, projectile_speed=1000,
                         auto_fire=True, precision=0),
+    'gravity_slingshot': GravitySlingshot(name='gravity slingshot', damages={damages.DamageTypes.PIERCING: 9000},
+                                          kb=0, img='items_weapons_gravity_slingshot', speed=15, at_time=8,
+                                           projectile_speed=1000, auto_fire=True, precision=0),
     'gemini': Gemini(name='gemini', damages={damages.DamageTypes.PIERCING: 1600}, kb=10,
                      img='items_weapons_gemini', speed=18, at_time=4, projectile_speed=1200,
                      auto_fire=True, precision=0),

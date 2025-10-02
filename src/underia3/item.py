@@ -37,6 +37,14 @@ ITEMS = {
     'stone_of_faith': inventory.Inventory.Item('Stone of Faith', 'rainbowMake fantasy to truth.', 'stone_of_faith', 6, [inventory.TAGS['item']]),
     'spot': inventory.Inventory.Item('Spot', 'col7f7f7fThe surging malices are restless.', 'spot', 6, [inventory.TAGS['item']]),
 
+    'dark_matter': inventory.Inventory.Item('Dark Matter', 'Never been seen.', 'dark_matter', 7, [inventory.TAGS['item']]),
+    'samsara_core': inventory.Inventory.Item('Samsara Core', 'col6f0000Deaths and reincarnations.',
+                                              'samsara_core', 7, [inventory.TAGS['item']]),
+    'reborn_core': inventory.Inventory.Item('Reborn Core', 'col00006fReborn and regenerate.',
+                                            'reborn_core', 7, [inventory.TAGS['item']]),
+    'chaos_diamond': inventory.Inventory.Item('Chaos Diamond', 'col6f0000Condense of huge entropy.',
+                                               'chaos_diamond', 7, [inventory.TAGS['item']]),
+
     'hope_dust': inventory.Inventory.Item('Hope Dust', 'rainbowPower to make that miracle happen again.', 'hope_dust', 6, [inventory.TAGS['item']]),
     'hope_sign': inventory.Inventory.Item('Hope Sign', 'rainbowLet these all back.', 'hope_sign', 6, [inventory.TAGS['item']]),
     'rhapsoda': inventory.Inventory.Item('Rhapsoda', 'rainbowThe condense of fantastic daydream.', 'rhapsoda', 6, [inventory.TAGS['item']]),
@@ -279,11 +287,15 @@ ITEMS = {
                                           [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
     'longinus': inventory.Inventory.Item('Longinus', 'Summon spear phantoms.', 'longinus', 7,
                                           [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
-    'xuanyuan': inventory.Inventory.Item('Xuan Yuan', '', 'xuanyuan', 7,
+    'xuanyuan': inventory.Inventory.Item('Xuan Yuan', 'Weaken all enemies', 'xuanyuan', 7,
                                           [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
-    'durendal': inventory.Inventory.Item('Durendal', '', 'durendal', 7,
+    'durendal': inventory.Inventory.Item('Durendal', 'Charge and summon energies.', 'durendal', 7,
                                           [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
-    'bident': inventory.Inventory.Item('Bident', '', 'bident', 7,
+    'bident': inventory.Inventory.Item('Bident', 'Pierce and capture enemies.', 'bident', 7,
+                                          [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'substance_rend_sword': inventory.Inventory.Item('Substance Rend\'s Sword', '', 'substance_rend_sword', 7,
+                                                      [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'celestial_piercer': inventory.Inventory.Item('Celestial Piercer', '', 'celestial_piercer', 7,
                                           [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
 
     'e_wooden_bow': inventory.Inventory.Item('Wooden Bow', '', 'e_wooden_bow', 0,
@@ -329,6 +341,8 @@ ITEMS = {
                                                  [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['bow']]),
     'gandiva': inventory.Inventory.Item('Gandiva', '', 'gandiva', 7,
                                           [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['bow']]),
+    'gravity_slingshot': inventory.Inventory.Item('Gravity Slingshot', 'Shoots gravity arrows.', 'gravity_slingshot', 7,
+                                                    [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['gun']]),
     'ullr_bow': inventory.Inventory.Item('Ullr Bow', '', 'ullr_bow', 7,
                                           [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['bow']]),
 
@@ -417,6 +431,9 @@ ITEMS = {
     'suspicious_rune_eye': inventory.Inventory.Item('Suspicious Rune Eye', 'The lost...\nSummon the Petrified Witness\n'
                                                                            'Suggested level: 5(very rare)', 'suspicious_rune_eye', 5,
                                                       [inventory.TAGS['item']]),
+    'dark_distortion': inventory.Inventory.Item('Dark Distortion', 'The distinct from chickens.\nSummon the Death Whisper Chicken\n'
+                                                                   'Suggested level: 5(very rare)', 'dark_distortion', 5,
+                                                [inventory.TAGS['item']]),
     'nike_shoes': inventory.Inventory.Item('Nike Shoes', '...\nSummon Tralalero Tralala'
                                                       'Suggested level: 6(epic)', 'nike_shoes', 6,
                                              [inventory.TAGS['item']]),
@@ -583,6 +600,22 @@ ITEMS = {
     'e_karmic_greaves': inventory.Inventory.Item('Hope: Karmic Greaves', '25 armor\nrainbowWith effects of wings.\nrainbowEnable sprint.[cmd]\n+80 sprint\n-60% sprint cd\n-50% air resistance\n'
                                                                    '+150% speed\n+20% dodge rate\n+40% wing control', 'e_karmic_greaves', 7,
                                                  [inventory.TAGS['item'], inventory.TAGS['leg'], inventory.TAGS['accessory']], specify_img='karmic_greaves'),
+
+    'cultist_hood': inventory.Inventory.Item('Cultist Hood', '22 armor\n+30% magic damage\n+300 additional maximum mana\n-40% karma reduce', 'cultist_hood', 7,
+                                             [inventory.TAGS['item'], inventory.TAGS['head'], inventory.TAGS['accessory']]),
+    'cultist_cloak': inventory.Inventory.Item('Cultist Cloak', '40 armor\n+20% magic damage\n-45% mana cost\n+10/sec regeneration', 'cultist_cloak', 7,
+                                              [inventory.TAGS['item'], inventory.TAGS['body'], inventory.TAGS['accessory']]),
+    '_cultist_set_bonus': inventory.Inventory.Item('Cultist Armor Set Bonus', '+50% magic damage\n+50% mana cost', '_cultist_set_bonus',
+                                                   7, [inventory.TAGS['item'], inventory.TAGS['accessory']], specify_img='null'),
+
+    'assassin_mask': inventory.Inventory.Item('Assassin Mask', '36 armor\n+10% dodge rate\n+10 attack speed\n+20% damage', 'assassin_mask', 7,
+                                              [inventory.TAGS['item'], inventory.TAGS['head'], inventory.TAGS['accessory']]),
+    'assassin_chestplate': inventory.Inventory.Item('Assassin Chestplate', '42 armor\n+30% damage\n+10/sec regeneration\n+25 magic defense', 'assassin_chestplate', 7,
+                                                    [inventory.TAGS['item'], inventory.TAGS['body'], inventory.TAGS['accessory']]),
+    'assassin_socks': inventory.Inventory.Item('Assassin Socks', '22 armor\n+100% speed\n-50% air resistance\n+35% critical\n+10% dodge rate', 'assassin_socks', 7,
+                                               [inventory.TAGS['item'], inventory.TAGS['leg'], inventory.TAGS['accessory']]),
+    '_assassin_set_bonus': inventory.Inventory.Item('Assassin Armor Set Bonus', '+25 attack speed\n+50% critical\n+20% damage\n+20% dodge rate', '_assassin_set_bonus',
+                                                     7, [inventory.TAGS['item'], inventory.TAGS['accessory']], specify_img='null'),
 
     'brutes_essence': inventory.Inventory.Item('Brute\'s Essence', '+50% melee damage\n+20% critical\n-5 attack speed\n+50% damage absorb\nrainbowEssence of millions of weapons.',
                                                 'brutes_essence', 7, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
@@ -775,13 +808,31 @@ RECIPES = [
     inventory.Recipe({'hammer_of_rational': 1, 'feather_sword': 5, 'feather_of_basketball': 20}, 'feather_feather_sword'),
     inventory.Recipe({'hammer_of_rational': 1, 'ancient_rune_shard': 50, 'hope_dust': 2, 'cloth': 20, 'brain_rotter': 50}, 'nike_shoes'),
 
+    inventory.Recipe({'hammer_of_rational': 1, 'hope_dust': 1, 'brain_rotter': 10}, 'rhapsoda', 30),
     inventory.Recipe({'hammer_of_rational': 1, 'feather_of_sing': 1, 'feather_of_dance': 1, 'feather_of_rap': 1, 'feather_of_basketball': 1,
-                      'hope_dust': 2, 'create_shard': 5}, 'stone_of_faith'),
+                      'hope_dust': 2, 'shard_of_create': 5}, 'stone_of_faith'),
+    inventory.Recipe({'hammer_of_rational': 1, 'rhapsoda': 15, 'spot': 1, 'shard_of_destroy': 25}, 'dark_matter', 6),
 
     inventory.Recipe({'hammer_of_rational': 1, 'brainrot': 100}, 'brain_rotter'),
     inventory.Recipe({'hammer_of_rational': 1, 'brain_rotter': 60, 'mystery_shard': 30, 'mystery_soul': 50}, 'confuse'),
 
     inventory.Recipe({'hammer_of_rational': 1, 'ancient_rune_shard': 100, 'hope_dust': 2}, 'hope_sign'),
+
+    inventory.Recipe({'hammer_of_rational': 1, 'dark_matter': 12, 'shard_of_create': 30}, 'spaced_sheath'),
+
+    inventory.Recipe({'hammer_of_rational': 1, 'hope_dust': 3, 'ancient_rune_shard': 180}, 'miracle_crystal_blade'),
+    inventory.Recipe({'hammer_of_rational': 1, 'dark_matter': 9}, 'substance_rend_sword'),
+    inventory.Recipe({'hammer_of_rational': 1, 'dark_matter': 13}, 'celestial_piercer'),
+
+    inventory.Recipe({'hammer_of_rational': 1, 'dark_matter': 11}, 'gravity_slingshot'),
+    inventory.Recipe({'hammer_of_rational': 1, 'supernova': 1, 'dark_matter': 10, 'rhapsoda': 20}, 'gemini'),
+
+    inventory.Recipe({'hammer_of_rational': 1, 'ancient_rune_shard': 90, 'spot': 1, 'cloth': 40}, 'cultist_hood'),
+    inventory.Recipe({'hammer_of_rational': 1, 'ancient_rune_shard': 150, 'spot': 1, 'cloth': 80}, 'cultist_cloak'),
+
+    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 20, 'spot': 1, 'cloth': 50}, 'assassin_mask'),
+    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 30, 'spot': 1, 'cloth': 80}, 'assassin_chestplate'),
+    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 20, 'spot': 1, 'cloth': 50}, 'assassin_socks'),
 
     inventory.Recipe({'_rune_altar': 1, 'thaumaturgy': 1, 'hoverplume_headgear': 1, 'hoverplume_back': 1, 'hoverplume_kneepads': 1,
                       'feather_sword': 1, 'feather_amulet': 1, 'toxic_wing': 1}, 'pluma_thaumaturgy'),

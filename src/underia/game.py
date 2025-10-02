@@ -4,7 +4,6 @@ import random
 import time
 from functools import lru_cache
 import asyncio
-from math import gamma
 
 import pygame as pg
 
@@ -212,8 +211,19 @@ class Game:
         time.sleep(0.001)
 
     def setup(self):
+        if 'fun' not in dir(self):
+            self.fun = random.randint(1, 13)
         self.player.shield_break = 0
         self.dimension = 'overworld'
+        rr = random.Random()
+        for weapon in weapons.WEAPONS.values():
+            for d in weapon.damages.keys():
+                rr.seed(self.fun + hash(weapon))
+                ar = rr.randint(90, 120) // 5 * 5 / 100
+                weapon.damages[d] *= ar
+                if 'mana_cost' in dir(weapon):
+                    weapon.mana_cost *= ar * rr.uniform(.9, 1.2)
+
         self.must_st = -1
         self.mus_text = None
         self.lp = (0, 0)

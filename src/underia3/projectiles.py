@@ -272,6 +272,13 @@ class StarryNight(projectiles.Projectiles.Beam):
     CUT_EFFECT = True
     ENABLE_IMMUNE = 4
 
+class CelestialPiercer(projectiles.Projectiles.Beam):
+    WIDTH = 80
+    DAMAGE_AS = 'celestial_piercer'
+    COLOR = (0, 0, 0)
+    DMG_TYPE = damages.DamageTypes.PHYSICAL
+    DURATION = 12
+
 class IntestinalSword(projectiles.Projectiles.Beam):
     WIDTH = 20
     DAMAGE_AS = 'intestinal_sword'
@@ -336,6 +343,30 @@ class FeatherArrow(U3Arrow):
                         self.dead = True
                     cd.append(ee.ueid)
         return cd
+
+class GravityArrow(U3Arrow):
+    DAMAGES = 0
+    SPEED = 300
+    IMG = 'gravity_arrow'
+    SPEED_RATE = .02
+    ENABLE_IMMUNE = 3
+    DELETE = False
+    DECAY_RATE = .8
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.obj.MASS *= 8
+        self.obj.velocity /= 8
+        self.obj.FRICTION = 1 - (1 - self.obj.FRICTION) / 5
+        self.img.set_alpha(127)
+
+    def update(self):
+        super().update()
+        self.obj.apply_force(vector.Vector2D(self.rot, 120))
+        for e in game.get_game().entities:
+            if abs(self.obj.pos - e.obj.pos) < 800:
+                e.obj.apply_force((self.obj.pos - e.obj.pos) * e.obj.MASS / 800)
+
 
 class ToxicArrow(U3Arrow):
     DAMAGES = 24

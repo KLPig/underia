@@ -1591,6 +1591,8 @@ class Player:
                                     s_b = '_performance_set_bonus'
                                 elif not len([1 for a in acc if not str.startswith(a, 'surviving')]):
                                     s_b = '_surviving_set_bonus'
+                                elif not len([1 for a in acc if not str.startswith(a, 'assassin')]):
+                                    s_b = '_assassin_set_bonus'
                                 else:
                                     s_b = 'null'
                                 if len(self.accessories) < 11:
@@ -1927,6 +1929,8 @@ class Player:
                                 entity.entity_spawn(underia3.BombardinoCrocodilo, 2000, 2000, 0, 1145, 100000)
                         elif item.id == 'suspicious_rune_eye':
                             entity.entity_spawn(underia3.PetrifiedWitness, 2000, 2000, 0, 1145, 100000)
+                        elif item.id == 'dark_distortion':
+                            entity.entity_spawn(underia3.DeathWhisperChicken, 2000, 2000, 0, 1145, 100000)
                         elif item.id == 'nike_shoes':
                             entity.entity_spawn(underia3.TralaleroTralala, 2000, 2000, 0, 1145, 100000)
 
