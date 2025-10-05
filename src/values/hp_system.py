@@ -87,6 +87,7 @@ class HPSystem:
             dmg = damage * dmm * (1 - rd * kd) * dm
         else:
             dmg = damage * dmm - self.defenses[damage_type]
+
         dmg *= (1 - self.DAMAGE_RANDOMIZE_RANGE + 2 *
                 self.DAMAGE_RANDOMIZE_RANGE * random.random())
         dmg = max(self.MINIMUM_DAMAGE, min(self.MAXIMUM_DAMAGE, dmg))
