@@ -40,6 +40,7 @@ class HPSystem:
         self.SOUND_HURT = None
         self.shields: list[tuple[str, int]] = []
         self.pacify_cd = 0
+        self.is_player = False
 
     def __del__(self):
         pass
@@ -56,21 +57,36 @@ class HPSystem:
         else:
             return self.hp
 
-    def damage(self, damage: float, damage_type: int, penetrate: float = 0):
+    def damage(self, damage: float, damage_type: int, penetrate: float = 0, sound=True, dd: vector.Vector2D | tuple[int, int] | None = None):
         if self.IMMUNE or self.is_immune:
             return
         try:
             d = vector.distance(self.pos[0] - game.get_game().player.obj.pos[0],
                                 self.pos[1] - game.get_game().player.obj.pos[1])
-            if self.SOUND_HURT is not None:
+            if self.SOUND_HURT is not None and sound:
                 game.get_game().play_sound('hit_' + self.SOUND_HURT, vol=0.99 ** int(d / 10))
         except ValueError:
             pass
         dmm = [.3, 1.0, 1.15, 1.50][constants.DIFFICULTY]
         dm = [.31, 1.0, 1.14, 1.48][constants.DIFFICULTY]
-        dmg = (damage * dmm -
-               (max(0.0, self.defenses[damage_type] - penetrate) if self.defenses[damage_type] > 0 else
-                min(0.0, self.defenses[damage_type] + penetrate)) * dm) * self.resistances[damage_type]
+
+        kd = .6 - constants.DIFFICULTY * .05
+
+        if self.defenses[damage_type] > 0:
+            td = max(0.1, self.defenses[damage_type] - penetrate)
+
+            rd = td / damage / kd
+
+            if 'is_player' in dir(self) or self.is_player:
+                if rd > 1.0:
+                    rd **= .9 - constants.DIFFICULTY * .12
+                else:
+                    rd **= .5 + constants.DIFFICULTY * .03
+
+
+            dmg = damage * dmm * (1 - rd * kd) * dm
+        else:
+            dmg = damage * dmm - self.defenses[damage_type]
         dmg *= (1 - self.DAMAGE_RANDOMIZE_RANGE + 2 *
                 self.DAMAGE_RANDOMIZE_RANGE * random.random())
         dmg = max(self.MINIMUM_DAMAGE, min(self.MAXIMUM_DAMAGE, dmg))
@@ -99,8 +115,12 @@ class HPSystem:
                         d = 1
                         break'''
                 if not d:
+                    if dd is None:
+                        dp = self.pos
+                    else:
+                        dp = dd
                     game.get_game().damage_texts.append(
-                        (t, 0, (self.pos[0] + random.randint(-30, 30), self.pos[1] + random.randint(-30, 30))))
+                        (t, 0, (dp[0] + random.randint(-30, 30), dp[1] + random.randint(-30, 30))))
             else:
                 '''
                 for i in range(len(game.get_game().damage_texts)):
@@ -113,8 +133,12 @@ class HPSystem:
                         d = 1
                         break'''
                 if not d:
+                    if dd is None:
+                        dp = self.pos
+                    else:
+                        dp = dd
                     game.get_game().damage_texts.append(
-                        (str(int(dmg)), 0, (self.pos[0] + random.randint(-30, 30), self.pos[1] + random.randint(-30, 30))))
+                        (str(int(dmg)), 0, (dp[0] + random.randint(-30, 30), dp[1] + random.randint(-30, 30))))
         if len(self.shields):
             self.shields[0] = (self.shields[0][0], self.shields[0][1] - dmg)
             if self.shields[0][1] <= 0:
@@ -197,9 +221,9 @@ class SubHPSystem(HPSystem):
         self.hp_sys.update()
 
     def damage(self, *args, **kwargs):
-        self.hp_sys.damage(*args, **kwargs)
+        self.hp_sys.damage(*args, **kwargs, dd=self.pos)
 
-    def enable_immume(self, t=1.0):
+    def enable_immune(self, t=1.0):
         self.hp_sys.enable_immune(t)
 
     def effect(self, effect):

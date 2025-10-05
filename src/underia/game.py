@@ -224,6 +224,7 @@ class Game:
                 if 'mana_cost' in dir(weapon):
                     weapon.mana_cost *= ar * rr.uniform(.9, 1.2)
 
+        self.player.hp_sys.is_player = True
         self.must_st = -1
         self.mus_text = None
         self.lp = (0, 0)

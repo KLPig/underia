@@ -963,6 +963,8 @@ class Player:
             out_img = game.get_game().graphics['background_ui_heart_outline']
             ins_img = game.get_game().graphics['background_ui_inspiration']
             ins_out_img = game.get_game().graphics['background_ui_inspiration_outline']
+            shh_img = game.get_game().graphics['background_ui_break']
+            sh_out_img = game.get_game().graphics['background_ui_break_outline']
 
             hp_img = pg.transform.scale(hp_img, (40, 40))
             sh_img = pg.transform.scale(sh_img, (40, 40))
@@ -971,6 +973,8 @@ class Player:
             out_img = pg.transform.scale(out_img, (40, 40))
             ins_img = pg.transform.scale(ins_img, (40, 40))
             ins_out_img = pg.transform.scale(ins_out_img, (40, 40))
+            shh_img = pg.transform.scale(shh_img, (40, 40))
+            sh_out_img = pg.transform.scale(sh_out_img, (40, 40))
 
             hp_no = min(self.hp_sys.max_hp // 30, 10)
             mana_no = min(self.max_mana // 50, 10 - mt * 8)
@@ -1040,8 +1044,16 @@ class Player:
                 otr = ins_out_img.get_rect(center=(game.get_game().displayer.SCREEN_WIDTH - 50, 40 + i * 50))
                 displayer.canvas.blit(ins_out_img, otr)
 
+
             rc = pg.Rect(30, 20, (hp_no + mana_no + tal_no) * 50 - 10, 40)
             ic = pg.Rect(game.get_game().displayer.SCREEN_WIDTH - 70, 20, 40, ins_no * 50 - 10)
+
+            ns_img = pg.transform.scale_by(shh_img, 1 - self.shield_break / 100)
+            s_img = ns_img.get_rect(center=(50 + hp_no * 50 + mana_no * 50 + tal_no * 50, 40))
+            displayer.canvas.blit(ns_img, s_img)
+            s_img = sh_out_img.get_rect(center=(50 + hp_no * 50 + mana_no * 50 + tal_no * 50, 40))
+            displayer.canvas.blit(sh_out_img, s_img)
+            sc = pg.Rect(30 + hp_no * 50 + mana_no * 50 + tal_no * 50, 20, 40, 40)
         else:
             hp_l = min(300.0, self.hp_sys.max_hp // 2)
             mp_l = min(300.0 - mt * 200.0, self.max_mana)
@@ -1082,6 +1094,17 @@ class Player:
 
             rc = pg.Rect(10, 10, hp_l + mp_l + tp_l, 40)
             ic = pg.Rect(game.get_game().displayer.SCREEN_WIDTH - 50, 10, 40, is_l)
+
+            shh_img = game.get_game().graphics['background_ui_break']
+            sh_out_img = game.get_game().graphics['background_ui_break_outline']
+            shh_img = pg.transform.scale(shh_img, (40, 40))
+            sh_out_img = pg.transform.scale(sh_out_img, (40, 40))
+            ns_img = pg.transform.scale_by(shh_img, 1 - self.shield_break / 100)
+            s_img = ns_img.get_rect(center=(50 + hp_l + mp_l + tp_l, 40))
+            displayer.canvas.blit(ns_img, s_img)
+            s_img = sh_out_img.get_rect(center=(50 + hp_l + mp_l + tp_l, 40))
+            displayer.canvas.blit(sh_out_img, s_img)
+            sc = pg.Rect(30 + hp_l + mp_l + tp_l, 20, 40, 40)
         eff = self.hp_sys.effects
         if not self.ui_attributes:
             eff = [e for e in eff if not issubclass(type(e), effects.OctaveIncrease) and not issubclass(type(e), effects.SkillReinforce)]
@@ -1216,6 +1239,18 @@ class Player:
             f = displayer.font.render(f"IP: {int(self.inspiration)}/{int(self.max_inspiration)}", True,
                                       (255, 255, 255))
             fb = displayer.font.render(f"IP: {int(self.inspiration)}/{int(self.max_inspiration)}", True, (0, 0, 0))
+            ffr = f.get_rect(topright=game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+            ffr.y += 3
+            displayer.canvas.blit(fb, ffr)
+            ffr.x -= 3
+            ffr.y -= 3
+            displayer.canvas.blit(f, ffr)
+        if sc.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
+            self.in_ui = True
+            mouse_text = True
+            f = displayer.font.render(f"Break: {self.shield_break:.2f}%", True,
+                                      (255, 255, 255))
+            fb = displayer.font.render(f"Break: {self.shield_break:.2f}%", True, (0, 0, 0))
             ffr = f.get_rect(topright=game.get_game().displayer.reflect(*pg.mouse.get_pos()))
             ffr.y += 3
             displayer.canvas.blit(fb, ffr)
@@ -1593,6 +1628,10 @@ class Player:
                                     s_b = '_surviving_set_bonus'
                                 elif not len([1 for a in acc if not str.startswith(a, 'assassin')]):
                                     s_b = '_assassin_set_bonus'
+                                elif not len([1 for a in acc if not str.startswith(a, 'doomsday_spread')]):
+                                    s_b = '_doomsday_spread_set_bonus'
+                                elif not len([1 for a in acc if not str.startswith(a, 'primal_galaxy')]):
+                                    s_b = '_primal_galaxy_set_bonus'
                                 else:
                                     s_b = 'null'
                                 if len(self.accessories) < 11:

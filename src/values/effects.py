@@ -1,3 +1,4 @@
+
 from resources import time
 from values import hp_system, elements, damages
 from underia import game, inventory
@@ -42,7 +43,7 @@ class Aberration(Effect):
         dmg = min(self.level + 2, max(entity.max_hp / 200, 200.0))
         if (dmg * 3  > (1000 / game.get_game().clock.last_tick) or self.tick % 9 == 0) and self.tick % 3 == 0:
             entity.damage(dmg / 1000 * game.get_game().clock.last_tick * (9 if dmg * 3 > (1000 / game.get_game().clock.last_tick) else 3),
-                          getattr(damages.DamageTypes, 'ELEMENT_' + elements.NAMES[self.CORRESPONDED_ELEMENT].upper()))
+                          getattr(damages.DamageTypes, 'ELEMENT_' + elements.NAMES[self.CORRESPONDED_ELEMENT].upper()), sound=False)
 
 
 class Burning(Aberration):
@@ -210,6 +211,11 @@ class Bleeding(Effect):
     IMG = 'bleeding'
     NAME = 'Bleeding'
     DESC = '-4/sec regeneration'
+
+class BleedingR(Aberration):
+    IMG = 'bleeding'
+    NAME = 'Bleeding'
+    DESC = 'Continuously dealing damage'
 
 class FlashBack(Effect):
     IMG = 'flashback'

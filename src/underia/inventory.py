@@ -1600,7 +1600,7 @@ items_dict: dict[str, Inventory.Item] = {
                                                    '+360% domain size\n+120/sec mentality regeneration', 'heart_locket', 12,
                                      [TAGS['item'], TAGS['accessory'], TAGS['major_accessory']]),
 
-    'wings': Inventory.Item('Wings', 'The will to fly.\n80kg\n-60% air resistance\n+240% speed\n20% wing control', 'wings', 4,
+    'wings': Inventory.Item('Wings', 'The will to fly.\n120kg\n-60% air resistance\n+240% speed\n20% wing control', 'wings', 4,
                             [TAGS['item'], TAGS['accessory'], TAGS['wings']]),
     'honest_flyer': Inventory.Item('Honest Flyer', 'The perseverance to fly.\n280kg\n-80% air resistance\n+480% speed\n10% wing control',
                                    'honest_flyer', 5, [TAGS['item'], TAGS['accessory'], TAGS['wings']]),

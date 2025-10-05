@@ -309,6 +309,8 @@ ITEMS = {
                                                                        inventory.TAGS['gun']]),
     'sniper': inventory.Inventory.Item('Sniper', 'Rarely drops from formal chicken.', 'sniper', 2, [inventory.TAGS['item'], inventory.TAGS['weapon'],
                                                                      inventory.TAGS['gun']]),
+    'bloody_rain': inventory.Inventory.Item('Bloody Rain', 'Shoots bloody bullets: \ncolff5050Penetrate 30 defense, pierce through 3 targets, deal 30% damage.', 'bloody_rain', 3,
+                                               [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['gun']]),
     'purple_clay_kuangkuang': inventory.Inventory.Item('Purple Clay Kuangkuang', '', 'purple_clay_kuangkuang', 2,
                                                          [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['bow']]),
     'pollutant': inventory.Inventory.Item('Pollutant', 'It aims itself.', 'pollutant', 2,
@@ -361,6 +363,8 @@ ITEMS = {
                                              [inventory.TAGS['item'], inventory.TAGS['ammo'], inventory.TAGS['ammo_arrow']]),
     'organ_bullet': inventory.Inventory.Item('Organ Bullet', 'Shoots out a chain of bullets', 'organ_bullet', 2,
                                               [inventory.TAGS['item'], inventory.TAGS['ammo'], inventory.TAGS['ammo_bullet']]),
+    'blood_tears': inventory.Inventory.Item('Blood Tears', 'Deal bleeding effect.', 'blood_tears', 2,
+                                             [inventory.TAGS['item'], inventory.TAGS['ammo'], inventory.TAGS['ammo_bullet']]),
 
     'e_wooden_wand': inventory.Inventory.Item('Wooden Wand', '', 'e_wooden_wand', 0,
                                               [inventory.TAGS['item'], inventory.TAGS['weapon'],
@@ -617,6 +621,24 @@ ITEMS = {
     '_assassin_set_bonus': inventory.Inventory.Item('Assassin Armor Set Bonus', '+25 attack speed\n+50% critical\n+20% damage\n+20% dodge rate', '_assassin_set_bonus',
                                                      7, [inventory.TAGS['item'], inventory.TAGS['accessory']], specify_img='null'),
 
+    'doomsday_spread_helmet': inventory.Inventory.Item('Doomsday Spread Helmet', '33 armor\n+25% damage\n+20% critical\n+20% melee damage', 'doomsday_spread_helmet', 7,
+                                                      [inventory.TAGS['item'], inventory.TAGS['head'], inventory.TAGS['accessory']]),
+    'doomsday_spread_plate_mail': inventory.Inventory.Item('Doomsday Spread Plate Mail', '45 armor\n+20 magic defense\n+30% pacify time\n+20% damage absorb', 'doomsday_spread_plate_mail', 7,
+                                                           [inventory.TAGS['item'], inventory.TAGS['body'], inventory.TAGS['accessory']]),
+    'doomsday_spread_greaves': inventory.Inventory.Item('Doomsday Spread Greaves', '18 armor\n+100% speed\n-30% air resistance\n+20% dodge rate\n+15% damage', 'doomsday_spread_greaves', 7,
+                                                         [inventory.TAGS['item'], inventory.TAGS['leg'], inventory.TAGS['accessory']]),
+    '_doomsday_spread_set_bonus': inventory.Inventory.Item('Doomsday Armor Set Bonus', '-80 touching defense\n+80% damage', '_doomsday_spread_set_bonus',
+                                                   7, [inventory.TAGS['item'], inventory.TAGS['accessory']], specify_img='null'),
+
+    'primal_galaxy_hood': inventory.Inventory.Item('Primal Galaxy Hood', '28 armor\n+200 additional maximum mana\n+15% damage\n+100/sec inspiration regeneration', 'primal_galaxy_hood', 7,
+                                                    [inventory.TAGS['item'], inventory.TAGS['head'], inventory.TAGS['accessory']]),
+    'primal_galaxy_cloak': inventory.Inventory.Item('Primal Galaxy Cloak', '39 armor\n-30% karma reduce\n+12% damage\n-25% mana cost\n+10/sec regeneration', 'primal_galaxy_cloak', 7,
+                                                     [inventory.TAGS['item'], inventory.TAGS['body'], inventory.TAGS['accessory']]),
+    'primal_galaxy_boots': inventory.Inventory.Item('Primal Galaxy Boots', '20 armor\n+800 additional maximum inspiration\n+80% hallow damage', 'primal_galaxy_boots', 7,
+                                                     [inventory.TAGS['item'], inventory.TAGS['leg'], inventory.TAGS['accessory']]),
+    '_primal_galaxy_set_bonus': inventory.Inventory.Item('Primal Galaxy Armor Set Bonus', '+50% mana cost\n+50/sec mana regeneration\n+50/sec inspiration regeneration\n+200 additional maximum mana', '_primal_galaxy_set_bonus',
+                                                        7, [inventory.TAGS['item'], inventory.TAGS['accessory']], specify_img='null'),
+
     'brutes_essence': inventory.Inventory.Item('Brute\'s Essence', '+50% melee damage\n+20% critical\n-5 attack speed\n+50% damage absorb\nrainbowEssence of millions of weapons.',
                                                 'brutes_essence', 7, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
     'rangers_essence': inventory.Inventory.Item('Ranger\'s Essence', '+50% ranged damage\n+20% critical\n-20 attack speed\n+40% dodge rate\nrainbowEssence of weapons.',
@@ -743,6 +765,8 @@ RECIPES = [
     inventory.Recipe({'hammer_of_rational': 1, 'lychee_core_shard': 15, 'purple_clay': 45, 'cloth': 20}, 'ration_chestplate'),
     inventory.Recipe({'hammer_of_rational': 1, 'lychee_core_shard': 10, 'purple_clay': 20, 'cloth': 10}, 'ration_boots'),
 
+    inventory.Recipe({'hammer_of_rational': 1, 'blood_pearl': 1, 'e_bullet': 300}, 'blood_tears', 300),
+
     inventory.Recipe({'hammer_of_rational': 1, 'mystery_shard': 80, 'blood_pearl': 1, 'cloth': 10}, 'evil_mask'),
     inventory.Recipe({'hammer_of_rational': 1, 'mystery_shard': 130, 'blood_pearl': 1, 'cloth': 20}, 'evil_cloak'),
     inventory.Recipe({'hammer_of_rational': 1, 'mystery_shard': 80, 'blood_pearl': 1, 'cloth': 10}, 'evil_leggings'),
@@ -833,6 +857,17 @@ RECIPES = [
     inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 20, 'spot': 1, 'cloth': 50}, 'assassin_mask'),
     inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 30, 'spot': 1, 'cloth': 80}, 'assassin_chestplate'),
     inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 20, 'spot': 1, 'cloth': 50}, 'assassin_socks'),
+
+    inventory.Recipe({'hammer_of_rational': 1, 'dark_matter': 1, 'shard_of_create': 9, 'shard_of_destroy': 9,
+                      'samsara_core': 6, 'reborn_core': 6}, 'chaos_diamond'),
+
+    inventory.Recipe({'hammer_of_rational': 1, 'destroy_helmet': 1, 'chaos_diamond': 1, 'samsara_core': 9}, 'doomsday_spread_helmet'),
+    inventory.Recipe({'hammer_of_rational': 1, 'destroy_chestplate': 1, 'chaos_diamond': 1, 'samsara_core': 12}, 'doomsday_spread_plate_mail'),
+    inventory.Recipe({'hammer_of_rational': 1, 'destroy_leggings': 1, 'chaos_diamond': 1, 'samsara_core': 6}, 'doomsday_spread_greaves'),
+
+    inventory.Recipe({'hammer_of_rational': 1, 'create_hood': 1, 'chaos_diamond': 1, 'reborn_core': 9}, 'primal_galaxy_hood'),
+    inventory.Recipe({'hammer_of_rational': 1, 'create_cloak': 1, 'chaos_diamond': 1, 'reborn_core': 12}, 'primal_galaxy_cloak'),
+    inventory.Recipe({'hammer_of_rational': 1, 'create_boots': 1, 'chaos_diamond': 1, 'reborn_core': 6}, 'primal_galaxy_boots'),
 
     inventory.Recipe({'_rune_altar': 1, 'thaumaturgy': 1, 'hoverplume_headgear': 1, 'hoverplume_back': 1, 'hoverplume_kneepads': 1,
                       'feather_sword': 1, 'feather_amulet': 1, 'toxic_wing': 1}, 'pluma_thaumaturgy'),
