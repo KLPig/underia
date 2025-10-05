@@ -458,7 +458,7 @@ class BloodMoon(Entity):
             if self.wave < 15 + (game.get_game().stage - 9) * 15:
                 tm = [('nightmare_gaze', 5), ('e_whip', 6), ('reborn_amulet', 4), ('blood_pearl', 20)]
                 if self.wave > 5:
-                    tm.extend([('e_muramasa', 4), ('bloody_hand', 5)])
+                    tm.extend([('e_muramasa', 4), ('bloody_hand', 5), ('bloody_rain', 6)])
                 rs = random.choices([x for x, _ in tm], [y for _, y in tm])[0]
                 if self.wave <= 5:
                     rs.replace('blood_pearl', 'null')
@@ -975,7 +975,7 @@ class ToxicLargeIntestine(entity.Entities.WormEntity):
     def __init__(self, pos, length=60):
         length = int(length * [0.5, 1, 2, 3.5][constants.DIFFICULTY])
         super().__init__(pos, length, game.get_game().graphics['entity3_large_intestine'],
-                         game.get_game().graphics['entity3_large_intestine'], entity.DestroyerAI, length * 7000,
+                         game.get_game().graphics['entity3_large_intestine'], entity.DestroyerAI, length * 1000,
                          120, 220)
         s = 0
         self.obj.SPEED *= 1.5

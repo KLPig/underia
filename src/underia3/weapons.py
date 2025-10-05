@@ -1,6 +1,8 @@
 import math
 import time
 
+from scipy.constants import precision
+
 from underia import weapons, game, inventory
 from underia import projectiles as proj
 from values import damages, effects
@@ -434,6 +436,31 @@ class LycheeBow(weapons.Bow):
             pj.TAIL_SIZE = max(pj.TAIL_SIZE, 3)
             pj.TAIL_WIDTH = max(pj.TAIL_WIDTH, 3)
         game.get_game().projectiles.append(pj)
+
+class BloodyRain(weapons.Gun):
+    ATTACK_SOUND = 'attack_slash'
+
+    def on_start_attack(self):
+        self.face_to(
+            *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+        if game.get_game().player.ammo_bullet[0] not in proj.AMMOS or not game.get_game().player.ammo_bullet[1]:
+            self.timer = 0
+            return
+        if game.get_game().player.ammo_bullet[
+            1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data(
+                'ammo_save', False) / 100:
+            game.get_game().player.ammo_bullet = (game.get_game().player.ammo_bullet[0], game.get_game().player.ammo_bullet[1] - 1)
+        for _ in range(4):
+            pj = projectiles.BloodyRains((self.x + game.get_game().player.obj.pos[0] + random.randint(-30, 30),
+                                          self.y + game.get_game().player.obj.pos[1] + random.randint(-30, 30)),
+                                         self.rot + random.uniform(-self.precision, self.precision),
+                                         self.spd + proj.AMMOS[game.get_game().player.ammo_bullet[0]].SPEED,
+                                         self.damages[damages.DamageTypes.PIERCING] + proj.AMMOS[game.get_game().player.ammo_bullet[0]].DAMAGES)
+            if self.tail_col is not None:
+                pj.TAIL_COLOR = self.tail_col
+                pj.TAIL_SIZE = max(pj.TAIL_SIZE, 3)
+                pj.TAIL_WIDTH = max(pj.TAIL_WIDTH, 3)
+            game.get_game().projectiles.append(pj)
 
 class GravitySlingshot(weapons.Bow):
     def on_start_attack(self):
@@ -1065,6 +1092,8 @@ WEAPONS = {
     'pollutant': Pollutant(name='pollutant', damages={damages.DamageTypes.PIERCING: 180}, kb=15,
                            img='items_weapons_pollutant', speed=3, at_time=6, projectile_speed=900,
                            auto_fire=True, precision=0, tail_col=(200, 255, 100)),
+    'bloody_rain': BloodyRain('bloody_rain', {damages.DamageTypes.PIERCING: 550}, 1, 'items_weapons_bloody_rain',
+                              3, 4, 400, True, precision=3),
     'ceremony': weapons.Bow(name='ceremony', damages={damages.DamageTypes.PIERCING: 1200}, kb=30,
                             img='items_weapons_ceremony', speed=2, at_time=5, projectile_speed=4000,
                             auto_fire=True, precision=1),

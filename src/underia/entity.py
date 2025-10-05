@@ -874,9 +874,9 @@ class DestroyerAI(SlowMoverAI):
 
 
 class DevilPythonAI(DestroyerAI):
-    MASS = 8000
+    MASS = 18000
     FRICTION = 0.9
-    TOUCHING_DAMAGE = 580
+    TOUCHING_DAMAGE = 560
 
     PREFER_DISTANCE = 3
     SIGHT_DISTANCE = 99999
@@ -1386,7 +1386,8 @@ class Entities:
         def play_sound(self, sound):
             d = vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                 self.obj.pos[1] - game.get_game().player.obj.pos[1])
-            game.get_game().play_sound(sound, min(1.0, 5 * 0.9995 ** int(d / 10)))
+
+            game.get_game().play_sound(sound, min(1.0, 6 * 0.9998 ** int(d / 80)))
             
         @staticmethod
         def is_playing(sound):
@@ -1959,6 +1960,8 @@ class Entities:
                 game.get_game().entities.append(self.body[i])
                 self.body[i].obj.IS_OBJECT = (i % 2 == 0)
                 self.body[i].obj.TOUCHING_DAMAGE = body_touching_damage
+                self.body[i].obj.MASS = self.obj.MASS
+                self.body[i].obj.FRICTION = self.obj.FRICTION
                 # self.body[i].obj.IS_OBJECT = False
             self.d_img = self.body[0].d_img
             self.img = self.body[0].img
@@ -5267,22 +5270,46 @@ class Entities:
 
         def __init__(self, pos):
             super().__init__(pos, 64, game.get_game().graphics['entity_destroyer_head'],
-                             game.get_game().graphics['entity_destroyer_body'], DestroyerAI, 550000, body_length=120,
+                             game.get_game().graphics['entity_destroyer_body'], DestroyerAI, 240000, body_length=120,
                              body_touching_damage=280)
-            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 90
-            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 80
-            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 110
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 245
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 240
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 255
+            self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 200
             self.obj.SPEED *= 2
+            self.tick = 0
+            for b in self.body:
+                setattr(b, 'ot', -1000)
+                setattr(b, 'op', False)
+                for r in b.hp_sys.resistances.resistances.keys():
+                    b.hp_sys.resistances.resistances[r] *= .5
+
 
         def on_update(self):
-            super().on_update()
+            self.tick += 1
             for b in self.body:
-                if random.randint(0, 1000) == 0:
+                if random.randint(0, 300) == 0:
                     rot = vector.coordinate_rotation(game.get_game().player.obj.pos[0] - b.obj.pos[0],
                                                      game.get_game().player.obj.pos[1] - b.obj.pos[1])
                     l = Entities.Lazer(b.obj.pos, rot)
                     l.obj.apply_force(vector.Vector(rot, 5000))
                     game.get_game().entities.append(l)
+                    setattr(b, 'ot', self.tick)
+                op =  self.tick - getattr(b, 'ot') <= 100
+                if b != self.body[0]:
+                    if op:
+                        b.img = game.get_game().graphics['entity_destroyer_body_open']
+                    else:
+                        b.img = game.get_game().graphics['entity_destroyer_body']
+                if op and not getattr(b, 'op'):
+                    for r in b.hp_sys.resistances.resistances.keys():
+                        b.hp_sys.resistances.resistances[r] *= 1 / (.3 - constants.DIFFICULTY * .05)
+                else:
+                    for r in b.hp_sys.resistances.resistances.keys():
+                        b.hp_sys.resistances.resistances[r] *= .3 - constants.DIFFICULTY * .05
+                setattr(b, 'op', op)
+            super().on_update()
+
 
     class TheCPU(Entity):
         NAME = 'The CPU'
@@ -5587,12 +5614,17 @@ class Entities:
 
         def __init__(self, pos):
             super().__init__(pos, 60, game.get_game().graphics['entity_devil_python_head'],
-                             game.get_game().graphics['entity_devil_python_body'], DevilPythonAI, 800000,
-                             body_length=90, body_touching_damage=320)
-            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 25
-            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 30
-            self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 15
-            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 60
+                             game.get_game().graphics['entity_devil_python_body'], DevilPythonAI, 400000,
+                             body_length=90, body_touching_damage=420)
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 325
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 330
+            self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 315
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 360
+            for b in self.body:
+                kr = b == self.body[0] or b == self.body[-1]
+                for r in b.hp_sys.resistances.resistances.keys():
+                    b.hp_sys.resistances[r] /= 3 - kr
+
 
         def on_update(self):
             for b in self.body:

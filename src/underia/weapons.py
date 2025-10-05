@@ -54,11 +54,12 @@ class Weapon:
         pass
 
     def attack(self):
-        if self.ATTACK_SOUND is not None:
-            d = vector.distance(self.x, self.y)
-            game.get_game().play_sound(self.ATTACK_SOUND, 0.99 ** int(d / 10) / 3, True)
         self.timer = self.at_time + 1
         self.on_start_attack()
+        if self.timer:
+            if self.ATTACK_SOUND is not None:
+                d = vector.distance(self.x, self.y)
+                game.get_game().play_sound(self.ATTACK_SOUND, 0.99 ** int(d / 10) / 3, False)
 
     def on_special_attack(self, strike: int):
         pass

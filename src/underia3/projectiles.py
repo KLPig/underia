@@ -517,6 +517,62 @@ class OrganBullet(projectiles.Projectiles.Bullet):
             self.obj.pos -= vector.Vector2D(self.rot, -50 * pp)
             game.get_game().projectiles.append(OrganBullet(*args, pp=pp - 1))
 
+class BloodTears(projectiles.Projectiles.Bullet):
+    IMG = 'projectiles_blood_tears'
+    SPEED = 300
+    TAIL_COLOR = (255, 0, 0)
+    TAIL_SIZE = 5
+    TAIL_WIDTH = 12
+    DAMAGES = 15
+
+    def damage(self, pos, cd):
+        imr = self.d_img.get_rect(center=pos)
+        x, y = pos
+        for ee in game.get_game().entities:
+            if imr.collidepoint(ee.obj.pos[0], ee.obj.pos[1]) or ee.d_img.get_rect(
+                    center=ee.obj.pos()).collidepoint(x, y) and ee not in cd:
+                ee.hp_sys.damage(
+                    self.dmg * game.get_game().player.attack * game.get_game().player.attacks[1],
+                    damages.DamageTypes.PIERCING)
+                ee.hp_sys.effect(effects.BleedingR(2, 1))
+                if self.DELETE:
+                    self.dead = True
+                else:
+                    cd.append(ee.ueid)
+        return cd
+
+class BloodyRains(projectiles.Projectiles.Bullet):
+    IMG = 'projectiles_null'
+    SPEED = 300
+    TAIL_COLOR = (255, 0, 0)
+    TAIL_SIZE = 2
+    TAIL_WIDTH = 3
+    DAMAGES = 0
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.tc = 3
+
+    def damage(self, pos, cd):
+        x, y = pos
+        for ee in game.get_game().entities:
+            if ee.ueid in cd:
+                continue
+            if (vector.distance(ee.obj.pos[0] - x, ee.obj.pos[1] - y) <
+                    (ee.d_img.get_width() + ee.d_img.get_height() + self.d_img.get_width() + self.d_img.get_height()) / 4 + 80) and \
+                not ee.hp_sys.is_immune:
+                ee.hp_sys.damage(
+                    self.dmg * game.get_game().player.attack * game.get_game().player.attacks[1] * .3,
+                    damages.DamageTypes.PIERCING, 100)
+                ee.hp_sys.effect(effects.BleedingR(1, .5))
+                ee.hp_sys.enable_immune(0.1)
+                if not self.tc:
+                    self.dead = True
+                else:
+                    self.tc -= 1
+                    cd.append(ee.ueid)
+        return cd
+
 AMMO = {
     'e_wooden_arrow': EWoodenArrow,
     'moonshadow_bullet': MoonShadowBullet,
@@ -525,6 +581,7 @@ AMMO = {
     'toxic_arrow': ToxicArrow,
     'rotten_arrow': RottenArrow,
     'organ_bullet': OrganBullet,
+    'blood_tears': BloodTears
 }
 
 for k, v in AMMO.items():
