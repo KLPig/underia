@@ -38,6 +38,7 @@ ITEMS = {
     'spot': inventory.Inventory.Item('Spot', 'col7f7f7fThe surging malices are restless.', 'spot', 6, [inventory.TAGS['item']]),
 
     'dark_matter': inventory.Inventory.Item('Dark Matter', 'Never been seen.', 'dark_matter', 7, [inventory.TAGS['item']]),
+    'dark_energy': inventory.Inventory.Item('Dark Energy', '', 'dark_energy', 7, [inventory.TAGS['item']]),
     'samsara_core': inventory.Inventory.Item('Samsara Core', 'col6f0000Deaths and reincarnations.',
                                               'samsara_core', 7, [inventory.TAGS['item']]),
     'reborn_core': inventory.Inventory.Item('Reborn Core', 'col00006fReborn and regenerate.',
@@ -293,6 +294,11 @@ ITEMS = {
                                           [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
     'bident': inventory.Inventory.Item('Bident', 'Pierce and capture enemies.', 'bident', 7,
                                           [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'hell': inventory.Inventory.Item('Hell', '', 'hell', 7,
+                                          [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'wvector': inventory.Inventory.Item('Vector', 'Reduced the addons of damage.\nUses dark energy.', 'wvector', 7,
+                                          [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+
     'substance_rend_sword': inventory.Inventory.Item('Substance Rend\'s Sword', '', 'substance_rend_sword', 7,
                                                       [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
     'celestial_piercer': inventory.Inventory.Item('Celestial Piercer', '', 'celestial_piercer', 7,
@@ -337,6 +343,8 @@ ITEMS = {
                                            [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['gun']]),
     'gemini': inventory.Inventory.Item('Gemini', 'Shoots energy bullets.\nContinuously shoot to summon beams.', 'gemini', 7,
                                           [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['gun']]),
+    'dark_cannon': inventory.Inventory.Item('Dark Cannon', 'Shoots absolute-penetrating black holes.\nUses 40 dark energy.', 'dark_cannon', 7,
+                                               [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['gun']]),
     'eden': inventory.Inventory.Item('\'EDEN\'', '', 'eden', 6,
                                           [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['gun']]),
     'hope_scorch_bow': inventory.Inventory.Item('Hope Scorch Bow', '', 'hope_scorch_bow', 7,
@@ -868,6 +876,11 @@ RECIPES = [
     inventory.Recipe({'hammer_of_rational': 1, 'create_hood': 1, 'chaos_diamond': 1, 'reborn_core': 9}, 'primal_galaxy_hood'),
     inventory.Recipe({'hammer_of_rational': 1, 'create_cloak': 1, 'chaos_diamond': 1, 'reborn_core': 12}, 'primal_galaxy_cloak'),
     inventory.Recipe({'hammer_of_rational': 1, 'create_boots': 1, 'chaos_diamond': 1, 'reborn_core': 6}, 'primal_galaxy_boots'),
+
+    inventory.Recipe({'hammer_of_rational': 1, 'muramasa': 1, 'chaos_diamond': 1, 'shard_of_destroy': 15, 'samsara_core': 8}, 'hell'),
+    inventory.Recipe({'hammer_of_rational': 1, 'starry_night': 1, 'chaos_diamond': 1, 'shard_of_create': 9, 'reborn_core': 5, 'dark_energy': 114}, 'wvector'),
+
+    inventory.Recipe({'hammer_of_rational': 1, 'skyfire': 1, 'chaos_diamond': 1, 'shard_of_destory': 40, 'dark_energy': 191}, 'dark_cannon'),
 
     inventory.Recipe({'_rune_altar': 1, 'thaumaturgy': 1, 'hoverplume_headgear': 1, 'hoverplume_back': 1, 'hoverplume_kneepads': 1,
                       'feather_sword': 1, 'feather_amulet': 1, 'toxic_wing': 1}, 'pluma_thaumaturgy'),

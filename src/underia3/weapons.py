@@ -1,14 +1,12 @@
 import math
 import time
 
-from scipy.constants import precision
-
 from underia import weapons, game, inventory
 from underia import projectiles as proj
 from values import damages, effects
 from resources import position
 from physics import vector
-from visual import draw
+from visual import draw, cut_effects
 from underia3 import projectiles
 import constants
 import random
@@ -437,6 +435,19 @@ class LycheeBow(weapons.Bow):
             pj.TAIL_WIDTH = max(pj.TAIL_WIDTH, 3)
         game.get_game().projectiles.append(pj)
 
+class DarkCannon(weapons.Gun):
+    def on_start_attack(self):
+        self.face_to(
+            *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+        if not game.get_game().player.inventory.is_enough(inventory.ITEMS['dark_energy'], 40):
+            self.timer = 0
+            return
+        if random.random() < self.ammo_save_chance + game.get_game().player.calculate_data(
+                'ammo_save', False) / 100:
+            game.get_game().player.inventory.remove_item(inventory.ITEMS['dark_energy'], 40)
+        pj = projectiles.DarkCannon(game.get_game().player.obj.pos, self.rot)
+        game.get_game().projectiles.append(pj)
+
 class BloodyRain(weapons.Gun):
     ATTACK_SOUND = 'attack_slash'
 
@@ -818,6 +829,18 @@ class Proof(weapons.Blade):
                 game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
             self.set_rotation(mr - self.st_pos // 2)
 
+class Hell(weapons.Blade):
+    def on_attack(self):
+        super().on_attack()
+        self.cutting_effect(10, (255, 100, 100), (255, 255, 100))
+
+    def on_start_attack(self):
+        super().on_start_attack()
+        rot = vector.coordinate_rotation(*(-game.get_game().player.obj.pos +
+                                           position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())) ))
+        game.get_game().projectiles.append(projectiles.Hell(game.get_game().player.obj.pos, rot))
+
+
 class Observe(weapons.Blade):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -948,6 +971,100 @@ class Confuse(weapons.Blade):
             self.td = 30
         for k in self.damages.keys():
             self.damages[k] *= self.td
+
+class WVector(weapons.Blade):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.opp = False
+        self.tick = 0
+        self.lr = 0
+        self.dd = 0
+
+    def on_start_attack(self):
+        super().on_start_attack()
+        self.opp = not self.opp
+        self.rot_speed = 1
+
+    def damage(self):
+
+        if self.rot_speed > 0:
+            rot_range = range(int(self.rot - self.rot_speed), int(self.rot + self.rot_speed + 1))
+        else:
+            rot_range = range(int(self.rot - self.rot_speed), int(self.rot + self.rot_speed - 1), -1)
+        for e in game.get_game().entities:
+            dps = e.obj.pos
+            px = dps[0] - self.x - game.get_game().player.obj.pos[0]
+            py = dps[1] - self.y - game.get_game().player.obj.pos[1]
+            r = int(vector.coordinate_rotation(px, py)) % 360
+            if r in rot_range or r + 360 in rot_range or (
+                    self.double_sided and ((r + 180) % 360 in rot_range or r + 180 in rot_range)):
+                if vector.distance(px, py) < self.dd * self.scale + (
+                        (e.img.get_width() + e.img.get_height()) // 2 if e.img is not None else 10) and not e.hp_sys.is_immune:
+                    for t, d in self.damages.items():
+                        e.hp_sys.damage(d * game.get_game().player.attack ** .3 * game.get_game().player.attacks[self.DMG_AS_IDX] ** .3, t)
+                    e.hp_sys.enable_immune(.3)
+                    self.dd = max(self.dd, 20)
+                    if not e.hp_sys.is_immune:
+                        rf = vector.coordinate_rotation(px + self.x, py + self.y)
+                        e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS
+                        if self.knock_back * 60000 < e.obj.MASS else
+                        self.knock_back * 600000 / e.obj.MASS))
+                    if 'matters_touch' in game.get_game().player.accessories:
+                        e.obj.MASS *= 1.01
+                    if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
+                        if not e.IS_MENACE and not e.VITAL:
+                            e.hp_sys.damage(e.hp_sys.max_hp / 10, damages.DamageTypes.THINKING)
+                            if random.randint(0, 10) == 0:
+                                e.hp_sys.hp = 0
+                        else:
+                            e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
+                    if self.ENABLE_IMMUNE:
+                        if constants.DIFFICULTY > 1:
+                            e.hp_sys.enable_immune()
+
+    def on_attack(self):
+        if self.rot_speed == 0:
+            self.rot_speed = 1
+        super().on_attack()
+
+    def update(self):
+        self.damages[damages.DamageTypes.PHYSICAL] = round(1000 * (1 - math.e ** (-self.dd / 1500))) * 5
+        self.tick += 1
+        self.rot = vector.coordinate_rotation(*position.relative_position(position.real_position(
+            game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+        self.set_rotation(self.rot)
+        ar = self.rot - self.lr
+        if ar > 180:
+            ar -= 360
+        elif ar < -180:
+            ar += 360
+        self.rot_speed = ar if ar != 0 else 1
+        self.rot_speed = int(self.rot_speed * 100 / game.get_game().clock.last_tick)
+        self.lr = self.rot
+        td = max(0, self.rot_speed * 15 + 120)
+        if td > self.dd:
+            self.dd = (self.dd * 8 + td) / 9
+        else:
+            self.dd = self.dd * 25 // 26
+        if self.opp and self.tick % 50 == 1:
+            if not game.get_game().player.inventory.is_enough(inventory.ITEMS['dark_energy']):
+                self.opp = False
+                return
+            else:
+                game.get_game().player.inventory.remove_item(inventory.ITEMS['dark_energy'])
+        if not self.opp:
+            self.dd = 0
+            self.rot_speed = 1
+            super().update()
+            return
+        self.display = True
+        cut_effects.cut_eff(game.get_game().displayer.canvas, int(20 / game.get_game().player.get_screen_scale()),
+                  *position.displayed_position(game.get_game().player.obj.pos),
+                  *position.displayed_position(game.get_game().player.obj.pos + vector.Vector2D(self.rot, self.dd)),
+                            (20, 20, 80))
+        super().update()
+        self.damage()
+
 
 class AbyssRanseur(weapons.Spear):
     def on_start_attack(self):
@@ -1140,6 +1257,9 @@ WEAPONS = {
     'gemini': Gemini(name='gemini', damages={damages.DamageTypes.PIERCING: 1600}, kb=10,
                      img='items_weapons_gemini', speed=18, at_time=4, projectile_speed=1200,
                      auto_fire=True, precision=0),
+    'dark_cannon': DarkCannon(name='dark cannon', damages={damages.DamageTypes.PIERCING: 2400}, kb=12,
+                               img='items_weapons_dark_cannon', speed=12, at_time=15, projectile_speed=1000,
+                               auto_fire=True, precision=0),
     'eden': weapons.Gun(name='eden', damages={damages.DamageTypes.PIERCING: 50000}, kb=50,
                          img='items_weapons_eden', speed=120, at_time=30, projectile_speed=300,
                          auto_fire=True, precision=0),
@@ -1241,6 +1361,11 @@ WEAPONS = {
                          speed=3, at_time=15, rot_speed=20, st_pos=200),
     'bident': Bident(name='bident', damages={damages.DamageTypes.PHYSICAL: 4500}, kb=10, img='items_weapons_bident',
                      speed=2, at_time=8, forward_speed=40, st_pos=150),
+
+    'hell': Hell(name='hell', damages={damages.DamageTypes.PHYSICAL: 5500}, kb=25, img='items_weapons_hell',
+                 speed=2, at_time=4, rot_speed=70, st_pos=120),
+    'wvector': WVector(name='wvector', damages={damages.DamageTypes.PHYSICAL: 0}, kb=20, img='items_weapons_vector_t',
+                       speed=0, at_time=1, rot_speed=0, st_pos=0),
 
     'hope_scorch_bow': HopeScorchBow(name='hope scorch bow', damages={damages.DamageTypes.PIERCING: 2400}, kb=10,
                                      img='items_weapons_hope_scorch_bow', speed=3, at_time=6, projectile_speed=1000,

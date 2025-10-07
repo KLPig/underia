@@ -125,9 +125,9 @@ class Game:
         if len([1 for e in self.entities if type(e) is entity.Entities.CLOCK]):
             return 0, 50, 50
         if 0.2 < time_days <= 0.3:
-            r = int(255 * (time_days - 0.2) / 0.1)
-            g = int(255 * (time_days - 0.2) / 0.1)
-            b = int(255 * (time_days - 0.2) / 0.1)
+            r = 50 + int(205 * (time_days - 0.2) / 0.1)
+            g = 50 + int(205 * (time_days - 0.2) / 0.1)
+            b = 50 + int(100 * (time_days - 0.2) / 0.1)
         elif 0.3 < time_days <= 0.7:
             r = 255
             g = 255
@@ -136,18 +136,26 @@ class Game:
                 r -= 100
                 g -= 100
                 b -= 150
+        elif 0.45 < time_days <= 0.55:
+            r = 255
+            g = 255
+            b = 200
+            if 'solar eclipse' in self.world_events:
+                r -= 100
+                g -= 100
+                b -= 150
         elif 0.7 < time_days <= 0.75:
             r = 255
             g = 255 - int(128 * (time_days - 0.7) / 0.05)
-            b = 255 - int(255 * (time_days - 0.7) / 0.05)
+            b = 255 - int(175 * (time_days - 0.7) / 0.05)
         elif 0.75 < time_days <= 0.8:
-            r = 255 - int(255 * (time_days - 0.75) / 0.05)
-            g = 127 - int(127 * (time_days - 0.75) / 0.05)
-            b = 0
+            r = 255 - int((205 if 'blood moon' not in self.world_events else 55) * (time_days - 0.75) / 0.05)
+            g = 127 - int(87 * (time_days - 0.75) / 0.05)
+            b = 80
         else:
-            r = 0 if 'blood moon' not in self.world_events else 200
-            g = 0
-            b = 0
+            r = 50 if 'blood moon' not in self.world_events else 200
+            g = 50
+            b = 80
         if self.get_biome() == 'hell' and self.chapter == 2:
             r = 255
             g = 0
@@ -157,13 +165,13 @@ class Game:
             g = 255 - (255 - g) * 4 // 5
             b = 255 - (255 - b) * 4 // 5
         if 'chaos_evileye' in self.player.accessories or 'horizon_goggles' in self.player.accessories:
-            r = 255 - (255 - r) * 2 // 3
-            g = 255 - (255 - g) * 2 // 3
-            b = 255 - (255 - b) * 2 // 3
+            r = 255 - (255 - r) * 3 // 5
+            g = 255 - (255 - g) * 3 // 5
+            b = 255 - (255 - b) * 3 // 5
         if 'fate_alignment_amulet' in self.player.accessories or self.chapter > 1:
-            r = 255 - (255 - r) // 3
-            g = 255 - (255 - g) // 3
-            b = 255 - (255 - b) // 3
+            r = 255 - (255 - r) // 2
+            g = 255 - (255 - g) // 2
+            b = 255 - (255 - b) // 2
         return r, g, b
 
     def on_day_start(self):

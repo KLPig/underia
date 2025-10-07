@@ -1086,6 +1086,52 @@ class Durendal(projectiles.Projectiles.PlatinumWand):
         pg.draw.circle(game.get_game().displayer.canvas, self.COL, position.displayed_position(self.obj.pos),
                        radius=int((100 + 20 * math.sin(self.tick / 50 * math.pi)) / game.get_game().player.get_screen_scale()))
 
+class DarkCannon(projectiles.Projectiles.PlatinumWand):
+    IMG = 'items_null'
+    DAMAGE_AS = 'dark_cannon'
+    ENABLE_IMMUNE = 0
+    LIMIT_VEL = -1
+    DURATION = 1100
+    DMG_TYPE = damages.DamageTypes.PIERCING
+    DMG_RATE = 1
+    DEL = True
+    COL = (0, 0, 0)
+    DECAY_RATE = 1.0
+
+    def __init__(self, pos, rot):
+        super().__init__(pos, rot)
+        self.obj.apply_force(vector.Vector2D(self.rot, 500))
+
+    def damage(self):
+        kb = weapons.WEAPONS[self.DAMAGE_AS].knock_back
+        for ee in game.get_game().entities:
+            if (vector.distance(ee.obj.pos[0] - self.obj.pos[0], ee.obj.pos[1] - self.obj.pos[1]) <
+                50 + (ee.d_img.get_width() + self.d_img.get_height())) / 4:
+                at_mt = {damages.DamageTypes.PHYSICAL: 0, damages.DamageTypes.PIERCING: 1,
+                         damages.DamageTypes.ARCANE: 2, damages.DamageTypes.MAGICAL: 2}[self.WT]
+                ee.hp_sys.damage(
+                    weapons.WEAPONS[self.DAMAGE_AS].damages[self.DMG_TYPE] * game.get_game().player.attack *
+                    game.get_game().player.attacks[at_mt] * self.DMG_RATE, self.DMG_TYPE, penetrate=500 * game.get_game().player.attack *
+                    game.get_game().player.attacks[at_mt])
+                r = vector.coordinate_rotation(ee.obj.pos[0] - self.obj.pos[0],
+                                               ee.obj.pos[1] - self.obj.pos[1])
+                ee.obj.apply_force(vector.Vector(r, kb * 120000 / ee.obj.MASS))
+                self.DMG_RATE *= self.DECAY_RATE
+                ee.hp_sys.enable_immune(self.ENABLE_IMMUNE)
+                self.damage_particle()
+
+    def update(self):
+        super().update()
+        tar, _ = self.get_closest_entity()
+        if tar is not None:
+            self.set_rotation(vector.coordinate_rotation(*(tar.obj.pos - self.obj.pos)))
+            self.obj.rotation = self.rot
+
+    def draw(self):
+        pg.draw.circle(game.get_game().displayer.canvas, self.COL, position.displayed_position(self.obj.pos),
+                       radius=int((120 + 30 * math.sin(self.tick / 50 * math.pi)) / game.get_game().player.get_screen_scale()))
+
+
 class DimStar(projectiles.Projectiles.PlatinumWand):
     IMG = 'items_null'
     DAMAGE_AS = 'nyxs_dim_star_wand'
@@ -1234,5 +1280,30 @@ class MerlinWandParticle(projectiles.Projectiles.PlatinumWand):
             if abs(e.obj.pos - self.obj.pos) < 100 and e.ENO in self.de:
                 return
         super().damage()
+
+class Hell(projectiles.Projectiles.PlatinumWand):
+    IMG = 'projectiles_hell'
+    DAMAGE_AS = 'hell'
+    ENABLE_IMMUNE = 1
+    DEL = False
+    LIMIT_VEL = 5
+    DURATION = 100
+    DMG_RATE = .6
+    DECAY_RATE = .9
+    LIGHT_R_RATE = .3
+    LIGHT_E_RATE = .6
+    COL = (255, 0, 0)
+    DMG_TYPE = damages.DamageTypes.PHYSICAL
+
+    def __init__(self, pos, rot):
+        super().__init__(pos, rot)
+        self.obj = projectiles.WeakProjectileMotion(self.obj.pos, 0)
+        self.obj.MASS = 10
+        self.obj.FRICTION = .95
+        self.obj.velocity.clear()
+        self.obj.force.clear()
+        self.obj.apply_force(vector.Vector2D(rot, 5500))
+
+
 
 

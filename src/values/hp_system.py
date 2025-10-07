@@ -77,7 +77,7 @@ class HPSystem:
 
             rd = td / damage / kd
 
-            if 'is_player' in dir(self) or self.is_player:
+            if 'is_player' in dir(self) and self.is_player:
                 if rd > 1.0:
                     rd **= .9 - constants.DIFFICULTY * .12
                 else:
