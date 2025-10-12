@@ -202,6 +202,169 @@ class Generate(weapons.Blade):
                         if constants.DIFFICULTY > 1:
                             e.hp_sys.enable_immune()
 
+class WheelFrogileSword(weapons.Blade):
+    def damage(self):
+        if self.rot_speed > 0:
+            rot_range = range(int(self.rot - self.rot_speed), int(self.rot + self.rot_speed + 1))
+        else:
+            rot_range = range(int(self.rot - self.rot_speed), int(self.rot + self.rot_speed - 1), -1)
+        for e in game.get_game().entities:
+            dps = e.obj.pos
+            px = dps[0] - self.x - game.get_game().player.obj.pos[0]
+            py = dps[1] - self.y - game.get_game().player.obj.pos[1]
+            r = int(vector.coordinate_rotation(px, py)) % 360
+            if r in rot_range or r + 360 in rot_range or (
+                    self.double_sided and ((r + 180) % 360 in rot_range or r + 180 in rot_range)):
+                if vector.distance(px, py) < self.img.get_width() * self.scale + (
+                        (e.img.get_width() + e.img.get_height()) // 2 if e.img is not None else 10):
+                    ahp = e.hp_sys.hp
+                    for t, d in self.damages.items():
+                        e.hp_sys.damage(
+                             d * game.get_game().player.attack * game.get_game().player.attacks[self.DMG_AS_IDX], t)
+                    tv = vector.coordinate_rotation(*(game.get_game().player.obj.pos - e.obj.pos))
+                    av = max(0, abs(e.obj.velocity) * math.cos(math.radians(tv - e.obj.velocity.get_net_rotation())))
+                    e.obj.velocity -= vector.Vector2D(tv, av * 2)
+                    if not e.hp_sys.is_immune:
+                        rf = vector.coordinate_rotation(px + self.x, py + self.y)
+                        e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS
+                        if self.knock_back * 60000 < e.obj.MASS else
+                        self.knock_back * 600000 / e.obj.MASS))
+                    if 'matters_touch' in game.get_game().player.accessories:
+                        e.obj.MASS *= 1.01
+                    if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
+                        if not e.IS_MENACE and not e.VITAL:
+                            e.hp_sys.damage(e.hp_sys.max_hp / 10, damages.DamageTypes.THINKING)
+                            if random.randint(0, 10) == 0:
+                                e.hp_sys.hp = 0
+                        else:
+                            e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
+                    if self.ENABLE_IMMUNE:
+                        if constants.DIFFICULTY > 1:
+                            e.hp_sys.enable_immune()
+
+class CorruptSword(weapons.Blade):
+    def damage(self):
+        if self.rot_speed > 0:
+            rot_range = range(int(self.rot - self.rot_speed), int(self.rot + self.rot_speed + 1))
+        else:
+            rot_range = range(int(self.rot - self.rot_speed), int(self.rot + self.rot_speed - 1), -1)
+        for e in game.get_game().entities:
+            dps = e.obj.pos
+            px = dps[0] - self.x - game.get_game().player.obj.pos[0]
+            py = dps[1] - self.y - game.get_game().player.obj.pos[1]
+            r = int(vector.coordinate_rotation(px, py)) % 360
+            if r in rot_range or r + 360 in rot_range or (
+                    self.double_sided and ((r + 180) % 360 in rot_range or r + 180 in rot_range)):
+                if vector.distance(px, py) < self.img.get_width() * self.scale + (
+                        (e.img.get_width() + e.img.get_height()) // 2 if e.img is not None else 10):
+                    ahp = e.hp_sys.hp
+                    for t, d in self.damages.items():
+                        e.hp_sys.damage(
+                             d * game.get_game().player.attack * game.get_game().player.attacks[self.DMG_AS_IDX], t)
+                    e.hp_sys.effect(effects.Poison(8, 8))
+                    if not e.hp_sys.is_immune:
+                        rf = vector.coordinate_rotation(px + self.x, py + self.y)
+                        e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS
+                        if self.knock_back * 60000 < e.obj.MASS else
+                        self.knock_back * 600000 / e.obj.MASS))
+                    if 'matters_touch' in game.get_game().player.accessories:
+                        e.obj.MASS *= 1.01
+                    if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
+                        if not e.IS_MENACE and not e.VITAL:
+                            e.hp_sys.damage(e.hp_sys.max_hp / 10, damages.DamageTypes.THINKING)
+                            if random.randint(0, 10) == 0:
+                                e.hp_sys.hp = 0
+                        else:
+                            e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
+                    if self.ENABLE_IMMUNE:
+                        if constants.DIFFICULTY > 1:
+                            e.hp_sys.enable_immune()
+
+class HighTechMetalSword(weapons.Blade):
+    def damage(self):
+        if self.rot_speed > 0:
+            rot_range = range(int(self.rot - self.rot_speed), int(self.rot + self.rot_speed + 1))
+        else:
+            rot_range = range(int(self.rot - self.rot_speed), int(self.rot + self.rot_speed - 1), -1)
+        for e in game.get_game().entities:
+            dps = e.obj.pos
+            px = dps[0] - self.x - game.get_game().player.obj.pos[0]
+            py = dps[1] - self.y - game.get_game().player.obj.pos[1]
+            r = int(vector.coordinate_rotation(px, py)) % 360
+            if r in rot_range or r + 360 in rot_range or (
+                    self.double_sided and ((r + 180) % 360 in rot_range or r + 180 in rot_range)):
+                if vector.distance(px, py) < self.img.get_width() * self.scale + (
+                        (e.img.get_width() + e.img.get_height()) // 2 if e.img is not None else 10):
+                    ahp = e.hp_sys.hp
+                    for t, d in self.damages.items():
+                        e.hp_sys.damage(
+                             d * game.get_game().player.attack * game.get_game().player.attacks[self.DMG_AS_IDX], t)
+                    e.hp_sys.effect(effects.Burning(1, 10))
+                    e.hp_sys.effect(effects.BleedingR(1, 10))
+                    if not e.hp_sys.is_immune:
+                        rf = vector.coordinate_rotation(px + self.x, py + self.y)
+                        e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS
+                        if self.knock_back * 60000 < e.obj.MASS else
+                        self.knock_back * 600000 / e.obj.MASS))
+                    if 'matters_touch' in game.get_game().player.accessories:
+                        e.obj.MASS *= 1.01
+                    if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
+                        if not e.IS_MENACE and not e.VITAL:
+                            e.hp_sys.damage(e.hp_sys.max_hp / 10, damages.DamageTypes.THINKING)
+                            if random.randint(0, 10) == 0:
+                                e.hp_sys.hp = 0
+                        else:
+                            e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
+                    if self.ENABLE_IMMUNE:
+                        if constants.DIFFICULTY > 1:
+                            e.hp_sys.enable_immune()
+
+class ScarDagger(weapons.Blade):
+    def on_start_attack(self):
+        super().on_start_attack()
+        game.get_game().player.hp_sys.damage(8, damages.DamageTypes.TRUE)
+
+    def damage(self):
+        if self.rot_speed > 0:
+            rot_range = range(int(self.rot - self.rot_speed), int(self.rot + self.rot_speed + 1))
+        else:
+            rot_range = range(int(self.rot - self.rot_speed), int(self.rot + self.rot_speed - 1), -1)
+        for e in game.get_game().entities:
+            dps = e.obj.pos
+            px = dps[0] - self.x - game.get_game().player.obj.pos[0]
+            py = dps[1] - self.y - game.get_game().player.obj.pos[1]
+            r = int(vector.coordinate_rotation(px, py)) % 360
+            if r in rot_range or r + 360 in rot_range or (
+                    self.double_sided and ((r + 180) % 360 in rot_range or r + 180 in rot_range)):
+                if vector.distance(px, py) < self.img.get_width() * self.scale + (
+                        (e.img.get_width() + e.img.get_height()) // 2 if e.img is not None else 10):
+                    ahp = e.hp_sys.hp
+                    for _ in range(2):
+                        for t, d in self.damages.items():
+                            e.hp_sys.damage(
+                                 d * game.get_game().player.attack * game.get_game().player.attacks[self.DMG_AS_IDX], t,
+                            penetrate=66)
+                    dhp = ahp - e.hp_sys.hp
+                    game.get_game().player.hp_sys.heal(min(8.5, dhp * .024))
+                    e.hp_sys.effect(effects.BleedingR(1, 12))
+                    if not e.hp_sys.is_immune:
+                        rf = vector.coordinate_rotation(px + self.x, py + self.y)
+                        e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS
+                        if self.knock_back * 60000 < e.obj.MASS else
+                        self.knock_back * 600000 / e.obj.MASS))
+                    if 'matters_touch' in game.get_game().player.accessories:
+                        e.obj.MASS *= 1.01
+                    if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
+                        if not e.IS_MENACE and not e.VITAL:
+                            e.hp_sys.damage(e.hp_sys.max_hp / 10, damages.DamageTypes.THINKING)
+                            if random.randint(0, 10) == 0:
+                                e.hp_sys.hp = 0
+                        else:
+                            e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
+                    if self.ENABLE_IMMUNE:
+                        if constants.DIFFICULTY > 1:
+                            e.hp_sys.enable_immune()
+
 class MuraKumo(weapons.Blade):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -329,7 +492,7 @@ class Durendal(weapons.Blade):
             self.sr = min(self.sr + 10, 600 - 400 * self.mode)
 
     def update(self):
-        self.damages[damages.DamageTypes.PHYSICAL] = 20 * self.sr
+        self.damages[damages.DamageTypes.PHYSICAL] = int(2.5 * self.sr)
         inventory.ITEMS['durendal'].desc = '\n'.join(inventory.ITEMS['durendal'].desc.split('\n')[:-1]) + '\n' + f'MODE {2 - self.mode}, CHARGE {self.sr / 8:.1f}%'
         super().update()
         pg.draw.circle(game.get_game().displayer.canvas, (100, 255, 255),
@@ -628,6 +791,56 @@ class SuperNova(weapons.Gun):
         self.st += 1
         if self.st >= 25:
             self.cd = min(self.cd + 1, 24)
+
+class WierSwin(weapons.Gun):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.att = 0
+        self.sk_mcd = 250
+
+    def on_start_attack(self):
+        if self.sk_cd:
+            self.timer = 0
+            return
+        if self.att != 114:
+            self.att = 4
+            super().on_start_attack()
+
+    def on_special_attack(self, strike: int):
+        if self.sk_cd:
+            self.timer = 0
+            return
+        super().on_special_attack(strike)
+        self.att = 114
+        game.get_game().projectiles.append(projectiles.WierSwin(game.get_game().player.obj.pos, self.rot))
+        game.get_game().player.obj.apply_force(vector.Vector2D(self.rot, -40000))
+        self.sk_cd = self.sk_mcd - min(200, strike)
+        self.timer += 12
+
+    def on_charge(self):
+        if self.sk_cd:
+            return
+        super().on_charge()
+        self.scale = 1
+
+
+    def on_attack(self):
+        super().on_attack()
+        if self.att == 114:
+            self.rotate(48)
+
+    def on_end_attack(self):
+        if self.att and self.att != 114:
+            self.att -= 1
+            self.timer = 5
+            super().on_start_attack()
+            self.display = True
+        else:
+            self.att = 0
+            super().on_end_attack()
+
+
+
 
 class Gemini(weapons.Gun):
     ATTACK_SOUND = 'attack_quickshot'
@@ -1028,7 +1241,7 @@ class WVector(weapons.Blade):
         super().on_attack()
 
     def update(self):
-        self.damages[damages.DamageTypes.PHYSICAL] = round(1000 * (1 - math.e ** (-self.dd / 1500))) * 5
+        self.damages[damages.DamageTypes.PHYSICAL] = round(120 * (1 - math.e ** (-self.dd / 1500))) * 5
         self.tick += 1
         self.rot = vector.coordinate_rotation(*position.relative_position(position.real_position(
             game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
@@ -1140,6 +1353,26 @@ WEAPONS = {
     'lychee_pike': weapons.Spear(name='lychee pike', damages={damages.DamageTypes.PHYSICAL: 110}, kb=12,
                                  img='items_weapons_lychee_pike', speed=3, at_time=8, forward_speed=30, st_pos=150,
                                  auto_fire=True),
+    'hidden_sword': weapons.Blade(name='hidden sword', damages={damages.DamageTypes.PHYSICAL: 380}, kb=10,
+                                   img='items_weapons_hidden_sword', speed=7, at_time=3, rot_speed=150, st_pos=200),
+    'heaven_trident': weapons.Spear(name='heaven trident', damages={damages.DamageTypes.PHYSICAL: 220}, kb=15,
+                                     img='items_weapons_heaven_trident', speed=2, at_time=12, forward_speed=30, st_pos=150,
+                                    auto_fire=True),
+    'corrupt_sword': CorruptSword(name='corrupt sword', damages={damages.DamageTypes.PHYSICAL: 160}, kb=10,
+                                  img='items_weapons_corrupt_sword', speed=1, at_time=7, rot_speed=50, st_pos=200
+                                  ),
+    'scar_dagger': ScarDagger(name='scar dagger', damages={damages.DamageTypes.PHYSICAL: 55}, kb=3,
+                              img='items_weapons_scar_dagger', speed=1, at_time=2, rot_speed=120, st_pos=100,
+                              ),
+    'hightech_steel_sword': HighTechMetalSword(name='hightech steel sword', damages={damages.DamageTypes.PHYSICAL: 450}, kb=15,
+                                               img='items_weapons_hightech_steel_sword', speed=1, at_time=5, rot_speed=80, st_pos=280,
+                                                ),
+    'clear_icy_prism': weapons.Blade(name='clear icy prism', damages={damages.DamageTypes.PHYSICAL: 360}, kb=15,
+                                      img='items_weapons_clear_icy_prism', speed=2, at_time=8, rot_speed=25, st_pos=120),
+    'turbid_icy_prism': weapons.Blade(name='turbid icy prism', damages={damages.DamageTypes.PHYSICAL: 240}, kb=10,
+                                       img='items_weapons_turbid_icy_prism', speed=1, at_time=5, rot_speed=40, st_pos=120),
+    'wheel_frogile_sword': WheelFrogileSword(name='wheel frogile sword', damages={damages.DamageTypes.PHYSICAL: 180}, kb=15,
+                                              img='items_weapons_wheel_frogile_sword', speed=1, at_time=6, rot_speed=50, st_pos=180),
     'purple_clay_broad_blade': PurpleClayBroadBlade(name='purple clay broad blade', damages={damages.DamageTypes.PHYSICAL: 110}, kb=15,
                                                     img='items_weapons_purple_clay_broad_blade', speed=1, at_time=8,
                                                     rot_speed=40, st_pos=150),
@@ -1160,13 +1393,13 @@ WEAPONS = {
                                                 speed=1, at_time_rot=5, at_time_spear=8, rot_speed=70, st_pos_sweep=250, forward_speed=50,
                                                 st_pos_spear=300, auto_fire=True, combat=[1, 1, 1, 0], sweep_type=weapons.Blade,
                                                 spear_type=MysterySwiftswordSpear),
-    'e_muramasa': Muramasa(name='e muramasa', damages={damages.DamageTypes.PHYSICAL: 880}, kb=10,
+    'e_muramasa': Muramasa(name='e muramasa', damages={damages.DamageTypes.PHYSICAL: 480}, kb=10,
                           img='items_weapons_e_muramasa', speed=1, at_time=8, rot_speed=50, st_pos=250,
                            _type=1),
-    'celestial_piercer': CelestialPiercer(name='celestial piercer', damages={damages.DamageTypes.PHYSICAL: 3200}, kb=15,
+    'celestial_piercer': CelestialPiercer(name='celestial piercer', damages={damages.DamageTypes.PHYSICAL: 400}, kb=15,
                                           img='items_weapons_celestial_piercer', speed=3, at_time=5, st_pos=200,
                                           forward_speed=60, auto_fire=True),
-    'substance_rend_sword': weapons.Blade('substance rend sword', {damages.DamageTypes.PHYSICAL: 12000}, 35,
+    'substance_rend_sword': weapons.Blade('substance rend sword', {damages.DamageTypes.PHYSICAL: 1000}, 35,
                                           'items_weapons_substance_rend_sword', speed=1, at_time=4, st_pos=300,
                                           rot_speed=90),
 
@@ -1186,16 +1419,16 @@ WEAPONS = {
     'e_whip': weapons.Whip(name='e whip', damages={damages.DamageTypes.PHYSICAL: 400}, kb=10,
                            img='items_weapons_e_whip', speed=2, at_time=20, length=20, size=40, auto_fire=True),
 
-    'destroy': Destroy('destroy', {damages.DamageTypes.PHYSICAL: 800}, 35,
+    'destroy': Destroy('destroy', {damages.DamageTypes.PHYSICAL: 120}, 35,
                        'items_weapons_destroy', 15, 25, 10, 150),
-    'generate': Generate('generate', {damages.DamageTypes.PHYSICAL: 250}, 15,
+    'generate': Generate('generate', {damages.DamageTypes.PHYSICAL: 40}, 15,
                          'items_weapons_generate', 5, 10, 50, 300),
-    'ancient_swiftsword': AncientSwiftsword('ancient swiftsword', {damages.DamageTypes.PHYSICAL: 900}, 20,
+    'ancient_swiftsword': AncientSwiftsword('ancient swiftsword', {damages.DamageTypes.PHYSICAL: 110}, 20,
                                             'items_weapons_ancient_swiftsword', 2, 5, 50, 130),
-    'feather_feather_sword': FeatherFeatherSword(name='feather feather sword', damages={damages.DamageTypes.PHYSICAL: 800}, kb=10,
+    'feather_feather_sword': FeatherFeatherSword(name='feather feather sword', damages={damages.DamageTypes.PHYSICAL: 100}, kb=10,
                                                   img='items_weapons_feather_feather_sword', speed=2, at_time=3, rot_speed=80,
                                                   st_pos=180),
-    'confuse': Confuse('confuse', {damages.DamageTypes.PHYSICAL: 450}, 10,
+    'confuse': Confuse('confuse', {damages.DamageTypes.PHYSICAL: 55}, 10,
                        'items_weapons_confuse', 2, 6, 60, 250),
 
     'e_wooden_bow': weapons.Bow(name='e wooden bow', damages={damages.DamageTypes.PIERCING: 45}, kb=4,
@@ -1211,7 +1444,7 @@ WEAPONS = {
                            auto_fire=True, precision=0, tail_col=(200, 255, 100)),
     'bloody_rain': BloodyRain('bloody_rain', {damages.DamageTypes.PIERCING: 550}, 1, 'items_weapons_bloody_rain',
                               3, 4, 400, True, precision=3),
-    'ceremony': weapons.Bow(name='ceremony', damages={damages.DamageTypes.PIERCING: 1200}, kb=30,
+    'ceremony': weapons.Bow(name='ceremony', damages={damages.DamageTypes.PIERCING: 220}, kb=30,
                             img='items_weapons_ceremony', speed=2, at_time=5, projectile_speed=4000,
                             auto_fire=True, precision=1),
     'skyfire': weapons.LazerGun(name='skyfire', damages={damages.DamageTypes.PIERCING: 300}, kb=30,
@@ -1242,27 +1475,30 @@ WEAPONS = {
     'poise_submachine_gun': weapons.Gun('poise submachine gun', {damages.DamageTypes.PIERCING: 25}, 5,
                                           'items_weapons_poise_submachine_gun', 1, 1, 1200,
                                         True, 3, tail_col=(200, 255, 100), ammo_save_chance=1 / 4),
-    'supernova': SuperNova(name='supernova', damages={damages.DamageTypes.PIERCING: 600}, kb=20,
+    'supernova': SuperNova(name='supernova', damages={damages.DamageTypes.PIERCING: 90}, kb=20,
                            img='items_weapons_supernova', speed=20, at_time=3, projectile_speed=500,
                            auto_fire=True, precision=0, tail_col=(0, 255, 255)),
-    'gandiva': Gandiva(name='gandiva', damages={damages.DamageTypes.PIERCING: 1000}, kb=10,
+    'gandiva': Gandiva(name='gandiva', damages={damages.DamageTypes.PIERCING: 125}, kb=10,
                        img='items_weapons_gandiva', speed=6, at_time=2, projectile_speed=1000,
                        auto_fire=True, precision=10),
-    'ullr_bow': UllrBow(name='ullr bow', damages={damages.DamageTypes.PIERCING: 6000}, kb=10,
+    'ullr_bow': UllrBow(name='ullr bow', damages={damages.DamageTypes.PIERCING: 720}, kb=10,
                         img='items_weapons_ullr_bow', speed=3, at_time=10, projectile_speed=1000,
                         auto_fire=True, precision=0),
-    'gravity_slingshot': GravitySlingshot(name='gravity slingshot', damages={damages.DamageTypes.PIERCING: 9000},
+    'gravity_slingshot': GravitySlingshot(name='gravity slingshot', damages={damages.DamageTypes.PIERCING: 1200},
                                           kb=0, img='items_weapons_gravity_slingshot', speed=15, at_time=8,
                                            projectile_speed=1000, auto_fire=True, precision=0),
-    'gemini': Gemini(name='gemini', damages={damages.DamageTypes.PIERCING: 1600}, kb=10,
+    'gemini': Gemini(name='gemini', damages={damages.DamageTypes.PIERCING: 240}, kb=10,
                      img='items_weapons_gemini', speed=18, at_time=4, projectile_speed=1200,
                      auto_fire=True, precision=0),
-    'dark_cannon': DarkCannon(name='dark cannon', damages={damages.DamageTypes.PIERCING: 2400}, kb=12,
+    'dark_cannon': DarkCannon(name='dark cannon', damages={damages.DamageTypes.PIERCING: 350}, kb=12,
                                img='items_weapons_dark_cannon', speed=12, at_time=15, projectile_speed=1000,
                                auto_fire=True, precision=0),
-    'eden': weapons.Gun(name='eden', damages={damages.DamageTypes.PIERCING: 50000}, kb=50,
+    'eden': weapons.Gun(name='eden', damages={damages.DamageTypes.PIERCING: 6500}, kb=50,
                          img='items_weapons_eden', speed=120, at_time=30, projectile_speed=300,
                          auto_fire=True, precision=0),
+    'wierswin': WierSwin(name='wierswin', damages={damages.DamageTypes.PIERCING: 550}, kb=10,
+                         img='items_weapons_wierswin', speed=15, at_time=3, projectile_speed=1500,
+                         auto_fire=True, precision=2),
 
 
     'e_wooden_wand': weapons.MagicWeapon(name='e wooden wand', damages={damages.DamageTypes.MAGICAL: 40}, kb=2,
@@ -1301,11 +1537,11 @@ WEAPONS = {
                                        img='items_weapons_organ_wand', speed=4, at_time=5,
                                        projectile=projectiles.OrganWand, mana_cost=50, auto_fire=True,
                                        spell_name='Quick Organ'),
-    'nyxs_dim_star_wand': weapons.MagicWeapon(name='nyxs dim star wand', damages={damages.DamageTypes.MAGICAL: 8000}, kb=0,
+    'nyxs_dim_star_wand': weapons.MagicWeapon(name='nyxs dim star wand', damages={damages.DamageTypes.MAGICAL: 1000}, kb=0,
                                                img='items_weapons_nyxs_dim_star_wand', speed=9, at_time=9,
                                                projectile=projectiles.DimStar, mana_cost=200, auto_fire=True,
                                                spell_name='The Dim Star'),
-    'merlins_wand': weapons.MagicWeapon(name='merlins wand', damages={damages.DamageTypes.MAGICAL: 5000}, kb=0,
+    'merlins_wand': weapons.MagicWeapon(name='merlins wand', damages={damages.DamageTypes.MAGICAL: 650}, kb=0,
                                         img='items_weapons_merlins_wand', speed=12, at_time=16,
                                         projectile=projectiles.MerlinWand, mana_cost=350, auto_fire=True,
                                         spell_name='Merlin\'s Talent'),
@@ -1338,44 +1574,44 @@ WEAPONS = {
                                                     img='items_weapons_galaxy_broadsword', speed=1, at_time=5, rot_speed=50,
                                                     st_pos=150),
 
-    'abyss_ranseur': AbyssRanseur(name='abyss ranseur', damages={damages.DamageTypes.PHYSICAL: 1200}, kb=50,
+    'abyss_ranseur': AbyssRanseur(name='abyss ranseur', damages={damages.DamageTypes.PHYSICAL: 400}, kb=50,
                                    img='items_weapons_abyss_ranseur', speed=2, at_time=6, forward_speed=80,
                                    st_pos=300, auto_fire=True),
-    'abyss_gaze': AbyssGaze(name='abyss gaze', damages={damages.DamageTypes.PIERCING: 400}, kb=15,
+    'abyss_gaze': AbyssGaze(name='abyss gaze', damages={damages.DamageTypes.PIERCING: 220}, kb=15,
                              img='items_weapons_abyss_gaze', speed=2, at_time=6, precision=0, projectile_speed=1000,
                             auto_fire=True),
-    'abyss_fury': weapons.MagicWeapon(name='abyss fury', damages={damages.DamageTypes.MAGICAL: 500}, kb=5,
+    'abyss_fury': weapons.MagicWeapon(name='abyss fury', damages={damages.DamageTypes.MAGICAL: 170}, kb=5,
                               img='items_weapons_abyss_fury', speed=1, at_time=4, projectile=projectiles.AbyssFury,
                               mana_cost=65, auto_fire=True, spell_name='Abyss Fury'),
 
-    'miracle_crystal_blade': MiracleCrystalBlade(name='miracle crystal blade', damages={damages.DamageTypes.PHYSICAL: 1800}, kb=20,
+    'miracle_crystal_blade': MiracleCrystalBlade(name='miracle crystal blade', damages={damages.DamageTypes.PHYSICAL: 220}, kb=20,
                                                   img='items_weapons_miracle_crystal_blade', speed=1, at_time=10, rot_speed=50,
                                                   st_pos=150),
-    'murakumo': MuraKumo(name='murakumo', damages={damages.DamageTypes.PHYSICAL: 3500}, kb=0, img='items_weapons_murakumo',
+    'murakumo': MuraKumo(name='murakumo', damages={damages.DamageTypes.PHYSICAL: 470}, kb=0, img='items_weapons_murakumo',
                          speed=3, at_time=15, rot_speed=15, st_pos=180),
-    'longinus': Longinus(name='longinus', damages={damages.DamageTypes.PHYSICAL: 2500}, kb=10, img='items_weapons_longinus',
+    'longinus': Longinus(name='longinus', damages={damages.DamageTypes.PHYSICAL: 320}, kb=10, img='items_weapons_longinus',
                          speed=8, at_time=18, rot_speed=30, st_pos=300),
-    'xuanyuan': XuanYuan(name='xuanyuan', damages={damages.DamageTypes.PHYSICAL: 12000}, kb=15, img='items_weapons_xuanyuan',
+    'xuanyuan': XuanYuan(name='xuanyuan', damages={damages.DamageTypes.PHYSICAL: 1800}, kb=15, img='items_weapons_xuanyuan',
                          speed=100, at_time=12, rot_speed=40, st_pos=300),
     'durendal': Durendal(name='durendal', damages={damages.DamageTypes.PHYSICAL: 0}, kb=8, img='items_weapons_durendal',
                          speed=3, at_time=15, rot_speed=20, st_pos=200),
-    'bident': Bident(name='bident', damages={damages.DamageTypes.PHYSICAL: 4500}, kb=10, img='items_weapons_bident',
+    'bident': Bident(name='bident', damages={damages.DamageTypes.PHYSICAL: 555}, kb=10, img='items_weapons_bident',
                      speed=2, at_time=8, forward_speed=40, st_pos=150),
 
-    'hell': Hell(name='hell', damages={damages.DamageTypes.PHYSICAL: 5500}, kb=25, img='items_weapons_hell',
+    'hell': Hell(name='hell', damages={damages.DamageTypes.PHYSICAL: 666}, kb=25, img='items_weapons_hell',
                  speed=2, at_time=4, rot_speed=70, st_pos=120),
     'wvector': WVector(name='wvector', damages={damages.DamageTypes.PHYSICAL: 0}, kb=20, img='items_weapons_vector_t',
                        speed=0, at_time=1, rot_speed=0, st_pos=0),
 
-    'hope_scorch_bow': HopeScorchBow(name='hope scorch bow', damages={damages.DamageTypes.PIERCING: 2400}, kb=10,
+    'hope_scorch_bow': HopeScorchBow(name='hope scorch bow', damages={damages.DamageTypes.PIERCING: 300}, kb=10,
                                      img='items_weapons_hope_scorch_bow', speed=3, at_time=6, projectile_speed=1000,
                                      auto_fire=True, precision=3),
 
-    'insights': Insights(name='insights', damages={damages.DamageTypes.PHYSICAL: 2500}, kb=30, img='items_weapons_insights',
+    'insights': Insights(name='insights', damages={damages.DamageTypes.PHYSICAL: 320}, kb=30, img='items_weapons_insights',
                         speed=3, at_time=10, rot_speed=25, st_pos=150),
-    'pierce': Pierce(name='pierce', damages={damages.DamageTypes.PIERCING: 1200}, kb=10, img='items_weapons_pierce',
+    'pierce': Pierce(name='pierce', damages={damages.DamageTypes.PIERCING: 140}, kb=10, img='items_weapons_pierce',
                      speed=2, at_time=2, precision=3, projectile_speed=1000, auto_fire=True),
-    'mystery': weapons.MagicWeapon(name='mystery', damages={damages.DamageTypes.MAGICAL: 1800}, kb=10, img='items_weapons_mystery',
+    'mystery': weapons.MagicWeapon(name='mystery', damages={damages.DamageTypes.MAGICAL: 250}, kb=10, img='items_weapons_mystery',
                            speed=25, at_time=25, projectile=projectiles.Mystery, mana_cost=450, auto_fire=True),
 }
 

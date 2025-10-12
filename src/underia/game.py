@@ -124,6 +124,9 @@ class Game:
             return 255, 200, 200
         if len([1 for e in self.entities if type(e) is entity.Entities.CLOCK]):
             return 0, 50, 50
+        dd = [e.nightstate for e in self.entities if type(e) is underia3.StanoZolol]
+        if len(dd):
+            return 150 - dd[0] * 150, 150 - dd[0] * 150, 0
         if 0.2 < time_days <= 0.3:
             r = 50 + int(205 * (time_days - 0.2) / 0.1)
             g = 50 + int(205 * (time_days - 0.2) / 0.1)

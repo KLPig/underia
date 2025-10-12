@@ -1956,8 +1956,8 @@ class Entities:
                 Entities.Entity((pos[0] + i + 1, pos[1]), img_body, MonsterAI, hp_sys=self.hp_sys) for i in
                 range(length - 1)]
             self.obj = self.body[0].obj
+            self.n_in = False
             for i in range(1, self.length):
-                game.get_game().entities.append(self.body[i])
                 self.body[i].obj.IS_OBJECT = (i % 2 == 0)
                 self.body[i].obj.TOUCHING_DAMAGE = body_touching_damage
                 self.body[i].obj.MASS = self.obj.MASS
@@ -2008,6 +2008,11 @@ class Entities:
                 b.d_img = b.img
 
         def t_draw(self):
+            if 'n_in' not in dir(self) or not self.n_in:
+                self.n_in = True
+                for b in self.body:
+                    if b not in game.get_game().entities:
+                        game.get_game().entities.append(b)
             self.body[0].set_rotation(-self.obj.velocity.get_net_rotation())
             for i in range(1, self.length):
                 ox, oy = self.body[i - 1].obj.pos
@@ -2020,7 +2025,7 @@ class Entities:
                     self.body[0].obj.velocity.add(self.body[i].obj.velocity.get_net_vector())
                     self.body[i].obj.velocity.clear()
                 # self.body[i].obj.apply_force(vector.Vector(vector.coordinate_rotation(tx - nx, ty - ny), vector.distance(tx - nx, ty - ny) * 8))
-            self.body[0].t_draw()
+
 
         def draw(self):
             self.body[0].draw()

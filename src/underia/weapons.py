@@ -110,11 +110,11 @@ class Weapon:
             self.timer -= 1
             self.cool = 1
         elif self.timer == 1:
-            self.on_end_attack()
             if self.strike:
                 self.strike = 0
             self.timer = 0
             self.cool = max(0, self.cd + game.get_game().player.calculate_data('atk_speed', False) // 3)
+            self.on_end_attack()
             self.on_idle()
         else:
             self.on_idle()
@@ -3355,15 +3355,16 @@ class Gun(Bow):
         self.precision = self.ddata[0]
         self.spd = self.ddata[1]
         self.ddata = [self.precision, self.spd]
-        self.scale = 3 - 2 * 1.2 ** (-self.strike / 50)
-        self.precision = int(self.ddata[0] / self.scale ** 1.5)
-        self.spd = int(self.ddata[1] * self.scale ** 3)
+        sc = 3 - 2 * 1.2 ** (-self.strike / 50)
+        self.scale = 1
+        self.precision = int(self.ddata[0] / sc ** 1.5)
+        self.spd = int(self.ddata[1] * sc ** 3)
         self.display = True
         mx, my = position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
         rot = vector.cartesian_to_polar(mx, my)[0]
         self.set_rotation(rot)
 
-        dt = 400 * self.scale ** 1.5
+        dt = 400 * sc ** 1.5
 
         px, py = position.displayed_position(game.get_game().player.obj.pos)
 

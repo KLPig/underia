@@ -1,3 +1,4 @@
+import copy
 import random
 
 import constants
@@ -75,7 +76,7 @@ class HPSystem:
         if self.defenses[damage_type] > 0:
             td = max(0.1, self.defenses[damage_type] - penetrate)
 
-            rd = td / damage / kd
+            rd = td / max(10 ** -9, damage * kd)
 
             if 'is_player' in dir(self) and self.is_player:
                 if rd > 1.0:
@@ -180,8 +181,8 @@ class HPSystem:
         for i in range(len(self.effects)):
             for j in range(i + 1, len(self.effects)):
                 if j < len(self.effects) and type(self.effects[i]) is type(self.effects[j]):
-                    nef = type(self.effects[i])(max(self.effects[i].duration, self.effects[j].duration),
-                                                self.effects[i].level + self.effects[j].level)
+                    nef = type(self.effects[i])(self.effects[i].duration + self.effects[j].duration,
+                                                max(self.effects[i].level, self.effects[j].level))
                     self.effects[i] = nef
                     self.effects.remove(self.effects[j])
                     j -= 1
@@ -198,6 +199,14 @@ class HPSystem:
 
     def effect(self, effect):
         effect.on_start(self)
+        for e in self.effects:
+            if type(e) is type(effect):
+                if e.COMBINE == "Duration":
+                    e.duration += effect.duration
+                else:
+                    e.duration = max(e.duration, effect.duration)
+                e.level = max(e.level, effect.level)
+                return
         self.effects.append(effect)
 
     def heal(self, val):
@@ -210,6 +219,10 @@ class SubHPSystem(HPSystem):
     def __init__(self, hp_sys: HPSystem):
         super().__init__(hp_sys.hp)
         self.hp_sys = hp_sys
+        self.resistances = reduction.Resistances()
+        self.resistances.resistances = copy.copy(hp_sys.resistances.resistances)
+        self.defenses = reduction.Defenses()
+        self.defenses.defenses = copy.copy(hp_sys.defenses.defences)
 
     def __del__(self):
         del self.hp_sys
@@ -222,7 +235,13 @@ class SubHPSystem(HPSystem):
         self.hp_sys.update()
 
     def damage(self, *args, **kwargs):
+        rr = self.hp_sys.resistances
+        dd = self.hp_sys.defenses
+        self.hp_sys.resistances = copy.copy(self.resistances)
+        self.hp_sys.defenses = copy.copy(self.defenses)
         self.hp_sys.damage(*args, **kwargs, dd=self.pos)
+        self.hp_sys.resistances = copy.copy(rr)
+        self.hp_sys.defenses = copy.copy(dd)
 
     def enable_immune(self, t=1.0):
         self.hp_sys.enable_immune(t)

@@ -309,6 +309,16 @@ class Gemini(projectiles.Projectiles.Beam):
     DMG_RATE = .5
     ENABLE_IMMUNE = 3
 
+class WierSwin(projectiles.Projectiles.Beam):
+    WIDTH = 80
+    DAMAGE_AS = 'wierswin'
+    COLOR = (100, 255, 0)
+    DMG_TYPE = damages.DamageTypes.PIERCING
+    DURATION = 10
+    LENGTH = 5146
+    ENABLE_IMMUNE = 5
+    DMG_RATE = 12
+
 class U3Arrow(projectiles.Projectiles.Arrow):
     SPEED_RATE = .15
     DURATION = 400

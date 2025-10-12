@@ -9,6 +9,7 @@ class Effect:
     IMG = 'empty'
     NAME = 'Effect'
     DESC = ''
+    COMBINE = 'Duration'
 
     def __init__(self, duration, level):
         self.timer = duration
@@ -86,16 +87,19 @@ class StoneAltar(Effect):
     IMG = 'stone_altar'
     NAME = 'Stone Altar'
     DESC = 'Close to the stone altar.\nAble to summon some BOSSes.\n+6 touching defense\n+8 magic defense\n+15% damage'
+    COMBINE = None
 
 class MetalAltar(Effect):
     IMG ='metal_altar'
     NAME = 'Metal Altar'
     DESC = 'Close to the metal altar.\nAble to summon some BOSSes.\n+8 touching defense\n+12 magic defense\n+19% damage'
+    COMBINE = None
 
 class ScarlettAltar(Effect):
     IMG ='scarlett_altar'
     NAME = 'Scarlett Altar'
     DESC = 'Close to the scarlett altar.\nAble to summon some BOSSes.\n+12 touching defense\n+8 magic defense\n+16% damage\n+5% critical'
+    COMBINE = None
 
 class Poison(Aberration):
     IMG = 'poisoned'
@@ -108,12 +112,14 @@ class PotionSickness(Effect):
     NAME = 'Potion Sickness'
     DESC = 'Unable to use healing potion in a time'
     CORRESPONDED_ELEMENT = elements.ElementTypes.POISON
+    COMBINE = None
 
 
 class ManaSickness(Effect):
     IMG = 'mana_sickness'
     NAME = 'Mana Sickness'
     DESC = 'Unable to use mana potion in a time\nDamage deduction\n-10% damage\n-50% magic damage'
+    COMBINE = None
 
 class TruthlessCurse(Aberration):
     IMG = 'truthless_curse'
@@ -503,3 +509,4 @@ class ManaDrain(Effect):
     NAME = 'Mana Drain'
     IMG = 'weak_mana'
     DESC = 'Decreased mana regeneration'
+    COMBINE = None

@@ -237,6 +237,22 @@ ITEMS = {
                                                [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
     'lychee_pike': inventory.Inventory.Item('Lychee Pike', '', 'lychee_pike', 1,
                                              [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'hidden_sword': inventory.Inventory.Item('Hidden Sword', 'Rarely drops from formal chicken.',
+                                               'hidden_sword', 2,
+                                             [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'scar_dagger': inventory.Inventory.Item('Scar Dagger', 'Each uses 8HP.\nPenetrate 66 defense, damage twice.\nWhen hit, heal 2.4% of damage, maximum 8.5HP.',
+                                              'scar_dagger', 2, [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'corrupt_sword': inventory.Inventory.Item('Corrupt Sword', 'Rarely drops from poison centipede.',
+                                               'corrupt_sword', 2,
+                                               [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'wheel_frogile_sword': inventory.Inventory.Item('Wheel Frogile Sword', 'Bounce back enemies.\nRarely drops from boneca ambalabu.', 'wheel_frogile_sword', 2,
+                                                      [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'clear_icy_prism': inventory.Inventory.Item('Clear Icy Prism', 'Rarely drops from small toxic intestine.', 'clear_icy_prism', 2,
+                                                 [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'turbid_icy_prism': inventory.Inventory.Item('Turbid Icy Prism', 'Rarely drops from small toxic intestine.', 'turbid_icy_prism', 2,
+                                                 [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'hightech_steel_sword': inventory.Inventory.Item('High-tech Steel Sword', 'Drops from bombardino crocodilo.', 'hightech_steel_sword', 3,
+                                                      [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
     'purple_clay_broad_blade': inventory.Inventory.Item('Purple Clay Broad Blade', '', 'purple_clay_broad_blade', 2,
                                                         [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
     'poise_blade': inventory.Inventory.Item('Poise Blade', 'Deal 30% damage to nearby enemies, penetrate 80 defense.', 'poise_blade', 2,
@@ -246,6 +262,8 @@ ITEMS = {
                                                        [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
     'wingblade': inventory.Inventory.Item('Wingblade', '', 'wingblade', 3,
                                           [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'heaven_trident': inventory.Inventory.Item('Heaven Trident', 'Drops from heaven goblins.', 'heaven_trident', 2,
+                                                [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
 
     'mystery_sword': inventory.Inventory.Item('Mystery Sword', '', 'mystery_sword', 1,
                                               [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
@@ -355,6 +373,8 @@ ITEMS = {
                                                     [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['gun']]),
     'ullr_bow': inventory.Inventory.Item('Ullr Bow', '', 'ullr_bow', 7,
                                           [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['bow']]),
+    'wierswin': inventory.Inventory.Item('Wierswin', 'Shoots 5 bullet at once.\nStrike to summon a beam.', 'wierswin', 7,
+                                          [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['bow']]),
 
     'e_wooden_arrow': inventory.Inventory.Item('Wooden Arrow', '', 'e_wooden_arrow', 0,
                                                [inventory.TAGS['item'], inventory.TAGS['ammo'],
@@ -457,6 +477,8 @@ ITEMS = {
     'abyss_fury': inventory.Inventory.Item('Abyss\' Fury', 'Summons chaos bomb.', 'abyss_fury', 4,
                                             [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['magic_weapon'],
                                              inventory.TAGS['magic_element_chaos'], inventory.TAGS['magic_lv_3']]),
+    'twin_wings': inventory.Inventory.Item('Twin Wings', '-40% air resistance\n70% wing control', 'twin_wings', 4,
+                                             [inventory.TAGS['item'], inventory.TAGS['accessory'], inventory.TAGS['wings']]),
 
     'insights': inventory.Inventory.Item('Insights', '', 'insights', 6,
                                          [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
@@ -465,6 +487,9 @@ ITEMS = {
     'mystery': inventory.Inventory.Item('Mystery', 'Bursts out phantom eyes.', 'mystery', 6,
                                           [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['magic_weapon'],
                                            inventory.TAGS['magic_element_time'], inventory.TAGS['magic_lv_3']]),
+    'boots_of_thought': inventory.Inventory.Item('Boots of Thought', 'Uses up inspiration to gain speed, maximum +200%.[cmd]\nWhen MP > 75%, -100/sec inspiration regeneration.'
+                                                                    '\nWhen MP > 75%, +100% speed.\nWhen MP > 25%, -100/sec inspiration regeneration.\nWhen MP > 25%, +100% speed.', 'boots_of_thought', 6,
+                                                  [inventory.TAGS['item'], inventory.TAGS['accessory']]),
 
     'hoverplume_headgear': inventory.Inventory.Item('Hoverplume Head Gear', '5 armor\n+18% speed', 'hoverplume_headgear', 1,
                                                        [inventory.TAGS['item'], inventory.TAGS['head'], inventory.TAGS['accessory']]),
@@ -774,6 +799,7 @@ RECIPES = [
     inventory.Recipe({'hammer_of_rational': 1, 'lychee_core_shard': 10, 'purple_clay': 20, 'cloth': 10}, 'ration_boots'),
 
     inventory.Recipe({'hammer_of_rational': 1, 'blood_pearl': 1, 'e_bullet': 300}, 'blood_tears', 300),
+    inventory.Recipe({'hammer_of_rational': 1, 'blood_pearl': 1, 'purple_clay': 16, 'mystery_shard': 10}, 'scar_dagger'),
 
     inventory.Recipe({'hammer_of_rational': 1, 'mystery_shard': 80, 'blood_pearl': 1, 'cloth': 10}, 'evil_mask'),
     inventory.Recipe({'hammer_of_rational': 1, 'mystery_shard': 130, 'blood_pearl': 1, 'cloth': 20}, 'evil_cloak'),

@@ -29,6 +29,9 @@ class Resistances:
     def __iter__(self):
         return iter(self.resistances.items())
 
+    def __str__(self):
+        return str(self.resistances)
+
 
 class Defenses:
     def __init__(self, overall: float = 0.0):
@@ -57,3 +60,6 @@ class Defenses:
 
     def __iter__(self):
         return iter(self.defences.items())
+
+    def __str__(self):
+        return str(self.defences)
