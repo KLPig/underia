@@ -242,6 +242,11 @@ ITEMS = {
                                              [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
     'scar_dagger': inventory.Inventory.Item('Scar Dagger', 'Each uses 8HP.\nPenetrate 66 defense, damage twice.\nWhen hit, heal 2.4% of damage, maximum 8.5HP.',
                                               'scar_dagger', 2, [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'chaos_dagger': inventory.Inventory.Item('Chaos Dagger', 'Enemy hit become more immune of this attack.\ne.g. 1st 100.0%; 10th 53.3%; 30th 13.1%.',
+                                               'chaos_dagger', 4, [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'primordial_monument': inventory.Inventory.Item('Primordial Monument', '',
+                                                      'primordial_monument', 5, [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'ender_monument': inventory.Inventory.Item('Ender Monument', '', 'ender_monument', 5, [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
     'corrupt_sword': inventory.Inventory.Item('Corrupt Sword', 'Rarely drops from poison centipede.',
                                                'corrupt_sword', 2,
                                                [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
@@ -312,9 +317,11 @@ ITEMS = {
                                           [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
     'bident': inventory.Inventory.Item('Bident', 'Pierce and capture enemies.', 'bident', 7,
                                           [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
-    'hell': inventory.Inventory.Item('Hell', '', 'hell', 7,
+    'hell': inventory.Inventory.Item('Hell', 'Shoots strong cuts.', 'hell', 7,
                                           [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
-    'wvector': inventory.Inventory.Item('Vector', 'Reduced the addons of damage.\nUses dark energy.', 'wvector', 7,
+    'entrophic_broadsword': inventory.Inventory.Item('Entrophic Broadsword', 'Capture strange cuts.\nUses dark energy.', 'entrophic_broadsword', 7,
+                                                  [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'wvector': inventory.Inventory.Item('Vector', 'Rotate to damage and extend the lazer body.\nReduced the addons of damage.\nUses dark energy.', 'wvector', 7,
                                           [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
 
     'substance_rend_sword': inventory.Inventory.Item('Substance Rend\'s Sword', '', 'substance_rend_sword', 7,
@@ -819,6 +826,9 @@ RECIPES = [
 
     inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 12}, 'destroy'),
     inventory.Recipe({'hammer_of_rational': 1, 'shard_of_create': 12}, 'generate'),
+    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 7, 'shard_of_create': 7, 'blood_pearl': 2}, 'chaos_dagger'),
+    inventory.Recipe({'hammer_of_rational': 1, 'clear_icy_prism': 1, 'shard_of_create': 15}, 'primordial_monument'),
+    inventory.Recipe({'hammer_of_rational': 1, 'turbid_icy_prism': 1, 'shard_of_destroy': 15}, 'ender_monument'),
     inventory.Recipe({'hammer_of_rational': 1, 'pistol': 1, 'shard_of_create': 10}, 'supernova'),
     inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 15}, 'ceremony'),
 
@@ -905,6 +915,7 @@ RECIPES = [
 
     inventory.Recipe({'hammer_of_rational': 1, 'muramasa': 1, 'chaos_diamond': 1, 'shard_of_destroy': 15, 'samsara_core': 8}, 'hell'),
     inventory.Recipe({'hammer_of_rational': 1, 'starry_night': 1, 'chaos_diamond': 1, 'shard_of_create': 9, 'reborn_core': 5, 'dark_energy': 114}, 'wvector'),
+    inventory.Recipe({'hammer_of_rational': 1, 'generate': 1, 'destroy': 1, 'chaos_diamond': 1, 'reborn_core': 3, 'samsara_core': 1,  'dark_energy': 345}, 'entrophic_broadsword'),
 
     inventory.Recipe({'hammer_of_rational': 1, 'skyfire': 1, 'chaos_diamond': 1, 'shard_of_destory': 40, 'dark_energy': 191}, 'dark_cannon'),
 

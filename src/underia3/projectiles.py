@@ -434,17 +434,17 @@ class LycheeArrow(projectiles.Projectiles.Arrow):
     def damage(self, pos, cd):
         imr = self.d_img.get_rect(center=pos)
         x, y = pos
-        for entity in game.get_game().entities:
-            if imr.collidepoint(entity.obj.pos[0], entity.obj.pos[1]) or entity.d_img.get_rect(
-                    center=entity.obj.pos()).collidepoint(x, y) and entity not in cd:
-                entity.hp_sys.damage(
+        for ee in game.get_game().entities:
+            if imr.collidepoint(ee.obj.pos[0], ee.obj.pos[1]) or ee.d_img.get_rect(
+                    center=ee.obj.pos()).collidepoint(x, y) and ee not in cd:
+                ee.hp_sys.damage(
                     self.dmg * game.get_game().player.attack * game.get_game().player.attacks[1],
                     damages.DamageTypes.PIERCING)
-                entity.hp_sys.effect(effects.Frozen(0.2, 1))
+                ee.hp_sys.effect(effects.Frozen(0.2, 1))
                 if self.DELETE:
                     self.dead = True
                 else:
-                    cd.append(entity)
+                    cd.append(ee)
         return cd
 
 class UllrBow(projectiles.Projectiles.Arrow):
@@ -1314,6 +1314,38 @@ class Hell(projectiles.Projectiles.PlatinumWand):
         self.obj.force.clear()
         self.obj.apply_force(vector.Vector2D(rot, 5500))
 
+class EntrophicSword(projectiles.Projectiles.PlatinumWand):
+    IMG = 'projectiles_entrophic_broadsword'
+    DAMAGE_AS = 'entrophic_broadsword'
+    ENABLE_IMMUNE = .5
+    DEL = False
+    LIMIT_VEL = -1
+    DURATION = 400
+    DMG_RATE = 1
+    DECAY_RATE = .8
+    DMG_TYPE = damages.DamageTypes.PHYSICAL
+    LIGHT_R_RATE = .1
+    LIGHT_E_RATE = .01
+
+    def __init__(self, pos, rot):
+        super().__init__(pos, rot)
+        self.obj = projectiles.WeakProjectileMotion(self.obj.pos, 0)
+        self.obj.MASS = 10
+        self.obj.FRICTION = 1
+        self.obj.velocity.clear()
+        self.obj.force.clear()
+        self.dr = rot
+        self.ds = 0.1
+
+    def update(self):
+        if self.ds < 1.7:
+            self.ds = min(self.ds + self.tick / 120.0, 1.8)
+            self.img = pg.transform.scale_by(game.get_game().graphics['projectiles_entrophic_broadsword'], self.ds)
+        self.set_rotation(self.tick * 16)
+        super().update()
+        self.obj.apply_force(vector.Vector2D(self.dr, 4))
+        if self.tick > 200:
+            self.obj.apply_force(vector.Vector2D(self.dr, 36))
 
 
 

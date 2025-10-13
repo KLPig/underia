@@ -365,6 +365,53 @@ class ScarDagger(weapons.Blade):
                         if constants.DIFFICULTY > 1:
                             e.hp_sys.enable_immune()
 
+class ChaosDagger(weapons.Blade):
+    def on_start_attack(self):
+        super().on_start_attack()
+
+    def damage(self):
+        if self.rot_speed > 0:
+            rot_range = range(int(self.rot - self.rot_speed), int(self.rot + self.rot_speed + 1))
+        else:
+            rot_range = range(int(self.rot - self.rot_speed), int(self.rot + self.rot_speed - 1), -1)
+        for e in game.get_game().entities:
+            dps = e.obj.pos
+            px = dps[0] - self.x - game.get_game().player.obj.pos[0]
+            py = dps[1] - self.y - game.get_game().player.obj.pos[1]
+            r = int(vector.coordinate_rotation(px, py)) % 360
+            if r in rot_range or r + 360 in rot_range or (
+                    self.double_sided and ((r + 180) % 360 in rot_range or r + 180 in rot_range)):
+                if vector.distance(px, py) < self.img.get_width() * self.scale + (
+                        (e.img.get_width() + e.img.get_height()) // 2 if e.img is not None else 10):
+                    if 'd_cd_t' not in dir(e):
+                        setattr(e, 'd_cd_t', 0)
+                        tt = 0
+                    else:
+                        tt = getattr(e, 'd_cd_t') + 1
+                        setattr(e, 'd_cd_t', tt)
+                    for t, d in self.damages.items():
+                        e.hp_sys.damage(
+                            math.e ** (-.07 * tt) * d * game.get_game().player.attack * game.get_game().player.attacks[self.DMG_AS_IDX], t
+                        )
+
+                    if not e.hp_sys.is_immune:
+                        rf = vector.coordinate_rotation(px + self.x, py + self.y)
+                        e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS
+                        if self.knock_back * 60000 < e.obj.MASS else
+                        self.knock_back * 600000 / e.obj.MASS))
+                    if 'matters_touch' in game.get_game().player.accessories:
+                        e.obj.MASS *= 1.01
+                    if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
+                        if not e.IS_MENACE and not e.VITAL:
+                            e.hp_sys.damage(e.hp_sys.max_hp / 10, damages.DamageTypes.THINKING)
+                            if random.randint(0, 10) == 0:
+                                e.hp_sys.hp = 0
+                        else:
+                            e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
+                    if self.ENABLE_IMMUNE:
+                        if constants.DIFFICULTY > 1:
+                            e.hp_sys.enable_immune()
+
 class MuraKumo(weapons.Blade):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1053,6 +1100,32 @@ class Hell(weapons.Blade):
                                            position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())) ))
         game.get_game().projectiles.append(projectiles.Hell(game.get_game().player.obj.pos, rot))
 
+class EntrophicSword(weapons.Blade):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.proj = None
+
+    def on_attack(self):
+        super().on_attack()
+        self.cutting_effect(10, (0, 0, 0), (50, 50, 50))
+
+    def update(self):
+        super().update()
+        if self.proj is not None:
+            self.proj.obj.pos = (game.get_game().player.obj.pos + self.proj.obj.pos * 4) / 5
+
+    def on_start_attack(self):
+        if not game.get_game().player.inventory.is_enough(inventory.ITEMS['dark_energy'], 30):
+            self.timer = 0
+            return
+        game.get_game().player.inventory.remove_item(inventory.ITEMS['dark_energy'], 30)
+        super().on_start_attack()
+        mr = vector.coordinate_rotation(*(- game.get_game().player.obj.pos+
+                                          position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+                                          ))
+        self.proj = projectiles.EntrophicSword(game.get_game().player.obj.pos, mr)
+        game.get_game().projectiles.append(self.proj)
+
 
 class Observe(weapons.Blade):
     def __init__(self, *args, **kwargs):
@@ -1364,6 +1437,9 @@ WEAPONS = {
     'scar_dagger': ScarDagger(name='scar dagger', damages={damages.DamageTypes.PHYSICAL: 55}, kb=3,
                               img='items_weapons_scar_dagger', speed=1, at_time=2, rot_speed=120, st_pos=100,
                               ),
+    'chaos_dagger': ChaosDagger(name='chaos_dagger', damages={damages.DamageTypes.PHYSICAL: 2000}, kb=10,
+                                img='items_weapons_chaos_dagger', speed=2, at_time=2, rot_speed=160, st_pos=250,
+                                ),
     'hightech_steel_sword': HighTechMetalSword(name='hightech steel sword', damages={damages.DamageTypes.PHYSICAL: 450}, kb=15,
                                                img='items_weapons_hightech_steel_sword', speed=1, at_time=5, rot_speed=80, st_pos=280,
                                                 ),
@@ -1412,6 +1488,11 @@ WEAPONS = {
 
     'critical_thinking': weapons.Blade(name='critical thinking', damages={damages.DamageTypes.PHYSICAL: 340}, kb=15,
                                        img='items_weapons_critical_thinking', speed=1, at_time=15, rot_speed=20, st_pos=180),
+
+    'primordial_monument': weapons.Blade(name='primordial monument', damages={damages.DamageTypes.PHYSICAL: 640}, kb=20,
+                                         img='items_weapons_primordial_monument', speed=2, at_time=4, rot_speed=100, st_pos=270),
+    'ender_monument': weapons.Blade(name='primordial monument', damages={damages.DamageTypes.PHYSICAL: 960}, kb=30,
+                                         img='items_weapons_primordial_monument', speed=2, at_time=6, rot_speed=666, st_pos=270),
 
     'longer_intestine': weapons.Whip(name='longer intestine', damages={damages.DamageTypes.PHYSICAL: 480}, kb=30,
                                      img='items_weapons_longer_intestine', speed=10, at_time=30, length=50,
@@ -1602,6 +1683,9 @@ WEAPONS = {
                  speed=2, at_time=4, rot_speed=70, st_pos=120),
     'wvector': WVector(name='wvector', damages={damages.DamageTypes.PHYSICAL: 0}, kb=20, img='items_weapons_vector_t',
                        speed=0, at_time=1, rot_speed=0, st_pos=0),
+    'entrophic_broadsword': EntrophicSword(name='entrophic broadsword', damages={damages.DamageTypes.PHYSICAL: 1200}, kb=40,
+                                      img='items_weapons_entrophic_broadsword', speed=6, at_time=12, rot_speed=40,
+                                      st_pos=300),
 
     'hope_scorch_bow': HopeScorchBow(name='hope scorch bow', damages={damages.DamageTypes.PIERCING: 300}, kb=10,
                                      img='items_weapons_hope_scorch_bow', speed=3, at_time=6, projectile_speed=1000,
