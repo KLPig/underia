@@ -1,6 +1,7 @@
 import pygame as pg
 
 import underia
+import underia3
 
 pg.init()
 pg.display.set_mode((800, 600))

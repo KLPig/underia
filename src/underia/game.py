@@ -211,15 +211,22 @@ class Game:
                 self.load_graphics(os.path.join(directory, file), index + file + '_', cnt=cnt)
 
     def _display_progress(self, prog, st=1):
+        stt = 3 - st
         window = pg.display.get_surface()
-        window.fill((0, 0, 0))
-        wc = window.get_width() // 2
-        hc = window.get_height() // 2
-        pg.draw.rect(window, (0, 255, 0) if st == 1 else (255, 0, 0 ) if st == 2 else(255, 255, 0), (wc - 400, hc - 100, 800, 200), border_radius=20)
-        pg.draw.rect(window, (255, 255, 0) if st == 1 else (0, 255, 0) if st == 2 else (255, 255, 255), (wc - 400, hc - 100, int(800 * prog), 200), border_radius=20)
-        pg.display.flip()
+        window.fill((0,0,0))
+        font = self.displayer.font
+        words = [
+            'ALRIGHT, EVERYTHING, NOW, HAS ALREADY BEEN PREPARED FOR \'ME\'......',
+            'FOR THIS WHOLE "UNDERIA"... AND THE OTHER WORLDS......',
+            'LET\'S JUST WAIT FOR ALL THAT TO BE DONE, SHALL WE?........'
+        ]
+        for i in range(stt - 1):
+            txt = font.render(words[i], True, (255, 255, 255))
+            window.blit(txt, (100, 100 + i * 100))
+        ntxt = font.render(words[stt - 1][:min(len(words[stt - 1]), int(1.3 * prog * len(words[stt - 1])))], True, (255, 255, 255))
+        window.blit(ntxt, (100, stt * 100))
+        pg.display.update()
         pg.event.get()
-        time.sleep(0.001)
 
     def setup(self):
         if 'fun' not in dir(self):
@@ -294,6 +301,7 @@ class Game:
                 self.get_biome((x, y))
             if x % 40 == 0:
                 self._display_progress((x + 200) / 400, 0)
+        time.sleep(2)
 
     def play_sound(self, sound: str, vol=1.0, stop_if_need=True, fadeout=0):
         self.sounds[sound].set_volume(vol * constants.SOUND_VOL)

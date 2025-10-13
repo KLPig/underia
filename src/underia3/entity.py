@@ -621,7 +621,7 @@ class LaVacaSaturnoSaturnita(entity.Entities.Entity):
         if game.get_game().stage == 9:
             super().__init__(pos, game.get_game().graphics['entity3_la_vaca_saturno_saturnita'],
                              LaVacaSaturnoSaturnitaAI, hp=18000)
-        elif game.get_game().stage == 10:
+        else:
             super().__init__(pos, game.get_game().graphics['entity3_la_vaca_saturno_saturnita'],
                              LaVacaSaturnoSaturnitaAI, hp=12000)
             self.hp_sys.DODGE_RATE += 0.1

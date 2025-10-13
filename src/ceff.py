@@ -28,7 +28,7 @@ for j in range(sz):
     d = (dst - i * gdt)
     dt = (sz - j) * 120 / sz * ((snoises[j * 999 // sz] - mn) / (mx - mn) * 8 / 5 + .2)
     rots = [(rotation_coordinate(90 - dt * i / 9 + dt / 2), 90 - dt * i / 9 + dt / 2) for i in range(9, -1, -1)]
-    eff.pointed_curve((255, 100 + int(150 * j / sz), 100),
+    eff.pointed_curve((int(50 * j / sz), int(50 * j / sz), int(50 * j / sz)),
                       [(physics.Vector2D(0, 0, 300, 300) + physics.Vector2D(0, 0, vx, vy) * d).to_value() for (vx, vy), r in rots],
                       3, salpha=int(255 - i * 20), target=sf)
 
