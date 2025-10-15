@@ -309,7 +309,7 @@ class SweepWeapon(Weapon):
                         e.hp_sys.damage(d * game.get_game().player.attack * game.get_game().player.attacks[self.DMG_AS_IDX], t)
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
-                        e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS
+                        e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)
                                                         if self.knock_back * 60000 < e.obj.MASS else
                                                         self.knock_back * 600000 / e.obj.MASS))
                     if 'matters_touch' in game.get_game().player.accessories:
@@ -343,7 +343,7 @@ class MurderersKnife(SweepWeapon):
                     e.hp_sys.damage(e.hp_sys.max_hp * 0.4, dmg.DamageTypes.PHYSICAL)
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
-                        e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS))
+                        e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)))
                     e.hp_sys.enable_immune()
 
 class RemoteWeapon(SweepWeapon):
@@ -613,7 +613,7 @@ class Whip(Weapon):
                     for t, d in self.damages.items():
                         e.hp_sys.damage(d * game.get_game().player.attack * game.get_game().player.attacks[0], t)
                     if not e.hp_sys.is_immune:
-                        e.obj.apply_force(vector.Vector(self.tgt_pos, self.knock_back * 120000 / e.obj.MASS))
+                        e.obj.apply_force(vector.Vector(self.tgt_pos, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)))
                     if self.ENABLE_IMMUNE:
                         e.hp_sys.enable_immune()
 
@@ -699,7 +699,7 @@ class Spear(Weapon):
                     for t, d in self.damages.items():
                         e.hp_sys.damage(d * game.get_game().player.attack * game.get_game().player.attacks[0], t)
                     if not e.hp_sys.is_immune:
-                        e.obj.apply_force(vector.Vector(r, self.knock_back * 120000 / e.obj.MASS))
+                        e.obj.apply_force(vector.Vector(r, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)))
                     if self.ENABLE_IMMUNE:
                         e.hp_sys.enable_immune()
 
@@ -810,7 +810,7 @@ class Pickaxe(AutoSweepWeapon):
                         e.hp_sys.damage(d, t)
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
-                        e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS))
+                        e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)))
                     e.hp_sys.enable_immune()
 
 class LifeWoodenSword(Blade):
@@ -855,7 +855,7 @@ class PerseveranceSword(Blade):
                 for t, d in self.damages.items():
                     e.hp_sys.damage(d * game.get_game().player.attack * game.get_game().player.attacks[0], t)
                 if not e.hp_sys.is_immune:
-                    e.obj.apply_force(vector.Vector(r, self.knock_back * 120000 / e.obj.MASS))
+                    e.obj.apply_force(vector.Vector(r, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)))
                 e.hp_sys.enable_immune()
 
 
@@ -1572,7 +1572,7 @@ class EEternalEcho(Blade):
                     e.hp_sys.damage(d * game.get_game().player.attack * game.get_game().player.attacks[self.DMG_AS_IDX], t)
                 if not e.hp_sys.is_immune:
                     rf = vector.coordinate_rotation(px + self.x, py + self.y)
-                    e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS))
+                    e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)))
                 if 'matters_touch' in game.get_game().player.accessories:
                     e.obj.MASS *= 1.01
                 if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
@@ -1761,7 +1761,7 @@ class EZenith(Blade):
                         e.hp_sys.damage(d * game.get_game().player.attack * game.get_game().player.attacks[self.DMG_AS_IDX], t)
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
-                        e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS
+                        e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)
                                                         if self.knock_back * 60000 < e.obj.MASS else
                                                         self.knock_back * 600000 / e.obj.MASS))
                     if 'matters_touch' in game.get_game().player.accessories:
@@ -2346,7 +2346,7 @@ class PacifistWeapon(Weapon):
                     e.hp_sys.damage(d * game.get_game().player.attack * game.get_game().player.attacks[self.DMG_AS_IDX], t)
                 if not e.hp_sys.is_immune:
                     rf = vector.coordinate_rotation(px + self.x, py + self.y)
-                    e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS))
+                    e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)))
                 if self.ENABLE_IMMUNE:
                     e.hp_sys.enable_immune()
 

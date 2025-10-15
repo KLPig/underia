@@ -347,6 +347,73 @@ class FormalChicken(Chicken):
         super(Chicken, self).__init__(pos, game.get_game().graphics[f'entity3_formal_chicken'],
                          ChickenAI, hp=1500)
 
+class HeavenLazer(Entity):
+    NAME = 'Heaven Lazer'
+    DISPLAY_MODE = 1
+    SOUND_SPAWN = 'lazer'
+
+    def __init__(self, pos, rot, q=False):
+        super().__init__(pos, game.get_game().graphics[f'entity_null'], entity.BuildingAI, hp=1000)
+        self.set_rotation(rot)
+        self.obj.FRICTION = .99
+        self.obj.IS_OBJECT = False
+        self.obj.MASS = 100
+        self.q = q
+        self.tick = 0
+        self.show_bar = False
+
+    def on_update(self):
+        self.tick += 1
+        super().on_update()
+        if self.tick >= 20:
+            if self.tick == 20:
+                self.obj.apply_force(vector.Vector2D(self.rot, 6000 if self.q else 2000))
+            else:
+                self.obj.apply_force(vector.Vector2D(self.rot, 1000))
+        self.hp_sys.hp -= 15
+
+    def damage(self):
+        if abs(self.obj.pos - game.get_game().player.obj.pos) < 300:
+            self.hp_sys.hp = 0
+            game.get_game().player.hp_sys.damage(65 + self.q * 20, damages.DamageTypes.MAGICAL)
+
+    def t_draw(self):
+        super().t_draw()
+        draw.line(game.get_game().displayer.canvas, (255, 0, 0), position.displayed_position(self.obj.pos),
+                  position.displayed_position(self.obj.pos + vector.Vector2D(dr=self.rot, dt=1) *
+                  (150 if self.tick > 20 else 1500)),
+                  width=int(10 / game.get_game().player.get_screen_scale()) if self.tick > 20 else 2)
+
+class HeavenRanger(Entity):
+    NAME = 'Heaven "Ranger"'
+    DISPLAY_MODE = 1
+    SOUND_HURT = 'metal'
+    SOUND_DEATH = 'explosive'
+
+    def __init__(self, pos):
+        super().__init__(pos, game.get_game().graphics[f'entity3_heaven_ranger'], entity.CleverRangedAI, hp=600)
+        self.obj.TOUCHING_DAMAGE = 140
+        self.obj.MASS = 80
+        self.obj.SPEED *= .4
+        self.obj.SIGHT_DISTANCE = 1350
+        self.obj.shoot_distance = 440 - constants.DIFFICULTY * 40
+        self.tick = 0
+        for d in self.hp_sys.defenses.defences.keys():
+            self.hp_sys.defenses[d] += 55
+
+    def on_update(self):
+        super().on_update()
+        self.set_rotation(-vector.coordinate_rotation(*(game.get_game().player.obj.pos - self.obj.pos)))
+        self.tick += 1
+        dr = abs(self.obj.pos - game.get_game().player.obj.pos)
+        if dr < 450:
+            if self.tick % (15 - constants.DIFFICULTY * 3) == 0:
+                game.get_game().entities.append(HeavenLazer(self.obj.pos, -self.rot, q=True))
+        elif dr < self.obj.SIGHT_DISTANCE * (5 + constants.DIFFICULTY) // 5:
+            if self.tick % (40 - constants.DIFFICULTY * 5) == 0:
+                game.get_game().entities.append(HeavenLazer(self.obj.pos, -self.rot))
+
+
 class BloodChicken(Chicken):
     NAME = 'Blood Chicken(LV.1)'
     LOOT_TABLE = entity.LootTable([
@@ -2464,12 +2531,14 @@ class StanoZololAI(entity.MonsterAI):
             self.idle()
         pos = self.cur_target.pos - self.pos
         if self.state == 0:
-            self.apply_force(vector.Vector2D(vector.coordinate_rotation(*pos) + 65, max(30000, 90000 - abs(pos) * 30)))
+            self.apply_force(vector.Vector2D(vector.coordinate_rotation(*pos) + 80 - constants.DIFFICULTY * 5, max(60000, 130000 - abs(pos) * 10)))
         elif self.state == 1:
             if self.tick % 300 < 20:
                 self.tt = vector.coordinate_rotation(*pos)
             elif self.tick % 300 < 200:
-                self.apply_force(vector.Vector2D(self.tt, min(50000, abs(pos) * 55) + 50000))
+                self.apply_force(vector.Vector2D(self.tt, min(50000, abs(pos) * 55) + 90000))
+            else:
+                self.apply_force(pos * 40)
 
 
 class StanoZolol(entity.Entities.WormEntity):

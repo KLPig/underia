@@ -146,7 +146,7 @@ class Destroy(weapons.Blade):
                     e.hp_sys.DODGE_RATE -= .5
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
-                        e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS
+                        e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)
                         if self.knock_back * 60000 < e.obj.MASS else
                         self.knock_back * 600000 / e.obj.MASS))
                     if 'matters_touch' in game.get_game().player.accessories:
@@ -186,7 +186,7 @@ class Generate(weapons.Blade):
                         e.hp_sys.max_hp += max(0, ahp - e.hp_sys.hp - 1)
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
-                        e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS
+                        e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)
                         if self.knock_back * 60000 < e.obj.MASS else
                         self.knock_back * 600000 / e.obj.MASS))
                     if 'matters_touch' in game.get_game().player.accessories:
@@ -226,7 +226,7 @@ class WheelFrogileSword(weapons.Blade):
                     e.obj.velocity -= vector.Vector2D(tv, av * 2)
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
-                        e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS
+                        e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)
                         if self.knock_back * 60000 < e.obj.MASS else
                         self.knock_back * 600000 / e.obj.MASS))
                     if 'matters_touch' in game.get_game().player.accessories:
@@ -264,7 +264,7 @@ class CorruptSword(weapons.Blade):
                     e.hp_sys.effect(effects.Poison(8, 8))
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
-                        e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS
+                        e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)
                         if self.knock_back * 60000 < e.obj.MASS else
                         self.knock_back * 600000 / e.obj.MASS))
                     if 'matters_touch' in game.get_game().player.accessories:
@@ -303,7 +303,7 @@ class HighTechMetalSword(weapons.Blade):
                     e.hp_sys.effect(effects.BleedingR(1, 10))
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
-                        e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS
+                        e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)
                         if self.knock_back * 60000 < e.obj.MASS else
                         self.knock_back * 600000 / e.obj.MASS))
                     if 'matters_touch' in game.get_game().player.accessories:
@@ -349,7 +349,7 @@ class ScarDagger(weapons.Blade):
                     e.hp_sys.effect(effects.BleedingR(1, 12))
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
-                        e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS
+                        e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)
                         if self.knock_back * 60000 < e.obj.MASS else
                         self.knock_back * 600000 / e.obj.MASS))
                     if 'matters_touch' in game.get_game().player.accessories:
@@ -396,7 +396,7 @@ class ChaosDagger(weapons.Blade):
 
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
-                        e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS
+                        e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)
                         if self.knock_back * 60000 < e.obj.MASS else
                         self.knock_back * 600000 / e.obj.MASS))
                     if 'matters_touch' in game.get_game().player.accessories:
@@ -471,7 +471,7 @@ class MuraKumo(weapons.Blade):
                             d * game.get_game().player.attack * game.get_game().player.attacks[self.DMG_AS_IDX], t)
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
-                        e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS
+                        e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)
                         if self.knock_back * 60000 < e.obj.MASS else
                         self.knock_back * 600000 / e.obj.MASS))
                     if 'matters_touch' in game.get_game().player.accessories:
@@ -597,7 +597,7 @@ class Bident(weapons.Spear):
                     for t, d in self.damages.items():
                         e.hp_sys.damage(d * game.get_game().player.attack * game.get_game().player.attacks[0], t)
                     if not e.hp_sys.is_immune:
-                        e.obj.apply_force(vector.Vector(r, self.knock_back * 120000 / e.obj.MASS))
+                        e.obj.apply_force(vector.Vector(r, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)))
                     if self.ENABLE_IMMUNE:
                         e.hp_sys.enable_immune()
 
@@ -1292,7 +1292,7 @@ class WVector(weapons.Blade):
                     self.dd = max(self.dd, 20)
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
-                        e.obj.apply_force(vector.Vector(rf, self.knock_back * 120000 / e.obj.MASS
+                        e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)
                         if self.knock_back * 60000 < e.obj.MASS else
                         self.knock_back * 600000 / e.obj.MASS))
                     if 'matters_touch' in game.get_game().player.accessories:

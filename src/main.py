@@ -532,6 +532,7 @@ def update():
         if game.dimension == 'overworld':
             underia.entity_spawn(underia3.Chicken, 3000, 5000, target_number=12 - night * 5, rate=4)
             underia.entity_spawn(underia3.ManaChicken, 3000, 5000, target_number=3 + night * 3, rate=2)
+            underia.entity_spawn(underia3.HeavenRanger, 3000, 4000, target_number=6, rate=3)
             if ac > 0:
                 underia.entity_spawn(underia3.EliteChicken, 3000, 5000, target_number=3, rate=2)
                 if biome.endswith('forest'):

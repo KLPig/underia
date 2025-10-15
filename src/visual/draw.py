@@ -2,7 +2,7 @@ import pygame as pg
 
 def line(window, color, start_pos, end_pos, width=1):
     if start_pos == end_pos:
-        pg.draw.circle(window, color, start_pos, width)
+        pg.draw.circle(window, color, (start_pos[0], start_pos[1]), width)
         return
     gradient = (end_pos[1] - start_pos[1] + 10 ** -5) / (end_pos[0] - start_pos[0] + 10 ** -5)
     if (start_pos[0] < 0 or start_pos[0] > window.get_width()) and (end_pos[0] < 0 or end_pos[0] > window.get_width()) and \
