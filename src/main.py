@@ -253,13 +253,17 @@ print('Presets...')
 game.world_events.clear()
 
 if constants.APRIL_FOOL:
+    nr = []
+
     for item in underia.ITEMS.values():
         for __ in range(5):
             mat = {}
             for _ in range(item.rarity + 1):
                 mat[f'magic_shard_{random.randint(0, 127)}'] = 1
-            underia.RECIPES.append(underia.Recipe(mat, item.id))
-        underia.RECIPES.append(underia.Recipe({item.id: 1}, f'magic_shard_{random.randint(0, 127)}', item.rarity))
+            nr.append(underia.Recipe(mat, item.id))
+        nr.append(underia.Recipe({item.id: 1}, f'magic_shard_{random.randint(0, 127)}', item.rarity))
+
+    underia.RECIPES = nr
 
     for i in range(128):
         it_s = pg.Surface((5, 5))

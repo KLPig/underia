@@ -357,7 +357,8 @@ class HeavenLazer(Entity):
         self.set_rotation(rot)
         self.obj.FRICTION = .99
         self.obj.IS_OBJECT = False
-        self.obj.MASS = 100
+        self.obj.MASS = 10000
+        self.obj.SPEED *= 100
         self.q = q
         self.tick = 0
         self.show_bar = False
@@ -379,6 +380,8 @@ class HeavenLazer(Entity):
 
     def t_draw(self):
         super().t_draw()
+        if self.tick >= 20:
+            self.damage()
         draw.line(game.get_game().displayer.canvas, (255, 0, 0), position.displayed_position(self.obj.pos),
                   position.displayed_position(self.obj.pos + vector.Vector2D(dr=self.rot, dt=1) *
                   (150 if self.tick > 20 else 1500)),
@@ -413,6 +416,30 @@ class HeavenRanger(Entity):
             if self.tick % (40 - constants.DIFFICULTY * 5) == 0:
                 game.get_game().entities.append(HeavenLazer(self.obj.pos, -self.rot))
 
+class HeavenDefender(Entity):
+    NAME = 'Heaven "Defender"'
+    DISPLAY_MODE = 3
+    SOUND_HURT = 'metal'
+    SOUND_DEATH = 'explosive'
+
+    def __init__(self, pos):
+        super().__init__(pos, game.get_game().graphics[f'entity3_heaven_defender'], entity.BuildingAI, hp=1400)
+        self.obj.TOUCHING_DAMAGE = 160
+        for d in self.hp_sys.defenses.defences.keys():
+            self.hp_sys.defenses[d] += 75
+        self.rangers = [HeavenRanger(self.obj.pos + vector.Vector2D(91, i * 50)) for i in range(constants.DIFFICULTY + 1)]
+        for r in self.rangers:
+            r.obj.SPEED = 0
+            game.get_game().entities.append(r)
+        self.tick = 0
+
+    def on_update(self):
+        self.tick += 1
+        for i in range(len(self.rangers)):
+            self.rangers[i].obj.pos = self.obj.pos + vector.Vector2D(91 + self.tick * (2 + constants.DIFFICULTY) +
+                                                                     i * 360 // len(self.rangers), 250)
+
+        super().on_update()
 
 class BloodChicken(Chicken):
     NAME = 'Blood Chicken(LV.1)'
