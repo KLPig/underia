@@ -16,7 +16,7 @@ f = "<!DOCTYPE html><html><head>\n<title>Underia Items</title>\n" \
 
 f += "<h1>Underia Magics</h1>"
 
-f += open('../docs/header.html').read()
+f += open('./docs/header.html').read()
 
 f += "<table>"
 img_str = "<div class='item %s' id='%s-%s'> <img src='assets/graphics/items/%s.png'/></div>"
@@ -42,5 +42,5 @@ for magic in magics:
 
 f += "</table></body></html>"
 
-with open("../docs/magic.html", "w", encoding='utf-8') as ff:
+with open("./docs/magic.html", "w", encoding='utf-8') as ff:
     ff.write(f)

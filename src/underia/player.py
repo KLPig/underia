@@ -1957,6 +1957,13 @@ class Player:
                             self.covered_items.extend([i for i in self.inventory.items.keys() if inventory.TAGS['ce_item'] in inventory.ITEMS[i].tags])
                             self.profile.add_point(9)
 
+
+                        elif item.id == 'biocooler':
+                            if self.inventory.is_enough(inventory.ITEMS['mechanic_workstation']):
+                                self.inventory.remove_item(inventory.ITEMS['mechanic_workstation'])
+                                self.inventory.remove_item(item)
+                                self.inventory.add_item(inventory.ITEMS['mechanic_workstation2'])
+
                         elif item.id == 'lychee':
                             if len([1 for e in game.get_game().player.hp_sys.effects if type(e) is effects.CurseTree]):
                                 entity.entity_spawn(underia3.LycheeKing, 2000, 2000, 0, 1145, 100000)

@@ -15,6 +15,10 @@ ITEMS = {
                                            [inventory.TAGS['item']]),
     'purple_clay': inventory.Inventory.Item('Purple Clay', 'Susan, or grab tight purple clay.', 'purple_clay', 2,
                                   [inventory.TAGS['item']]),
+    'simple_circuit': inventory.Inventory.Item('Simple Circuit', 'Huge of patterns appear on it.\nYou feel confused on how it works.', 'simple_circuit', 2,
+                                       [inventory.TAGS['item']]),
+    'simple_energy_core': inventory.Inventory.Item('Simple Energy Core', 'Energy comes from confusing origins.', 'simple_energy_core', 2, [inventory.TAGS['item']]),
+
     'blood_pearl': inventory.Inventory.Item('Blood Pearl', '', 'blood_pearl', 3,
                                  [inventory.TAGS['item']]),
     'brainrot': inventory.Inventory.Item('Brainrot', 'You feel your brain rotting.', 'brainrot', 1, [inventory.TAGS['item']]),
@@ -23,7 +27,8 @@ ITEMS = {
     'carrion': inventory.Inventory.Item('Carrion', '', 'carrion', 2, [inventory.TAGS['item']]),
     'heaven_wood': inventory.Inventory.Item('Heaven Wood', '', 'heaven_wood', 1, [inventory.TAGS['item']]),
 
-    'lychee_core_shard': inventory.Inventory.Item('Lychee Core Shard', '', 'lychee_core_shard', 3, [inventory.TAGS['item']]),
+    'lychee_core_shard': inventory.Inventory.Item('Lychee Core Shard', '', 'lychee_core_shard', 2, [inventory.TAGS['item']]),
+    'cell_cooler': inventory.Inventory.Item('Cell Cooler', '', 'cell_cooler', 2, [inventory.TAGS['item']]),
 
     'shard_of_create': inventory.Inventory.Item('Shard of Create', 'col3f0000A new life.', 'shard_of_create', 4, [inventory.TAGS['item']]),
     'shard_of_destroy': inventory.Inventory.Item('Shard of Destroy', 'col00003fAn instant death.', 'shard_of_destroy', 4, [inventory.TAGS['item']]),
@@ -218,6 +223,14 @@ ITEMS = {
     'hammer_of_rational': inventory.Inventory.Item('Hammer of Rational', '', 'hammer_of_rational',
                                                    2, [inventory.TAGS['item'], inventory.TAGS['workstation']]),
 
+
+    'mechanic_workstation': inventory.Inventory.Item('Mechanic Workstation', 'Able to do easy works.',
+                                                      'mechanic_workstation', 1, [inventory.TAGS['item'], inventory.TAGS['workstation']]),
+    'biocooler': inventory.Inventory.Item('Biocooler', 'Upgrade mechanic workstation.\nLet it be able to craft strong-textured tools.',
+                                          'biocooler', 2, [inventory.TAGS['item'], inventory.TAGS['workstation']]),
+    'mechanic_workstation2': inventory.Inventory.Item('Mechanic Workstation', 'Able to craft strong-textured tools.\ncol00ffffUpgrade: Biocooler',
+                                                      'mechanic_workstation2', 2, [inventory.TAGS['item'], inventory.TAGS['workstation']]),
+
     'chisel': inventory.Inventory.Item('Chisel', '', 'chisel', 1, [inventory.TAGS['item'],
                                                                    inventory.TAGS['workstation']]),
 
@@ -240,6 +253,13 @@ ITEMS = {
     'hidden_sword': inventory.Inventory.Item('Hidden Sword', 'Rarely drops from formal chicken.',
                                                'hidden_sword', 2,
                                              [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'gauss_dagger': inventory.Inventory.Item('Gauss Dagger', 'Enemies hit will be dealt with 30% addition damage.',
+                                               'gauss_dagger', 2,
+                                               [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'arc_spear': inventory.Inventory.Item('Arc Spear', '',
+                                           'arc_spear', 2, [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'iceberg': inventory.Inventory.Item('Iceberg', 'Shoot pulses.',
+                                          'iceberg', 2, [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
     'scar_dagger': inventory.Inventory.Item('Scar Dagger', 'Each uses 8HP.\nPenetrate 66 defense, damage twice.\nWhen hit, heal 2.4% of damage, maximum 8.5HP.',
                                               'scar_dagger', 2, [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
     'chaos_dagger': inventory.Inventory.Item('Chaos Dagger', 'Enemy hit become more immune of this attack.\ne.g. 1st 100.0%; 10th 53.3%; 30th 13.1%.',
@@ -358,6 +378,8 @@ ITEMS = {
                                            [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['bow']]),
     'poise_submachine_gun': inventory.Inventory.Item('Poise Submachine Gun', '', 'poise_submachine_gun', 1,
                                                      [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['gun']]),
+    'em_trackgun': inventory.Inventory.Item('E&M Track Gun', 'Accelerates several bullets.', 'em_trackgun', 2,
+                                             [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['gun']]),
     'heaven_shotgun': inventory.Inventory.Item('Heaven Shotgun', 'Shoots 3 bullets at once.', 'heaven_shotgun', 2,
                                                 [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['gun']], specify_img='shotgun'),
     'ceremony': inventory.Inventory.Item('Ceremony', '', 'ceremony', 4,
@@ -737,11 +759,16 @@ RECIPES = [
     inventory.Recipe({'e_wooden_hammer': 1, 'e_wood': 30, 'lychee_shard': 2, 'cloth': 8}, 'life_hboots'),
 
     inventory.Recipe({'e_wooden_hammer': 1, 'e_wood': 50, 'lychee_shard': 10, 'e_wooden_rope': 2}, 'life_amulet'),
+    inventory.Recipe({'e_wooden_hammer': 1, 'simple_circuit': 50, 'chisel': 1, 'simple_energy_core': 8, 'mystery_soul': 1}, 'mechanic_workstation'),
 
     inventory.Recipe({'book': 1, 'magic_pen': 1}, 'enchanted_book'),
     inventory.Recipe({'book': 1, 'magic_pen': 5, 'purple_clay': 2, 'lychee_shard': 2}, 'magic_treasure_book'),
     inventory.Recipe({'book': 1, 'magic_pen': 1, 'lychee_shard': 8}, 'lychee_spike'),
     inventory.Recipe({'book': 1, 'magic_pen': 1, 'brainrot': 20, 'mystery_soul': 8}, 'brainstorm'),
+
+    inventory.Recipe({'mechanic_workstation': 1, 'simple_energy_core': 5, 'simple_circuit': 25}, 'gauss_dagger'),
+    inventory.Recipe({'mechanic_workstation': 1, 'simple_energy_core': 9, 'simple_circuit': 15}, 'arc_spear'),
+    inventory.Recipe({'mechanic_workstation': 1, 'simple_energy_core': 7, 'simple_circuit': 20}, 'em_trackgun'),
 
     inventory.Recipe({'e_wooden_hammer': 1, 'e_wood': 6, 'e_feather': 5, 'lychee_shard': 2}, 'lychee_sword'),
     inventory.Recipe({'e_wooden_hammer': 1, 'e_wood': 12, 'lychee_shard': 3}, 'lychee_pike'),
@@ -804,6 +831,9 @@ RECIPES = [
     inventory.Recipe({'hammer_of_rational': 1, 'lychee_core_shard': 10, 'purple_clay': 25, 'cloth': 10}, 'ration_helmet'),
     inventory.Recipe({'hammer_of_rational': 1, 'lychee_core_shard': 15, 'purple_clay': 45, 'cloth': 20}, 'ration_chestplate'),
     inventory.Recipe({'hammer_of_rational': 1, 'lychee_core_shard': 10, 'purple_clay': 20, 'cloth': 10}, 'ration_boots'),
+
+    inventory.Recipe({'mechanic_workstation': 1, 'cell_cooler': 10, 'lychee_core_shard': 20}, 'biocooler'),
+    inventory.Recipe({'mechanic_workstation2': 1, 'proof': 1, 'simple_energy_core': 15, 'simple_circuit': 30, 'cell_cooler': 15}, 'iceberg'),
 
     inventory.Recipe({'hammer_of_rational': 1, 'blood_pearl': 1, 'e_bullet': 300}, 'blood_tears', 300),
     inventory.Recipe({'hammer_of_rational': 1, 'blood_pearl': 1, 'purple_clay': 16, 'mystery_shard': 10}, 'scar_dagger'),

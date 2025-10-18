@@ -20,7 +20,7 @@ f = "<!DOCTYPE html><html><head>\n<title>Underia Entities</title>\n" \
 
 f += "<h1>Underia Entities</h1>"
 
-f += open('../docs/header.html').read()
+f += open('./docs/header.html').read()
 
 f += "<table>"
 img_str = ("<td><div class='item %s drop' id='%s-%s' onclick='location.href=\"./items.html#%s-main\"'"
@@ -99,5 +99,5 @@ for entity in dir(ee):
 
 f += "</table></body></html>"
 
-with open("../docs/entities.html", "w", encoding='utf-8') as ff:
+with open("./docs/entities.html", "w", encoding='utf-8') as ff:
     ff.write(f)

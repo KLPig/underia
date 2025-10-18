@@ -1979,6 +1979,8 @@ class Entities:
             self.show_boss = False
             self.ueid = Entities.Entity.ENO
             Entities.Entity.ENO += 1
+            self.body[0].show_bar = True
+            self.body[0].NAME = self.NAME
 
         def play_sound(self, sound):
             self.body[0].play_sound(sound)

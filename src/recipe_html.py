@@ -17,7 +17,7 @@ f = "<!DOCTYPE html><html><head>\n<title>Underia Recipes</title>\n" \
 
 f += "<h1>Underia Recipes</h1>"
 
-f += open('../docs/header.html').read()
+f += open('./docs/header.html').read()
 
 f += "<table id='item-table'>"
 img_str = ("<div class='item %s %s-%s' onclick='location.href=\"./items.html#%s-main\"'"
@@ -38,5 +38,5 @@ for recipe in recipes:
     f += "</tr>\n"
 f += "</table>\n<script src='recipe_js.js'></script>\n</body></html>"
 
-with open("../docs/recipes.html", "w", encoding="utf-8") as ff:
+with open("./docs/recipes.html", "w", encoding="utf-8") as ff:
     ff.write(f)

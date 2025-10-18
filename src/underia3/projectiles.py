@@ -790,6 +790,72 @@ class AbyssRanseur(projectiles.Projectiles.PlatinumWand):
                 self.DURATION = 500
                 break
 
+class ArcThunder(projectiles.Projectiles.PlatinumWand):
+    DAMAGE_AS = 'arc_spear'
+    IMG = 'items_null'
+    DMG_RATE = .5
+    COL = (0, 255, 255)
+    DMG_TYPE = damages.DamageTypes.PHYSICAL
+    ENABLE_IMMUNE = 0
+    DURATION = 200
+    LIMIT_VEL = -100
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.obj.velocity *= 0
+        self.obj.velocity += vector.Vector2D(random.randint(0, 360), 1)
+
+    def update(self):
+        super().update()
+        pg.draw.circle(game.get_game().displayer.canvas, (0, 255, 255),
+                       position.displayed_position(self.obj.pos),
+                       int(20 / game.get_game().player.get_screen_scale()))
+
+class ArcSpear(projectiles.Projectiles.PlatinumWand):
+    DAMAGE_AS = 'arc_spear'
+    IMG = 'items_weapons_arc_spear'
+    DMG_RATE = 1
+    COL = (100, 100, 100)
+    DMG_TYPE = damages.DamageTypes.PHYSICAL
+    ENABLE_IMMUNE = .5
+    DURATION = 200
+    LIMIT_VEL = 1
+    DEL = False
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.obj.MASS /= 5
+        self.obj.apply_force(self.obj.velocity * self.obj.MASS / 3)
+        self.obj.velocity += game.get_game().player.obj.velocity
+        self.tick = 0
+
+    def update(self):
+        super().update()
+        self.tick += 1
+        if self.tick % 8 == 0:
+            game.get_game().projectiles.append(ArcThunder(self.obj.pos, self.rot))
+
+    def damage(self):
+        game.get_game().displayer.point_light(self.COL, position.displayed_position(self.obj.pos), 2.5,
+                                              (self.d_img.get_width() + self.d_img.get_height()) * .55)
+        kb = weapons.WEAPONS[self.DAMAGE_AS].knock_back
+        for ee in game.get_game().entities:
+            if (vector.distance(ee.obj.pos[0] - self.obj.pos[0], ee.obj.pos[1] - self.obj.pos[1]) <
+                50 + (ee.d_img.get_width() + self.d_img.get_height())) / 4 and not ee.hp_sys.is_immune:
+                at_mt = {damages.DamageTypes.PHYSICAL: 0, damages.DamageTypes.PIERCING: 1,
+                         damages.DamageTypes.ARCANE: 2, damages.DamageTypes.MAGICAL: 2}[self.WT]
+                ee.hp_sys.damage(
+                    weapons.WEAPONS[self.DAMAGE_AS].damages[self.DMG_TYPE] * game.get_game().player.attack *
+                    game.get_game().player.attacks[at_mt] * self.DMG_RATE, self.DMG_TYPE)
+                if not ee.hp_sys.is_immune:
+                    r = vector.coordinate_rotation(ee.obj.pos[0] - self.obj.pos[0],
+                                                   ee.obj.pos[1] - self.obj.pos[1])
+                    ee.obj.apply_force(vector.Vector(r, kb * 120000 / ee.obj.MASS))
+                    self.DMG_RATE *= self.DECAY_RATE
+                ee.hp_sys.enable_immune(self.ENABLE_IMMUNE)
+                self.damage_particle()
+                break
+
 class Insights(projectiles.Projectiles.PlatinumWand):
     DAMAGE_AS = 'insights'
     IMG = 'items_null'
@@ -1313,6 +1379,38 @@ class Hell(projectiles.Projectiles.PlatinumWand):
         self.obj.velocity.clear()
         self.obj.force.clear()
         self.obj.apply_force(vector.Vector2D(rot, 5500))
+
+class Iceberg(projectiles.Projectiles.PlatinumWand):
+    IMG = 'items_weapons_p_iceberg'
+    DAMAGE_AS = 'iceberg'
+    ENABLE_IMMUNE = 3
+    DEL = False
+    LIMIT_VEL = 5
+    DURATION = 300
+    DMG_RATE = 1
+    DECAY_RATE = .9
+    LIGHT_R_RATE = .3
+    LIGHT_E_RATE = .6
+    COL = (0, 255, 255)
+    DMG_TYPE = damages.DamageTypes.PHYSICAL
+
+    def __init__(self, pos, rot):
+        super().__init__(pos, rot)
+        self.obj = projectiles.WeakProjectileMotion(self.obj.pos, 0)
+        self.obj.MASS = 1
+        self.obj.FRICTION = 1
+        self.obj.velocity.clear()
+        self.obj.force.clear()
+        self.obj.apply_force(vector.Vector2D(rot, 85))
+        self.tick = random.randint(0, 30)
+
+    def update(self):
+        self.tick += 1
+        super().update()
+        self.set_rotation(self.tick * 3)
+
+    def damage_particle(self):
+        pass
 
 class EntrophicSword(projectiles.Projectiles.PlatinumWand):
     IMG = 'projectiles_entrophic_broadsword'

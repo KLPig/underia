@@ -147,8 +147,8 @@ class Destroy(weapons.Blade):
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
                         e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)
-                        if self.knock_back * 60000 < e.obj.MASS else
-                        self.knock_back * 600000 / e.obj.MASS))
+                        if self.knock_back * 60000 < e.obj.MASS or constants.DIFFICULTY <= 1 else
+                        min(self.knock_back * 600000 / e.obj.MASS, e.obj.MASS * 24)))
                     if 'matters_touch' in game.get_game().player.accessories:
                         e.obj.MASS *= 1.01
                     if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
@@ -187,8 +187,8 @@ class Generate(weapons.Blade):
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
                         e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)
-                        if self.knock_back * 60000 < e.obj.MASS else
-                        self.knock_back * 600000 / e.obj.MASS))
+                        if self.knock_back * 60000 < e.obj.MASS or constants.DIFFICULTY <= 1 else
+                        min(self.knock_back * 600000 / e.obj.MASS, e.obj.MASS * 24)))
                     if 'matters_touch' in game.get_game().player.accessories:
                         e.obj.MASS *= 1.01
                     if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
@@ -227,8 +227,8 @@ class WheelFrogileSword(weapons.Blade):
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
                         e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)
-                        if self.knock_back * 60000 < e.obj.MASS else
-                        self.knock_back * 600000 / e.obj.MASS))
+                        if self.knock_back * 60000 < e.obj.MASS or constants.DIFFICULTY <= 1 else
+                        min(self.knock_back * 600000 / e.obj.MASS, e.obj.MASS * 24)))
                     if 'matters_touch' in game.get_game().player.accessories:
                         e.obj.MASS *= 1.01
                     if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
@@ -265,8 +265,46 @@ class CorruptSword(weapons.Blade):
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
                         e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)
-                        if self.knock_back * 60000 < e.obj.MASS else
-                        self.knock_back * 600000 / e.obj.MASS))
+                        if self.knock_back * 60000 < e.obj.MASS or constants.DIFFICULTY <= 1 else
+                        min(self.knock_back * 600000 / e.obj.MASS, e.obj.MASS * 24)))
+                    if 'matters_touch' in game.get_game().player.accessories:
+                        e.obj.MASS *= 1.01
+                    if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
+                        if not e.IS_MENACE and not e.VITAL:
+                            e.hp_sys.damage(e.hp_sys.max_hp / 10, damages.DamageTypes.THINKING)
+                            if random.randint(0, 10) == 0:
+                                e.hp_sys.hp = 0
+                        else:
+                            e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
+                    if self.ENABLE_IMMUNE:
+                        if constants.DIFFICULTY > 1:
+                            e.hp_sys.enable_immune()
+
+class GaussDagger(weapons.Blade):
+    def damage(self):
+        if self.rot_speed > 0:
+            rot_range = range(int(self.rot - self.rot_speed), int(self.rot + self.rot_speed + 1))
+        else:
+            rot_range = range(int(self.rot - self.rot_speed), int(self.rot + self.rot_speed - 1), -1)
+        for e in game.get_game().entities:
+            dps = e.obj.pos
+            px = dps[0] - self.x - game.get_game().player.obj.pos[0]
+            py = dps[1] - self.y - game.get_game().player.obj.pos[1]
+            r = int(vector.coordinate_rotation(px, py)) % 360
+            if r in rot_range or r + 360 in rot_range or (
+                    self.double_sided and ((r + 180) % 360 in rot_range or r + 180 in rot_range)):
+                if vector.distance(px, py) < self.img.get_width() * self.scale + (
+                        (e.img.get_width() + e.img.get_height()) // 2 if e.img is not None else 10):
+                    for t, d in self.damages.items():
+                        e.hp_sys.damage(
+                             d * game.get_game().player.attack * game.get_game().player.attacks[self.DMG_AS_IDX], t)
+                        e.hp_sys.damage(d * game.get_game().player.attack * game.get_game().player.attacks[self.DMG_AS_IDX] * .3,
+                                        damages.DamageTypes.TRUE)
+                    if not e.hp_sys.is_immune:
+                        rf = vector.coordinate_rotation(px + self.x, py + self.y)
+                        e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)
+                        if self.knock_back * 60000 < e.obj.MASS or constants.DIFFICULTY <= 1 else
+                        min(self.knock_back * 600000 / e.obj.MASS, e.obj.MASS * 24)))
                     if 'matters_touch' in game.get_game().player.accessories:
                         e.obj.MASS *= 1.01
                     if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
@@ -304,8 +342,8 @@ class HighTechMetalSword(weapons.Blade):
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
                         e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)
-                        if self.knock_back * 60000 < e.obj.MASS else
-                        self.knock_back * 600000 / e.obj.MASS))
+                        if self.knock_back * 60000 < e.obj.MASS or constants.DIFFICULTY <= 1 else
+                        min(self.knock_back * 600000 / e.obj.MASS, e.obj.MASS * 24)))
                     if 'matters_touch' in game.get_game().player.accessories:
                         e.obj.MASS *= 1.01
                     if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
@@ -350,8 +388,8 @@ class ScarDagger(weapons.Blade):
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
                         e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)
-                        if self.knock_back * 60000 < e.obj.MASS else
-                        self.knock_back * 600000 / e.obj.MASS))
+                        if self.knock_back * 60000 < e.obj.MASS or constants.DIFFICULTY <= 1 else
+                        min(self.knock_back * 600000 / e.obj.MASS, e.obj.MASS * 24)))
                     if 'matters_touch' in game.get_game().player.accessories:
                         e.obj.MASS *= 1.01
                     if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
@@ -397,8 +435,8 @@ class ChaosDagger(weapons.Blade):
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
                         e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)
-                        if self.knock_back * 60000 < e.obj.MASS else
-                        self.knock_back * 600000 / e.obj.MASS))
+                        if self.knock_back * 60000 < e.obj.MASS or constants.DIFFICULTY <= 1 else
+                        min(self.knock_back * 600000 / e.obj.MASS, e.obj.MASS * 24)))
                     if 'matters_touch' in game.get_game().player.accessories:
                         e.obj.MASS *= 1.01
                     if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
@@ -472,8 +510,8 @@ class MuraKumo(weapons.Blade):
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
                         e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)
-                        if self.knock_back * 60000 < e.obj.MASS else
-                        self.knock_back * 600000 / e.obj.MASS))
+                        if self.knock_back * 60000 < e.obj.MASS or constants.DIFFICULTY <= 1 else
+                        min(self.knock_back * 600000 / e.obj.MASS, e.obj.MASS * 24)))
                     if 'matters_touch' in game.get_game().player.accessories:
                         e.obj.MASS *= 1.01
                     if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
@@ -989,6 +1027,11 @@ class Pollutant(weapons.Bow):
             self.sk_cd = self.sk_mcd
         super().on_end_attack()
 
+class EMTrackGun(weapons.Gun):
+    def on_start_attack(self):
+        for _ in range(8):
+            super().on_start_attack()
+
 class NewMagicWeapon(weapons.MagicWeapon):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1293,8 +1336,8 @@ class WVector(weapons.Blade):
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
                         e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)
-                        if self.knock_back * 60000 < e.obj.MASS else
-                        self.knock_back * 600000 / e.obj.MASS))
+                        if self.knock_back * 60000 < e.obj.MASS or constants.DIFFICULTY <= 1 else
+                        min(self.knock_back * 600000 / e.obj.MASS, e.obj.MASS * 24)))
                     if 'matters_touch' in game.get_game().player.accessories:
                         e.obj.MASS *= 1.01
                     if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
@@ -1352,10 +1395,24 @@ class WVector(weapons.Blade):
         self.damage()
 
 
+
 class AbyssRanseur(weapons.Spear):
     def on_start_attack(self):
         super().on_start_attack()
         game.get_game().projectiles.append(projectiles.AbyssRanseur(game.get_game().player.obj.pos, self.rot))
+
+class ArcSpear(weapons.Spear):
+    def on_start_attack(self):
+        super().on_start_attack()
+        game.get_game().projectiles.append(projectiles.ArcSpear(game.get_game().player.obj.pos, self.rot))
+
+class Iceberg(weapons.Blade):
+    def on_attack(self):
+        super().on_attack()
+        self.cutting_effect(4, (0, 255, 255), (100, 255, 255))
+        if (self.at_time - self.timer) % 5 == 2:
+            mr = vector.coordinate_rotation(*(-game.get_game().player.obj.pos + position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+            game.get_game().projectiles.append(projectiles.Iceberg(game.get_game().player.obj.pos, mr))
 
 class Insights(weapons.Blade):
     def on_attack(self):
@@ -1434,6 +1491,12 @@ WEAPONS = {
     'corrupt_sword': CorruptSword(name='corrupt sword', damages={damages.DamageTypes.PHYSICAL: 160}, kb=10,
                                   img='items_weapons_corrupt_sword', speed=1, at_time=7, rot_speed=50, st_pos=200
                                   ),
+    'arc_spear': ArcSpear(name='arc spear', damages={damages.DamageTypes.PHYSICAL: 180}, kb=12,
+                           img='items_weapons_arc_spear', speed=2, at_time=5, forward_speed=70, st_pos=250, auto_fire=True),
+    'iceberg': Iceberg(name='iceberg', damages={damages.DamageTypes.PHYSICAL: 140}, kb=8,
+                       img='items_weapons_iceberg', speed=2, at_time=7, rot_speed=40, st_pos=120),
+    'gauss_dagger': GaussDagger(name='gauss dagger', damages={damages.DamageTypes.PHYSICAL: 120}, kb=5,
+                                img='items_weapons_gauss_dagger', speed=1, at_time=3, rot_speed=50, st_pos=80),
     'scar_dagger': ScarDagger(name='scar dagger', damages={damages.DamageTypes.PHYSICAL: 55}, kb=3,
                               img='items_weapons_scar_dagger', speed=1, at_time=2, rot_speed=120, st_pos=100,
                               ),
@@ -1523,6 +1586,9 @@ WEAPONS = {
     'pollutant': Pollutant(name='pollutant', damages={damages.DamageTypes.PIERCING: 180}, kb=15,
                            img='items_weapons_pollutant', speed=3, at_time=6, projectile_speed=900,
                            auto_fire=True, precision=0, tail_col=(200, 255, 100)),
+    'em_trackgun': EMTrackGun(name='em trackgun', damages={damages.DamageTypes.PIERCING: 20}, kb=3,
+                              img='items_weapons_em_trackgun', speed=8, at_time=18, projectile_speed=2000,
+                              auto_fire=True, precision=5),
     'bloody_rain': BloodyRain('bloody_rain', {damages.DamageTypes.PIERCING: 550}, 1, 'items_weapons_bloody_rain',
                               3, 4, 400, True, precision=3),
     'ceremony': weapons.Bow(name='ceremony', damages={damages.DamageTypes.PIERCING: 220}, kb=30,

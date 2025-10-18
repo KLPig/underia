@@ -536,7 +536,7 @@ def update():
         if game.dimension == 'overworld':
             underia.entity_spawn(underia3.Chicken, 3000, 5000, target_number=12 - night * 5, rate=4)
             underia.entity_spawn(underia3.ManaChicken, 3000, 5000, target_number=3 + night * 3, rate=2)
-            underia.entity_spawn(underia3.HeavenRanger, 3000, 4000, target_number=6, rate=3)
+            underia.entity_spawn(underia3.HeavenRanger, 3000, 4000, target_number=9, rate=3)
             if ac > 0:
                 underia.entity_spawn(underia3.EliteChicken, 3000, 5000, target_number=3, rate=2)
                 if biome.endswith('forest'):
@@ -554,6 +554,7 @@ def update():
             elif biome == 'desert':
                 underia.entity_spawn(underia3.DeadTree, 1000, 2000, target_number=18, rate=6)
                 underia.entity_spawn(underia3.BonecaAmbalabu, 2000, 4000, target_number=17, rate=2)
+                underia.entity_spawn(underia3.HeavenDefender, 3000, 4000, target_number=5, rate=3.5)
                 if ac > 0:
                     underia.entity_spawn(underia3.LaVacaSaturnoSaturnita, 1000, 2000, target_number=6, rate=1)
                     underia.entity_spawn(underia3.ChimpanziniBananini, 1000, 3000, target_number=4, rate=3)
@@ -565,11 +566,13 @@ def update():
                 underia.entity_spawn(underia3.PoisonCentipede, 2000, 2500, target_number=2, rate=3)
                 underia.entity_spawn(underia3.PoisonChicken, 1000, 4000, target_number=4, rate=8)
                 underia.entity_spawn(underia3.PoiseWalker, 3000, 4000, target_number=2, rate=.05 * night)
+                underia.entity_spawn(underia3.HeavenWanderer, 3000, 4000, target_number=3, rate=3.5)
             elif biome == 'heaven':
                 underia.entity_spawn(underia3.HGoblinFighter, 1000, 2000, target_number=8, rate=6)
                 underia.entity_spawn(underia3.HGoblinRanger, 3000, 5000, target_number=15, rate=6)
                 underia.entity_spawn(underia3.HGoblinThief, 2000, 4000, target_number=5, rate=6)
                 underia.entity_spawn(underia3.HOrge, 3000, 4000, target_number=2, rate=.03)
+                underia.entity_spawn(underia3.HeavenWanderer, 3000, 4000, target_number=6, rate=3.5)
             elif biome == 'ancient':
                 underia.entity_spawn(underia3.RuneAltar, 3000, 5000, target_number=4, rate=1)
                 underia.entity_spawn(underia3.AncientStone, 3000, 5000, target_number=4, rate=1)

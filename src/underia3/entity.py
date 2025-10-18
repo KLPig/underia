@@ -374,7 +374,7 @@ class HeavenLazer(Entity):
         self.hp_sys.hp -= 15
 
     def damage(self):
-        if abs(self.obj.pos - game.get_game().player.obj.pos) < 300:
+        if abs(self.obj.pos - game.get_game().player.obj.pos) < 60:
             self.hp_sys.hp = 0
             game.get_game().player.hp_sys.damage(65 + self.q * 20, damages.DamageTypes.MAGICAL)
 
@@ -392,6 +392,11 @@ class HeavenRanger(Entity):
     DISPLAY_MODE = 1
     SOUND_HURT = 'metal'
     SOUND_DEATH = 'explosive'
+
+    LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('simple_energy_core', .15, 1, 1),
+        entity.IndividualLoot('simple_circuit', 1, 3, 4),
+    ])
 
     def __init__(self, pos):
         super().__init__(pos, game.get_game().graphics[f'entity3_heaven_ranger'], entity.CleverRangedAI, hp=600)
@@ -422,24 +427,94 @@ class HeavenDefender(Entity):
     SOUND_HURT = 'metal'
     SOUND_DEATH = 'explosive'
 
+    LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('simple_energy_core', .5, 1, 2),
+        entity.IndividualLoot('simple_circuit', 1, 10, 16),
+    ])
+
     def __init__(self, pos):
         super().__init__(pos, game.get_game().graphics[f'entity3_heaven_defender'], entity.BuildingAI, hp=1400)
         self.obj.TOUCHING_DAMAGE = 160
+        self.rangers = [HeavenRanger(self.obj.pos + vector.Vector2D(91, i * 50)) for i in range(constants.DIFFICULTY + 2)]
         for d in self.hp_sys.defenses.defences.keys():
-            self.hp_sys.defenses[d] += 75
-        self.rangers = [HeavenRanger(self.obj.pos + vector.Vector2D(91, i * 50)) for i in range(constants.DIFFICULTY + 1)]
+            self.hp_sys.defenses[d] += 75 + 35 * len(self.rangers)
         for r in self.rangers:
-            r.obj.SPEED = 0
             game.get_game().entities.append(r)
         self.tick = 0
+        self.dd = len(self.rangers)
 
     def on_update(self):
+        for r in self.rangers:
+            if r.hp_sys.hp <= 0:
+                self.rangers.remove(r)
+                rr = random.randint(0, 360)
+                for ar in range(0, 360, [120, 90, 60, 45, 40, 30, 20, 15][constants.DIFFICULTY - len(self.rangers) + 3]):
+                    game.get_game().entities.append(HeavenLazer(r.obj.pos, rr + ar))
         self.tick += 1
+        td = self.dd - len(self.rangers)
+        if td:
+            for d in self.hp_sys.defenses.defences.keys():
+                self.hp_sys.defenses[d] -= td * 40
+            self.dd = len(self.rangers)
+        super().on_update()
+
+    def t_draw(self):
+        super().t_draw()
         for i in range(len(self.rangers)):
             self.rangers[i].obj.pos = self.obj.pos + vector.Vector2D(91 + self.tick * (2 + constants.DIFFICULTY) +
                                                                      i * 360 // len(self.rangers), 250)
 
+class HeavenWandererAI(entity.MonsterAI):
+    MASS = 2400
+    FRICTION = 0.83
+    SIGHT_DISTANCE = 12000
+    TOUCHING_DAMAGE = 150
+
+    def on_update(self):
+        player = self.cur_target
+        if player is not None:
+            pr = player.pos - self.pos
+            rr = vector.coordinate_rotation(*pr)
+            vr = vector.coordinate_rotation(*self.velocity) if abs(self.velocity) else 0
+            self.apply_force(vector.Vector2D(vr, 6000 - abs(math.sin(vr - rr) * 1500)))
+            self.apply_force(vector.Vector2D(vr + 90, -math.sin(vr - rr) * 3000))
+
+class HeavenWanderer(entity.Entities.WormEntity):
+    NAME = 'Heaven "Wanderer"'
+
+    LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('simple_energy_core', .8, 1, 3),
+        entity.IndividualLoot('simple_circuit', .8, 5, 7),
+    ])
+
+    def __init__(self, pos):
+        super().__init__(pos, random.randint(15, 25), game.get_game().graphics[f'entity3_heaven_wanderer_head'],
+                         game.get_game().graphics['entity3_heaven_wanderer_body'], HeavenWandererAI, 5000,
+                         body_touching_damage=110)
+        self.body[0].obj.TOUCHING_DAMAGE = 150
+        self.body[-1].img = game.get_game().graphics[f'entity3_heaven_wanderer_tail']
+        self.body[-1].obj.TOUCHING_DAMAGE = 150
+
+        for d in self.hp_sys.defenses.defences.keys():
+            for i, b in enumerate(self.body):
+                if i == 0:
+                    ad = 80
+                elif i == len(self.body) - 1:
+                    ad = 0
+                else:
+                    ad = 150
+                self.body[i].hp_sys.IMMUNE_TIME *= 2
+                self.body[i].hp_sys.defenses[d] += ad + 50
+                self.body[i].hp_sys.resistances[d] *= (.3 - constants.DIFFICULTY * .03) / 3.0
+
+        self.tick = 0
+
+    def on_update(self):
         super().on_update()
+        self.tick += 1
+        if self.tick % (40 - constants.DIFFICULTY * 4) == 0:
+            for ar in range(-90 + self.tick % 60 // 2, 91, 30):
+                game.get_game().entities.append(HeavenLazer(self.body[0].obj.pos, -self.body[0].rot + ar))
 
 class BloodChicken(Chicken):
     NAME = 'Blood Chicken(LV.1)'
@@ -816,7 +891,7 @@ class Lychee(entity.Entities.Entity):
     SOUND_DEATH = 'dragon'
     
     def __init__(self, pos):
-        super().__init__(pos, game.get_game().graphics['entity3_lychee'], LycheeAI, hp=400)
+        super().__init__(pos, game.get_game().graphics['entity3_lychee'], LycheeAI, hp=900)
         self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 30
         self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 20
         self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 35
@@ -835,7 +910,7 @@ class PurpleClayPot(entity.Entities.Entity):
     SOUND_DEATH = 'ore'
 
     def __init__(self, pos):
-        super().__init__(pos, game.get_game().graphics['entity3_purple_clay_pot'], PotAI, hp=300)
+        super().__init__(pos, game.get_game().graphics['entity3_purple_clay_pot'], PotAI, hp=1500)
         self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 40
         self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 45
         self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 45
@@ -887,8 +962,8 @@ class LycheeGuard(Lychee):
         super().__init__(pos)
         self.tick = int(int(pos[0] + pos[1]) // 25 % 96)
         self.obj.TOUCHING_DAMAGE = 300
-        self.hp_sys.max_hp *= 3
-        self.hp_sys.hp *= 3
+        self.hp_sys.max_hp *= 7
+        self.hp_sys.hp *= 7
         self.lychees = []
         self.img = copy.copy(self.img)
         self.set_rotation(0)
@@ -957,7 +1032,7 @@ class LycheeKing(entity.Entities.Entity):
     SOUND_DEATH = 'dragon'
 
     def __init__(self, pos):
-        super().__init__(pos, game.get_game().graphics['entity3_lychee_king'], entity.BuildingAI, hp=18000)
+        super().__init__(pos, game.get_game().graphics['entity3_lychee_king'], entity.BuildingAI, hp=90000)
         self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 150
         self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 150
         self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 150
@@ -1052,6 +1127,7 @@ class ToxicIntestine(entity.Entities.WormEntity):
     LOOT_TABLE = entity.LootTable([
         entity.IndividualLoot('clear_icy_prism', .04, 1, 1),
         entity.IndividualLoot('turbid_icy_prism', .04, 1, 1),
+        entity.IndividualLoot('cell_cooler', 1, 2, 3),
     ])
 
     def __init__(self, pos, length=15):
@@ -1067,6 +1143,7 @@ class ToxicLargeIntestine(entity.Entities.WormEntity):
     BOSS_NAME = 'Pure Natural'
     LOOT_TABLE = entity.LootTable([
         entity.IndividualLoot('carrion', 1, 10, 20),
+        entity.IndividualLoot('cell_cooler', 1, 10, 20),
         entity.SelectionLoot([('intestinal_sword', 0, 1), ('organ_bullet', 0, 1000), ('organ_wand', 0, 1)], 0, 1),
     ])
     SOUND_SPAWN = 'boss'

@@ -310,8 +310,8 @@ class SweepWeapon(Weapon):
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
                         e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)
-                                                        if self.knock_back * 60000 < e.obj.MASS else
-                                                        self.knock_back * 600000 / e.obj.MASS))
+                                                        if self.knock_back * 60000 < e.obj.MASS or constants.DIFFICULTY <= 1 else
+                                                        min(min(self.knock_back * 600000 / e.obj.MASS, e.obj.MASS * 24), e.obj.MASS * 24)))
                     if 'matters_touch' in game.get_game().player.accessories:
                         e.obj.MASS *= 1.01
                     if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
@@ -1762,8 +1762,8 @@ class EZenith(Blade):
                     if not e.hp_sys.is_immune:
                         rf = vector.coordinate_rotation(px + self.x, py + self.y)
                         e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)
-                                                        if self.knock_back * 60000 < e.obj.MASS else
-                                                        self.knock_back * 600000 / e.obj.MASS))
+                                                        if self.knock_back * 60000 < e.obj.MASS or constants.DIFFICULTY <= 1 else
+                                                        min(self.knock_back * 600000 / e.obj.MASS, e.obj.MASS * 24)))
                     if 'matters_touch' in game.get_game().player.accessories:
                         e.obj.MASS *= 1.01
                     if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
