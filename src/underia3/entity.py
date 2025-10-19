@@ -498,14 +498,14 @@ class HeavenWanderer(entity.Entities.WormEntity):
         for d in self.hp_sys.defenses.defences.keys():
             for i, b in enumerate(self.body):
                 if i == 0:
-                    ad = 80
+                    ad = 20
                 elif i == len(self.body) - 1:
                     ad = 0
                 else:
-                    ad = 150
+                    ad = 30
                 self.body[i].hp_sys.IMMUNE_TIME *= 2
-                self.body[i].hp_sys.defenses[d] += ad + 50
-                self.body[i].hp_sys.resistances[d] *= (.3 - constants.DIFFICULTY * .03) / 3.0
+                self.body[i].hp_sys.defenses[d] += ad + 10
+                self.body[i].hp_sys.resistances[d] *= .3 - constants.DIFFICULTY * .03
 
         self.tick = 0
 
@@ -1306,6 +1306,7 @@ class BombardinoCrocodilo(entity.Entities.Entity):
     BOSS_NAME = 'Boom Boom Boom'
     LOOT_TABLE = entity.LootTable([
         entity.IndividualLoot('amber_card', .4, 1, 6),
+        entity.IndividualLoot('isothermal_shard', 1, 20, 30),
         entity.IndividualLoot('hightech_steel_sword', .4, 1, 1),
         ])
     PHASE_SEGMENTS = [.2, .5]
@@ -1428,9 +1429,9 @@ class ChaosDisciple(entity.Entities.Entity):
         super().__init__(pos, game.get_game().graphics['entity3_chaos_disciple'], entity.BuildingAI,
                          hp=12 * 10 ** 9)
         for r in self.hp_sys.resistances.resistances.keys():
-            self.hp_sys.resistances[r] *= 91 if not self.rr else 23
+            self.hp_sys.resistances[r] *= 91 - self.rr * 70
             self.hp_sys.defenses[r] = 0
-        self.hp_sys.DODGE_RATE = .8 if not self.rr else .1
+        self.hp_sys.DODGE_RATE = .8 - self.rr * .7
         self.hp_sys.IMMUNE = True
         self.tick = 0
         self.phase = -1
@@ -1616,6 +1617,13 @@ class ChaosDisciple(entity.Entities.Entity):
             self.PHASE_SEGMENTS.pop(-1)
             self.hp_sys.max_hp = self.hp_sys.hp
             self.PHASE_SEGMENTS.append((self.hp_sys.max_hp - 1) / self.hp_sys.max_hp)
+            if self.phase == 4:
+                for __ in range(1 + 3 * self.rr):
+                    cc = random.choice(['shard_of_create', 'shard_of_destroy'])
+                    for _ in range(4 - 3 * self.rr):
+                        game.get_game().drop_items.append(
+                            entity.Entities.DropItem(self.obj.pos, cc, random.randint(8, 12) * (1 + self.rr)))
+
         if self.phase == 3:
             self.hp_sys.hp = self.PHASE_SEGMENTS[-1] * self.hp_sys.max_hp + (1500 - self.tick) / 1500
             self.dr = (self.dr + 3500 - self.tick) // 2
@@ -1630,7 +1638,7 @@ class ChaosDisciple(entity.Entities.Entity):
                 self.pjs.append(ChaosBomb(self.obj.pos, random.randint(0, 360), 1, 100, drr=self.rr))
             if self.tick > 1500:
                 self.phase = 4
-                game.get_game().player.hp_sys.max_hp = 200
+                game.get_game().player.hp_sys.max_hp = 500 + self.rr * 1500
                 game.get_game().player.hp_sys.effects.clear()
                 for __ in range(1 + 3 * self.rr):
                     cc = random.choice(['shard_of_create', 'shard_of_destroy'])

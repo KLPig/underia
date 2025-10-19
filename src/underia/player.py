@@ -1543,7 +1543,9 @@ class Player:
                                     self.accessories[i].replace(' ', '_'), str(i), '1', 1,
                                     selected=i == self.sel_accessory)
             l = 12
-            lr = 4 + {0: 0, 1: 1, 2: 2, 3: 4, 4: 6, 5: 1, 6: 2, 7: 3, 8: 4, 9: 0, 10: 2}[game.get_game().stage]
+            lr = 4 + {0: 0, 1: 1, 2: 2, 3: 4, 4: 6, 5: 1, 6: 2, 7: 3, 8: 4, 9: 4, 10: 6}[game.get_game().stage]
+            while lr * l > len(self.inventory.items) + 2 * lr:
+                l -= 1
             self.inv_capacity = lr * l
             for i in range(lr):
                 for j in range(l):
@@ -1963,6 +1965,16 @@ class Player:
                                 self.inventory.remove_item(inventory.ITEMS['mechanic_workstation'])
                                 self.inventory.remove_item(item)
                                 self.inventory.add_item(inventory.ITEMS['mechanic_workstation2'])
+                        elif item.id == 'atomic_heater':
+                            if self.inventory.is_enough(inventory.ITEMS['mechanic_workstation2']):
+                                self.inventory.remove_item(inventory.ITEMS['mechanic_workstation2'])
+                                self.inventory.remove_item(item)
+                                self.inventory.add_item(inventory.ITEMS['mechanic_workstation3'])
+                        elif item.id == 'precised_mechanical_hand':
+                            if self.inventory.is_enough(inventory.ITEMS['mechanic_workstation3']):
+                                self.inventory.remove_item(inventory.ITEMS['mechanic_workstation3'])
+                                self.inventory.remove_item(item)
+                                self.inventory.add_item(inventory.ITEMS['mechanic_workstation4'])
 
                         elif item.id == 'lychee':
                             if len([1 for e in game.get_game().player.hp_sys.effects if type(e) is effects.CurseTree]):

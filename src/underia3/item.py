@@ -29,6 +29,7 @@ ITEMS = {
 
     'lychee_core_shard': inventory.Inventory.Item('Lychee Core Shard', '', 'lychee_core_shard', 2, [inventory.TAGS['item']]),
     'cell_cooler': inventory.Inventory.Item('Cell Cooler', '', 'cell_cooler', 2, [inventory.TAGS['item']]),
+    'isothermal_shard': inventory.Inventory.Item('Isothermal Shard', '', 'isothermal_shard', 3, [inventory.TAGS['item']]),
 
     'shard_of_create': inventory.Inventory.Item('Shard of Create', 'col3f0000A new life.', 'shard_of_create', 4, [inventory.TAGS['item']]),
     'shard_of_destroy': inventory.Inventory.Item('Shard of Destroy', 'col00003fAn instant death.', 'shard_of_destroy', 4, [inventory.TAGS['item']]),
@@ -230,6 +231,14 @@ ITEMS = {
                                           'biocooler', 2, [inventory.TAGS['item'], inventory.TAGS['workstation']]),
     'mechanic_workstation2': inventory.Inventory.Item('Mechanic Workstation', 'Able to craft strong-textured tools.\ncol00ffffUpgrade: Biocooler',
                                                       'mechanic_workstation2', 2, [inventory.TAGS['item'], inventory.TAGS['workstation']]),
+    'atomic_heater': inventory.Inventory.Item('Atomic Heater', 'Upgrade mechanic workstation.\nLet it be able to craft tough and flexible tools.',
+                                               'atomic_heater', 3, [inventory.TAGS['item'], inventory.TAGS['workstation']]),
+    'mechanic_workstation3': inventory.Inventory.Item('Mechanic Workstation', 'Able to craft tough and flexible tools.\ncol00ffffUpgrade: Biocooler\ncol00ffffUpgrade: Atomic Heater',
+                                            'mechanic_workstation3', 3, [inventory.TAGS['item'], inventory.TAGS['workstation']]),
+    'precised_mechanical_hand': inventory.Inventory.Item('Precised Mechanical Hand', 'Upgrade mechanic workstation.\nLet it be able to craft highly detailel tools.',
+                                               'precised_mechanical_hand', 3, [inventory.TAGS['item'], inventory.TAGS['workstation']]),
+    'mechanic_workstation4': inventory.Inventory.Item('Mechanic Workstation', 'Able to craft highly detailel tools.\ncol00ffffUpgrade: Biocooler\ncol00ffffUpgrade: Atomic Heater\ncol00ffffUpgrade: Precised Mechanic Hand',
+                                            'mechanic_workstation4', 4, [inventory.TAGS['item'], inventory.TAGS['workstation']]),
 
     'chisel': inventory.Inventory.Item('Chisel', '', 'chisel', 1, [inventory.TAGS['item'],
                                                                    inventory.TAGS['workstation']]),
@@ -255,6 +264,9 @@ ITEMS = {
                                              [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
     'gauss_dagger': inventory.Inventory.Item('Gauss Dagger', 'Enemies hit will be dealt with 30% addition damage.',
                                                'gauss_dagger', 2,
+                                               [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
+    'soulid_dagger': inventory.Inventory.Item('Soulid Dagger', '',
+                                               'soulid_dagger', 2,
                                                [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
     'arc_spear': inventory.Inventory.Item('Arc Spear', '',
                                            'arc_spear', 2, [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['melee_weapon']]),
@@ -832,11 +844,9 @@ RECIPES = [
     inventory.Recipe({'hammer_of_rational': 1, 'lychee_core_shard': 15, 'purple_clay': 45, 'cloth': 20}, 'ration_chestplate'),
     inventory.Recipe({'hammer_of_rational': 1, 'lychee_core_shard': 10, 'purple_clay': 20, 'cloth': 10}, 'ration_boots'),
 
-    inventory.Recipe({'mechanic_workstation': 1, 'cell_cooler': 10, 'lychee_core_shard': 20}, 'biocooler'),
+    inventory.Recipe({'mechanic_workstation': 1, 'cell_cooler': 10, 'lychee_core_shard': 20, 'simple_circuit': 80}, 'biocooler'),
     inventory.Recipe({'mechanic_workstation2': 1, 'proof': 1, 'simple_energy_core': 15, 'simple_circuit': 30, 'cell_cooler': 15}, 'iceberg'),
-
-    inventory.Recipe({'hammer_of_rational': 1, 'blood_pearl': 1, 'e_bullet': 300}, 'blood_tears', 300),
-    inventory.Recipe({'hammer_of_rational': 1, 'blood_pearl': 1, 'purple_clay': 16, 'mystery_shard': 10}, 'scar_dagger'),
+    inventory.Recipe({'mechanic_workstation2': 1, 'simple_energy_core': 5, 'simple_circuit': 40, 'cell_cooler': 20}, 'soulid_dagger'),
 
     inventory.Recipe({'hammer_of_rational': 1, 'mystery_shard': 80, 'blood_pearl': 1, 'cloth': 10}, 'evil_mask'),
     inventory.Recipe({'hammer_of_rational': 1, 'mystery_shard': 130, 'blood_pearl': 1, 'cloth': 20}, 'evil_cloak'),
@@ -850,17 +860,26 @@ RECIPES = [
     inventory.Recipe({'e_wooden_hammer': 1, 'heaven_wood': 40, 'cloth': 15}, 'heaven_wooden_chestplate'),
     inventory.Recipe({'e_wooden_hammer': 1, 'heaven_wood': 30, 'cloth': 15}, 'heaven_wooden_leggings'),
 
+    inventory.Recipe({'mechanic_workstation2': 1, 'isothermal_shard': 10, 'blood_pearl': 1, 'simple_energy_core': 16}, 'atomic_heater'),
+    inventory.Recipe({'mechanic_workstation3': 1, 'blood_pearl': 1, 'e_bullet': 300, 'isothermal_shard': 5}, 'blood_tears', 300),
+    inventory.Recipe({'mechanic_workstation3': 1, 'blood_pearl': 1, 'purple_clay': 16, 'isothermal_shard': 20}, 'scar_dagger'),
+    inventory.Recipe({'mechanic_workstation3': 1, 'shard_of_create': 2, 'mystery_soul': 5, 'lychee_core_shard': 2}, 'ancient_key'),
+    inventory.Recipe({'mechanic_workstation3': 1, 'shard_of_destroy': 2, 'mystery_soul': 5, 'carrion': 10, 'purple_clay': 3}, 'ancient_key'),
+
     inventory.Recipe({'e_wooden_hammer': 1, 'lychee_shard': 15, 'purple_clay': 10, 'e_feather': 10}, 'lychee'),
     inventory.Recipe({'e_wooden_hammer': 1, 'e_poison_powder': 15, 'carrion': 20}, 'intestine'),
     inventory.Recipe({'e_wooden_hammer': 1, 'brainrot': 99, 'mystery_shard': 30, 'mystery_soul': 10}, 'bombombomb'),
 
-    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 12}, 'destroy'),
-    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_create': 12}, 'generate'),
-    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 7, 'shard_of_create': 7, 'blood_pearl': 2}, 'chaos_dagger'),
     inventory.Recipe({'hammer_of_rational': 1, 'clear_icy_prism': 1, 'shard_of_create': 15}, 'primordial_monument'),
     inventory.Recipe({'hammer_of_rational': 1, 'turbid_icy_prism': 1, 'shard_of_destroy': 15}, 'ender_monument'),
     inventory.Recipe({'hammer_of_rational': 1, 'pistol': 1, 'shard_of_create': 10}, 'supernova'),
     inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 15}, 'ceremony'),
+
+    inventory.Recipe({'mechanic_workstation3': 1, 'ancient_rune_shard': 30, 'shard_of_create': 8}, 'precised_mechanical_hand'),
+    inventory.Recipe({'mechanic_workstation3': 1, 'ancient_rune_shard': 30, 'shard_of_destroy': 8}, 'precised_mechanical_hand'),
+    inventory.Recipe({'mechanic_workstation4': 1, 'shard_of_destroy': 9, 'shard_of_create': 9, 'blood_pearl': 2}, 'chaos_dagger'),
+    inventory.Recipe({'mechanic_workstation4': 1, 'shard_of_destroy': 12}, 'destroy'),
+    inventory.Recipe({'mechanic_workstation4': 1, 'shard_of_create': 12}, 'generate'),
 
     inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 15, 'cloth': 10}, 'destroy_helmet'),
     inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 25, 'cloth': 10}, 'destroy_chestplate'),
@@ -880,8 +899,6 @@ RECIPES = [
     inventory.Recipe({'hammer_of_rational': 1, 'lychee_shard': 16, 'feather_of_rap': 8, 'cloth': 40}, 'performance_neat_suit'),
     inventory.Recipe({'hammer_of_rational': 1, 'lychee_shard': 8, 'feather_of_dance': 8, 'cloth': 30}, 'performance_rompers'),
 
-    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_create': 2, 'mystery_soul': 5, 'lychee_core_shard': 2}, 'ancient_key'),
-    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 2, 'mystery_soul': 5, 'carrion': 10, 'purple_clay': 3}, 'ancient_key'),
 
     inventory.Recipe({'white_ribbon': 1, 'pink_ribbon': 1, 'shard_of_create': 4}, 'twin_ribbon'),
     inventory.Recipe({'white_ribbon': 1, 'pink_ribbon': 1, 'shard_of_destroy': 4}, 'twin_ribbon'),

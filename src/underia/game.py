@@ -954,7 +954,8 @@ class Game:
 
     async def run(self):
         asyncio.create_task(self.entity_update())
-        while self.update():
+        while True:
+            self.update()
             await asyncio.sleep(0)
 
 

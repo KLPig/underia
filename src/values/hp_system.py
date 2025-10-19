@@ -73,10 +73,12 @@ class HPSystem:
 
         kd = .6 - constants.DIFFICULTY * .05
 
+        rs = self.resistances[damage_type]
+
         if self.defenses[damage_type] > 0:
             td = max(0.1, self.defenses[damage_type] - penetrate)
 
-            rd = td / max(10 ** -9, damage * kd)
+            rd = td / max(10 ** -9, damage * rs * kd)
 
             if 'is_player' in dir(self) and self.is_player:
                 if rd > 1.0:
@@ -85,9 +87,11 @@ class HPSystem:
                     rd **= .5 + constants.DIFFICULTY * .03
 
 
-            dmg = damage * dmm * (1 - rd * kd) * dm
+                dmg = damage * rs * dmm * (1 - rd * kd) * dm
+            else:
+                dmg = damage * dmm * rs - self.defenses[damage_type] * dm
         else:
-            dmg = damage * dmm - self.defenses[damage_type]
+            dmg = damage * dmm * rs - self.defenses[damage_type]
 
         dmg *= (1 - self.DAMAGE_RANDOMIZE_RANGE + 2 *
                 self.DAMAGE_RANDOMIZE_RANGE * random.random())
