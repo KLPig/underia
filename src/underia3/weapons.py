@@ -924,8 +924,30 @@ class WierSwin(weapons.Gun):
             self.att = 0
             super().on_end_attack()
 
+class StormWeaver(weapons.Gun):
 
-
+    def on_end_attack(self):
+        if game.get_game().player.ammo_bullet[0] not in proj.AMMOS or not game.get_game().player.ammo_bullet[1]:
+            super().on_end_attack()
+            return
+        if game.get_game().player.ammo_bullet[
+            1] < constants.ULTIMATE_AMMO_BONUS and random.random() > self.ammo_save_chance + game.get_game().player.calculate_data(
+                'ammo_save', False) / 100:
+            game.get_game().player.ammo_bullet = (game.get_game().player.ammo_bullet[0], game.get_game().player.ammo_bullet[1] - 1)
+        pj = proj.AMMOS[game.get_game().player.ammo_bullet[0]]((self.x + game.get_game().player.obj.pos[0],
+                                                         self.y + game.get_game().player.obj.pos[1]),
+                                                        self.rot + random.uniform(-self.precision, self.precision),
+                                                        self.spd,
+                                                        self.damages[damages.DamageTypes.PIERCING])
+        if self.tail_col is not None:
+            pj.TAIL_COLOR = self.tail_col
+            pj.TAIL_SIZE = max(pj.TAIL_SIZE, self.ts)
+            pj.TAIL_WIDTH = max(pj.TAIL_WIDTH, self.tw)
+        pj.dmg *= .5
+        pj.DELETE = False
+        pj.ENABLE_IMMUNE = 3
+        game.get_game().projectiles.append(pj)
+        super().on_end_attack()
 
 class Gemini(weapons.Gun):
     ATTACK_SOUND = 'attack_quickshot'
@@ -1554,10 +1576,10 @@ WEAPONS = {
     'critical_thinking': weapons.Blade(name='critical thinking', damages={damages.DamageTypes.PHYSICAL: 340}, kb=15,
                                        img='items_weapons_critical_thinking', speed=1, at_time=15, rot_speed=20, st_pos=180),
 
-    'primordial_monument': weapons.Blade(name='primordial monument', damages={damages.DamageTypes.PHYSICAL: 640}, kb=20,
+    'primordial_monument': weapons.Blade(name='primordial monument', damages={damages.DamageTypes.PHYSICAL: 260}, kb=20,
                                          img='items_weapons_primordial_monument', speed=2, at_time=4, rot_speed=100, st_pos=270),
-    'ender_monument': weapons.Blade(name='primordial monument', damages={damages.DamageTypes.PHYSICAL: 960}, kb=30,
-                                         img='items_weapons_primordial_monument', speed=2, at_time=6, rot_speed=666, st_pos=270),
+    'ender_monument': weapons.Blade(name='ender monument', damages={damages.DamageTypes.PHYSICAL: 390}, kb=30,
+                                         img='items_weapons_ender_monument', speed=2, at_time=6, rot_speed=666, st_pos=270),
 
     'longer_intestine': weapons.Whip(name='longer intestine', damages={damages.DamageTypes.PHYSICAL: 480}, kb=30,
                                      img='items_weapons_longer_intestine', speed=10, at_time=30, length=50,
@@ -1591,6 +1613,12 @@ WEAPONS = {
     'em_trackgun': EMTrackGun(name='em trackgun', damages={damages.DamageTypes.PIERCING: 20}, kb=3,
                               img='items_weapons_em_trackgun', speed=8, at_time=18, projectile_speed=2000,
                               auto_fire=True, precision=5),
+    'storm_weaver': StormWeaver(name='storm weaver', damages={damages.DamageTypes.PIERCING: 90}, kb=10,
+                                img='items_weapons_storm_weaver', speed=3, at_time=8, projectile_speed=1000,
+                                auto_fire=True, precision=2),
+    'ion_beam': weapons.LazerGun(name='ion beam', damages={damages.DamageTypes.PIERCING: 250}, kb=10,
+                                 img='items_weapons_ion_beam', speed=10, at_time=5, projectile_speed=500,
+                                 auto_fire=True, lazer_col=(200, 200, 200), lazer_width=60),
     'bloody_rain': BloodyRain('bloody_rain', {damages.DamageTypes.PIERCING: 550}, 1, 'items_weapons_bloody_rain',
                               3, 4, 400, True, precision=3),
     'ceremony': weapons.Bow(name='ceremony', damages={damages.DamageTypes.PIERCING: 220}, kb=30,
