@@ -366,6 +366,8 @@ ITEMS = {
                                               inventory.TAGS['bow']]),
     'hand_of_social': inventory.Inventory.Item('Hand of Social', 'Human-eating, hand of social, dark psychology, humanity\'s secret.', 'hand_of_social', 2,
                                                  [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['bow']]),
+    'crossbow': inventory.Inventory.Item('Crossbow', 'Shoots 4 times.\nFor last time, shoots 3 arrows.', 'crossbow', 1, [inventory.TAGS['item'], inventory.TAGS['weapon'],
+                                                                       inventory.TAGS['bow']]),
     'lychee_bow': inventory.Inventory.Item('Lychee Bow', 'Bow with lychee arrows.', 'lychee_bow', 1,
                                            [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['bow']]),
     'e_pistol': inventory.Inventory.Item('Pistol', '', 'e_pistol', 2, [inventory.TAGS['item'], inventory.TAGS['weapon'],
@@ -396,6 +398,11 @@ ITEMS = {
                                              [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['gun']]),
     'ion_beam': inventory.Inventory.Item('Ion Beam', '', 'ion_beam', 3,
                                           [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['gun']]),
+    'soubow': inventory.Inventory.Item('Soubow', 'Shoots 3 convergent arrows.', 'soubow', 3,
+                                          [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['bow']]),
+    'fusion_pulser': inventory.Inventory.Item('Fusion Pulser', '', 'fusion_pulser', 3,
+                                          [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['gun']]),
+
     'heaven_shotgun': inventory.Inventory.Item('Heaven Shotgun', 'Shoots 3 bullets at once.', 'heaven_shotgun', 2,
                                                 [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['gun']], specify_img='shotgun'),
     'ceremony': inventory.Inventory.Item('Ceremony', '', 'ceremony', 4,
@@ -837,6 +844,7 @@ RECIPES = [
     inventory.Recipe({'e_wooden_hammer': 1, 'mystery_shard': 70, 'brainrot': 20, 'cloth': 10}, 'concept_mask'),
     inventory.Recipe({'e_wooden_hammer': 1, 'mystery_shard': 120, 'brainrot': 40, 'cloth': 20}, 'concept_chestplate'),
     inventory.Recipe({'e_wooden_hammer': 1, 'mystery_shard': 70, 'brainrot': 20, 'cloth': 10}, 'concept_boots'),
+    inventory.Recipe({'hammer_of_rational': 1, 'mystery_soul': 18}, 'soubow'),
 
     inventory.Recipe({'hammer_of_rational': 1, 'lychee_core_shard': 15, 'lychee_shard': 15}, 'lychee_core'),
     inventory.Recipe({'hammer_of_rational': 1, 'lychee_core_shard': 5, 'lychee_shard': 30, 'purple_clay': 10}, 'lychee_twinblade'),
@@ -868,7 +876,8 @@ RECIPES = [
     inventory.Recipe({'mechanic_workstation2': 1, 'isothermal_shard': 10, 'blood_pearl': 1, 'simple_energy_core': 16}, 'atomic_heater'),
     inventory.Recipe({'mechanic_workstation3': 1, 'blood_pearl': 1, 'e_bullet': 300, 'isothermal_shard': 5}, 'blood_tears', 300),
     inventory.Recipe({'mechanic_workstation3': 1, 'blood_pearl': 1, 'purple_clay': 16, 'isothermal_shard': 20}, 'scar_dagger'),
-    inventory.Recipe({'mechanic_workstation3': 1, 'skyfire': 1, 'simple_energy_core': 10, 'simple_circuit': 25, 'cell_cooler': 30, 'isothermal_shard': 10}, 'storm_weaver'),
+    inventory.Recipe({'mechanic_workstation3': 1, 'skyfire': 1, 'simple_energy_core': 10, 'simple_circuit': 25, 'cell_cooler': 30, 'isothermal_shard': 10}, 'ion_beam'),
+    inventory.Recipe({'mechanic_workstation3': 1, 'skyfire': 1, 'simple_energy_core': 10, 'simple_circuit': 45, 'isothermal_shard': 12}, 'fusion_pulser'),
     inventory.Recipe({'mechanic_workstation3': 1, 'shard_of_create': 2, 'mystery_soul': 5, 'lychee_core_shard': 2}, 'ancient_key'),
     inventory.Recipe({'mechanic_workstation3': 1, 'shard_of_destroy': 2, 'mystery_soul': 5, 'carrion': 10, 'purple_clay': 3}, 'ancient_key'),
 

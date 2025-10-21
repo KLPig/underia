@@ -7673,7 +7673,7 @@ class Entities:
         PHASE_SEGMENTS = [0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_omega_flowery'], BuildingAI, 10 ** 9 * 4)
+            super().__init__(pos, game.get_game().graphics['entity_omega_flowery'], BuildingAI, 10 ** 10 * 8)
             self.obj.MASS = 10 ** 8
             self.obj.TOUCHING_DAMAGE = 0
             self.obj.IS_OBJECT = False
@@ -7697,6 +7697,8 @@ class Entities:
             self.a_state = 0
             self.a_interval = 100
             game.get_game().player.hp_sys.effect(effects.Polluted(10 ** 9, 1))
+            constants.ENTITY_NUMBER = 0
+
 
         def t_draw(self):
             if not self.phase:
@@ -7755,7 +7757,7 @@ class Entities:
                     self.hp_sys.resistances[damages.DamageTypes.PIERCING] = 0
                     self.hp_sys.resistances[damages.DamageTypes.MAGICAL] = 0
                     self.hp_sys.resistances[damages.DamageTypes.ARCANE] = 0
-                    self.hp_sys.resistances[damages.DamageTypes.THINKING] = 1
+                    self.hp_sys.resistances[damages.DamageTypes.THINKING] = 0
                     self.NAME = '???'
             else:
                 pass

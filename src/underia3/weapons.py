@@ -949,6 +949,43 @@ class StormWeaver(weapons.Gun):
         game.get_game().projectiles.append(pj)
         super().on_end_attack()
 
+class SouBow(weapons.Bow):
+    def on_start_attack(self):
+        self.face_to(
+            *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+        dr = self.rot + 90
+        for d in range(-31, 31, 30):
+            self.x, self.y = vector.Vector2D(dr, d)
+            self.face_to(*position.relative_position(-vector.Vector2D(0, 0, self.x, self.y) + position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+            super().on_start_attack()
+            if not self.timer:
+                return
+        self.x, self.y = 0, 0
+
+class CrossBow(weapons.Bow):
+    def on_attack(self):
+        super().on_attack()
+        if self.timer % 10 == 9:
+            super().on_start_attack()
+
+    def on_end_attack(self):
+        super().on_end_attack()
+        for ar in range(-int(self.precision) * 5, int(self.precision) * 5 + 1, int(self.precision) * 5):
+            if game.get_game().player.ammo[0] not in proj.AMMOS or not game.get_game().player.ammo[1]:
+                self.timer = 0
+                break
+            if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() > self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
+                game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
+            pj = proj.AMMOS[game.get_game().player.ammo[0]]((self.x + game.get_game().player.obj.pos[0],
+                                                                   self.y + game.get_game().player.obj.pos[1]),
+                                                                  self.rot + random.uniform(-self.precision, self.precision) + ar, self.spd,
+                                                                  self.damages[damages.DamageTypes.PIERCING])
+            if self.tail_col is not None:
+                pj.TAIL_COLOR = self.tail_col
+                pj.TAIL_SIZE = max(pj.TAIL_SIZE, self.ts)
+                pj.TAIL_WIDTH = max(pj.TAIL_WIDTH, self.tw)
+            game.get_game().projectiles.append(pj)
+
 class Gemini(weapons.Gun):
     ATTACK_SOUND = 'attack_quickshot'
 
@@ -1604,6 +1641,9 @@ WEAPONS = {
                                 auto_fire=True, precision=2),
     'hand_of_social': weapons.Bow(name='hand of social', damages={damages.DamageTypes.PIERCING: 240}, kb=3,
                                   img='items_null', speed=5, at_time=30, projectile_speed=800, precision=0),
+    'crossbow': CrossBow(name='crossbow', damages={damages.DamageTypes.PIERCING: 70}, kb=20,
+                         img='items_weapons_crossbow', speed=8, at_time=15, projectile_speed=5000, auto_fire=True,
+                         precision=2),
     'lychee_bow': LycheeBow(name='lychee bow', damages={damages.DamageTypes.PIERCING: 60}, kb=3,
                              img='items_weapons_lychee_bow', speed=3, at_time=6, projectile_speed=500,
                              auto_fire=True, precision=1, tail_col=(255, 100, 200)),
@@ -1616,9 +1656,15 @@ WEAPONS = {
     'storm_weaver': StormWeaver(name='storm weaver', damages={damages.DamageTypes.PIERCING: 90}, kb=10,
                                 img='items_weapons_storm_weaver', speed=3, at_time=8, projectile_speed=1000,
                                 auto_fire=True, precision=2),
-    'ion_beam': weapons.LazerGun(name='ion beam', damages={damages.DamageTypes.PIERCING: 250}, kb=10,
+    'ion_beam': weapons.LazerGun(name='ion beam', damages={damages.DamageTypes.PIERCING: 160}, kb=10,
                                  img='items_weapons_ion_beam', speed=10, at_time=5, projectile_speed=500,
                                  auto_fire=True, lazer_col=(200, 200, 200), lazer_width=60),
+    'fusion_pulser': weapons.Gun(name='fusion pulser', damages={damages.DamageTypes.PIERCING: 400}, kb=10,
+                                 img='items_weapons_fusion_pulser', speed=6, at_time=9, projectile_speed=1000,
+                                 auto_fire=True, precision=1),
+    'soubow': SouBow(name='soubow', damages={damages.DamageTypes.PIERCING: 80}, kb=10,
+                      img='items_weapons_soubow', speed=7, at_time=6, projectile_speed=500,
+                      auto_fire=True, precision=1),
     'bloody_rain': BloodyRain('bloody_rain', {damages.DamageTypes.PIERCING: 550}, 1, 'items_weapons_bloody_rain',
                               3, 4, 400, True, precision=3),
     'ceremony': weapons.Bow(name='ceremony', damages={damages.DamageTypes.PIERCING: 220}, kb=30,

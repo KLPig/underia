@@ -3023,7 +3023,7 @@ class Bow(Weapon):
 
     def on_start_attack(self):
         self.face_to(
-            *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+            *position.relative_position(-vector.Vector2D(0, 0, self.x, self.y) + position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
         if game.get_game().player.ammo[0] not in projectiles.AMMOS or not game.get_game().player.ammo[1]:
             self.timer = 0
             return
