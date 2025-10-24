@@ -1269,11 +1269,6 @@ class Player:
                 pg.draw.rect(displayer.canvas, (255, 0, 0), (10 + i * 60, 140, 60, 10))
                 pg.draw.rect(displayer.canvas, (255, 255, 0), (10 + i * 60, 140,
                                                                60 * self.weapons[i].sk_cd // self.weapons[i].sk_mcd, 10))
-                f = displayer.font.render(f"{int(100 * (1 - self.weapons[i].sk_cd / self.weapons[i].sk_mcd))}%", True,
-                                          (255, 255, 255), (0, 0, 0))
-                f = pg.transform.scale(f, (f.get_width() * 30 // f.get_height(), 30))
-                fr = f.get_rect(center=(10 + i * 60 + 30, 140 + 25))
-                displayer.canvas.blit(f, fr)
                 if self.weapons[i].sk_cd:
                     self.weapons[i].sk_cd -= 1
         w = self.weapons[self.sel_weapon]

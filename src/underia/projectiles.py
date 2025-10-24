@@ -417,6 +417,17 @@ class Projectiles:
         DAMAGE_AS = 'iron_wand'
         COL = (127, 127, 127)
 
+    class SkyWand(CopperWand):
+        DAMAGE_AS = 'sky_wand'
+        COL = (200, 255, 255)
+        SPD = 40
+
+        def __init__(self, pos, rotation):
+            super().__init__(pos, rotation)
+            self.obj = ProjectileMotion(pos, rotation, spd=self.SPD)
+            self.obj.apply_force(vector.Vector(rotation, 30))
+            self.tick = 0
+
     class IceShard(CopperWand):
         DAMAGE_AS = 'ice_shard'
         IMG = 'projectiles_ice_shard'
@@ -445,6 +456,19 @@ class Projectiles:
             if self.tick > self.DURATION:
                 self.dead = True
             super().update()
+
+    class ManaWand(PlatinumWand):
+        SPD = 200
+        DAMAGE_AS ='mana_wand'
+        IMG = 'projectiles_null'
+        COL = (0, 255, 255)
+        DELETE = False
+        ENABLE_IMMUNE = 3
+
+        def update(self):
+            super().update()
+            pg.draw.circle(game.get_game().displayer.canvas, (0, 255, 255), position.displayed_position(self.obj.pos),
+                           int(50 / game.get_game().player.get_screen_scale()))
 
     class ObsidianWand(PlatinumWand):
         DAMAGE_AS = 'obsidian_wand'

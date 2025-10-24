@@ -962,6 +962,80 @@ class SouBow(weapons.Bow):
                 return
         self.x, self.y = 0, 0
 
+class Hate(weapons.Bow):
+    def on_start_attack(self):
+        self.face_to(*position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+        if game.get_game().player.ammo[0] not in proj.AMMOS or not game.get_game().player.ammo[1]:
+            return
+        if game.get_game().player.ammo[
+            1] < constants.ULTIMATE_AMMO_BONUS and random.random() > self.ammo_save_chance + game.get_game().player.calculate_data(
+            'ammo_save', False) / 100:
+            game.get_game().player.ammo = (
+            game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
+        for ar in range(-30, 31, 15):
+            pj = proj.AMMOS[game.get_game().player.ammo[0]]((self.x + game.get_game().player.obj.pos[0],
+                                                                    self.y + game.get_game().player.obj.pos[1]),
+                                                                   self.rot + random.uniform(-self.precision, self.precision) + ar,
+                                                                   self.spd,
+                                                                   self.damages[damages.DamageTypes.PIERCING])
+            if self.tail_col is not None:
+                pj.TAIL_COLOR = self.tail_col
+                pj.TAIL_SIZE = max(pj.TAIL_SIZE, self.ts)
+                pj.TAIL_WIDTH = max(pj.TAIL_WIDTH, self.tw)
+            pj.obj.velocity /= 20
+            pj.AIMING = .15
+            pj.ENABLE_IMMUNE = 0
+            game.get_game().projectiles.append(pj)
+
+class Triumph(weapons.Bow):
+    def on_attack(self):
+        super().on_attack()
+        if self.timer % 3 == 0 and not self.sk_cd:
+            self.face_to(*position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+            if game.get_game().player.ammo[0] not in proj.AMMOS or not game.get_game().player.ammo[1]:
+                return
+            if game.get_game().player.ammo[
+                1] < constants.ULTIMATE_AMMO_BONUS and random.random() > self.ammo_save_chance + game.get_game().player.calculate_data(
+                'ammo_save', False) / 100:
+                game.get_game().player.ammo = (
+            game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
+            pj = proj.AMMOS[game.get_game().player.ammo[0]]((self.x + game.get_game().player.obj.pos[0],
+                                                                    self.y + game.get_game().player.obj.pos[1]),
+                                                                   self.rot + 3 * random.uniform(-self.precision, self.precision),
+                                                                   self.spd,
+                                                                   self.damages[damages.DamageTypes.PIERCING])
+            if self.tail_col is not None:
+                pj.TAIL_COLOR = self.tail_col
+                pj.TAIL_SIZE = max(pj.TAIL_SIZE, self.ts)
+                pj.TAIL_WIDTH = max(pj.TAIL_WIDTH, self.tw)
+            pj.DELETE = True
+            pj.ENABLE_IMMUNE = 2
+            game.get_game().projectiles.append(pj)
+        if self.sk_cd and self.timer > 6:
+            self.timer = 6
+
+    def on_end_attack(self):
+        super().on_end_attack()
+        if not self.sk_mcd:
+            self.sk_mcd = 150
+        self.sk_cd = self.sk_mcd
+
+class PlasmaLauncher(weapons.Gun):
+    def on_start_attack(self):
+        super().on_start_attack()
+        pj = projectiles.EPlasma((self.x + game.get_game().player.obj.pos[0],
+                                                         self.y + game.get_game().player.obj.pos[1]),
+                                                        self.rot + 3 * random.uniform(-self.precision, self.precision),
+                                                        self.spd,
+                                                        self.damages[damages.DamageTypes.PIERCING])
+        if self.tail_col is not None:
+            pj.TAIL_COLOR = self.tail_col
+            pj.TAIL_SIZE = max(pj.TAIL_SIZE, self.ts)
+            pj.TAIL_WIDTH = max(pj.TAIL_WIDTH, self.tw)
+        pj.DELETE = True
+        pj.ENABLE_IMMUNE = 2
+        game.get_game().projectiles.append(pj)
+
 class CrossBow(weapons.Bow):
     def on_attack(self):
         super().on_attack()
@@ -1647,6 +1721,9 @@ WEAPONS = {
     'lychee_bow': LycheeBow(name='lychee bow', damages={damages.DamageTypes.PIERCING: 60}, kb=3,
                              img='items_weapons_lychee_bow', speed=3, at_time=6, projectile_speed=500,
                              auto_fire=True, precision=1, tail_col=(255, 100, 200)),
+    'mechanic_crossbow': CrossBow(name='mechanic crossbow', damages={damages.DamageTypes.PIERCING: 110}, kb=25,
+                                  img='items_weapons_mechanic_crossbow', speed=3, at_time=22, projectile_speed=8000,
+                                  auto_fire=True, precision=1),
     'pollutant': Pollutant(name='pollutant', damages={damages.DamageTypes.PIERCING: 180}, kb=15,
                            img='items_weapons_pollutant', speed=3, at_time=6, projectile_speed=900,
                            auto_fire=True, precision=0, tail_col=(200, 255, 100)),
@@ -1698,9 +1775,18 @@ WEAPONS = {
     'poise_submachine_gun': weapons.Gun('poise submachine gun', {damages.DamageTypes.PIERCING: 25}, 5,
                                           'items_weapons_poise_submachine_gun', 1, 1, 1200,
                                         True, 3, tail_col=(200, 255, 100), ammo_save_chance=1 / 4),
+    'hate': Hate(name='hate', damages={damages.DamageTypes.PIERCING: 70}, kb=10,
+                 img='items_weapons_hate', speed=8, at_time=15, projectile_speed=200,
+                 auto_fire=True, precision=5),
+    'triumph': Triumph(name='triumph', damages={damages.DamageTypes.PIERCING: 250}, kb=30,
+                       img='items_weapons_triumph', speed=3, at_time=45, projectile_speed=1200,
+                       auto_fire=True, precision=2),
     'supernova': SuperNova(name='supernova', damages={damages.DamageTypes.PIERCING: 90}, kb=20,
                            img='items_weapons_supernova', speed=20, at_time=3, projectile_speed=500,
                            auto_fire=True, precision=0, tail_col=(0, 255, 255)),
+    'plasma_launcher': PlasmaLauncher(name='plasma launcher', damages={damages.DamageTypes.PIERCING: 140}, kb=5,
+                                      img='items_weapons_plasma_launcher', speed=2, at_time=1, projectile_speed=1200,
+                                      auto_fire=True, precision=4, tail_col=(200, 255, 255)),
     'gandiva': Gandiva(name='gandiva', damages={damages.DamageTypes.PIERCING: 125}, kb=10,
                        img='items_weapons_gandiva', speed=6, at_time=2, projectile_speed=1000,
                        auto_fire=True, precision=10),

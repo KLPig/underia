@@ -459,7 +459,7 @@ def update():
         underia.entity_spawn(underia.Entities.StoneAltar, target_number=3, to_player_max=2500, to_player_min=2000,
                              rate=50)
         underia.entity_spawn(underia.Entities.RawOre, target_number=30, to_player_max=3000, to_player_min=1000,
-                             rate=15)
+                             rate=80)
         if 5 > game.stage > 0:
             underia.entity_spawn(underia.Entities.MetalAltar, target_number=3, to_player_max=2500, to_player_min=2000,
                                  rate=50, number_factor=3)

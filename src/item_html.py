@@ -27,7 +27,6 @@ for _, item in underia.ITEMS.items():
     f += f"<tr onclick='location.href=\"./recipes.html#{item.id}-main\"' class='item-row' id='{item.id}-filter'>\n"
     f += "<td>" + img_str % ('main', item.id, 'main', item.id) + "</td>\n"
     c = underia.Inventory.Rarity_Colors[item.rarity]
-    c = (c[0] // 2, c[1] // 2, c[2] // 2)
     t = underia.text(item.name)
     if t is None:
         t = ''

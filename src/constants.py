@@ -13,7 +13,7 @@ INFINITY = 2 ** 31 - 1
 
 APRIL_FOOL = False
 
-LANG = 'en'
+LANG = 'zh'
 
 DEBUG = True
 

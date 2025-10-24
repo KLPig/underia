@@ -1639,9 +1639,8 @@ class Entities:
     class GreenChest(Chest):
         IMG = 'entity_green_chest'
         LOOT_TABLE = LootTable([
-            SelectionLoot([('iron', 10, 12), ('steel', 10, 12)], 0, 2),
+            SelectionLoot([('iron', 16, 22), ('steel', 16, 22), ('cobalt', 16, 22), ('silver', 16, 22), ('platinum', 6, 10), ('zirconium', 6, 10)], 1, 2),
             IndividualLoot('leaf', 1, 10, 12),
-            IndividualLoot('platinum', 0.2, 10, 20),
             SelectionLoot([('mana_flower', 1, 1), ('life_flower', 0, 1), ('star_amulet', 1, 1)], 0, 1),
             SelectionLoot([('hermes_boots', 0, 1), ('lucky_clover', 1, 1), ('seed_amulet', 1, 1)], 0, 2),
             IndividualLoot('fairy_wings', 0.1, 1, 1),
@@ -1657,12 +1656,12 @@ class Entities:
     class RedChest(Chest):
         IMG = 'entity_red_chest'
         LOOT_TABLE = LootTable([
-            SelectionLoot([('platinum', 3, 5), ('magic_stone', 10, 12)], 1, 2),
+            SelectionLoot([('platinum', 5, 7), ('zirconium', 5, 7), ('magic_stone', 10, 12)], 1, 2),
             IndividualLoot('firite_ingot', 0.5, 10, 12),
             IndividualLoot('firy_plant', 0.4, 1, 4),
             IndividualLoot('fireball_magic', 0.1, 1, 1),
             SelectionLoot([('fire_gloves', 1, 1), ('quenched_cross', 1, 1), ('lava_walker', 1, 1)], 0, 2),
-            # IndividualLoot('obsidian', 0.6, 12, 20),
+            IndividualLoot('obsidian_ingot', 1, 22, 30),
         ])
         BIOMES = ['hell']
         TOUGHNESS = 7
@@ -1675,9 +1674,8 @@ class Entities:
     class WhiteChest(Chest):
         IMG = 'entity_white_chest'
         LOOT_TABLE = LootTable([
-            SelectionLoot([('steel', 10, 12), ('magic_stone', 10, 12)], 0, 2),
+            SelectionLoot([('silver', 10, 12), ('steel', 10, 12), ('magic_stone', 10, 12)], 1, 2),
             SelectionLoot([('coniferous_leaf', 100, 200), ('snowball', 100, 200)], 0, 1),
-            IndividualLoot('platinum', 0.2, 10, 30),
             SelectionLoot([('white_guard', 1, 2), ('snowstorm_bottle', 1, 1), ('snow_wings', 0, 1)], 0, 1),
             SelectionLoot([('purple_ring', 0, 1), ('cyan_ring', 0, 1), ('yellow_ring', 0, 1),
                             ('green_ring', 0, 1), ('blue_ring', 0, 1), ('orange_ring', 0, 1)], 0, 3),
@@ -1693,7 +1691,7 @@ class Entities:
     class OrangeChest(Chest):
         IMG = 'entity_orange_chest'
         LOOT_TABLE = LootTable([
-            SelectionLoot([('platinum', 10, 12), ('mana_crystal', 1, 3)], 1, 2),
+            SelectionLoot([('platinum', 10, 12), ('zirconium', 10, 12), ('mana_crystal', 1, 3)], 1, 2),
             IndividualLoot('copper', 1, 10, 12),
             IndividualLoot('mysterious_substance', 0.1, 10, 30),
             SelectionLoot([('rune_cross', 1, 1), ('rune_eye', 1, 1), ('rune_gloves', 1, 1)], 0, 1),
@@ -1710,9 +1708,9 @@ class Entities:
     class BlueChest(Chest):
         IMG = 'entity_blue_chest'
         LOOT_TABLE = LootTable([
-            SelectionLoot([('platinum', 20, 32), ('magic_stone', 10, 12)], 1, 2),
+            SelectionLoot([('platinum', 20, 32), ('zirconium', 20, 32), ('magic_stone', 10, 12)], 1, 2),
             # SelectionLoot([('iron_donut', 1, 10), ('heart_pie', 1, 10)], 0, 1),
-            # IndividualLoot('obsidian', 0.6, 12, 20),
+            IndividualLoot('floatstone', 1, 12, 20),
         ])
         BIOMES = ['heaven']
         TOUGHNESS = 7
@@ -1790,6 +1788,13 @@ class Entities:
         LOOT_TABLE = LootTable([
             IndividualLoot('iron', 1, 20, 25),
             ])
+        def __init__(self, *args):
+            super().__init__(*args)
+            if game.get_game().fun in [1, 3, 4, 6, 11, 12]:
+                self.NAME = 'Cobalt Ore'
+                self.LOOT_TABLE = LootTable([
+                    IndividualLoot('cobalt', 1, 20, 25),
+                ])
 
     class SteelOre(Ore):
         IMG = 'entity_steel_ore'
@@ -1799,6 +1804,13 @@ class Entities:
         LOOT_TABLE = LootTable([
             IndividualLoot('steel', 1, 20, 25),
             ])
+        def __init__(self, *args):
+            super().__init__(*args)
+            if game.get_game().fun in [1, 4, 7, 8, 9, 12]:
+                self.NAME = 'Silver Ore'
+                self.LOOT_TABLE = LootTable([
+                    IndividualLoot('silver', 1, 20, 25),
+                ])
 
     class PlatinumOre(Ore):
         IMG = 'entity_platinum_ore'
@@ -1808,6 +1820,13 @@ class Entities:
         LOOT_TABLE = LootTable([
             IndividualLoot('platinum', 1, 28, 36),
             ])
+        def __init__(self, *args):
+            super().__init__(*args)
+            if game.get_game().fun in [2, 3, 4, 6, 10, 12]:
+                self.NAME = 'Zirconium Ore'
+                self.LOOT_TABLE = LootTable([
+                    IndividualLoot('zirconium', 1, 28, 36),
+                ])
 
     class MagicOre(Ore):
         IMG = 'entity_magic_ore'
@@ -2080,7 +2099,6 @@ class Entities:
         NAME = 'Eye'
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([
-            SelectionLoot([('iron', 10, 12), ('steel', 6, 8)], 1, 2),
             IndividualLoot('dangerous_necklace', 0.1, 1, 1),
             IndividualLoot('cell_organization', 0.8, 1, 3),
             IndividualLoot('watcher_wand', 0.06, 1, 1),
@@ -2119,7 +2137,6 @@ class Entities:
         NAME = 'Fluff Ball'
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([
-            SelectionLoot([('iron', 10, 12), ('steel', 6, 8)], 1, 2),
             IndividualLoot('flufffur', 1, 5, 8),
             IndividualLoot('cell_organization', 0.8, 1, 3),
         ])
@@ -2156,9 +2173,7 @@ class Entities:
         DISPLAY_MODE = 1
         BOSS_NAME = 'The Fluffy Worm'
         LOOT_TABLE = LootTable([
-            IndividualLoot('platinum', 1, 20, 30),
             IndividualLoot('flufffur', 1, 5, 8),
-            IndividualLoot('blood_ingot', 0.2, 10, 30),
             SelectionLoot([('swwwword', 1, 1), ('kuangkuangkuang', 1, 1)], 1, 1),
         ])
         IS_MENACE = True
@@ -2180,6 +2195,7 @@ class Entities:
         LOOT_TABLE = LootTable([
             IndividualLoot('blood_ingot', 1, 20, 30),
             IndividualLoot('platinum', 1, 20, 30),
+            IndividualLoot('zirconium', 1, 20, 30),
             SelectionLoot([('orange_ring', 1, 1), ('blue_ring', 1, 1), ('green_ring', 1, 1)], 1, 1),
             IndividualLoot('aimer', 1, 1, 1),
             IndividualLoot('tip2', 1, 1, 1),
@@ -2345,7 +2361,6 @@ class Entities:
         DISPLAY_MODE = 3
         LOOT_TABLE = LootTable([
             IndividualLoot('wood', 0.9, 30, 50),
-            IndividualLoot('platinum', 0.6, 15, 40),
             IndividualLoot('red_apple', 0.07, 1, 1),
         ])
 
@@ -2425,9 +2440,7 @@ class Entities:
         NAME = 'Bloodflower'
         DISPLAY_MODE = 3
         LOOT_TABLE = LootTable([
-            IndividualLoot('steel', 0.9, 15, 25),
             IndividualLoot('cell_organization', 0.9, 12, 16),
-            IndividualLoot('platinum', 0.3, 10, 20),
             IndividualLoot('spikeflower', 0.36, 1, 1),
             SelectionLoot([('purple_ring', 1, 1), ('cyan_ring', 1, 1), ('yellow_ring', 1, 1)], 0, 1),
             IndividualLoot('red_apple', 0.02, 1, 1),
@@ -2454,9 +2467,7 @@ class Entities:
         NAME = 'Red Watcher'
         DISPLAY_MODE = 3
         LOOT_TABLE = LootTable([
-            IndividualLoot('platinum', 0.9, 20, 40),
             IndividualLoot('magic_stone', 0.2, 5, 10),
-            IndividualLoot('iron', 0.9, 15, 25),
             SelectionLoot([('purple_ring', 1, 1), ('cyan_ring', 1, 1), ('yellow_ring', 1, 1)], 1, 2),
         ])
 
@@ -2494,7 +2505,6 @@ class Entities:
         DISPLAY_MODE = 3
         LOOT_TABLE = LootTable([
             IndividualLoot('wood', 0.9, 15, 25),
-            IndividualLoot('iron', 0.8, 20, 30),
             IndividualLoot('copper', 0.6, 8, 18),
             IndividualLoot('cactus_wand', 0.2, 1, 1),
             IndividualLoot('red_apple', 0.04, 1, 1),
@@ -2524,7 +2534,6 @@ class Entities:
         DISPLAY_MODE = 3
         LOOT_TABLE = LootTable([
             IndividualLoot('wood', 0.9, 15, 25),
-            IndividualLoot('steel', 0.8, 20, 30),
             IndividualLoot('copper', 0.6, 8, 18),
             IndividualLoot('coniferous_leaf', 0.2, 50, 200),
             IndividualLoot('red_apple', 0.06, 1, 1),
@@ -2554,8 +2563,7 @@ class Entities:
         DISPLAY_MODE = 3
         LOOT_TABLE = LootTable([
             IndividualLoot('cell_organization', 0.9, 10, 15),
-            IndividualLoot('platinum', 0.8, 20, 30),
-            IndividualLoot('blood_ingot', 0.6, 5, 10),
+            IndividualLoot('blood_ingot', 0.2, 5, 10),
             IndividualLoot('firite_ingot', 0.5, 8, 15),
         ])
 
@@ -2634,7 +2642,6 @@ class Entities:
         NAME = 'Star'
         DISPLAY_MODE = 3
         LOOT_TABLE = LootTable([
-            IndividualLoot('platinum', 0.7, 15, 55),
             IndividualLoot('magic_stone', 0.9, 12, 15),
             IndividualLoot('mana_crystal', 0.5, 1, 2),
             IndividualLoot('star_amulet', 0.4, 1, 1),

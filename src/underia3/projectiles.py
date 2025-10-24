@@ -467,6 +467,15 @@ class EBullet(projectiles.Projectiles.Bullet):
     TAIL_SIZE = 4
     TAIL_WIDTH = 5
 
+class EPlasma(EBullet):
+    DAMAGES = -20
+    IMG = 'projectiles_null'
+    SPEED = 1200
+    TAIL_COLOR = (200, 255, 255)
+    TAIL_SIZE = 2
+    TAIL_WIDTH = 8
+    DELETE = False
+
 class MoonShadowBullet(projectiles.Projectiles.Bullet):
     DAMAGE_AS = 'moon_shadow_bullet'
     IMG = 'projectiles_null'

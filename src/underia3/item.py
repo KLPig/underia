@@ -239,6 +239,13 @@ ITEMS = {
                                                'precised_mechanical_hand', 3, [inventory.TAGS['item'], inventory.TAGS['workstation']]),
     'mechanic_workstation4': inventory.Inventory.Item('Mechanic Workstation', 'Able to craft highly detailel tools.\ncol00ffffUpgrade: Biocooler\ncol00ffffUpgrade: Atomic Heater\ncol00ffffUpgrade: Precised Mechanic Hand',
                                             'mechanic_workstation4', 4, [inventory.TAGS['item'], inventory.TAGS['workstation']]),
+    'dark_sensor_array': inventory.Inventory.Item('Dark Sensor Array', 'Upgrade mechanic workstation.\nLet it be able to craft other specified materials.',
+                                                    'dark_sensor_array', 6, [inventory.TAGS['item'], inventory.TAGS['workstation']]),
+    'mechanic_workstation5': inventory.Inventory.Item('Mechanic Workstation', 'Able to craft other specified materials.\ncol00ffffUpgrade: Biocooler\ncol00ffffUpgrade: Atomic Heater\ncol00ffffUpgrade: Precised Mechanic Hand\ncol00ffffUpgrade: Dark Sensor Array',
+                                            'mechanic_workstation5', 6, [inventory.TAGS['item'], inventory.TAGS['workstation']]),
+
+    'dark_energy_core': inventory.Inventory.Item('Dark Energy Core', 'Energy from singularity.',
+                                                  'dark_energy_core', 4, [inventory.TAGS['item']]),
 
     'chisel': inventory.Inventory.Item('Chisel', '', 'chisel', 1, [inventory.TAGS['item'],
                                                                    inventory.TAGS['workstation']]),
@@ -368,6 +375,8 @@ ITEMS = {
                                                  [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['bow']]),
     'crossbow': inventory.Inventory.Item('Crossbow', 'Shoots 4 times.\nFor last time, shoots 3 arrows.', 'crossbow', 1, [inventory.TAGS['item'], inventory.TAGS['weapon'],
                                                                        inventory.TAGS['bow']]),
+    'mechanic_crossbow': inventory.Inventory.Item('Mechanic Crossbow', 'Shoots 5 times.\nFor last time, shoots 3 arrows.', 'mechanic_crossbow', 1, [inventory.TAGS['item'], inventory.TAGS['weapon'],
+                                                                                                                                            inventory.TAGS['bow']]),
     'lychee_bow': inventory.Inventory.Item('Lychee Bow', 'Bow with lychee arrows.', 'lychee_bow', 1,
                                            [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['bow']]),
     'e_pistol': inventory.Inventory.Item('Pistol', '', 'e_pistol', 2, [inventory.TAGS['item'], inventory.TAGS['weapon'],
@@ -409,8 +418,14 @@ ITEMS = {
                                           [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['bow']]),
     'skyfire': inventory.Inventory.Item('Skyfire', '', 'skyfire', 3,
                                           [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['gun']]),
+    'hate': inventory.Inventory.Item('Hate', 'rainbow"Why do you abandon me?"\nShoots 5 slow aiming arrows.',
+                                       'hate', 5, [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['bow']]),
+    'triumph': inventory.Inventory.Item('Triumph', 'rainbow"I\'m back in flesh."',
+                                        'triumph', 5, [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['bow']]),
     'supernova': inventory.Inventory.Item('Supernova', 'Chance to use energy bullet.', 'supernova', 4,
                                            [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['gun']]),
+    'plasma_launcher': inventory.Inventory.Item('Plasma Launcher', '', 'plasma_launcher', 7,
+                                                [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['gun']]),
     'gemini': inventory.Inventory.Item('Gemini', 'Shoots energy bullets.\nContinuously shoot to summon beams.', 'gemini', 7,
                                           [inventory.TAGS['item'], inventory.TAGS['weapon'], inventory.TAGS['gun']]),
     'dark_cannon': inventory.Inventory.Item('Dark Cannon', 'Shoots absolute-penetrating black holes.\nUses 40 dark energy.', 'dark_cannon', 7,
@@ -860,6 +875,7 @@ RECIPES = [
     inventory.Recipe({'mechanic_workstation2': 1, 'proof': 1, 'simple_energy_core': 15, 'simple_circuit': 30, 'cell_cooler': 15}, 'iceberg'),
     inventory.Recipe({'mechanic_workstation2': 1, 'simple_energy_core': 5, 'simple_circuit': 40, 'cell_cooler': 20}, 'soulid_dagger'),
     inventory.Recipe({'mechanic_workstation2': 1, 'simple_energy_core': 8, 'simple_circuit': 20, 'cell_cooler': 40}, 'storm_weaver'),
+    inventory.Recipe({'mechanic_workstation2': 1, 'simple_energy_core': 2, 'simple_circuit': 30}, 'mechanic_crossbow'),
 
     inventory.Recipe({'hammer_of_rational': 1, 'mystery_shard': 80, 'blood_pearl': 1, 'cloth': 10}, 'evil_mask'),
     inventory.Recipe({'hammer_of_rational': 1, 'mystery_shard': 130, 'blood_pearl': 1, 'cloth': 20}, 'evil_cloak'),
@@ -895,6 +911,9 @@ RECIPES = [
     inventory.Recipe({'mechanic_workstation4': 1, 'shard_of_destroy': 9, 'shard_of_create': 9, 'blood_pearl': 2}, 'chaos_dagger'),
     inventory.Recipe({'mechanic_workstation4': 1, 'shard_of_destroy': 12}, 'destroy'),
     inventory.Recipe({'mechanic_workstation4': 1, 'shard_of_create': 12}, 'generate'),
+    inventory.Recipe({'mechanic_workstation4': 1, 'dark_matter': 1}, 'dark_energy', 888),
+    inventory.Recipe({'mechanic_workstation4': 1, 'simple_energy_core': 10, 'dark_energy': 100}, 'dark_energy_core', 10),
+    inventory.Recipe({'mechanic_workstation4': 1, 'dark_energy_core': 5, 'dark_matter': 1, 'dark_energy': 400}, 'dark_sensor_array'),
 
     inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 15, 'cloth': 10}, 'destroy_helmet'),
     inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 25, 'cloth': 10}, 'destroy_chestplate'),
@@ -964,6 +983,9 @@ RECIPES = [
     inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 30, 'spot': 1, 'cloth': 80}, 'assassin_chestplate'),
     inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 20, 'spot': 1, 'cloth': 50}, 'assassin_socks'),
 
+    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_destroy': 20, 'blood_pearl': 4, 'spot': 2}, 'hate'),
+    inventory.Recipe({'hammer_of_rational': 1, 'shard_of_create': 20, 'rhapsoda': 12, 'spot': 2}, 'triumph'),
+
     inventory.Recipe({'hammer_of_rational': 1, 'dark_matter': 1, 'shard_of_create': 9, 'shard_of_destroy': 9,
                       'samsara_core': 6, 'reborn_core': 6}, 'chaos_diamond'),
 
@@ -975,11 +997,13 @@ RECIPES = [
     inventory.Recipe({'hammer_of_rational': 1, 'create_cloak': 1, 'chaos_diamond': 1, 'reborn_core': 12}, 'primal_galaxy_cloak'),
     inventory.Recipe({'hammer_of_rational': 1, 'create_boots': 1, 'chaos_diamond': 1, 'reborn_core': 6}, 'primal_galaxy_boots'),
 
+
     inventory.Recipe({'hammer_of_rational': 1, 'muramasa': 1, 'chaos_diamond': 1, 'shard_of_destroy': 15, 'samsara_core': 8}, 'hell'),
-    inventory.Recipe({'hammer_of_rational': 1, 'starry_night': 1, 'chaos_diamond': 1, 'shard_of_create': 9, 'reborn_core': 5, 'dark_energy': 114}, 'wvector'),
     inventory.Recipe({'hammer_of_rational': 1, 'generate': 1, 'destroy': 1, 'chaos_diamond': 1, 'reborn_core': 3, 'samsara_core': 1,  'dark_energy': 345}, 'entrophic_broadsword'),
 
-    inventory.Recipe({'hammer_of_rational': 1, 'skyfire': 1, 'chaos_diamond': 1, 'shard_of_destory': 40, 'dark_energy': 191}, 'dark_cannon'),
+    inventory.Recipe({'mechanic_workstation5': 1, 'starry_night': 1, 'chaos_diamond': 1, 'shard_of_create': 9, 'reborn_core': 5, 'dark_energy_core': 12}, 'wvector'),
+    inventory.Recipe({'mechanic_workstation5': 1, 'skyfire': 1, 'chaos_diamond': 1, 'shard_of_destory': 40, 'dark_energy_core': 12}, 'dark_cannon'),
+    inventory.Recipe({'mechanic_workstation5': 1, 'chaos_diamond': 1, 'shard_of_destory': 50, 'dark_energy_core': 16}, 'plasma_launcher'),
 
     inventory.Recipe({'_rune_altar': 1, 'thaumaturgy': 1, 'hoverplume_headgear': 1, 'hoverplume_back': 1, 'hoverplume_kneepads': 1,
                       'feather_sword': 1, 'feather_amulet': 1, 'toxic_wing': 1}, 'pluma_thaumaturgy'),
