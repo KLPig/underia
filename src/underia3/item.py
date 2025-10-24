@@ -1016,3 +1016,4 @@ RECIPES = [
 ]
 
 inventory.RECIPES.extend(RECIPES)
+inventory.setup()

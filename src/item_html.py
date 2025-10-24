@@ -24,6 +24,8 @@ img_str = "<div class='item %s' id='%s-%s'> <img src='assets/graphics/items/%s.p
 item_str = "<h2 style='color: rgb%s'>%s</h2><p class='desc' style='color: rgb%s'>%s</p>"
 
 for _, item in underia.ITEMS.items():
+    if 0 < item.inner_id < 18:
+        continue
     f += f"<tr onclick='location.href=\"./recipes.html#{item.id}-main\"' class='item-row' id='{item.id}-filter'>\n"
     f += "<td>" + img_str % ('main', item.id, 'main', item.id) + "</td>\n"
     c = underia.Inventory.Rarity_Colors[item.rarity]

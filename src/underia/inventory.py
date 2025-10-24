@@ -2316,7 +2316,7 @@ RECIPES = [
     Recipe({'the_final_ingot': 6, 'time_fountain': 1, 'substance_fountain': 1, 'celestial_fountain': 1,
             'death_fountain': 1, 'no_fountain': 1, 'my_soul': 1, 'plantera_bulb': 1}, 'yellow_flower'),
 
-    Recipe({'wood': 20, 'wooden_hammer': 1}, 'wooden_pickaxez'),
+    Recipe({'wood': 20, 'wooden_hammer': 1}, 'wooden_pickaxe'),
     Recipe({'copper_ingot': 25, 'anvil': 1}, 'copper_pickaxe'),
     Recipe({'iron_ingot': 22, 'steel_ingot': 22, 'anvil': 1}, 'heavy_pickaxe'),
     Recipe({'iron_ingot': 22, 'silver_ingot': 18, 'anvil': 1}, 'heavy_pickaxe'),

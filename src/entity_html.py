@@ -12,8 +12,6 @@ game = underia.Game()
 underia.write_game(game)
 game.setup()
 
-constants.LANG = 'zh'
-
 f = "<!DOCTYPE html><html><head>\n<title>Underia Entities</title>\n" \
     "<link rel='stylesheet' type='text/css' href='styles.css'>\n" \
     "<meta charset='UTF-8'></head><body>"
