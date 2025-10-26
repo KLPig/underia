@@ -240,6 +240,9 @@ class SweepWeapon(Weapon):
         self.noises = []
         self.ddata = [copy.copy(self.damages), 1, self.rot_speed]
 
+    def on_damage(self, target):
+        pass
+
     def on_idle(self):
         super().on_idle()
         mx = position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))[0] - self.x - game.get_game().player.obj.pos[0]
@@ -305,6 +308,7 @@ class SweepWeapon(Weapon):
                     self.double_sided and ((r + 180) % 360 in rot_range or r + 180 in rot_range)):
                 if vector.distance(px, py) < self.img.get_width() * self.scale + (
                 (e.img.get_width() + e.img.get_height()) // 2 if e.img is not None else 10):
+                    self.on_damage(e)
                     for t, d in self.damages.items():
                         e.hp_sys.damage(d * game.get_game().player.attack * game.get_game().player.attacks[self.DMG_AS_IDX], t)
                     if not e.hp_sys.is_immune:
@@ -881,6 +885,10 @@ class Swwwword(Blade):
         super().on_attack()
         self.cutting_effect(4, (255, 255, 255), (200, 255, 255))
 
+class TearBlade(Blade):
+    def on_damage(self, target: entity.Entities.Entity):
+        target.hp_sys.effect(effects.BleedingR(2, 9))
+
 class MagicBlade(Blade):
     def on_start_attack(self):
         r = self.rot_speed // abs(self.rot_speed)
@@ -1102,12 +1110,12 @@ class TrueNightsEdge(Blade):
             self.at_time = 32
             self.rot_speed = 60
             spd = 1600
-            self.damages = {dmg.DamageTypes.PHYSICAL: 5280, dmg.DamageTypes.MAGICAL: 1240}
+            self.damages = {dmg.DamageTypes.PHYSICAL: 90, dmg.DamageTypes.MAGICAL: 90}
         else:
             self.at_time = 32
             self.rot_speed = 40
             spd = 4000
-            self.damages = {dmg.DamageTypes.PHYSICAL: 3260, dmg.DamageTypes.MAGICAL: 880}
+            self.damages = {dmg.DamageTypes.PHYSICAL: 180, dmg.DamageTypes.MAGICAL: 120}
         px, py = position.relative_position(
             position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
         r = -1 if px > 0 else 1
@@ -3079,6 +3087,36 @@ class ForestsBow(Bow):
                                                                           self.damages[dmg.DamageTypes.PIERCING])
                     game.get_game().projectiles.append(p)
 
+class WorldBow(Bow):
+    def on_start_attack(self):
+        self.face_to(
+            *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+        if game.get_game().player.ammo[0] not in projectiles.AMMOS or not game.get_game().player.ammo[1]:
+            self.timer = 0
+            return
+        if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
+            game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
+        for ar in range(-15, 16, 15):
+            pj = projectiles.AMMOS[game.get_game().player.ammo[0]]((self.x + game.get_game().player.obj.pos[0],
+                                                                   self.y + game.get_game().player.obj.pos[1]),
+                                                                  self.rot + ar + random.uniform(-self.precision, self.precision), self.spd,
+                                                                  self.damages[dmg.DamageTypes.PIERCING])
+            b = game.get_game().get_biome()
+            if b.endswith('forest'):
+                inventory.ITEMS['world_bow'].desc = 'col00ff00Forests: +200% projectile speed, +20% damage'
+                pj.obj.velocity *= 3
+                pj.DAMAGES *= 1.2
+            elif b in ['desert', 'hell']:
+                inventory.ITEMS['world_bow'].desc = 'col00ff00Desert/Hell: -30% damage, pierce'
+                pj.DAMAGES *= .7
+                pj.DELETE = False
+                pj.ENABLE_IMMUNE = 3
+            elif b in ['snowland', 'heaven']:
+                inventory.ITEMS['world_bow'].desc = 'col00ff00Snow/Heaven: -60% speed, 50% aim'
+                pj.obj.velocity *= .4
+                pj.AIMING = .5
+            game.get_game().projectiles.append(pj)
+
 class KuangKuangKuang(Bow):
     def on_start_attack(self):
         super().on_start_attack()
@@ -3456,6 +3494,14 @@ class DarkExploder(Gun):
                                                 self.damages[dmg.DamageTypes.PIERCING] + pj.DAMAGES)
         game.get_game().projectiles.append(am)
 
+class Gaze(Gun):
+    def on_start_attack(self):
+        super().on_start_attack()
+        if not self.sk_cd:
+            self.sk_mcd = 120
+            self.sk_cd = self.sk_mcd
+            game.get_game().projectiles.append(projectiles.Projectiles.Gaze(game.get_game().player.obj.pos, self.rot))
+
 class Shotgun(Gun):
     def on_start_attack(self):
         for _ in range(3):
@@ -3758,11 +3804,16 @@ def set_weapons():
         'zirconium_sword': SweepWeapon('zirconium sword', {dmg.DamageTypes.PHYSICAL: 46}, 1,
                                       'items_weapons_zirconium_sword', 1,
                                       10, 25, 160),
+        'e_wingblade': Blade('e wingblade', {dmg.DamageTypes.PHYSICAL: 36}, 0.4,
+                             'items_weapons_e_wingblade', 2,
+                             5, 50, 180),
         'platinum_blade': Blade('platinum blade', {dmg.DamageTypes.PHYSICAL: 28}, 0.1,
                                 'items_weapons_platinum_blade', 10,
                                 12, 30, 180),
-        'life_wooden_sword': LifeWoodenSword('life wooden sword', {dmg.DamageTypes.PHYSICAL: 26}, 1.2,
-                                             'items_weapons_life_wooden_sword', 1,
+        'tearblade': TearBlade('tearblade', {dmg.DamageTypes.PHYSICAL: 44}, 0.2,
+                               'items_weapons_tearblade', 3, 9, 25, 160),
+        'life_wooden_sword': LifeWoodenSword('life wooden sword', {dmg.DamageTypes.PHYSICAL: 22}, 1.2,
+                                             'items_weapons_life_wooden_sword', 3,
                                              5, 36, 110),
         'magic_sword': MagicSword('magic sword', {dmg.DamageTypes.PHYSICAL: 48}, 0.7,
                                   'items_weapons_magic_sword', 0,
@@ -3926,8 +3977,10 @@ def set_weapons():
                             2, 6, 50, auto_fire=True),
         'bloody_bow': Bow('bloody bow', {dmg.DamageTypes.PIERCING: 45}, 0.5, 'items_weapons_bloody_bow',
                           5, 15, 120, auto_fire=True),
-        'forests_bow': ForestsBow('forests bow', {dmg.DamageTypes.PIERCING: 32}, 3, 'items_weapons_forests_boew',
+        'forests_bow': ForestsBow('forests bow', {dmg.DamageTypes.PIERCING: 22}, 3, 'items_weapons_forests_boew',
                                   1, 2, 220, auto_fire=True),
+        'world_bow': WorldBow('world bow', {dmg.DamageTypes.PIERCING: 32}, 0.5, 'items_weapons_world_bow',
+                               3, 4, 400, auto_fire=True),
         'kuangkuangkuang': KuangKuangKuang('kuangkuangkuang', {dmg.DamageTypes.PIERCING: 6}, 0.5, 'items_weapons_kuangkuangkuang',
                                             0, 1, 550, auto_fire=True, tail_col=(200, 255, 255), ammo_save_chance=1 / 3),
         'recurve_bow': Bow('recurve bow', {dmg.DamageTypes.PIERCING: 92}, 0.6, 'items_weapons_recurve_bow',
@@ -3956,12 +4009,14 @@ def set_weapons():
         'resolution': Resolution('resolution', {dmg.DamageTypes.PIERCING: 720}, 0.5, 'items_weapons_resolution',
                                   0, 2, 2200, True, ammo_save_chance=3 / 4),
 
-        'pistol': Gun('pistol', {dmg.DamageTypes.PIERCING: 48}, 0.1, 'items_weapons_pistol',
+        'pistol': Gun('pistol', {dmg.DamageTypes.PIERCING: 24}, 0.1, 'items_weapons_pistol',
                       3, 15, 15, precision=2),
-        'rifle': Gun('rifle', {dmg.DamageTypes.PIERCING: 18}, 0.2, 'items_weapons_rifle',
+        'rifle': Gun('rifle', {dmg.DamageTypes.PIERCING: 14}, 0.2, 'items_weapons_rifle',
                      6, 6, 20, auto_fire=True, precision=4),
         'submachine_gun': Gun('submachine gun', {dmg.DamageTypes.PIERCING: 2}, 0.15, 'items_weapons_submachine_gun',
                               0, 2, 50, auto_fire=True, precision=3, ammo_save_chance=1 / 3),
+        'gaze': Gaze('gaze', {dmg.DamageTypes.PIERCING: 7}, 0.5, 'items_weapons_gaze',
+                     2, 3, 100, auto_fire=True, precision=3),
         'magma_assaulter': MagmaAssaulter('magma assaulter', {dmg.DamageTypes.PIERCING: 60}, 0.5,
                                           'items_weapons_magma_assaulter',
                                           2, 5, 100, auto_fire=True, precision=2, ammo_save_chance=1 / 5),
@@ -4093,9 +4148,12 @@ def set_weapons():
         'cactus_wand': MagicWeapon('cactus wand', {dmg.DamageTypes.MAGICAL: 4}, 0.2,
                                     'items_weapons_cactus_wand', 2,
                                     10, projectiles.Projectiles.CactusWand, 18, spell_name='Cactus Spawning'),
-        'watcher_wand': MagicWeapon('watcher wand', {dmg.DamageTypes.MAGICAL: 22}, 0.2,
+        'watcher_wand': MagicWeapon('watcher wand', {dmg.DamageTypes.MAGICAL: 12}, 0.2,
                                     'items_weapons_watcher_wand', 8,
-                                    2, projectiles.Projectiles.WatcherWand, 12, spell_name='Watch'),
+                                    2, projectiles.Projectiles.WatcherWand, 10, spell_name='Watch'),
+        'blood_watcher_wand': MagicWeapon('blood watcher wand', {dmg.DamageTypes.MAGICAL: 40}, 0.2,
+                                    'items_weapons_blood_watcher_wand', 12,
+                                    5, projectiles.Projectiles.BloodWatcherWand, 20, spell_name='Scarlett Watch'),
         'platinum_wand': MagicWeapon('platinum wand', {dmg.DamageTypes.MAGICAL: 32}, 0.3,
                                      'items_weapons_platinum_wand', 2,
                                      5, projectiles.Projectiles.PlatinumWand, 5, True,
@@ -4117,6 +4175,10 @@ def set_weapons():
                                    'items_weapons_talent_book', 0,
                                    2, projectiles.Projectiles.TalentBook, 2, True,
                                    'Smart Ball'),
+        'furfur': MagicWeapon('furfur', {dmg.DamageTypes.MAGICAL: 38}, 0.5,
+                               'items_weapons_furfur', 1,
+                               1, projectiles.Projectiles.Furfur, 4, True,
+                               'Furious Fury'),
         'hematology': Hematology('hematology', 'items_weapons_hematology', 2, 3,
                                  True),
         'blood_wand': MagicWeapon('blood wand', {dmg.DamageTypes.MAGICAL: 48}, 0.1,

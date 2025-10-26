@@ -1581,6 +1581,24 @@ class Player:
                                 self.sel_accessory = 2
                             elif inventory.TAGS['wings'] in item.tags:
                                 self.sel_accessory = 4
+                            for ii, a in enumerate(self.accessories):
+                                if a == item.id:
+                                    self.sel_accessory = ii
+                            tt = [['ring'], ['glove', 'gloves'], ['eye'], ['cross'], ['boots'], ['shield'], ['amulet', 'charm']]
+                            for t in tt:
+                                f = 0
+                                for tf in t:
+                                    if item.id.endswith(tf):
+                                        f = 1
+                                        break
+                                if f:
+                                    ct = 0
+                                    for ii, a in enumerate(self.accessories):
+                                        for tf in t:
+                                            if a.endswith(tf):
+                                                ct += 1
+                                                if ct >= 1 + (tf == 'ring'):
+                                                    self.sel_accessory = ii
                             if self.accessories[self.sel_accessory] != 'null':
                                 self.inventory.add_item(inventory.ITEMS[self.accessories[self.sel_accessory]])
                             self.sel_accessory = min(10, self.sel_accessory)

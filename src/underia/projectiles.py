@@ -197,11 +197,12 @@ class Projectiles:
             self.obj.apply_force(vector.Vector(self.rot, 50))
 
         def damage(self):
-            for entity in game.get_game().entities:
-                if vector.distance(entity.obj.pos[0] - self.obj.pos[0],
-                                   entity.obj.pos[1] - self.obj.pos[1]) < 100 + (entity.img.get_width() + entity.img.get_height()) / 4:
-                    entity.hp_sys.damage(weapons.WEAPONS['rune_blade'].damages[damages.DamageTypes.PHYSICAL] * game.get_game().player.attack *
-                                         game.get_game().player.attacks[0], damages.DamageTypes.PHYSICAL)
+            for ee in game.get_game().entities:
+                if vector.distance(ee.obj.pos[0] - self.obj.pos[0],
+                                   ee.obj.pos[1] - self.obj.pos[1]) < 100 + (ee.img.get_width() + ee.img.get_height()) / 4 and not ee.hp_sys.is_immune:
+                    ee.hp_sys.damage(weapons.WEAPONS['rune_blade'].damages[damages.DamageTypes.PHYSICAL] * game.get_game().player.attack *
+                                     game.get_game().player.attacks[0], damages.DamageTypes.PHYSICAL)
+                    ee.hp_sys.enable_immune(1.5)
                     self.dead = self.dead
 
     class Fur(Projectile):
@@ -432,11 +433,13 @@ class Projectiles:
         DAMAGE_AS = 'ice_shard'
         IMG = 'projectiles_ice_shard'
         COL = (200, 200, 255)
+
         def __init__(self, pos, rotation, no=8):
             super().__init__(pos, rotation)
             self.obj.apply_force(vector.Vector(rotation, random.randint(-100, 100)))
             for i in range(no):
                 game.get_game().projectiles.append(Projectiles.IceShard(pos, rotation + random.randint(-12, 12), no=0))
+
 
     class PlatinumWand(CopperWand):
         DAMAGE_AS = 'platinum_wand'
@@ -457,12 +460,41 @@ class Projectiles:
                 self.dead = True
             super().update()
 
+    class Furfur(PlatinumWand):
+        DAMAGE_AS = 'furfur'
+        IMG = 'projectiles_ice_shard'
+        COL = (180, 180, 180)
+        SPD = 300
+
+        def __init__(self, pos, rotation, no=5):
+            rot = random.randint(0, 360)
+            super().__init__(pos, rot)
+            for i in range(no):
+                game.get_game().projectiles.append(Projectiles.Furfur(pos, 0, no=0))
+
+    class Gaze(PlatinumWand):
+        COL = (255, 0, 0)
+        DMG_RATE = 5
+        DEL = False
+        DECAY_RATE = .5
+        DURATION = 100
+        SPD = 300
+        DAMAGE_AS = 'gaze'
+        DMG_TYPE = damages.DamageTypes.PIERCING
+        WT = damages.DamageTypes.PIERCING
+        ENABLE_IMMUNE = 2
+        IMG = 'projectiles_gaze'
+
+        def update(self):
+            super().update()
+            self.set_rotation(12 * self.tick)
+
     class ManaWand(PlatinumWand):
         SPD = 200
         DAMAGE_AS ='mana_wand'
         IMG = 'projectiles_null'
         COL = (0, 255, 255)
-        DELETE = False
+        DEL = False
         ENABLE_IMMUNE = 3
 
         def update(self):
@@ -1377,6 +1409,13 @@ class Projectiles:
         COLOR = (255, 0, 0)
         DURATION = 10
 
+    class BloodWatcherWand(Beam):
+        WIDTH = 60
+        LENGTH = 500
+        DAMAGE_AS = 'blood_watcher_wand'
+        COLOR = (255, 0, 0)
+        DURATION = 6
+
     class LifeWoodenSword(Beam):
         WIDTH = 30
         LENGTH = 150
@@ -1812,6 +1851,8 @@ class Projectiles:
     class TrueNightsEdge(NightsEdge):
         DAMAGE_AS = 'true_nights_edge'
         IMG = 'projectiles_nights_edge'
+        DMG_TYPE = damages.DamageTypes.MAGICAL
+        WT = damages.DamageTypes.PHYSICAL
 
         def update(self):
             super().update()

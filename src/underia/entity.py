@@ -827,6 +827,7 @@ class FaithlessEyeAI(MonsterAI):
         self.ax = -1000
         self.ay = 0
         self.phase = 1
+        self.tr = 0
 
     def on_update(self):
         if self.tick > 320:
@@ -836,8 +837,10 @@ class FaithlessEyeAI(MonsterAI):
         px, py = self.cur_target.pos if self.cur_target is not None else (0, 0)
         if self.state == 0:
             if self.tick % (100 - 20 * self.phase) < 30:
-                self.apply_force(vector.Vector(vector.coordinate_rotation(px - self.pos[0], py - self.pos[1]),
-                                               4000 + self.phase * 2000))
+                self.apply_force(vector.Vector(self.tr,
+                                               5000 + self.phase * (1000 + constants.DIFFICULTY * 400)))
+            else:
+                self.tr = (self.tr * 5 + vector.coordinate_rotation(px - self.pos[0], py - self.pos[1])) / 6
         else:
             tar_x, tar_y = px + self.ax, py + self.ay
             self.apply_force(vector.Vector(vector.coordinate_rotation(tar_x - self.pos[0], tar_y - self.pos[1]),
@@ -2174,7 +2177,7 @@ class Entities:
         BOSS_NAME = 'The Fluffy Worm'
         LOOT_TABLE = LootTable([
             IndividualLoot('flufffur', 1, 5, 8),
-            SelectionLoot([('swwwword', 1, 1), ('kuangkuangkuang', 1, 1)], 1, 1),
+            SelectionLoot([('swwwword', 1, 1), ('kuangkuangkuang', 1, 1), ('furfur', 1, 1)], 1, 1),
         ])
         IS_MENACE = True
 
@@ -2197,6 +2200,7 @@ class Entities:
             IndividualLoot('platinum', 1, 20, 30),
             IndividualLoot('zirconium', 1, 20, 30),
             SelectionLoot([('orange_ring', 1, 1), ('blue_ring', 1, 1), ('green_ring', 1, 1)], 1, 1),
+            SelectionLoot([('tearblade', 1, 1), ('gaze', 1, 1), ('blood_watcher_wand', 1, 1)], 1, 1),
             IndividualLoot('aimer', 1, 1, 1),
             IndividualLoot('tip2', 1, 1, 1),
         ])
@@ -2719,6 +2723,7 @@ class Entities:
         DISPLAY_MODE = 3
         LOOT_TABLE = LootTable([
             SelectionLoot([('doctor_expeller', 1, 1), ('apple_knife', 1, 1), ('fruit_wand', 1, 1)], 1, 2),
+            IndividualLoot('life_core', 1, 10, 20),
             ])
         SOUND_SPAWN = 'boss'
         SOUND_HURT = 'ore'
@@ -3037,13 +3042,14 @@ class Entities:
         DISPLAY_MODE = 3
 
         def __init__(self, pos, rot):
-            super().__init__(pos, game.get_game().graphics['entity_truthless_curse'], AbyssRuneShootAI, 12000)
+            super().__init__(pos, game.get_game().graphics['entity_truthless_curse'], AbyssRuneShootAI, 1500)
             self.obj.rot = rot
+            self.obj.SPEED *= 3
 
         def on_update(self):
             super().on_update()
             self.set_rotation(self.rot)
-            self.hp_sys.hp -= 120
+            self.hp_sys.hp -= 15
             self.damage()
 
         def damage(self):
@@ -3059,13 +3065,14 @@ class Entities:
         DISPLAY_MODE = 3
 
         def __init__(self, pos, rot):
-            super().__init__(pos, game.get_game().graphics['entity_faithless_curse'], AbyssRuneShootAI, 12000)
+            super().__init__(pos, game.get_game().graphics['entity_faithless_curse'], AbyssRuneShootAI, 1500)
             self.obj.rot = rot
+            self.obj.SPEED *= 3
 
         def on_update(self):
             super().on_update()
             self.set_rotation(self.rot)
-            self.hp_sys.hp -= 120
+            self.hp_sys.hp -= 15
             self.damage()
 
         def damage(self):
@@ -5088,7 +5095,7 @@ class Entities:
         SOUND_SPAWN = 'boss'
         SOUND_HURT = 'metal'
         SOUND_DEATH = 'explosive'
-        PHASE_SEGMENTS = [0.65]
+        PHASE_SEGMENTS = [0.25, 0.65]
 
 
         def __init__(self, pos):
@@ -5096,6 +5103,7 @@ class Entities:
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 85
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 87
             self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 88
+            self.obj.SPEED *= 1.1
             self.phase = 1
 
         def on_update(self):
@@ -5109,6 +5117,7 @@ class Entities:
                     self.PHASE_SEGMENTS = []
             if self.phase == 2 and self.hp_sys.hp < self.hp_sys.max_hp * 0.3:
                 self.phase = 3
+                self.obj.state = not self.obj.state
             if self.obj.state == 0:
                 self.set_rotation((self.rot * 2 - self.obj.velocity.get_net_rotation()) // 3)
             else:
@@ -5120,11 +5129,13 @@ class Entities:
                         k = 3
                     if self.obj.phase == 3:
                         k = 5
+                    ps = k * 3
+                    dr = random.uniform(-ps, ps)
                     for r in range(-k * 15, k * 15 + 1, 15 - (self.obj.phase == 3) * 5):
                         game.get_game().entities.append(Entities.FaithlessCurse(self.obj.pos,
                                                                                 vector.coordinate_rotation(
                                                                                     px - self.obj.pos[0],
-                                                                                    py - self.obj.pos[1]) + r))
+                                                                                    py - self.obj.pos[1]) + r + dr))
 
     class TruthlessEye(Entity):
         NAME = 'Truthless Eye'
@@ -5141,7 +5152,7 @@ class Entities:
         SOUND_SPAWN = 'boss'
         SOUND_HURT = 'metal'
         SOUND_DEATH = 'explosive'
-        PHASE_SEGMENTS = [0.6]
+        PHASE_SEGMENTS = [0.25, 0.6]
 
         def __init__(self, pos):
             super().__init__(pos, game.get_game().graphics['entity_truthless_eye'], FaithlessEyeAI, 56000)
@@ -5175,11 +5186,13 @@ class Entities:
                         k = 5
                     if self.obj.phase == 3:
                         k = 7
+                    ps = k * 2
+                    dr = random.uniform(-ps, ps)
                     for r in range(-k * 20, k * 20 + 1, 20 - (self.obj.phase == 3) * 10):
                         game.get_game().entities.append(Entities.TruthlessCurse(self.obj.pos,
                                                                                 vector.coordinate_rotation(
                                                                                     px - self.obj.pos[0],
-                                                                                    py - self.obj.pos[1]) + r))
+                                                                                    py - self.obj.pos[1]) + dr + r))
 
     class SkyCubeFighter(Entity):
         NAME = 'Sky Cube Fighter'
