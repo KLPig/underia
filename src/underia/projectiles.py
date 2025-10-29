@@ -287,49 +287,6 @@ class Projectiles:
                                                     ))
 
 
-    class BurningBook(Glow):
-        NAME = 'Burning Book'
-        COL = (255, 63, 0)
-
-        def __init__(self, pos, rotation):
-            self.obj = ProjectileMotion(pos, rotation)
-            self.img = game.get_game().graphics['projectiles_glow']
-            self.d_img = self.img
-            self.rot = rotation
-            self.set_rotation(rotation)
-            self.dead = False
-            self.tick = 0
-
-        def update(self):
-            _, target_rot = self.get_closest_entity()
-            if target_rot - self.rot > 180:
-                target_rot -= 360
-            if target_rot - self.rot < -180:
-                target_rot += 360
-            self.obj.velocity.reset()
-            self.obj.velocity.vectors[0].value *= math.cos(math.radians(.15 * (target_rot - self.obj.rotation)))
-            self.obj.rotation = (self.obj.rotation + .15 * (target_rot - self.obj.rotation))
-            self.tick += 1
-            super().update()
-            if self.tick > 100:
-                self.dead = True
-            self.damage()
-
-        def damage(self):
-            imr = self.d_img.get_rect(center=self.obj.pos())
-            for entity in game.get_game().entities:
-                if imr.collidepoint(entity.obj.pos[0], entity.obj.pos[1]) or entity.d_img.get_rect(
-                        center=entity.obj.pos).collidepoint(self.obj.pos[0], self.obj.pos[1]):
-                    entity.hp_sys.damage(weapons.WEAPONS['burning_book'].damages[
-                                             damages.DamageTypes.MAGICAL] * game.get_game().player.attack *
-                                         game.get_game().player.attacks[2] * 0.5, damages.DamageTypes.MAGICAL,
-                                         )
-                    entity.hp_sys.effect(effects.Burning(9, weapons.WEAPONS['burning_book'].damages[
-                        damages.DamageTypes.MAGICAL] * game.get_game().player.attack * game.get_game().player.attacks[
-                                                             2] // 10 + 1))
-                    self.damage_particle()
-                    self.dead = True
-
     class TalentBook(Glow):
         NAME = 'Talent Book'
         IMG = 'projectiles_talent_book'
@@ -394,7 +351,7 @@ class Projectiles:
 
         def damage(self):
             game.get_game().displayer.point_light(self.COL, position.displayed_position(self.obj.pos), 2.5 * self.LIGHT_E_RATE,
-                                                  (self.d_img.get_width() + self.d_img.get_height()) * .55 * self.LIGHT_R_RATE)
+                                                  (self.d_img.get_width() + self.d_img.get_height()) * .15 * self.LIGHT_R_RATE)
             kb = weapons.WEAPONS[self.DAMAGE_AS].knock_back
             for ee in game.get_game().entities:
                 if (vector.distance(ee.obj.pos[0] - self.obj.pos[0], ee.obj.pos[1] - self.obj.pos[1]) <
@@ -472,6 +429,7 @@ class Projectiles:
             for i in range(no):
                 game.get_game().projectiles.append(Projectiles.Furfur(pos, 0, no=0))
 
+
     class Gaze(PlatinumWand):
         COL = (255, 0, 0)
         DMG_RATE = 5
@@ -501,6 +459,67 @@ class Projectiles:
             super().update()
             pg.draw.circle(game.get_game().displayer.canvas, (0, 255, 255), position.displayed_position(self.obj.pos),
                            int(50 / game.get_game().player.get_screen_scale()))
+
+    class Mantle(PlatinumWand):
+        SPD = 20
+        DAMAGE_AS = 'mantle'
+        IMG = 'projectiles_null'
+        COL = (255, 0, 0)
+        DMG_TYPE = damages.DamageTypes.PHYSICAL
+        WT = damages.DamageTypes.PHYSICAL
+
+        def update(self):
+            super().update()
+            pg.draw.circle(game.get_game().displayer.canvas, (255, 0, 0), position.displayed_position(self.obj.pos),
+                           int(10 / game.get_game().player.get_screen_scale()))
+
+    class Sunfire(PlatinumWand):
+        SPD = 100
+        DAMAGE_AS = 'sunfire'
+        IMG = 'projectiles_null'
+        COL = (255, 0, 0)
+
+        def update(self):
+            super().update()
+            if self.tick % int(20 * math.pi) == 0:
+                for r in range(0, 360, 20):
+                    game.get_game().projectiles.append(Projectiles.SunfireSmall(self.obj.pos, r + self.tick + self.rot))
+            pg.draw.circle(game.get_game().displayer.canvas, (255, 0, 0), position.displayed_position(self.obj.pos),
+                           int((80 + math.sin(self.tick / 20) * 20) / game.get_game().player.get_screen_scale()))
+
+    class BurningBook(PlatinumWand):
+        NAME = 'Burning Book'
+        COL = (255, 63, 0)
+        SPD = 150
+
+        def damage(self):
+            imr = self.d_img.get_rect(center=self.obj.pos())
+            for ee in game.get_game().entities:
+                if imr.collidepoint(ee.obj.pos[0], ee.obj.pos[1]) or ee.d_img.get_rect(
+                        center=ee.obj.pos).collidepoint(self.obj.pos[0], self.obj.pos[1]):
+                    ee.hp_sys.damage(weapons.WEAPONS['burning_book'].damages[
+                                             damages.DamageTypes.MAGICAL] * game.get_game().player.attack *
+                                     game.get_game().player.attacks[2] * 0.5, damages.DamageTypes.MAGICAL,
+                                     )
+                    ee.hp_sys.effect(effects.Burning(9, weapons.WEAPONS['burning_book'].damages[
+                        damages.DamageTypes.MAGICAL] * game.get_game().player.attack * game.get_game().player.attacks[
+                                                             2] // 10 + 1))
+                    self.damage_particle()
+                    self.dead = True
+
+    class SunfireSmall(PlatinumWand):
+        SPD = 30
+        DAMAGE_AS = 'sunfire'
+        IMG = 'projectiles_null'
+        COL = (255, 0, 0)
+        DMG_RATE = .5
+        DEL = False
+        DECAY_RATE = .5
+
+        def update(self):
+            super().update()
+            pg.draw.circle(game.get_game().displayer.canvas, (255, 0, 0), position.displayed_position(self.obj.pos),
+                           int(15 / game.get_game().player.get_screen_scale()))
 
     class ObsidianWand(PlatinumWand):
         DAMAGE_AS = 'obsidian_wand'
@@ -563,8 +582,9 @@ class Projectiles:
         DAMAGE_AS = 'nights_edge'
         IMG = 'projectiles_nights_edge'
         WT = damages.DamageTypes.PHYSICAL
+        DMG_TYPE = damages.DamageTypes.PHYSICAL
         COL = (50, 0, 50)
-        DMG_RATE = 0.9
+        DMG_RATE = .8
 
         def update(self):
             self.WT = damages.DamageTypes.PHYSICAL
@@ -574,18 +594,39 @@ class Projectiles:
                 self.dead = True
             else:
                 self.dead = False
-            if type(self) is Projectiles.NightsEdge:
-                self.obj.FRICTION = .6
+
+    class AirFloat(PlatinumWand):
+        def __init__(self, pos, rotation):
+            super().__init__(pos, rotation)
+            self.dead = True
+            game.get_game().player.z = -.5
+
+        def update(self):
+            pass
+
+    class Sunrise(PlatinumWand):
+        DAMAGE_AS = 'sunrise'
+        IMG = 'projectiles_sunrise'
+        WT = damages.DamageTypes.PHYSICAL
+        DMG_TYPE = damages.DamageTypes.PHYSICAL
+        COL = (0, 255, 255)
+        DMG_RATE = 1
+        SPD = 150
+
+        def update(self):
+            super().update()
+            self.set_rotation(self.tick * 12)
 
     class BNightsEdge(PlatinumWand):
         DAMAGE_AS = 'nights_edge'
         IMG = 'projectiles_nights_edge'
         WT = damages.DamageTypes.PHYSICAL
+        DMG_TYPE = damages.DamageTypes.PHYSICAL
         COL = (50, 0, 50)
         DMG_RATE = 1
 
         def update(self):
-            self.obj.FRICTION = .7
+            self.obj.FRICTION = .9
             self.WT = damages.DamageTypes.PHYSICAL
             super().update()
             self.tick += 1
@@ -1841,6 +1882,7 @@ class Projectiles:
         DAMAGE_AS = 'doctor_expeller'
         IMG = 'projectiles_apple'
         WT = damages.DamageTypes.PHYSICAL
+        DMG_TYPE = damages.DamageTypes.PHYSICAL
         COL = (255, 200, 200)
         DMG_RATE = 0.3
 
@@ -2622,17 +2664,6 @@ class Projectiles:
         TAIL_COLOR = (50, 0, 50)
         TAIL_SIZE = 3
 
-        def __init__(self, pos, rotation, speed, damage):
-            super().__init__(pos, rotation, speed, damage)
-            self.poss = [game.get_game().player.obj.pos]
-
-        def update(self):
-            self.poss.append(self.obj.pos)
-            if len(self.poss) > 5:
-                self.poss.pop(0)
-            super().update()
-            eff.pointed_curve((60, 0, 60), self.poss, 5, 255)
-
     class Accelerationism(Bullet):
         DAMAGES = 320
         SPEED = 90
@@ -3100,8 +3131,8 @@ class Projectiles:
         IMG = 'items_weapons_shuriken'
 
     class SpikeBall(ThiefWeapon):
-        DAMAGE_AS = 'spike_ball'
-        IMG = 'items_weapons_spike_ball'
+        DAMAGE_AS = 'spikeball'
+        IMG = 'items_weapons_spikeball'
 
         def update(self):
             super().update()

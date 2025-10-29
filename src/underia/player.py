@@ -163,6 +163,7 @@ class Player:
         self.tick = 0
         self.inv_pos = 0
         self.shield_break = 0.0
+        self.nts = []
 
     def calculate_regeneration(self):
         ACCESSORY_REGEN = {}
@@ -2038,10 +2039,6 @@ class Player:
                             window = pg.display.get_surface()
                             wx = window.get_width() // 2
                             wy = window.get_height() // 2
-                            if not self.inventory.is_enough(inventory.ITEMS['tip0']):
-                                self.inventory.add_item(inventory.ITEMS['tip0'])
-                            if not self.inventory.is_enough(inventory.ITEMS['tip1']):
-                                self.inventory.add_item(inventory.ITEMS['tip1'])
                             lft = pg.font.Font(path.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 45)
                             lss = pg.font.Font(path.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 24)
                             while window_opened:

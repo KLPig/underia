@@ -206,6 +206,10 @@ try:
             game.further_entities
         except AttributeError:
             game.further_entities = {}
+        try:
+            game.player.nts
+        except AttributeError:
+            game.player.nts = []
         while len(game.player.accessories) < 9:
             game.player.accessories.insert(0, 'null')
         while len(game.player.accessories) < 10:

@@ -2132,6 +2132,16 @@ class Entities:
                 self.obj.TOUCHING_DAMAGE *= 6
 
 
+        def t_draw(self):
+            super().t_draw()
+            if self.hp_sys.hp <= 0:
+                b = 0
+                if not 'M1' in game.get_game().player.nts and random.random() < .1:
+                    game.get_game().player.nts.append('M1')
+                    b = 1
+                if b:
+                    game.get_game().dialog.push_dialog('Notebook Updated!')
+
         def on_update(self):
             super().on_update()
             self.set_rotation((self.rot * 5 - self.obj.velocity.get_net_rotation()) // 6)
@@ -2166,6 +2176,16 @@ class Entities:
                 self.NAME = f'Rolling Fluff-Ball LV.{game.get_game().stage - 3 * game.get_game().chapter}'
                 self.obj.TOUCHING_DAMAGE *= (6 + 1.5 * (game.get_game().stage - 3 * game.get_game().chapter + constants.DIFFICULTY))
 
+        def t_draw(self):
+            super().t_draw()
+            if self.hp_sys.hp <= 0:
+                b = 0
+                if not 'M1B' in game.get_game().player.nts and random.random() < .1:
+                    game.get_game().player.nts.append('M1B')
+                    b = 1
+                if b:
+                    game.get_game().dialog.push_dialog('Notebook Updated!')
+
         def on_update(self):
             super().on_update()
             px = game.get_game().player.obj.pos[0] - self.obj.pos[0]
@@ -2191,6 +2211,17 @@ class Entities:
             self.body[0].obj.SIGHT_DISTANCE = 9999
             self.body[0].obj.SPEED *= 3
 
+        def t_draw(self):
+            super().t_draw()
+
+            if self.hp_sys.hp <= 0:
+                b = 0
+                if not 'D1B' in game.get_game().player.nts and random.random() < .1:
+                    game.get_game().player.nts.append('D1B')
+                    b = 1
+                if b:
+                    game.get_game().dialog.push_dialog('Notebook Updated!')
+
 
     class TrueEye(Entity):
         NAME = 'True Eye'
@@ -2202,7 +2233,6 @@ class Entities:
             SelectionLoot([('orange_ring', 1, 1), ('blue_ring', 1, 1), ('green_ring', 1, 1)], 1, 1),
             SelectionLoot([('tearblade', 1, 1), ('gaze', 1, 1), ('blood_watcher_wand', 1, 1)], 1, 1),
             IndividualLoot('aimer', 1, 1, 1),
-            IndividualLoot('tip2', 1, 1, 1),
         ])
         BOSS_NAME = 'The Watcher of Terror'
         IS_MENACE = True
@@ -2212,6 +2242,7 @@ class Entities:
         SOUND_DEATH = 'huge_monster'
 
         PHASE_SEGMENTS = [0.3, 0.7]
+
 
         def __init__(self, pos):
             super().__init__(pos, game.get_game().graphics['entity_true_eye'], TrueEyeAI, 22000)
@@ -2343,6 +2374,17 @@ class Entities:
             if self.hp_sys.hp <= .002 * self.hp_sys.max_hp and constants.DIFFICULTY >= 2 and self.phase == 2:
                 self.hp_sys.hp = .002 * self.hp_sys.max_hp
 
+            if self.hp_sys.hp <= 0:
+                b = 0
+                if not 'D1' in game.get_game().player.nts:
+                    game.get_game().player.nts.append('D1')
+                    b = 1
+                if not 'M2' in game.get_game().player.nts and random.random() < .1:
+                    game.get_game().player.nts.append('M2')
+                    b = 1
+                if b:
+                    game.get_game().dialog.push_dialog('Notebook Updated!')
+
     class Tree(Entity):
         NAME = 'Tree'
         DISPLAY_MODE = 3
@@ -2360,6 +2402,19 @@ class Entities:
             super().__init__(pos, game.get_game().graphics['entity_tree'], BuildingAI, 10)
             self.hp_sys(op='config', maximum_damage=3)
 
+        def t_draw(self):
+            super().t_draw()
+            if self.hp_sys.hp <= 0:
+                b = 0
+                if not 'L1' in game.get_game().player.nts:
+                    game.get_game().player.nts.append('L1')
+                    b = 1
+                if not 'M1C' in game.get_game().player.nts and random.random() < .1:
+                    game.get_game().player.nts.append('M1C')
+                    b = 1
+                if b:
+                    game.get_game().dialog.push_dialog('Notebook Updated!')
+
     class HugeTree(Entity):
         NAME = 'Huge Tree'
         DISPLAY_MODE = 3
@@ -2375,6 +2430,17 @@ class Entities:
         def __init__(self, pos):
             super().__init__(pos, game.get_game().graphics['entity_huge_tree'], BuildingAI, 200)
             self.hp_sys(op='config', maximum_damage=50)
+
+
+        def t_draw(self):
+            super().t_draw()
+            if self.hp_sys.hp <= 0:
+                b = 0
+                if not 'M1C' in game.get_game().player.nts and random.random() < .1:
+                    game.get_game().player.nts.append('M1C')
+                    b = 1
+                if b:
+                    game.get_game().dialog.push_dialog('Notebook Updated!')
 
     class TreeMonster(Entity):
         NAME = 'Tree Monster'
@@ -2562,6 +2628,17 @@ class Entities:
                 self.NAME = 'The Coniferous Tree'
                 self.obj.TOUCHING_DAMAGE *= 8
 
+
+        def t_draw(self):
+            super().t_draw()
+            if self.hp_sys.hp <= 0:
+                b = 0
+                if not 'M1C' in game.get_game().player.nts and random.random() < .1:
+                    game.get_game().player.nts.append('M1C')
+                    b = 1
+                if b:
+                    game.get_game().dialog.push_dialog('Notebook Updated!')
+
     class MagmaCube(Entity):
         NAME = 'Magma Cube'
         DISPLAY_MODE = 3
@@ -2684,6 +2761,160 @@ class Entities:
                 game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
 
+    class NamelessFire(Entity):
+        NAME = 'Nameless Fire'
+        DISPLAY_MODE = 3
+
+        def __init__(self, pos, rot):
+            super().__init__(pos, game.get_game().graphics['entity_nameless_fire'], MagmaKingFireballAI, 800)
+            self.obj.rot = rot
+            self.obj.velocity *= 2
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = -30
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 0
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = -80
+            if constants.DIFFICULTY >= 3:
+                self.hp_sys.IMMUNE = True
+
+        def t_draw(self):
+            super().t_draw()
+            self.hp_sys.hp -= 10
+
+        def on_update(self):
+            super().on_update()
+            self.damage()
+
+        def damage(self):
+            if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
+                               self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 36:
+                game.get_game().player.hp_sys.damage(90, damages.DamageTypes.MAGICAL)
+                game.get_game().player.hp_sys.effect(effects.Gravity(2, 1))
+                game.get_game().player.hp_sys.enable_immune()
+                self.hp_sys.hp = 0
+
+    class AzureStele(Entity):
+        NAME = 'Azure Stele'
+        BOSS_NAME = 'Nameless Rest'
+        DISPLAY_MODE = 3
+        IS_MENACE = True
+
+        PHASE_SEGMENTS = [.3, .6]
+
+        LOOT_TABLE = LootTable([
+            IndividualLoot('aerialite_ingot', 1, 12, 15),
+            IndividualLoot('floatstone', 1, 50, 70),
+            SelectionLoot([('valkyrien', 1, 1), ('forget', 1, 1), ('air_float', 1, 1)], 1, 1),
+        ])
+
+        def __init__(self, pos):
+            self.others: list[MonsterAI] = [BuildingAI(vector.Vector2D(91, 100 * i) + pos) for i in range(2 + (constants.DIFFICULTY + 1) // 2)]
+            super().__init__(pos, game.get_game().graphics['entity_azure_stele'], BuildingAI, 12000)
+            self.others.append(self.obj)
+            for b in self.others:
+                b.IS_OBJECT = False
+            self.dt = 300 + len(self.others) * 100 - constants.DIFFICULTY * 100
+            self.rt = 88
+            self.state = 0
+            self.tick = 0
+            self.phase = 0
+
+            self.pjs = []
+
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 50
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 50
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 50
+
+        def on_update(self):
+            super().on_update()
+            for pj in self.pjs:
+                pj.on_update()
+
+        def t_draw(self):
+            if self.phase == 3:
+                self.hp_sys.hp = 1
+                if self.dt > 0:
+                    self.dt = max(0, self.dt - 1)
+                    for i, o in enumerate(self.others):
+                        o.pos = (o.pos + game.get_game().player.obj.pos + vector.Vector2D(self.rt + 360 * i // len(self.others), self.dt * 2.5)) / 2
+                else:
+                    self.hp_sys.hp = 0
+
+            self.tick += 1
+            if random.randint(0, self.tick) > 200:
+                self.state = (self.state + 1) % min(5, self.phase + (constants.DIFFICULTY + 1) // 2 + 1)
+                self.tick = 0
+
+            if self.hp_sys.hp < self.hp_sys.max_hp * .6 and self.phase == 0:
+                self.state = 0
+                self.tick = 0
+                self.phase = 1
+                bj = BuildingAI(vector.Vector2D(91, 200) + self.obj.pos)
+                bj.IS_OBJECT = False
+                self.others.append(bj)
+            elif self.hp_sys.hp < self.hp_sys.max_hp * .3 and self.phase == 1:
+                self.state = 0
+                self.tick = 0
+                self.phase = 2
+                bj = BuildingAI(vector.Vector2D(91, 200) + self.obj.pos)
+                bj.IS_OBJECT = False
+                self.others.append(bj)
+            elif self.hp_sys.hp <= 1 and self.phase == 2:
+                self.phase = 3
+                self.hp_sys.hp = 1
+
+
+            if self.state == 0:
+                if self.tick % 20 == 0:
+                    rs = random.choices(self.others, k=max(2, constants.DIFFICULTY * 2 - 1))
+                    for r in rs:
+                        dp = vector.coordinate_rotation(*(game.get_game().player.obj.pos - r.pos))
+                        self.pjs.append(Entities.NamelessFire(r.pos, dp))
+            elif self.state == 1:
+                self.rt += .5
+                for i, o in enumerate(self.others):
+                    o.pos = (o.pos + game.get_game().player.obj.pos + vector.Vector2D(self.rt + 360 * i // len(self.others), self.dt * 2.0)) / 2
+                if self.tick % 60 == 0:
+                    rs = random.choices(self.others, k=max(1, constants.DIFFICULTY))
+                    for r in rs:
+                        ar = random.randint(0, 359)
+                        for dr in range(0, 360, 120):
+                            self.pjs.append(Entities.NamelessFire(r.pos, dr + ar))
+            elif self.state == 2:
+                self.rt += 1.2
+                for i, o in enumerate(self.others):
+                    o.pos = (o.pos + game.get_game().player.obj.pos + vector.Vector2D(self.rt + 360 * i // len(self.others), self.dt * 1.8)) / 2
+                if self.tick % 30 == 0:
+                    for r in self.others:
+                        dp = vector.coordinate_rotation(*(game.get_game().player.obj.pos - r.pos))
+                        self.pjs.append(Entities.NamelessFire(r.pos, dp))
+            elif self.state == 3:
+                self.rt += 1.5
+                for i, o in enumerate(self.others):
+                    o.pos = (o.pos + game.get_game().player.obj.pos + vector.Vector2D(self.rt + 360 * i // len(self.others), self.dt * 1.0)) / 2
+                if self.tick % 5 == 0:
+                    r = self.others[0]
+                    dp = vector.coordinate_rotation(*(game.get_game().player.obj.pos - r.pos))
+                    self.pjs.append(Entities.NamelessFire(r.pos, dp))
+            elif self.state == 4:
+                self.rt += .8
+                for i, o in enumerate(self.others):
+                    o.pos = (o.pos + game.get_game().player.obj.pos + vector.Vector2D(self.rt + 360 * i // len(self.others), self.dt * 2.5)) / 2
+                if self.tick % 10 == 0:
+                    for r in self.others:
+                        dp = vector.coordinate_rotation(*(game.get_game().player.obj.pos - r.pos))
+                        self.pjs.append(Entities.NamelessFire(r.pos, dp))
+
+            super().t_draw()
+
+            for o in self.others:
+                if o == self.obj:
+                    continue
+                dr = self.d_img.get_rect(center=position.displayed_position(o.pos))
+                game.get_game().displayer.canvas.blit(self.d_img, dr)
+            for pj in self.pjs:
+                pj.t_draw()
+                if pj.hp_sys.hp <= 0:
+                    self.pjs.remove(pj)
+
     class ProtectApple(Entity):
         NAME = 'Apple'
         DISPLAY_MODE = 3
@@ -2796,6 +3027,16 @@ class Entities:
                 elif self.tick > 70:
                     self.img.set_alpha((self.tick - 70) * 255 // 10)
             self.set_rotation(self.rot)
+
+        def t_draw(self):
+            super().t_draw()
+            if self.hp_sys.hp <= 0:
+                b = 0
+                if not 'D1C' in game.get_game().player.nts:
+                    game.get_game().player.nts.append('D1C')
+                    b = 1
+                if b:
+                    game.get_game().dialog.push_dialog('Notebook Updated!')
 
     class HeavenBall(MagmaKingFireball):
         NAME = 'Heaven Ball'
@@ -2917,7 +3158,7 @@ class Entities:
             IndividualLoot('blood_ingot', .7, 10, 20),
             IndividualLoot('firite_ingot', .9, 10, 30),
             IndividualLoot('firy_plant', 1, 20, 25),
-            IndividualLoot('tip3', 1, 1, 1),
+            SelectionLoot([('mantle', 1, 1), ('phoenix_exploder', 1, 1), ('sunfire', 1, 1)], 1, 1),
         ])
 
         BOSS_NAME = 'The Fire Monster'
@@ -2951,7 +3192,6 @@ class Entities:
             IndividualLoot('mysterious_ingot', 1, 15, 35),
             IndividualLoot('storm_core', 1, 2, 4),
             IndividualLoot('tornado', 0.5, 1, 1),
-            IndividualLoot('tip4', 1, 1, 1),
         ])
         VITAL = True
         PHASE_SEGMENTS = [0.5]
@@ -3788,7 +4028,6 @@ class Entities:
             IndividualLoot('soul', 1, 100, 200),
             SelectionLoot([('spiritual_stabber', 1, 1), ('spiritual_piercer', 1, 1), ('spiritual_destroyer', 1, 1)], 1,
                           2),
-            IndividualLoot('tip5', 1, 1, 1),
             IndividualLoot('spiritual_pickaxe', 1, 1, 1)
         ])
 
@@ -5089,7 +5328,6 @@ class Entities:
             SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 1, 3),
             IndividualLoot('soul_of_integrity', 1, 10, 22),
             IndividualLoot('double_watcher_wand', 0.5, 1, 1),
-            IndividualLoot('tip71', 1, 1, 1),
         ])
 
         SOUND_SPAWN = 'boss'
@@ -5146,7 +5384,6 @@ class Entities:
             SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 1, 3),
             IndividualLoot('soul_of_integrity', 1, 10, 22),
             IndividualLoot('double_watcher_wand', 0.5, 1, 1),
-            IndividualLoot('tip71', 1, 1, 1),
         ])
 
         SOUND_SPAWN = 'boss'
@@ -5287,7 +5524,6 @@ class Entities:
         LOOT_TABLE = LootTable([
             SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 1, 3),
             IndividualLoot('soul_of_bravery', 1, 10, 22),
-            IndividualLoot('tip73', 1, 1, 1),
         ])
 
         SOUND_SPAWN = 'boss'
@@ -5347,7 +5583,6 @@ class Entities:
             SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 1, 3),
             IndividualLoot('soul_of_kindness', 1, 10, 22),
             IndividualLoot('remote_sword', 0.8, 1, 1),
-            IndividualLoot('tip72', 1, 1, 1),
         ])
 
         SOUND_SPAWN = 'boss'
@@ -5553,8 +5788,6 @@ class Entities:
             SelectionLoot([('palladium', 2, 3), ('mithrill', 2, 3), ('titanium', 2, 3)], 1, 3),
             IndividualLoot('dark_ingot', 1, 5, 8),
             IndividualLoot('soul_of_patience', 1, 1, 2),
-            IndividualLoot('tip8', 0.1, 1, 1),
-            IndividualLoot('tip9', 0.1, 1, 1),
         ])
 
         SOUND_DEATH = 'huge_monster'

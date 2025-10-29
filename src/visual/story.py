@@ -6,7 +6,7 @@ import os
 
 try:
     pt = path.get_path('assets/graphics/legend')
-    image = {l: pg.image.load(os.path.join(pt, l)) for l in os.listdir(pt)}
+    image = {l: pg.image.load(os.path.join(pt, l)) for l in os.listdir(pt) if l.endswith('.png')}
 except FileNotFoundError:
     print('Warning: File not found.\nIf story unused, ignore this warning.')
 

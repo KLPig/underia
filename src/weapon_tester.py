@@ -76,7 +76,6 @@ game.player.max_mana = constants.INFINITY
 game.player.mana = constants.INFINITY
 game.player.inspiration = constants.INFINITY
 game.player.max_inspiration = constants.INFINITY
-game.player.max_stamina = constants.INFINITY
 game.player.talent = constants.INFINITY
 game.player.max_talent = constants.INFINITY
 
