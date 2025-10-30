@@ -5,7 +5,7 @@ import pygame as pg
 import os
 
 pt = path.get_path('assets/graphics/legend')
-image = {l: pg.image.load(os.path.join(pt, l)) for l in os.listdir(pt)}
+image = {l: pg.image.load(os.path.join(pt, l)) for l in os.listdir(pt) if l.endswith('.png')}
 
 def show_legend():
     window = pg.display.get_surface()

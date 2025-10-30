@@ -429,6 +429,10 @@ class Projectiles:
             for i in range(no):
                 game.get_game().projectiles.append(Projectiles.Furfur(pos, 0, no=0))
 
+    class Dydy(Furfur):
+        DAMAGE_AS = 'dydy'
+        SPD = 50
+        DURATION = 300
 
     class Gaze(PlatinumWand):
         COL = (255, 0, 0)
@@ -441,6 +445,23 @@ class Projectiles:
         DMG_TYPE = damages.DamageTypes.PIERCING
         WT = damages.DamageTypes.PIERCING
         ENABLE_IMMUNE = 2
+        IMG = 'projectiles_gaze'
+
+        def update(self):
+            super().update()
+            self.set_rotation(12 * self.tick)
+
+    class Witness(PlatinumWand):
+        COL = (255, 0, 0)
+        DMG_RATE = 2
+        DEL = False
+        DECAY_RATE = 1
+        DURATION = 300
+        SPD = 100
+        DAMAGE_AS = 'witness'
+        DMG_TYPE = damages.DamageTypes.PIERCING
+        WT = damages.DamageTypes.PIERCING
+        ENABLE_IMMUNE = 1
         IMG = 'projectiles_gaze'
 
         def update(self):
@@ -1885,6 +1906,15 @@ class Projectiles:
         DMG_TYPE = damages.DamageTypes.PHYSICAL
         COL = (255, 200, 200)
         DMG_RATE = 0.3
+
+    class FApple(NightsEdge):
+        DAMAGE_AS = 'virus_defeater'
+        IMG = 'projectiles_apple'
+        WT = damages.DamageTypes.PHYSICAL
+        DMG_TYPE = damages.DamageTypes.PHYSICAL
+        COL = (255, 200, 200)
+        DMG_RATE = .5
+        DURATION = 500
 
     class TrueExcalibur(Excalibur):
         DAMAGE_AS = 'true_excalibur'

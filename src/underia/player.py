@@ -1,5 +1,6 @@
 import math
 import random
+import datetime
 
 import pygame as pg
 
@@ -630,6 +631,8 @@ class Player:
             self.ntcs.append(f'Low Talent: Disable Regen.')
         if game.get_game().server is not None:
             self.ntcs.append(f'Server on {game.get_game().server.host}, port {game.get_game().server.port}.')
+        if datetime.datetime.now() - game.get_game().save_time < datetime.timedelta(minutes=30):
+            self.ntcs.append(f'Save {int((datetime.datetime.now() - game.get_game().save_time).seconds / 60)} minutes before.')
         self.hp_sys.heal(self.REGENERATION)
         self.mana = min(self.mana + self.MAGIC_REGEN, self.max_mana + max_mana + int(self.profile.point_wisdom ** 1.1) / 2)
         displayer = game.get_game().displayer
@@ -1709,6 +1712,14 @@ class Player:
                                 self.inventory.remove_item(item)
                             self.profile.add_point(1)
                             self.profile.add_point(6)
+                            b = 0
+                            if not 'L3' in game.get_game().player.nts:
+                                game.get_game().player.nts.append('L3')
+                                b = 1
+                            if b:
+                                game.get_game().dialog.push_dialog('Notebook Updated!', "The otherworld invasion have stopped!")
+                                if game.get_game().player.inventory.is_enough(inventory.ITEMS['otherworld_stone']):
+                                    game.get_game().player.inventory.items['otherworld_stone'] = 0
                         elif item.id == 'life_fruit':
                             if self.hp_sys.max_hp >= 600 and self.max_mana >= 300 and self.max_talent >= 10:
                                 self.hp_sys.max_hp = 1000
@@ -1811,6 +1822,10 @@ class Player:
                                                               'There is no Stone Altar nearby.')
                             else:
                                 entity.entity_spawn(entity.Entities.AbyssEye, 1600, 1600, 0, 1145, 100000)
+                                self.inventory.remove_item(item)
+                        elif item.id == 'legend_soul':
+                            if not self.inventory.is_enough(inventory.ITEMS['soulfeather']) and game.get_game().stage == 0:
+                                entity.entity_spawn(entity.Entities.Ray, 1600, 1600, 0, 1145, 100000)
                                 self.inventory.remove_item(item)
                         elif item.id == 'sky_painting':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if

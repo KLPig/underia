@@ -730,7 +730,7 @@ class SandStormAI(MonsterAI):
         self.tick += 1
         if self.state == 0:
             self.rot = (self.rot + .5) % 360
-            self.d = 240 + abs(self.tick % 200 - 100) * 6
+            self.d = 240 + (math.sin(self.tick / 200 * math.pi) + 1) * 300
         elif self.state == 1:
             self.rot = (self.rot + 6) % 360
             if self.d > 180:
@@ -2205,9 +2205,28 @@ class Entities:
         SOUND_DEATH = 'sticky'
 
         def __init__(self, pos):
-            super().__init__(pos, 12 + [-2, 0, 6, 12][constants.DIFFICULTY], game.get_game().graphics['entity_fluffball'],
-                             game.get_game().graphics['entity_fluffff'], FluffBallAI,
-                             int(88000 * [.5, 1, 1.6, 2.2][constants.DIFFICULTY]), 130, 90)
+            if 'D3' in game.get_game().player.nts and game.get_game().stage <= 0:
+                super().__init__(pos, 20 + [-2, 0, 6, 12][constants.DIFFICULTY], game.get_game().graphics['entity_fluffball'],
+                                 game.get_game().graphics['entity_fluffff'], FluffBallAI,
+                                 int(60000 * [.5, 1, 1.6, 2.2][constants.DIFFICULTY]), 260, 180)
+                self.obj.SPEED *= 2
+                for b in self.body:
+                    for d in b.hp_sys.defenses.defences.keys():
+                        b.hp_sys.resistances[d] *= .2 if b not in [self.body[0], self.body[-1]] else 1.5
+                        b.hp_sys.defenses[d] += 80
+                    b.img = game.get_game().graphics['entity_fluffff_otherworld']
+                if not len([1 for l in self.LOOT_TABLE.loot_list if 'item' in dir(l) and l.item == 'otherworld_stone']):
+                    self.LOOT_TABLE.loot_list.append(
+                        IndividualLoot('otherworld_stone', 1, 10, 20),
+                    )
+                    self.LOOT_TABLE.loot_list.append(
+                        IndividualLoot('worm_scarf', 1, 1, 1),
+                    )
+                self.NAME = 'Fluffff - Otherworld'
+            else:
+                super().__init__(pos, 12 + [-2, 0, 6, 12][constants.DIFFICULTY], game.get_game().graphics['entity_fluffball'],
+                                 game.get_game().graphics['entity_fluffff'], FluffBallAI,
+                                 int(88000 * [.5, 1, 1.6, 2.2][constants.DIFFICULTY]), 130, 90)
             self.body[0].obj.SIGHT_DISTANCE = 9999
             self.body[0].obj.SPEED *= 3
 
@@ -2260,6 +2279,26 @@ class Entities:
                 self.PHASE_SEGMENTS = [0.002, 0.3, 0.7]
             else:
                 self.PHASE_SEGMENTS = [3 / self.hp_sys.max_hp, 0.002, 0.3, 0.7]
+            if 'D3' in game.get_game().player.nts and game.get_game().stage <= 0:
+                self.hp_sys.max_hp *= 2
+                self.hp_sys.hp *= 2
+                self.obj.TOUCHING_DAMAGE += 50
+                self.obj.SPEED *= 2
+                self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] += 30
+                self.hp_sys.defenses[damages.DamageTypes.MAGICAL] += 30
+                self.hp_sys.defenses[damages.DamageTypes.PIERCING] += 30
+                if not len([1 for l in self.LOOT_TABLE.loot_list if 'item' in dir(l) and l.item == 'otherworld_stone']):
+                    self.LOOT_TABLE.loot_list.append(
+                        IndividualLoot('otherworld_stone', 1, 10, 20),
+                    )
+                    self.LOOT_TABLE.loot_list.append(
+                        IndividualLoot('eye_lens', 1, 1, 1),
+                    )
+                self.NAME = 'The True Eye - Otherworld'
+                self.img = game.get_game().graphics['entity_true_eye_otherworld']
+                self.d = True
+            else:
+                self.d = False
 
         def on_hit(self, plyr):
             if constants.DIFFICULTY >= 2:
@@ -2288,22 +2327,24 @@ class Entities:
                 self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] -= 20
                 self.hp_sys.defenses[damages.DamageTypes.MAGICAL] -= 20
                 self.hp_sys.defenses[damages.DamageTypes.PIERCING] -= 20
-                self.obj.TOUCHING_DAMAGE = 65
+                self.obj.TOUCHING_DAMAGE += 10 + self.d * 10
                 self.obj.phase = 1
                 self.phase = 1
                 self.obj.timer = -200
-                self.img = game.get_game().graphics['entity_true_eye_phase2']
+                if not self.d:
+                    self.img = game.get_game().graphics['entity_true_eye_phase2']
                 self.set_rotation(self.rot)
                 self.play_sound('spawn_boss')
             if self.hp_sys.hp <= self.hp_sys.max_hp * 0.3 and self.phase == 1:
                 self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] -= 5
                 self.hp_sys.defenses[damages.DamageTypes.MAGICAL] -= 5
                 self.hp_sys.defenses[damages.DamageTypes.PIERCING] -= 5
-                self.obj.TOUCHING_DAMAGE = 80
+                self.obj.TOUCHING_DAMAGE += 15 + self.d * 10
                 self.obj.phase = 2
                 self.phase = 2
                 self.obj.timer = -200
-                self.img = game.get_game().graphics['entity_true_eye_phase3']
+                if not self.d:
+                    self.img = game.get_game().graphics['entity_true_eye_phase3']
                 self.set_rotation(self.rot)
                 self.play_sound('spawn_boss')
             if self.hp_sys.hp <= self.hp_sys.max_hp * 0.002 and self.phase == 2 and constants.DIFFICULTY > 1:
@@ -2311,7 +2352,7 @@ class Entities:
                 self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] += 100
                 self.hp_sys.defenses[damages.DamageTypes.MAGICAL] += 100
                 self.hp_sys.defenses[damages.DamageTypes.PIERCING] += 100
-                self.obj.TOUCHING_DAMAGE = 90
+                self.obj.TOUCHING_DAMAGE += 10 + self.d * 10
                 self.obj.phase = 3
                 self.phase = 3
                 self.obj.timer = -200
@@ -2737,6 +2778,7 @@ class Entities:
     class MagmaKingFireball(Entity):
         NAME = 'Magma King Fireball'
         DISPLAY_MODE = 3
+        DMG = 68
 
         def __init__(self, pos, rot):
             super().__init__(pos, game.get_game().graphics['entity_fireball'], MagmaKingFireballAI, 200)
@@ -2750,16 +2792,46 @@ class Entities:
         def on_update(self):
             super().on_update()
             self.set_rotation(self.rot)
-            self.hp_sys.hp -= 1
+            self.hp_sys.hp -= 5
             self.damage()
 
         def damage(self):
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 36:
-                game.get_game().player.hp_sys.damage(68, damages.DamageTypes.MAGICAL)
+                game.get_game().player.hp_sys.damage(self.DMG, damages.DamageTypes.MAGICAL)
                 game.get_game().player.hp_sys.effect(effects.Burning(4, 4))
                 game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
+
+    class FallingApple(Entity):
+        NAME = 'Falling Apple'
+        DISPLAY_MODE = 3
+        DMG = 120
+
+        def __init__(self, pos, rot):
+            super().__init__(pos, game.get_game().graphics['projectiles_apple'], MonsterAI, 200)
+            self.obj.rot = rot
+            self.obj.MASS = 1
+            self.obj.FRICTION = .9
+
+        def t_draw(self):
+            super().t_draw()
+            self.obj.SPEED = 1
+            self.obj.apply_force(vector.Vector2D(dy=9.80665))
+
+        def on_update(self):
+            super().on_update()
+            self.set_rotation(self.rot)
+            self.hp_sys.hp -= 5
+            self.damage()
+
+        def damage(self):
+            if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
+                               self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 80:
+                game.get_game().player.hp_sys.damage(self.DMG, damages.DamageTypes.MAGICAL)
+                game.get_game().player.hp_sys.enable_immune()
+                self.hp_sys.hp = 0
+
 
     class NamelessFire(Entity):
         NAME = 'Nameless Fire'
@@ -2966,6 +3038,27 @@ class Entities:
         def __init__(self, pos):
             super().__init__(pos, copy.copy(game.get_game().graphics['entity_worlds_fruit']), WorldsFruitAI, 18000)
             an = [10, 12, 20, 30][constants.DIFFICULTY]
+            if 'D3' in game.get_game().player.nts and game.get_game().stage <= 0:
+                self.hp_sys.max_hp *= 2
+                self.hp_sys.hp *= 2
+                self.obj.TOUCHING_DAMAGE += 50
+                self.obj.SPEED *= 2
+                self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] += 30
+                self.hp_sys.defenses[damages.DamageTypes.MAGICAL] += 30
+                self.hp_sys.defenses[damages.DamageTypes.PIERCING] += 30
+                if not len([1 for l in self.LOOT_TABLE.loot_list if 'item' in dir(l) and l.item == 'otherworld_stone']):
+                    self.LOOT_TABLE.loot_list.append(
+                        IndividualLoot('otherworld_stone', 1, 1),
+                    )
+                    self.LOOT_TABLE.loot_list.append(
+                        IndividualLoot('worlds_seed', 1, 1, 1),
+                    )
+                self.NAME = 'The Worlds Fruit - Otherworld'
+                self.img = game.get_game().graphics['entity_worlds_fruit_otherworld']
+                self.d = True
+                an += 5
+            else:
+                self.d = False
             self.apples = [Entities.ProtectApple((self.obj.pos[0] + random.randint(-1000, 1000), self.obj.pos[1] + random.randint(-1000, 1000))) for _ in range(an)] + \
                           [Entities.AttackApple((self.obj.pos[0] + random.randint(-1000, 1000), self.obj.pos[1] + random.randint(-1000, 1000))) for _ in range(an)]
             self.phase = 0
@@ -2977,7 +3070,7 @@ class Entities:
                 a.obj.upper = self.obj
                 game.get_game().entities.append(a)
             self.o_hp = self.hp_sys.max_hp
-            self.hp_sys.max_hp += sum([a.hp_sys.max_hp for a in self.apples])
+            self.hp_sys.max_hp += sum([a.hp_sys.max_hp for a in self.apples]) - 20000
             self.hp_sys.hp = self.hp_sys.max_hp
             self.PHASE_SEGMENTS = [self.o_hp / self.hp_sys.max_hp]
             self.tick = 0
@@ -2991,7 +3084,7 @@ class Entities:
                         self.obj.SPEED *= 1.02
                         for a in self.apples:
                             a.obj.SPEED *= 1.025
-                self.hp_sys.hp = self.o_hp + sum([a.hp_sys.hp for a in self.apples])
+                self.hp_sys.hp = self.o_hp + max(0, sum([a.hp_sys.hp for a in self.apples])- 10000)
                 if self.hp_sys.hp <= self.o_hp or not len(self.apples):
                     self.phase = 1
                     dm = [6, 7, 15, 25][constants.DIFFICULTY]
@@ -3191,7 +3284,7 @@ class Entities:
         LOOT_TABLE = LootTable([
             IndividualLoot('mysterious_ingot', 1, 15, 35),
             IndividualLoot('storm_core', 1, 2, 4),
-            IndividualLoot('tornado', 0.5, 1, 1),
+            SelectionLoot([('tornado', 1, 1), ('storm_swift_sword', 1, 1), ('storm_stabber', 1, 1)], 1, 1),
         ])
         VITAL = True
         PHASE_SEGMENTS = [0.5]
@@ -3200,10 +3293,20 @@ class Entities:
         SOUND_DEATH = 'huge_monster'
 
         def __init__(self, pos, hp_sys=None, rot=0, ss=True):
-            super().__init__(pos, game.get_game().graphics['entity_sandstorm'], SandStormAI, hp_sys=hp_sys if not ss else hp_system.HPSystem(32000))
             if ss:
-                game.get_game().entities.append(Entities.SandStorm(pos, hp_sys=self.hp_sys, rot=rot + 180, ss=False))
-                self.IS_MENACE = False
+                super().__init__(pos, game.get_game().graphics['entity_sandstorm'], SandStormAI, hp=6000 * (2 + max(1, constants.DIFFICULTY)))
+            else:
+                super().__init__(pos, game.get_game().graphics['entity_sandstorm'], SandStormAI, hp_sys=hp_sys)
+            if ss:
+                for ar in range([180, 180, 120, 90][constants.DIFFICULTY], 360, [180, 180, 120, 90][constants.DIFFICULTY]):
+                    ss = Entities.SandStorm(pos, hp_sys=self.hp_sys, rot=rot + ar, ss=False)
+                    ss.IS_MENACE = False
+                    game.get_game().entities.append(ss)
+                    for r in ss.hp_sys.resistances:
+                        self.hp_sys.resistances[r] *= .5
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 40
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 40
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 40
             self.obj.rot = rot
             self.obj.update()
             self.tick = 0
@@ -3235,6 +3338,16 @@ class Entities:
                 self.obj.state = 0
             if self.phase == 1 and self.tick % 50 == 0:
                 self.obj.shoot_distance = random.randint(500, 2000)
+
+        def t_draw(self):
+            super().t_draw()
+            if self.hp_sys.hp <= 0:
+                b = 0
+                if not 'D3' in game.get_game().player.nts:
+                    game.get_game().player.nts.append('D3')
+                    b = 1
+                if b:
+                    game.get_game().dialog.push_dialog('Notebook Updated!', 'Looks like the world have changed...')
 
 
     class RuneRock(Entity):
@@ -4019,6 +4132,297 @@ class Entities:
             if not len(e):
                 self.hp_sys.hp -= self.hp_sys.max_hp // 300
 
+    class RStarfury(Entity):
+        NAME = 'Falling Star'
+        O_DST = 20
+        N_DST = 80
+        DISPLAY_MODE = 1
+        DMG = 150
+
+        def __init__(self, pos, rotation):
+            super().__init__(pos, game.get_game().graphics['projectiles_starfury'], MonsterAI, 10)
+            self.tx, self.ty = pos
+            dx = random.randint(-100, 100)
+            dy = -1000
+            self.obj.pos << (self.tx + dx, self.ty + dy)
+            self.ax = -dx / 30
+            self.ay = -dy / 30
+            self.rot = rotation
+            self.dead = False
+            self.tick = 0
+            self.set_rotation(rotation)
+
+        def t_draw(self):
+            super().t_draw()
+            self.set_rotation(self.rot + 15)
+            self.obj.pos << (self.obj.pos[0] + self.ax, self.obj.pos[1] + self.ay)
+            pg.draw.circle(game.get_game().displayer.canvas, (255, 255, 0), position.displayed_position((self.tx, self.ty)),
+                           (self.O_DST + self.N_DST) // game.get_game().player.get_screen_scale(), 2)
+            if self.tick > 30:
+                self.hp_sys.hp = 0
+
+            self.tick += 1
+            self.damage()
+
+        def damage(self):
+            if vector.distance(*(game.get_game().player.obj.pos  - self.obj.pos)) < self.N_DST + self.O_DST:
+                game.get_game().player.hp_sys.damage(self.DMG, damages.DamageTypes.MAGICAL)
+                game.get_game().player.hp_sys.enable_immune()
+
+    class Ray(Entity):
+        NAME = 'Ray'
+        BOSS_NAME = '"Spirit Angel"'
+        DISPLAY_MODE = 3
+        IS_MENACE = True
+        LOOT_TABLE = LootTable([
+        ])
+
+        SOUND_SPAWN = 'boss'
+        SOUND_HURT = 'crystal'
+
+        def __init__(self, pos):
+            super().__init__(pos, game.get_game().graphics['entity_ray'], BuildingAI, 500)
+            self.dr = .7
+            self.dl = 1
+            self.lhp = self.hp_sys.hp
+            self.dhp = self.hp_sys.max_hp * 8
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 120
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 120
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 120
+            self.tick = 0
+            self.state = 0
+            self.projs = []
+            self.dp = 0
+            self.obj.MASS = 100
+            self.obj.TOUCHING_DAMAGE = 100
+            self.obj.FRICTION = .95
+            self.tr = 0
+
+        def t_draw(self):
+            cw = ''
+            self.hp_sys.heal(.08)
+            ah = self.lhp - self.hp_sys.hp
+            self.dl -= ah / self.dhp
+            if self.dl < self.dr and self.dr >= .1:
+                self.dl += .2
+                self.dr -= .1
+                game.get_game().player.hp_sys.heal(.2 * self.hp_sys.max_hp)
+                self.tick = -100
+            self.hp_sys.hp = (1 + self.hp_sys.max_hp) * self.dl - 1
+
+            if self.hp_sys.hp <= 10:
+                cw = 'items_weapons_chaos_teleporter'
+                self.hp_sys.IMMUNE = True
+                self.hp_sys.hp -= .05
+            else:
+                self.lhp = self.hp_sys.hp
+            ar = math.sin(self.tick / 60 * math.pi) * 20 + 20
+            iml = entity_get_surface(1, -ar, game.get_game().player.get_screen_scale(),
+                                     game.get_game().graphics['entity_ray_lwing'])
+            imlr = iml.get_rect(center=position.displayed_position(self.obj.pos - vector.Vector2D(dx=50)))
+            game.get_game().displayer.canvas.blit(iml, imlr)
+            imr = entity_get_surface(1, ar, game.get_game().player.get_screen_scale(),
+                                     game.get_game().graphics['entity_ray_rwing'])
+            imrr = imr.get_rect(center=position.displayed_position(self.obj.pos + vector.Vector2D(dx=50)))
+            game.get_game().displayer.canvas.blit(imr, imrr)
+            self.tick += 1
+
+            if self.tick > 360:
+                self.state = (self.state + 1) % 5
+                self.tick = 0
+
+            if self.hp_sys.hp <= 10:
+                if self.obj.MASS < 120000:
+                    game.get_game().drop_items.append(Entities.DropItem(self.obj.pos, 'soulfeather', 81))
+                    game.get_game().dialog.dialog('ITS TIME.')
+                    self.hp_sys.hp = 10
+                self.obj.MASS += 1500000
+                dr = self.obj.pos - game.get_game().player.obj.pos
+                game.get_game().player.obj.apply_force(dr / abs(dr) ** 3 * game.get_game().player.obj.MASS * self.obj.MASS)
+                for e in game.get_game().entities:
+                    if e != self:
+                        dr = self.obj.pos - e.obj.pos
+                        e.obj.apply_force(dr / abs(dr) ** 3 * e.obj.MASS * self.obj.MASS)
+
+            elif self.tick < 0:
+                cw = 'items_weapons_life_wand'
+            elif self.state == 0:
+                ap = self.obj.pos - game.get_game().player.obj.pos
+
+                l = ap.x < 0
+                u = ap.y < 0
+
+                if self.tick % 200 < 66:
+                    tp = game.get_game().player.obj.pos - vector.Vector2D(dx=1000) * [-1, 1][l]
+                elif self.tick % 200 < 133:
+                    tp = game.get_game().player.obj.pos - vector.Vector2D(dy=1000) * [-1, 1][u]
+                else:
+                    tp = game.get_game().player.obj.pos - vector.Vector2D(dx=700) * [-1, 1][l] - vector.Vector2D(dy=700) * [-1, 1][u]
+
+                self.obj.apply_force((tp - self.obj.pos) / 7)
+
+                if self.tick % 40 <= 30:
+                    cw = 'items_weapons_fireball_magic'
+                    if self.tick % 3 == 0:
+                        fb = Entities.MagmaKingFireball(self.obj.pos, random.randint(0, 360))
+                        fb.DMG = 120
+                        fb.show_bar = False
+                        self.projs.append(fb)
+                self.dp = game.get_game().player.obj.pos.to_value()
+            elif self.state == 1:
+                for p in self.projs:
+                    p.obj.SPEED = 0
+                adp = game.get_game().player.obj.pos - self.dp
+                game.get_game().player.obj.velocity -= adp / 200
+                pg.draw.line(game.get_game().displayer.canvas, (0, 0, 0),
+                             position.displayed_position(game.get_game().player.obj.pos),
+                             position.displayed_position(self.dp), 5)
+                pg.draw.line(game.get_game().displayer.canvas, (0, 0, 0),
+                             position.displayed_position(game.get_game().player.obj.pos),
+                             position.displayed_position(self.obj.pos), 5)
+                if self.tick < 40:
+                    cw = 'items_weapons_dark_restrict'
+                    dr = self.tick * 40
+                    pg.draw.circle(game.get_game().displayer.canvas, (0, 0, 0),
+                                    position.displayed_position(self.dp),
+                                   dr / game.get_game().player.get_screen_scale(), 5)
+                else:
+                    if self.tick % 60 == 1:
+                        self.tr = random.randint(0, 360)
+                    elif self.tick % 60 < 40:
+                        tp = game.get_game().player.obj.pos - vector.Vector2D(self.tr, 600)
+                        self.obj.IS_OBJECT = False
+                        self.obj.TOUCHING_DAMAGE = 50
+                        self.obj.apply_force((tp - self.obj.pos) / 3)
+
+                        cw = 'items_weapons_fruit_wand'
+                        if self.tick % 12 == 0:
+                            fb = Entities.FallingApple(game.get_game().player.obj.pos + (random.randint(-1000, 1000), -1000), random.randint(0, 360))
+                            fb.DMG = 120
+                            fb.show_bar = False
+                            self.projs.append(fb)
+                    else:
+                        self.obj.TOUCHING_DAMAGE = 150
+                        cw = 'items_weapons_valkyrien'
+                        self.obj.IS_OBJECT = True
+                        self.obj.apply_force(vector.Vector(self.tr, 3000))
+                    pg.draw.circle(game.get_game().displayer.canvas, (0, 0, 0),
+                                    position.displayed_position(self.dp),
+                                   1600 / game.get_game().player.get_screen_scale(), 5)
+            elif self.state == 2:
+                cw = 'items_weapons_starfury'
+                tp = game.get_game().player.obj.pos
+                self.obj.apply_force((tp - self.obj.pos) / 10)
+                if self.tick % 40 == 0:
+                    for ar in range(0, 360, 60 - (constants.DIFFICULTY // 2 + 1) * 15):
+                        self.projs.append(Entities.RStarfury(game.get_game().player.obj.pos + vector.Vector2D(ar + self.tick // 2, 400), 0))
+            elif self.state == 3:
+                ap = self.obj.pos - game.get_game().player.obj.pos
+
+                l = ap.x < 0
+                u = ap.y < 0
+
+
+
+                if self.tick % 70 <= 30:
+                    self.obj.TOUCHING_DAMAGE = 50
+                    if self.tick % 200 < 66:
+                        tp = game.get_game().player.obj.pos - vector.Vector2D(dx=500) * [-1, 1][l]
+                    elif self.tick % 200 < 133:
+                        tp = game.get_game().player.obj.pos - vector.Vector2D(dy=500) * [-1, 1][u]
+                    else:
+                        tp = game.get_game().player.obj.pos - vector.Vector2D(dx=350) * [-1, 1][l] - vector.Vector2D(
+                            dy=700) * [-1, 1][u]
+                    cw = 'items_weapons_fireball_magic'
+                    if self.tick % 15 == 0:
+                        for ar in range(0, 360, 60 - (constants.DIFFICULTY + 1) // 2 * 15):
+                            fb = Entities.MagmaKingFireball(self.obj.pos, ar + self.tick // 2)
+                            fb.DMG = 100
+                            fb.show_bar = False
+                            self.projs.append(fb)
+                else:
+                    tp = game.get_game().player.obj.pos
+                    cw = 'items_weapons_starfury'
+                    self.obj.TOUCHING_DAMAGE = 150
+                    if self.tick % 15 == 0:
+                        fb = Entities.RStarfury(game.get_game().player.obj.pos, 0)
+                        fb.DMG = 160
+                        fb.show_bar = False
+                        self.projs.append(fb)
+
+                self.obj.apply_force((tp - self.obj.pos) / 7)
+                self.dp = game.get_game().player.obj.pos.to_value()
+            elif self.state == 4:
+                dr = self.tick * 2 // 3
+                tp = vector.Vector2D(dr, 1500) + self.dp
+                self.obj.apply_force((tp - self.obj.pos) / 3)
+
+                self.obj.IS_OBJECT = True
+                if self.tick % 200 < 150:
+                    self.obj.TOUCHING_DAMAGE = 50
+                    cw = 'items_weapons_fireball_magic'
+                    if self.tick % 5 == 0:
+                        sr = dr + 20 - constants.DIFFICULTY * 5
+                        for ar in range(0, 360, 90):
+                            fb = Entities.MagmaKingFireball(self.obj.pos, ar + sr)
+                            fb.DMG = 100
+                            fb.show_bar = False
+                            self.projs.append(fb)
+                elif self.tick % 200 < 160:
+                    cw = 'items_weapons_dark_restrict'
+                    pg.draw.line(game.get_game().displayer.canvas, (0, 0, 0),
+                                 position.displayed_position(self.dp),
+                                 position.displayed_position(game.get_game().player.obj.pos),
+                                 5)
+                else:
+                    self.obj.TOUCHING_DAMAGE = 150
+                    cw = 'items_weapons_starfury'
+                    pg.draw.line(game.get_game().displayer.canvas, (0, 0, 0),
+                                 position.displayed_position(self.dp),
+                                 position.displayed_position(game.get_game().player.obj.pos),
+                                 5)
+                    if self.tick % 10 == 0:
+                        for ar in range(0, 360, 60 - (constants.DIFFICULTY + 1) // 2 * 15):
+                            for dt in range(100, 1000, 150):
+                                fb = Entities.RStarfury(vector.Vector2D(ar + dr, dt) + self.dp, 0)
+                                fb.DMG = 120
+                                fb.show_bar = False
+                                self.projs.append(fb)
+                    ap = self.obj.pos - game.get_game().player.obj.pos
+
+                    l = ap.x < 0
+                    u = ap.y < 0
+
+                    if self.tick % 200 < 66:
+                        tp = game.get_game().player.obj.pos - vector.Vector2D(dx=1000) * [-1, 1][l]
+                    elif self.tick % 200 < 133:
+                        tp = game.get_game().player.obj.pos - vector.Vector2D(dy=1000) * [-1, 1][u]
+                    else:
+                        tp = game.get_game().player.obj.pos - vector.Vector2D(dx=700) * [-1, 1][l] - vector.Vector2D(
+                            dy=700) * [-1, 1][u]
+
+                    self.obj.apply_force((tp - self.obj.pos) / 10)
+
+            if len(cw):
+                ar = vector.coordinate_rotation(*(game.get_game().player.obj.pos - self.obj.pos))
+                wp = pg.transform.scale_by(game.get_game().graphics[cw], 1 / game.get_game().player.get_screen_scale())
+                wp = pg.transform.rotate(wp, 90 - ar)
+                wpr = wp.get_rect(center=position.displayed_position(self.obj.pos))
+                game.get_game().displayer.canvas.blit(wp, wpr)
+
+            for p in self.projs:
+                p.t_draw()
+                if p.hp_sys.hp <= 0:
+                    self.projs.remove(p)
+
+            super().t_draw()
+
+        def on_update(self):
+            super().on_update()
+            for p in self.projs:
+                p.on_update()
+
+
     class AbyssEye(Entity):
         NAME = 'Abyss Eye'
         DISPLAY_MODE = 3
@@ -4049,6 +4453,7 @@ class Entities:
                     IndividualLoot('z', 1, 1, 1),
                     ])
             super().__init__(pos, game.get_game().graphics['entity_abyss_eye'], AbyssEyeAI, 64000)
+            self.img.set_alpha(80)
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 20
             self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 25
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 23
@@ -4067,7 +4472,6 @@ class Entities:
         def on_update(self):
             super().on_update()
             game.get_game().day_time = 0
-            self.tick += 1
             if self.hp_sys.hp < self.hp_sys.max_hp * .55 and self.phase == 0:
                 self.phase = 1
                 for e in game.get_game().entities:
@@ -4087,19 +4491,23 @@ class Entities:
                 self.hp_sys.defenses[damages.DamageTypes.MAGICAL] += 20
                 self.rounds += 2
                 self.rr.extend([24, 20, 18])
-            if self.tick > random.randint(200, 400):
+
+        def t_draw(self):
+            super().t_draw()
+            self.tick += 1
+            if self.tick > random.randint(400, 800):
                 self.tick = 0
                 self.state = (self.state + 1) % 3
                 if not self.state:
                     self.rounds += 1
             if self.state == 0:
-                if self.tick % 4 == 1:
+                if self.tick % 5 == 1:
                     game.get_game().entities.append(Entities.AbyssRuneShoot(self.obj.pos, self.tick * 2))
             elif self.state == 1:
-                if self.tick % 12 == 1:
+                if self.tick % 8 == 1:
                     game.get_game().entities.append(Entities.AbyssRuneShoot(self.obj.pos, random.randint(0, 360)))
             else:
-                if self.tick % 6 - self.phase == 1:
+                if self.tick % (6 - self.phase) == 1:
                     if self.rounds < len(self.rr):
                         k = self.rr[self.rounds]
                     else:

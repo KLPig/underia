@@ -27,7 +27,7 @@ class Resistances:
         self.set_resistance(damage_id, resistance)
 
     def __iter__(self):
-        return iter(self.resistances.items())
+        return iter(self.resistances.keys())
 
     def __str__(self):
         return str(self.resistances)
@@ -59,7 +59,7 @@ class Defenses:
         self.set_defense(damage_id, defense)
 
     def __iter__(self):
-        return iter(self.defences.items())
+        return iter(self.resistances.keys())
 
     def __str__(self):
         return str(self.defences)

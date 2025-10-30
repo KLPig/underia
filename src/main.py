@@ -1,9 +1,12 @@
 # Underia
 # Copyright (c) KLpig 2025, under the BSD 2-Clause License
 # For more information, see ./LICENSE
+import copy
 import math
 import os
 import pickle
+
+import datetime
 
 import pygame as pg
 import random
@@ -22,6 +25,19 @@ if not constants.WEB_DEPLOY:
 if os.path.exists(resources.get_save_path('settings.uset')):
     with open(resources.get_save_path('settings.uset'), 'rb') as f:
         constants.load_settings(pickle.load(f))
+
+def find_hash():
+    res = 0
+    mod = 1e9 + 7
+    for it in underia.ITEMS.values():
+        res = (res + hash(it.id) + hash(it.name) + hash(it.desc)) % mod
+    for rc in underia.RECIPES:
+        res = (res + hash(rc.result) + hash(rc.crafted_amount)) % mod
+        for k, v in rc.material.items():
+            res = (res + (hash(k) + hash(v)) * hash(rc.result)) % mod
+    return int(res)
+
+print(find_hash())
 
 pg.init()
 random.seed(time.time())
@@ -287,8 +303,63 @@ for s in setups:
 
 fpss = []
 
+
 @game.update_function
 def update():
+    if datetime.datetime.now() - game.save_time > datetime.timedelta(minutes=5):
+        f_end_time = datetime.datetime.now()
+        dgame = copy.copy(game)
+        dgame.game_time += (f_end_time - start_time).total_seconds()
+        if not constants.WEB_DEPLOY:
+            def try_delete_attribute(obj, attr):
+                try:
+                    delattr(obj, attr)
+                except AttributeError:
+                    print(f"Attribute {attr} not found in object {obj}")
+            try_delete_attribute(dgame, "displayer")
+            try_delete_attribute(dgame, "graphics")
+            try_delete_attribute(dgame, "clock")
+            try_delete_attribute(dgame, "on_update")
+            try_delete_attribute(dgame, "drop_items")
+            try_delete_attribute(dgame, "map")
+            try_delete_attribute(dgame, "musics")
+            try_delete_attribute(dgame, "channel")
+            try_delete_attribute(dgame, 'sounds')
+            try_delete_attribute(dgame, 'dialog')
+            try_delete_attribute(dgame, 'bl_bg')
+            try_delete_attribute(dgame.player.profile, 'font')
+            try_delete_attribute(dgame.player.profile, 'font_s')
+            try_delete_attribute(dgame.player.profile, 'dialogger')
+            try_delete_attribute(dgame, 'mus_text')
+            dgame.events = []
+            dgame.projectiles = []
+            for de in dgame.entities:
+                de.dump_process()
+                ddp = (int(de.obj.pos[0] / underia.Entities.ENTITY_DUMP_CHUNK),
+                       int(de.obj.pos[1] / underia.Entities.ENTITY_DUMP_CHUNK))
+                if ddp not in game.further_entities:
+                    dgame.further_entities[ddp] = []
+                dgame.further_entities[ddp].append(de)
+            dgame.entities = []
+            for dw in dgame.player.weapons:
+                dgame.player.inventory.add_item(underia.ITEMS[dw.name.replace(" ", "_")])
+            dgame.player.weapons = []
+            del dgame.server
+            del dgame.client
+            dgame_pickle = pickle.dumps(game)
+            with open(resources.get_save_path(game.save), 'wb') as dw:
+                dw.write(dgame_pickle)
+                dw.close()
+            fgd = underia.GameData(dgame.player.profile)
+            if os.path.exists(resources.get_save_path(dgame.save.replace('.pkl', '.data.pkl'))):
+                with open(resources.get_save_path(dgame.save.replace('.pkl', '.data.pkl')), 'rb') as f:
+                    dlgd: underia.GameData = pickle.loads(f.read())
+                    fgd.name = dlgd.name
+            dgame_data_pickle = pickle.dumps(fgd)
+            with open(resources.get_save_path(dgame.save.replace('.pkl', '.data.pkl')), 'wb') as dw:
+                dw.write(dgame_data_pickle)
+                dw.close()
+            print(f"Game auto-saved to {resources.get_save_path(dgame.save)}")
     if addr is not None:
         return
     fpss.append(round(1000 / game.clock.last_tick, 2))
@@ -612,16 +683,16 @@ else:
         print('Running game...')
         asyncio.run(game.run())
     except Exception as err:
-        def try_delete_attribute(obj, attr):
-            try:
-                delattr(obj, attr)
-            except AttributeError:
-                print(f"Attribute {attr} not found in object {obj}")
         with open(resources.get_save_path('settings.uset'), 'wb') as f:
             f.write(pickle.dumps(constants.dump_settings()))
         end_time = datetime.datetime.now()
         game.game_time += (end_time - start_time).total_seconds()
         if not constants.WEB_DEPLOY:
+            def try_delete_attribute(obj, attr):
+                try:
+                    delattr(obj, attr)
+                except AttributeError:
+                    print(f"Attribute {attr} not found in object {obj}")
             try_delete_attribute(game, "displayer")
             try_delete_attribute(game, "graphics")
             try_delete_attribute(game, "clock")

@@ -2,6 +2,7 @@ import math
 import os
 import random
 import time
+import datetime
 from functools import lru_cache
 import asyncio
 
@@ -118,6 +119,7 @@ class Game:
         self.c_dmg = 0
         self.further_entities: dict[tuple[int, int], list[entity.Entities.Entity | object]] = {}
         self.t_cmd = ''
+        self.save_time = datetime.datetime.now()
 
     def get_night_color(self, time_days: float):
         if len([1 for e in self.entities if type(e) is entity.Entities.AbyssEye]):
@@ -301,7 +303,7 @@ class Game:
                 self.get_biome((x, y))
             if x % 40 == 0:
                 self._display_progress((x + 200) / 400, 0)
-        time.sleep(2)
+        self.save_time = datetime.datetime.now()
 
     def play_sound(self, sound: str, vol=1.0, stop_if_need=True, fadeout=0):
         self.sounds[sound].set_volume(vol * constants.SOUND_VOL)
@@ -574,8 +576,6 @@ class Game:
                                                                      1 / self.player.get_screen_scale()),
                                            resources.displayed_position((x, y)))
         chunk_entities = {}
-        for i, e in enumerate(self.entities):
-            e.t_draw()
         '''
             px, py = resources.relative_position(e.obj.pos)
             cp = (round(px / 200), round(py / 200))
@@ -600,7 +600,9 @@ class Game:
                         e.play_sound('enemydust')
                 loots = e.LOOT_TABLE()
                 for item, amount in loots:
-                    k = random.randint(self.ITEM_SPLIT_MIN, min(self.ITEM_SPLIT_MAX, amount) + 1)
+                    if not amount:
+                        continue
+                    k = random.randint(self.ITEM_SPLIT_MIN, min(self.ITEM_SPLIT_MAX, amount))
                     for i in range(k):
                         self.drop_items.append(entity.Entities.DropItem((e.obj.pos[0] + random.randint(-10, 10),
                                                                          e.obj.pos[1] + random.randint(-10, 10)),
@@ -645,6 +647,10 @@ class Game:
             if proj.dead:
                 self.projectiles.remove(proj)
                 del proj
+        for i, e in enumerate(self.entities):
+            e.t_draw()
+        self.displayer.night_darkness_color = self.get_night_color(self.day_time % 1.0)
+        self.displayer.night_darkness()
         self.damage_texts = [(dmg, tick + 1, pos) for dmg, tick, pos in self.damage_texts if tick < 80]
         for dmg, tick, pos in self.damage_texts:
             ll = int(math.log(max(.01, int(dmg)), max(1.1, 1 + (1 + self.player.strike) ** 2))) % 2 == 1 if str.isdecimal(dmg) and int(dmg) > 0 else 1
@@ -656,10 +662,8 @@ class Game:
             f.set_alpha(min(255.0, tick * tick / 3))
             fr = f.get_rect(center=resources.displayed_position((pos[0], pos[1] + (80 - tick) ** 3 // 4000)))
             self.displayer.canvas.blit(f, fr)
-        self.displayer.night_darkness_color = self.get_night_color(self.day_time % 1.0)
-        self.displayer.night_darkness()
         self.player.ui()
-        menaces = [entity for entity in self.entities if entity.IS_MENACE]
+        menaces = [ee for ee in self.entities if ee.IS_MENACE]
         y = self.displayer.SCREEN_HEIGHT - 80
         x = self.displayer.SCREEN_WIDTH // 2
         for menace in menaces:

@@ -10,7 +10,7 @@ STORIES = [
      [
           [['"Ores"', "Disrupted by 'Chords', \nOres summon by the world seems a bit different.", 'Four basic metal ore: copper, iron/cobalt, steel/silver\n and platinum/zirconium.']],
           [['"The Huge Eye at Night"', 'How to attract it: A blood moon or \na bloody small eyeball.(made by materials from his servant)']],
-          [["True Eye - The Watcher of Terror", "55AT -9/4/17/29 DF\nAn eye shaped monster.", "Sprint towards player and summon small eye servant.\nEye servant may gain its resistance. (MASTERY or higher)",
+          [["True Eye - The Watcher of Terror", "55 AT -9/4/17/29 DF\nAn eye shaped monster.", "Sprint towards player and summon small eye servant.\nEye servant may gain its resistance. (MASTERY or higher)",
            "With phases, increasing AT and decreasing DF.\nLast phase immune.(Self deduction, ULTIMATE only)", "Summon: Suspicious Eye under Stone Altar."]],
          [['"Spherical Icy Stuff"', "Ancient stuff from a icy cave.", "IDK IDK IDK WHAT IS THIS\nacheuihianwiciainceiaicnea", "How to summon? Fluffy stuff."]],
          [["Fluffff - The fluffy worm", "90AT 0/4/54/77 DF\n10/12/18/24 BODY PARTS", "The further the distance between, the higher the speed.\nSummon: Wild Fluffball"]],

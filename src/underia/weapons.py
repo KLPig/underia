@@ -1067,6 +1067,19 @@ class DoctorExpeller(Blade):
         super().on_attack()
         self.cutting_effect(8, (255, 0, 0), (0, 127, 0))
 
+class VirusDefeater(Blade):
+    def on_start_attack(self):
+        super().on_start_attack()
+        mx, my = position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
+        rot = vector.coordinate_rotation(mx, my)
+        game.get_game().projectiles.append(projectiles.Projectiles.FApple(game.get_game().player.obj.pos, rot))
+        game.get_game().projectiles.append(projectiles.Projectiles.FApple(game.get_game().player.obj.pos, rot - 20))
+        game.get_game().projectiles.append(projectiles.Projectiles.FApple(game.get_game().player.obj.pos, rot + 20))
+
+    def on_attack(self):
+        super().on_attack()
+        self.cutting_effect(16, (0, 0, 255), (100, 255, 255))
+
 class Excalibur(Blade):
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, rot_speed: int,
                  st_pos: int, double_sided: bool = False):
@@ -3568,6 +3581,15 @@ class Gaze(Gun):
             self.sk_cd = self.sk_mcd
             game.get_game().projectiles.append(projectiles.Projectiles.Gaze(game.get_game().player.obj.pos, self.rot))
 
+class Witness(Gun):
+    def on_start_attack(self):
+        super().on_start_attack()
+        if not self.sk_cd:
+            self.sk_mcd = 30
+            self.sk_cd = self.sk_mcd
+            game.get_game().projectiles.append(projectiles.Projectiles.Witness(game.get_game().player.obj.pos, self.rot))
+
+
 class Shotgun(Gun):
     def on_start_attack(self):
         for _ in range(3):
@@ -3932,6 +3954,9 @@ def set_weapons():
         'doctor_expeller': DoctorExpeller('doctor expeller', {dmg.DamageTypes.PHYSICAL: 50}, 0.2,
                                             'items_weapons_doctor_expeller', 1,
                                             5, 50, 150),
+        'virus_defeater': VirusDefeater('virus defeater', {dmg.DamageTypes.PHYSICAL: 100}, 2,
+                                        'items_weapons_virus_defeater', 2,
+                                        3, 100, 200),
         'sand_sword': SandSword('sand_sword', {dmg.DamageTypes.PHYSICAL: 110}, 0.3,
                                 'items_weapons_sand_sword', 0,
                                 8, 30, 120, auto_fire=True),
@@ -4124,6 +4149,8 @@ def set_weapons():
                               0, 2, 50, auto_fire=True, precision=3, ammo_save_chance=1 / 3),
         'gaze': Gaze('gaze', {dmg.DamageTypes.PIERCING: 7}, 0.5, 'items_weapons_gaze',
                      2, 3, 100, auto_fire=True, precision=3),
+        'witness': Witness('witness', {dmg.DamageTypes.PIERCING: 35}, 2, 'items_weapons_witness',
+                     4, 5, 100, auto_fire=True, precision=2),
         'magma_assaulter': MagmaAssaulter('magma assaulter', {dmg.DamageTypes.PIERCING: 60}, 0.5,
                                           'items_weapons_magma_assaulter',
                                           2, 5, 100, auto_fire=True, precision=2, ammo_save_chance=1 / 5),
@@ -4289,6 +4316,10 @@ def set_weapons():
                                'items_weapons_furfur', 1,
                                1, projectiles.Projectiles.Furfur, 5, True,
                                'Furious Fury'),
+        'dydy': MagicWeapon('dydy', {dmg.DamageTypes.MAGICAL: 80}, 0.5,
+                            'items_weapons_dydy', 2, 2,
+                            projectiles.Projectiles.Dydy, 13, True,
+                            'Expected death'),
         'hematology': Hematology('hematology', 'items_weapons_hematology', 2, 3,
                                  True),
         'air_float': MagicWeapon('air float', {}, 0,

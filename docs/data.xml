@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<game>
+    <name>Underia</name>
+    <version id="newest">
+        <first>1</first>
+        <second>3</second>
+        <third>0a</third>
+    </version>
+    <version id="supported">
+        <first>1</first>
+        <second>2</second>
+        <third>0</third>
+    </version>
+    <content>
+        <hash>
+            542572299
+        </hash>
+    </content>
+</game>
