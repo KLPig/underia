@@ -8,12 +8,10 @@
     </version>
     <version id="supported">
         <first>1</first>
-        <second>2</second>
-        <third>0</third>
+        <second>3</second>
+        <third>0a</third>
     </version>
     <content>
-        <hash>
-            542572299
-        </hash>
+        <hash version="1.3.0a">377123776</hash>
     </content>
 </game>

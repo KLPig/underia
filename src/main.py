@@ -5,7 +5,6 @@ import copy
 import math
 import os
 import pickle
-
 import datetime
 
 import pygame as pg
@@ -17,7 +16,7 @@ import resources, visual, physics, underia, mods, legend, constants, web
 import values
 from underia import good_words
 import underia3
-from underia3 import BloodMoon
+from resources import web_check
 
 if not constants.WEB_DEPLOY:
     import saves_chooser, modloader
@@ -26,18 +25,27 @@ if os.path.exists(resources.get_save_path('settings.uset')):
     with open(resources.get_save_path('settings.uset'), 'rb') as f:
         constants.load_settings(pickle.load(f))
 
+def hash_str(ss):
+    res = 0
+    mod = 1e9 + 7
+    for c in ss:
+        res = (res * 31 + ord(c)) % mod
+    return int(res)
+
 def find_hash():
     res = 0
     mod = 1e9 + 7
     for it in underia.ITEMS.values():
-        res = (res + hash(it.id) + hash(it.name) + hash(it.desc)) % mod
+        res = (res + hash_str(it.id) + hash_str(it.name) + hash_str(it.desc)) % mod
     for rc in underia.RECIPES:
-        res = (res + hash(rc.result) + hash(rc.crafted_amount)) % mod
+        res = (res + hash_str(rc.result) + hash(rc.crafted_amount)) % mod
         for k, v in rc.material.items():
-            res = (res + (hash(k) + hash(v)) * hash(rc.result)) % mod
+            res = (res + (hash_str(k) + hash(v)) * hash_str(rc.result)) % mod
     return int(res)
 
-print(find_hash())
+x = find_hash()
+print('Hash', x)
+modify, stop, msg = web_check.check(x)
 
 pg.init()
 random.seed(time.time())
@@ -70,7 +78,7 @@ if not constants.WEB_DEPLOY:
     pg.display.get_surface().fill((0, 0, 0))
     underia.inventory.setup()
 
-    cmds, file = saves_chooser.choose_save()
+    cmds, file = saves_chooser.choose_save(modify, not stop, msg)
 else:
     cmds, file = '', None
     load_mods = []
@@ -606,7 +614,7 @@ def update():
         ac = game.stage - 9
 
         if 'blood moon' in game.world_events and not len([1 for ee in game.entities if type(ee) is underia3.BloodMoon]):
-            game.entities.append(BloodMoon(game.player.obj.pos - (0, 10000)))
+            game.entities.append(underia3.BloodMoon(game.player.obj.pos - (0, 10000)))
 
         if game.dimension == 'overworld':
             underia.entity_spawn(underia3.Chicken, 3000, 5000, target_number=12 - night * 5, rate=4)

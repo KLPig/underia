@@ -42,7 +42,7 @@ for i in range(1, 21):
 pf = underia.PlayerProfile()
 t = 0
 
-def choose_save():
+def choose_save(modified, stop, msg):
     global n, selects, anchor, cmds, cb, t
 
     ucx = 100
@@ -56,6 +56,7 @@ def choose_save():
 
     clk = pg.time.Clock()
     font = pg.font.Font(path.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 48)
+    font_s = pg.font.Font(path.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 20)
     font_large = pg.font.Font(path.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 72)
 
     font_large.set_bold(True)
@@ -65,6 +66,13 @@ def choose_save():
     mask = pg.Surface(screen.get_size(), pg.SRCALPHA)
     mask.fill((0, 0, 0, 255))
     tick = 0
+
+    mts = []
+    msg = msg
+    for ij in range(len(msg) // 100 + 1):
+        mts.append(msg[:100])
+        if len(msg) > 100:
+            msg = msg[100:]
 
     while True:
         for event in pg.event.get():
@@ -81,6 +89,8 @@ def choose_save():
                 elif event.key == pg.K_s:
                     settings.set_settings()
                 elif event.key == pg.K_UP:
+                    if stop:
+                        continue
                     if n != -1:
                         n = (n - 1 + len(selects)) % len(selects)
                         anchor = n
@@ -88,6 +98,8 @@ def choose_save():
                         n = 0
                         anchor = 0
                 elif event.key == pg.K_DOWN:
+                    if stop:
+                        continue
                     if n != -1:
                         n = (n + 1) % len(selects)
                         anchor = n
@@ -102,10 +114,10 @@ def choose_save():
                         cv = pg.Surface(screen.get_size(), pg.SRCALPHA)
                         cv.blit(screen, (0, 0))
                         if constants.USE_ALPHA:
-                            for i in range(255):
+                            for ij in range(255):
                                 pg.event.get()
                                 screen.fill((0, 0, 0))
-                                cv.set_alpha(255 - i)
+                                cv.set_alpha(255 - ij)
                                 screen.blit(cv, (0, 0))
                                 pg.display.update()
 
@@ -116,10 +128,10 @@ def choose_save():
                         cv = pg.Surface(screen.get_size(), pg.SRCALPHA)
                         cv.blit(screen, (0, 0))
                         if constants.USE_ALPHA:
-                            for i in range(255):
+                            for ij in range(255):
                                 pg.event.get()
                                 screen.fill((0, 0, 0))
-                                cv.set_alpha(255 - i)
+                                cv.set_alpha(255 - ij)
                                 screen.blit(cv, (0, 0))
                                 pg.display.update()
                         return cmds, f".save{n + 1}.pkl"
@@ -142,10 +154,10 @@ def choose_save():
                             cv = pg.Surface(screen.get_size(), pg.SRCALPHA)
                             cv.blit(screen, (0, 0))
                             if constants.USE_ALPHA:
-                                for i in range(255):
+                                for ij in range(255):
                                     pg.event.get()
                                     screen.fill((0, 0, 0))
-                                    cv.set_alpha(255 - i)
+                                    cv.set_alpha(255 - ij)
                                     screen.blit(cv, (0, 0))
                                     pg.display.update()
                             return cmds, f".save{n + 1}.pkl"
@@ -157,6 +169,8 @@ def choose_save():
                             n = (n + 1) % len(selects)
                             anchor = n
                 elif event.button == 4:
+                    if stop:
+                        continue
                     if n != -1:
                         n = (n - 1 + len(selects)) % len(selects)
                         anchor = n
@@ -164,6 +178,8 @@ def choose_save():
                         n = 0
                         anchor = 0
                 elif event.button == 5:
+                    if stop:
+                        continue
                     if n != -1:
                         n = (n + 1) % len(selects)
                         anchor = n
@@ -199,18 +215,27 @@ def choose_save():
                                   math.cos(tick / 125 * math.pi) * udr)
         otr = ot.get_rect(center=(screen.get_width() // 2 + 5, ucx + 5))
         screen.blit(ot, otr)
-        ot = pg.transform.rotate(font_large.render(f"Underia", True, (255, 255, 255)),
+        ot = pg.transform.rotate(font_large.render(f"Underia", True, (255, 255, 255) if not modified else (255, 255, 0)),
                                   math.cos(tick / 125 * math.pi) * udr)
         otr = ot.get_rect(center=(screen.get_width() // 2, ucx))
         screen.blit(ot, otr)
-        pst = font.render('Press anywhere to start', True, (0, 0, 0))
+        pst = font.render('Press anywhere to start' if not stop else 'OH NO!', True, (0, 0, 0) if not stop else (255,  0, 0))
         pst.set_alpha(127)
         pstr = pst.get_rect(center=(screen.get_width() // 2 + 5, ps_x + 5))
         screen.blit(pst, pstr)
-        pst = font.render('Press anywhere to start', True, (255, 255, 255))
+        pst = font.render('Press anywhere to start' if not stop else 'OH NO!', True, (255, 255, 255))
         pst.set_alpha(255)
         pstr = pst.get_rect(center=(screen.get_width() // 2, ps_x))
         screen.blit(pst, pstr)
+        for ij, m in enumerate(mts):
+            msg_t = font_s.render(m, True, (0, 0, 0))
+            msg_t.set_alpha(127)
+            msg_r = msg_t.get_rect(midleft=(50 + 2, screen.get_height() - 150 + 2 + ij * 25))
+            screen.blit(msg_t, msg_r)
+            msg_t = font_s.render(m, True, (255, 255, 255) if not stop else (255, 0, 0))
+            msg_t.set_alpha(255)
+            msg_r = msg_t.get_rect(midleft=(50, screen.get_height() - 150 + ij * 25))
+            screen.blit(msg_t, msg_r)
         if ssn != n:
             hrx = 5
             ssn = n
