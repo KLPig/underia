@@ -1,4 +1,5 @@
-from underia import dialog, version
+from underia import dialog
+import version
 from resources import path
 import constants
 import pygame as pg
