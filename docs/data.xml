@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <game>
     <name>Underia</name>
+    <author>KLpig</author>
     <version id="newest">
         <first>1</first>
         <second>3</second>
@@ -14,4 +15,57 @@
     <content>
         <hash version="1.3.0a">377123776</hash>
     </content>
+    <mods>
+        <mod>
+            <mid value="full_item" />
+            <name>Full Item Maker</name>
+            <author>KLpig</author>
+            <desc>Get full items by crafting.</desc>
+            <version>
+                <first>1</first>
+                <second>0</second>
+                <third>0</third>
+            </version>
+            <support>
+                <platform id="OSX" />
+                <platform id="Windows" />
+                <version id="newest">
+                    <first>1</first>
+                    <second>3</second>
+                    <third>0a</third>
+                </version>
+                <version id="supported">
+                    <first>1</first>
+                    <second>3</second>
+                    <third>0a</third>
+                </version>
+            </support>
+        </mod>
+
+        <mod>
+            <mid value="words_texture" />
+            <name>Text-ture</name>
+            <author>KLpig</author>
+            <desc>Text images(physically).</desc>
+            <version>
+                <first>1</first>
+                <second>0</second>
+                <third>0</third>
+            </version>
+            <support>
+                <platform id="OSX" />
+                <platform id="Windows" />
+                <version id="newest">
+                    <first>1</first>
+                    <second>3</second>
+                    <third>0a</third>
+                </version>
+                <version id="supported">
+                    <first>1</first>
+                    <second>3</second>
+                    <third>0a</third>
+                </version>
+            </support>
+        </mod>
+    </mods>
 </game>
