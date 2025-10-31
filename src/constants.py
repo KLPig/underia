@@ -17,7 +17,7 @@ LANG = 'zh'
 
 DEBUG = True
 
-OS = "OSX"
+OS = "Windows"
 TONE = True
 ENTITY_NUMBER = 18
 WEB_DEPLOY = False

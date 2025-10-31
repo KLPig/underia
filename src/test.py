@@ -1,10 +1,6 @@
-a = 16842752
-b = -2147483648
+import requests
 
-print(a | b)
-print(a & b)
+r = requests.get('https://raw.githubusercontent.com/KLPig/underia/master/docs/data.xml')
 
-c = a | b
-
-print(c & b)
-print(c ^ b)
+print(r.status_code)
+print(r.text)
