@@ -392,6 +392,31 @@ class BloodflowerAI(CloseBloodflowerAI):
         else:
             self.idle()
 
+class UrchinAI(SlowMoverAI):
+    MASS = 50
+    IDLE_SPEED = 100
+    FRICTION = 0.6
+    TOUCHING_DAMAGE = 120
+    SIGHT_DISTANCE = 500
+
+    def __init__(self, pos):
+        super().__init__(pos)
+        self.timer = 0
+        self.prot = 0
+
+    def on_update(self):
+        player = self.cur_target
+        if self.timer > 550:
+            self.timer = 0
+        if player is not None:
+            self.timer += 1
+            if self.timer > 500:
+                self.apply_force(vector.Vector2D(self.prot, 3000))
+            elif self.timer > 300:
+                self.prot = vector.coordinate_rotation(*(game.get_game().player.obj.pos -self.pos))
+                self.apply_force(vector.Vector2D(self.prot, 700))
+        else:
+            self.idle()
 
 class SoulFlowerAI(BloodflowerAI):
     TOUCHING_DAMAGE = 128
@@ -1551,6 +1576,7 @@ class Entities:
         HP = 10
         SOUND_HURT = 'ore'
         SOUND_DEATH = 'ore'
+        DIVERSITY = False
 
         def __init__(self, pos, hp=0):
             super().__init__(pos, game.get_game().graphics[self.IMG], BuildingAI, self.HP if not hp else hp)
@@ -2434,6 +2460,7 @@ class Entities:
             IndividualLoot('leaf', 0.9, 5, 7),
             IndividualLoot('red_apple', 0.03, 1, 1),
         ])
+        DIVERSITY = False
 
         @staticmethod
         def is_suitable(biome: str):
@@ -2573,6 +2600,75 @@ class Entities:
                 self.obj.MASS *= 5
                 self.obj.TOUCHING_DAMAGE *= 10
                 self.NAME = 'The Bloody-Flower'
+
+
+    class ForgottenFlower(Entity):
+        NAME = 'Forgotten Flower'
+        DISPLAY_MODE = 3
+        LOOT_TABLE = LootTable([
+            IndividualLoot('spikeflower', 0.36, 1, 1),
+            IndividualLoot('forgotten_shard', 1, 5, 8),
+            IndividualLoot('cell_organization', .7, 10, 20),
+            IndividualLoot('coral_reef', .5, 10, 20),
+            IndividualLoot('silver_ingot', .5, 5, 10),
+        ])
+
+        SOUND_HURT = 'corrupt'
+        SOUND_DEATH = 'sticky'
+
+        def __init__(self, pos):
+            super().__init__(pos, game.get_game().graphics['entity_forgotten_flower'], BloodflowerAI, 1200)
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 25
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 25
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 25
+            self.obj.MASS *= 2.5
+            self.obj.SPEED *= 8
+            self.obj.FRICTION = .7
+            self.obj.TOUCHING_DAMAGE *= 2
+            self.obj.SIGHT_DISTANCE /= 2
+            self.tick = 0
+
+        def on_update(self):
+            super().on_update()
+            self.tick += 1
+            if self.tick % 80 == 0:
+                for ar in range(0, 360, 60 - (constants.DIFFICULTY + 1) // 2 * 15):
+                    game.get_game().entities.append(Entities.ForgottenStone(self.obj.pos, ar + self.rot))
+            elif self.tick % 16 == 0:
+                for ar in range(0, 360, 120 - (constants.DIFFICULTY + 1) // 2 * 30):
+                    game.get_game().entities.append(Entities.ForgottenStone(self.obj.pos, ar + self.rot))
+
+    class Urchin(Entity):
+        NAME = 'Urchin'
+        DISPLAY_MODE = 3
+        LOOT_TABLE = LootTable([
+            IndividualLoot('forgotten_shard', 1, 5, 8),
+            IndividualLoot('cell_organization', .7, 10, 20),
+            IndividualLoot('coral_reef', .5, 10, 20),
+            IndividualLoot('silver_ingot', .5, 5, 10),
+            IndividualLoot('seaprick', .03, 1, 1),
+            IndividualLoot('dim_heavysword', .03, 1, 1),
+        ])
+
+        SOUND_HURT = 'corrupt'
+        SOUND_DEATH = 'sticky'
+
+        def __init__(self, pos):
+            super().__init__(pos, copy.copy(game.get_game().graphics['entity_urchin']), UrchinAI, 900)
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 85
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 85
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 85
+            self.dr = 0
+
+        def on_update(self):
+            nr = max(min(abs(game.get_game().player.obj.pos - self.obj.pos) / 2 - 300, 300), 0) - self.dr
+            self.dr += nr
+            self.img.set_alpha(255 - self.dr * 127 // 300)
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] += nr
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] += nr
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] += nr
+            super().on_update()
+            self.rotate(abs(self.obj.velocity) / 20)
 
     class RedWatcher(Entity):
         NAME = 'Red Watcher'
@@ -2800,6 +2896,33 @@ class Entities:
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 36:
                 game.get_game().player.hp_sys.damage(self.DMG, damages.DamageTypes.MAGICAL)
                 game.get_game().player.hp_sys.effect(effects.Burning(4, 4))
+                game.get_game().player.hp_sys.enable_immune()
+                self.hp_sys.hp = 0
+
+    class ForgottenStone(Entity):
+        NAME = 'Forgotten Stone'
+        DISPLAY_MODE = 3
+        DMG = 110
+
+        def __init__(self, pos, rot):
+            super().__init__(pos, game.get_game().graphics['entity_forgotten_stone'], MagmaKingFireballAI, 600)
+            self.obj.rot = rot
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = -30
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 0
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = -80
+            if constants.DIFFICULTY >= 3:
+                self.hp_sys.IMMUNE = True
+
+        def on_update(self):
+            super().on_update()
+            self.set_rotation(self.rot)
+            self.hp_sys.hp -= 10
+            self.damage()
+
+        def damage(self):
+            if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
+                               self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 15:
+                game.get_game().player.hp_sys.damage(self.DMG, damages.DamageTypes.MAGICAL)
                 game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
 

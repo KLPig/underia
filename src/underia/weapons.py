@@ -1009,6 +1009,10 @@ class Valkyrien(Spear):
         super().on_attack()
         game.get_game().player.obj.apply_force(vector.Vector2D(self.sr, game.get_game().player.obj.SPEED * 3 * [-1, 1][self.ht]))
 
+class Seaprick(Spear):
+    def on_damage(self, target):
+        target.hp_sys.effect(effects.Poison(4, 15))
+
 class SpiritualStabber(Blade):
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, rot_speed: int,
                  st_pos: int, double_sided: bool = False):
@@ -3959,7 +3963,9 @@ def set_weapons():
                                         3, 100, 200),
         'sand_sword': SandSword('sand_sword', {dmg.DamageTypes.PHYSICAL: 110}, 0.3,
                                 'items_weapons_sand_sword', 0,
-                                8, 30, 120, auto_fire=True),
+                                6, 50, 120, auto_fire=True),
+        'dim_heavysword': Blade('dim heavysword', {dmg.DamageTypes.PHYSICAL: 180}, 4,
+                                'items_weapons_dim_heavysword', 7, 12, 30, 250),
         'nights_edge': NightsEdge('nights edge', {dmg.DamageTypes.PHYSICAL: 90}, 0.6,
                                   'items_weapons_nights_edge',
                                   1, 18, 20, 100),
@@ -4065,6 +4071,8 @@ def set_weapons():
                               2, 10, 20, 100, auto_fire=True),
         'valkyrien': Valkyrien('valkyrien', {dmg.DamageTypes.PHYSICAL: 70}, 1.2, 'items_weapons_valkyrien',
                                4, 9, 40, 240, auto_fire=True),
+        'seaprick': Seaprick('seaprick', {dmg.DamageTypes.PHYSICAL: 60}, .6, 'items_weapons_seaprick',
+                             2, 6, 50, 160, auto_fire=True),
         'nights_pike': Spear('nights pike', {dmg.DamageTypes.PHYSICAL: 125}, 1.8, 'items_weapons_nights_pike',
                              2, 5, 60, 160, auto_fire=True),
         'energy_spear': ComplexWeapon('energy spear', {dmg.DamageTypes.PHYSICAL: 180},

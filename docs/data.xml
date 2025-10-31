@@ -4,7 +4,7 @@
     <author>KLpig</author>
     <version id="newest">
         <first>1</first>
-        <second>3</second>
+        <second>5</second>
         <third>0a</third>
     </version>
     <version id="supported">
@@ -31,7 +31,7 @@
                 <platform id="Windows" />
                 <version id="newest">
                     <first>1</first>
-                    <second>3</second>
+                    <second>5</second>
                     <third>0a</third>
                 </version>
                 <version id="supported">
@@ -57,7 +57,7 @@
                 <platform id="Windows" />
                 <version id="newest">
                     <first>1</first>
-                    <second>3</second>
+                    <second>5</second>
                     <third>0a</third>
                 </version>
                 <version id="supported">

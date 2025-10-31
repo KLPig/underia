@@ -537,12 +537,18 @@ def update():
                                      rate=30)
             underia.entity_spawn(underia.Entities.WhiteChest, target_number=1, to_player_max=2500, to_player_min=1000,
                                  rate=50, number_factor=3.5)
+        elif game.get_biome() == 'fallen_sea':
+            underia.entity_spawn(underia.Entities.ForgottenFlower, target_number=15, to_player_max=2000, to_player_min=1500,
+                                 rate=60)
+            underia.entity_spawn(underia.Entities.Urchin, target_number=20, to_player_max=2000, to_player_min=1500,
+                                 rate=50)
+
         underia.entity_spawn(underia.Entities.SwordInTheStone, target_number=1, to_player_max=2500, to_player_min=2000,
                              rate=50)
         underia.entity_spawn(underia.Entities.StoneAltar, target_number=3, to_player_max=2500, to_player_min=2000,
                              rate=50)
-        underia.entity_spawn(underia.Entities.RawOre, target_number=30, to_player_max=3000, to_player_min=1000,
-                             rate=80)
+        underia.entity_spawn(underia.Entities.RawOre, target_number=40, to_player_max=3000, to_player_min=1000,
+                             rate=20)
         if 5 > game.stage > 0:
             underia.entity_spawn(underia.Entities.MetalAltar, target_number=3, to_player_max=2500, to_player_min=2000,
                                  rate=50, number_factor=3)

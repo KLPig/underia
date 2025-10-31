@@ -104,10 +104,6 @@ def update():
     for u in updates:
         exec(u)
 
-    for k in underia.MUSICS.keys():
-        if k not in ['empty', 'null'] and len(underia.MUSICS[k]):
-            underia.MUSICS['empty'].extend(underia.MUSICS[k])
-            underia.MUSICS[k] = []
 
 start_time = datetime.datetime.now()
 try:

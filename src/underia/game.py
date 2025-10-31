@@ -5,6 +5,7 @@ import time
 import datetime
 from functools import lru_cache
 import asyncio
+from importlib.metadata import version
 
 import pygame as pg
 
@@ -21,6 +22,8 @@ MUSICS = {
     'empty': ['hell0', 'hell1', 'forest1', 'rainforest1', 'battle', 'hallow0', 'hallow1', 'wither0', 'wither1',
               'life_forest0', 'life_forest1', 'ocean0', 'ocean1'],
     'snow': ['snowland0', 'snowland1', 'hallow0', 'hallow1'],
+    'hesitation': ['fallen_sea0', 'fallen_sea1', 'heaven1', 'wither1'],
+    'sanctuary': ['fallen_sea0', 'fallen_sea1', 'hell0', 'heaven0', 'heaven1'],
     #'here_we_are': ['inner0', 'inner1'],
     'amalgam': ['inner0', 'inner1', 'none0', 'none1', 'wither0', 'wither1'],
     'null': [],
@@ -54,6 +57,8 @@ MUSIC_DATA = {
     'dark_sanctuary': 'Toby Fox - Dark Sanctuary (Deltarune)',
     '3rd_sanctuary': 'Toby Fox - 3rd Sanctuary (Deltarune)',
     'knight': 'Toby Fox - Black Knife (Deltarune)',
+    'hesitation': 'Hesitation (Terraria Calamity)',
+    'fallen_sea': 'Sanctuary (Terraria Calamity)'
 }
 
 class Game:
@@ -161,6 +166,10 @@ class Game:
             r = 50 if 'blood moon' not in self.world_events else 200
             g = 50
             b = 80
+        if self.get_biome() == 'fallen_sea':
+            r = 40
+            g = 40
+            b = 120
         if self.get_biome() == 'hell' and self.chapter == 2:
             r = 255
             g = 0
@@ -280,7 +289,7 @@ class Game:
         weapons.set_weapons()
         self.map = pg.PixelArray(self.graphics['background_map'])
         cnt = 0
-        formats = ['.ogg', '.wav']
+        formats = ['.ogg', '.wav', '.mp3']
         for m in os.listdir(resources.get_path('assets/musics')):
             if m[-4:] in formats:
                 cnt += 1
@@ -345,10 +354,20 @@ class Game:
         if len([1 for e in self.entities if type(e) in [entity.Entities.Jevil, entity.Entities.Jevil2, entity.Entities.OblivionAnnihilator]]) or \
                 self.player.inventory.is_enough(inventory.ITEMS['chaos_heart']):
             return 'inner'
-        if pos[0] ** 2 + pos[1] ** 2 < 5000:
+
+
+        pos_fallen_sea = physics.Vector2D(self.fun ** 3 % 360, ((self.fun * 3 // 4 + 1000 // self.fun) ** 2 * 17 % 1000) + 300)
+        if (pos[0] - pos_fallen_sea.x - 120) ** 2 + (pos[1] - pos_fallen_sea.y - 120) ** 2 < 10000:
+            return 'fallen_sea'
+        elif (pos[0] - pos_fallen_sea.x - 120) ** 2 + (pos[1] - pos_fallen_sea.y - 120) ** 2 < 15000:
+            return 'desert'
+
+        if (pos[0] - 120) ** 2 + (pos[1] - 120) ** 2 < 5000:
             return 'forest'
         if pos[1] < -100000 and self.chapter == 2:
             return 'inner'
+
+
         lvs = ['hell', 'desert', 'rainforest', 'forest', 'snowland', 'heaven', 'hallow', 'wither', 'ancient']
         b = 0
         if pos not in self.map_ns.keys():
@@ -416,7 +435,7 @@ class Game:
 
     YCOLS = {'hell': (255, 0, 0), 'desert': (255, 191, 63), 'forest': (0, 255, 0), 'rainforest': (127, 255, 0),
                 'snowland': (255, 255, 255), 'heaven': (127, 127, 255), 'inner': (0, 0, 0), 'none': (0, 0, 0),
-                'hallow': (0, 255, 255)}
+                'hallow': (0, 255, 255), 'fallen_sea': (0, 100, 255)}
 
     @lru_cache(maxsize=int(constants.MEMORY_USE * .05))
     def get_chunked_images(self, biomes, bg_size):
@@ -447,7 +466,7 @@ class Game:
         cols = {'hell': (255, 0, 0), 'desert': (255, 191, 63), 'forest': (0, 255, 0), 'rainforest': (127, 255, 0),
                 'snowland': (255, 255, 255), 'heaven': (127, 127, 255), 'inner': (0, 0, 0), 'none': (0, 0, 0),
                 'hallow': (0, 255, 255), 'wither': (50, 0, 0), 'life_forest': (50, 127, 0), 'ancient': (50, 0, 0),
-                'ancient_city': (255, 200, 128), 'ancient_wall': (100, 50, 0), 'ocean': (0, 0, 255)}
+                'ancient_city': (255, 200, 128), 'ancient_wall': (100, 50, 0), 'ocean': (0, 0, 255), 'fallen_sea': (0, 100, 255)}
         if not self.graphics.is_loaded('nbackground_hell') or self.graphics['nbackground_hell'].get_width() != bg_size:
             for k in cols.keys():
                 self.graphics['nbackground_' + k] = pg.transform.scale(self.graphics['background_' + k],

@@ -214,10 +214,6 @@ class Player:
             dmg *= 1 + self.profile.point_magic ** 1.1 / 400
         return dmg
 
-    def calculate_air_resistance(self):
-        air_res = 1.0
-        return air_res
-
     def calculate_data(self, data_idx, rate_data, rate_plus = False, rate_multiply = False):
         if rate_plus == rate_multiply and rate_data:
             raise ValueError('Rate only chooses a strategy.')
@@ -510,7 +506,15 @@ class Player:
         self.p_data.append(f'Critical: {int(self.strike * 10000) / 100}%, {int((1 + (1 + self.strike) ** 2) * 10000) / 100}% damage')
         self.obj.SPEED = self.calculate_data('speed', rate_data=True, rate_multiply=True) * 80 * self.calculate_speed()
         self.hp_sys.DODGE_RATE = max(0, 1 - 1 / (((self.calculate_speed() - 1) * 100) ** .7 / 100 + self.calculate_data('dodge_rate', rate_data=True, rate_multiply=True)) + bool(self.afterimage_shadow))
-        self.obj.FRICTION = max(0, 1 - 0.1 * self.calculate_data('air_res', rate_data=True, rate_multiply=True) * (20 ** self.z))
+        nf = 1
+        b = game.get_game().get_biome()
+        if b == 'fallen_sea':
+            nf *= 3
+        if b in ['heaven', 'hell']:
+            nf *= .5
+        if b == 'sea':
+            nf *= 1.75
+        self.obj.FRICTION = max(0, 1 - nf * 0.1 * self.calculate_data('air_res', rate_data=True, rate_multiply=True) * (20 ** self.z))
         self.obj.MASS = max(40, 80 + self.calculate_data('mass', False))
         self.p_data.append(f'Agility {int(self.obj.SPEED / 2) / 10}N')
         if self.obj.velocity.get_net_value() / 20 > 500:
