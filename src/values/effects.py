@@ -59,6 +59,12 @@ class Freezing(Effect):
     DESC = '-60% speed'
     CORRESPONDED_ELEMENT = elements.ElementTypes.WATER
 
+class SFreezing(Effect):
+    IMG = 'freezing'
+    NAME = 'Freezing'
+    DESC = '-30% speed'
+    CORRESPONDED_ELEMENT = elements.ElementTypes.WATER
+
 class AfterimageShadow(Effect):
     IMG = 'afterimage_shadow'
     NAME = 'Afterimage Shadow'
@@ -71,10 +77,22 @@ class Darkened(Effect):
     DESC = '-50% damage'
     CORRESPONDED_ELEMENT = elements.ElementTypes.DARK
 
+class SDarkened(Effect):
+    IMG = 'darkened'
+    NAME = 'Darkened'
+    DESC = '-20% damage'
+    CORRESPONDED_ELEMENT = elements.ElementTypes.DARK
+
 class Enlightened(Effect):
     IMG = 'enlightened'
     NAME = 'Enlightened'
     DESC = '-100 touching defense\n-100 magic defense\n+20/sec regeneration'
+    CORRESPONDED_ELEMENT = elements.ElementTypes.LIGHT
+
+class SEnlightened(Effect):
+    IMG = 'enlightened'
+    NAME = 'Enlightened'
+    DESC = '-20 touching defense\n-20 magic defense'
     CORRESPONDED_ELEMENT = elements.ElementTypes.LIGHT
 
 class Frozen(Effect):

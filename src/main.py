@@ -316,7 +316,7 @@ fpss = []
 def update():
     if datetime.datetime.now() - game.save_time > datetime.timedelta(minutes=5):
         f_end_time = datetime.datetime.now()
-        dgame = copy.copy(game)
+        dgame = copy.deepcopy(game)
         dgame.game_time += (f_end_time - start_time).total_seconds()
         if not constants.WEB_DEPLOY:
             def try_delete_attribute(obj, attr):
@@ -351,10 +351,11 @@ def update():
             dgame.entities = []
             for dw in dgame.player.weapons:
                 dgame.player.inventory.add_item(underia.ITEMS[dw.name.replace(" ", "_")])
+            dgame.player = copy.copy(game.player)
             dgame.player.weapons = []
             del dgame.server
             del dgame.client
-            dgame_pickle = pickle.dumps(game)
+            dgame_pickle = pickle.dumps(dgame)
             with open(resources.get_save_path(game.save), 'wb') as dw:
                 dw.write(dgame_pickle)
                 dw.close()

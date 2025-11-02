@@ -220,6 +220,8 @@ class Player:
         b = game.get_game().get_biome()
         if b == 'fallen_sea':
             nf *= 3
+        if b == 'hot_spring':
+            nf *= 4
         if b in ['heaven', 'hell']:
             nf *= .5
         if b in ['sea', 'ocean']:
@@ -453,7 +455,7 @@ class Player:
         self.major_usage = arm / maj_def if maj_def else 0
         if self.major_usage > 1.5:
             self.major_usage = 0
-        self.p_data.append(f'{arm} armor, usage of major accessory: {int(self.major_usage * 100)}%')
+        self.p_data.append(f'{arm} armor={int(self.major_usage * 100)}%')
         self.talent = min(self.talent + 0.005 + math.sqrt(self.max_talent) / 2000 + (self.max_talent - self.talent) / 1000, self.max_talent * (1 + int(self.profile.point_wisdom ** 1.1) / 800))
         self.hp_sys.pos = self.obj.pos
         self.attack = math.sqrt(self.calculate_damage() * self.calculate_data('damage', rate_data=True, rate_multiply=True))
@@ -502,37 +504,52 @@ class Player:
                                           1000))
                         e.hp_sys.enable_immune()
 
-        self.p_data.append(f'{1000 / game.get_game().clock.last_tick:.2f}fps')
-        self.p_data.append(f'Magic Damage: {int(self.attacks[2] * self.attack * 100)}%')
-        self.p_data.append(f'Ranged Damage: {int(self.attacks[1] * self.attack * 100)}%')
-        self.p_data.append(f'Melee Damage: {int(self.attacks[0] * self.attack * 100)}%')
+        self.ntcs.append(f'{1000 / game.get_game().clock.last_tick:.2f}fps')
+        self.p_data.append(f'{int(self.attacks[2] * self.attack * 100)}% magic')
+        self.p_data.append(f'{int(self.attacks[1] * self.attack * 100)}% range')
+        self.p_data.append(f'{int(self.attacks[0] * self.attack * 100)}% melee')
         if game.get_game().chapter >= 1:
-            self.p_data.append(f'Octave Damage: {int(self.attacks[3] * self.attack * 100)}%')
-            self.p_data.append(f'Hallow Damage: {int(self.attacks[4] * self.attack * 100)}%')
-            self.p_data.append(f'Pacify Damage: {int(self.attacks[5] * self.attack * 100)}%')
-        self.p_data.append(f'Attack: {int(self.attack * 100) / 100}x')
+            self.p_data.append(f'{int(self.attacks[3] * self.attack * 100)}% octave')
+            self.p_data.append(f'{int(self.attacks[4] * self.attack * 100)}% hallow')
+            self.p_data.append(f'{int(self.attacks[5] * self.attack * 100)}% pacify')
         self.attack *= 1 + (random.random() < self.strike) * (1 + self.strike) ** 2
         self.hp_sys.resistances[damages.DamageTypes.TOUCHING] = .8 / (self.calculate_data('damage_absorb', rate_data=True, rate_multiply=True) - .2)
         self.hp_sys.resistances[damages.DamageTypes.MAGICAL] = .8 / (self.calculate_data('damage_absorb', rate_data=True, rate_multiply=True) - .2)
-        self.p_data.append(f'{100 - self.hp_sys.resistances[damages.DamageTypes.TOUCHING] * 100:.2f}% damage absorbed, {self.hp_sys.DODGE_RATE * 100:.2f}% chance to dodge')
-        self.p_data.append(f'Critical: {int(self.strike * 10000) / 100}%, {int((1 + (1 + self.strike) ** 2) * 10000) / 100}% damage')
+        self.p_data.append(f'{100 - self.hp_sys.resistances[damages.DamageTypes.TOUCHING] * 100:.2f}% res.')
+        self.p_data.append(f'{self.hp_sys.DODGE_RATE * 100:.2f}% dodge')
+        self.p_data.append(f'->{int((1 + (1 + self.strike) ** 2) * 10000) / 100}% dmg.')
+        self.p_data.append(f'{int(self.strike * 10000) / 100}% crit')
         self.obj.SPEED = self.calculate_data('speed', rate_data=True, rate_multiply=True) * 80 * self.calculate_speed()
         self.hp_sys.DODGE_RATE = max(0, 1 - 1 / (((self.calculate_speed() - 1) * 100) ** .7 / 100 + self.calculate_data('dodge_rate', rate_data=True, rate_multiply=True)) + bool(self.afterimage_shadow))
         nf = self.friction_mult()
+        b = game.get_game().get_biome()
+        d_t = constants.DIFFICULTY * 2
+        if b == 'hell':
+            game.get_game().player.hp_sys.effect(effects.Burning(1, d_t + 1))
+        if b == 'hot_spring':
+            game.get_game().player.hp_sys.effect(effects.Burning(1, d_t * 2 + 5))
+            game.get_game().player.hp_sys.effect(effects.Darkened(1, 1))
+        if b == 'heaven':
+            if constants.DIFFICULTY >= 1:
+                game.get_game().player.hp_sys.effect(effects.SEnlightened(1, 1))
+        if b == 'desert':
+            if constants.DIFFICULTY >= 2:
+                game.get_game().player.hp_sys.effect(effects.BleedingR(1, 1))
+        if b == 'snow':
+            if constants.DIFFICULTY >= 2:
+                game.get_game().player.hp_sys.effect(effects.SFreezing(1, 1))
         self.obj.FRICTION = max(0, 1 - nf * 0.1 * self.calculate_data('air_res', rate_data=True, rate_multiply=True) * (20 ** self.z))
         self.obj.MASS = max(40, 80 + self.calculate_data('mass', False))
-        self.p_data.append(f'Agility {int(self.obj.SPEED / 2) / 10}N')
+        self.p_data.append(f'{int(self.obj.SPEED / 2) / 10} speed')
         if self.obj.velocity.get_net_value() / 20 > 500:
             entity.entity_spawn(entity.Entities.QuarkGhost, 2000, 2000, 0, 1145, 100000)
             self.obj.velocity.clear()
             game.get_game().dialog.dialog('The Quark Ghost prevents you from accelerating!')
         self.p_data.append(f'{self.calculate_data("mana_cost", True, rate_multiply=True) * 100:.0f}% mana cost')
         self.splint_distance = self.calculate_data('splint', False)
-        if self.splint_distance:
-            self.p_data.append(f'Sprint distance {self.splint_distance}')
         self.splint_cd = self.calculate_data('splint_cd', True, rate_multiply=True) * 80
         if self.splint_distance:
-            self.p_data.append(f'Sprint cd {self.splint_cd}s')
+            self.p_data.append(f'cd {self.splint_cd}s')
             self.splint_t = int(self.splint_t)
             if self.splint_t > 0:
                 self.splint_t -= 1
@@ -562,10 +579,11 @@ class Player:
                         self.hp_sys.effect(effects.LogosThaumaturgy(3, 3))
                 else:
                     self.splint_t -= 10
-        self.p_data.append(f'Speed {int(self.obj.velocity.get_net_value() / 2) / 10}ms^-1 '
-                           f'{int(self.obj.velocity.get_net_rotation())}deg')
-        self.p_data.append(f'Friction {-int(100 - self.obj.FRICTION * 100)}%')
-        self.p_data.append(f'Mass {int(self.obj.MASS)}kg')
+            self.p_data.append(f'{self.splint_distance} sprint')
+        self.p_data.append(f'vel. {int(self.obj.velocity.get_net_value() / 2) / 10}('
+                           f'{int(self.obj.velocity.get_net_rotation())}deg)')
+        self.p_data.append(f'{-int(100 - self.obj.FRICTION * 100)}% air res.')
+        self.p_data.append(f'{int(self.obj.MASS)} weight')
         if 'dendro_thaumaturgy' in self.accessories:
             self.hp_sys.MAXIMUM_DAMAGE = self.hp_sys.max_hp * .99
         else:
@@ -595,28 +613,27 @@ class Player:
         max_ins = self.calculate_data('max_ins', False)
         max_mana = self.calculate_data('max_mana', False)
         karma_reduce = 5 * self.calculate_data('karma_reduce', True, rate_multiply=True)
-        if self.domain_size > 1:
-            self.p_data.append(f'Domain Size x{int(self.domain_size * 100)}%')
+        if self.domain_size != 1:
+            self.p_data.append(f'{int(self.domain_size * 100)}% domain')
         if self.hp_sys.max_hp > 1000:
-            self.p_data.append(f'Mentality: {int(mtp_regen)}/s')
+            self.p_data.append(f'mtp. {int(mtp_regen)}/s')
             self.talent = min(self.talent + mtp_regen / 1000 * game.get_game().clock.last_tick, self.max_talent)
-        self.p_data.append(f'Regeneration: {int(self.REGENERATION * 10000 / game.get_game().clock.last_tick) / 10}/s')
-        self.p_data.append(f'Mana Regeneration: {int(self.MAGIC_REGEN * 10000 / game.get_game().clock.last_tick) / 10}/s')
-        if ins_regen:
-            self.p_data.append(f'Inspiration Regeneration: {int(ins_regen * 10000 / game.get_game().clock.last_tick) / 10}/s')
+        self.p_data.append(f'regen. {int(self.REGENERATION * 600) / 10}/s')
+        self.p_data.append(f'mana. {int(self.MAGIC_REGEN * 600) / 10}/s')
         if max_ins:
-            self.p_data.append(f'Additional Maximum Inspiration: {int(max_ins)}')
+            self.p_data.append(f'{int(max_ins)} additional')
+        if ins_regen:
+            self.p_data.append(f'ins. {int(ins_regen * 600) / 10}/s')
         if self.good_karma != 0 or karma_reduce != 5:
-            self.p_data.append(f'Karma Reduction: -{int(karma_reduce * 1000 / game.get_game().clock.last_tick)}/s')
-            self.p_data.append(f'Good Karma: {int(self.good_karma)}')
+            self.p_data.append(f'karma. {int(self.good_karma)} -{int(karma_reduce * 60)}/s')
         self.good_karma = max(0, self.good_karma - karma_reduce)
         self.inspiration = min(self.inspiration + ins_regen, self.max_inspiration + max_ins)
         self.hp_sys.defenses[damages.DamageTypes.TOUCHING] = (self.calculate_data('touch_def', False) + arm * 2) * (1 - self.shield_break / 100) ** .8
         self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = self.calculate_data('phys_def', False) * (1 - self.shield_break / 100) ** .5
         self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = self.calculate_data('mag_def', False) * (1 - self.shield_break / 100) ** 1.0
-        self.p_data.append(f'Magical Defense: {int(self.hp_sys.defenses[damages.DamageTypes.MAGICAL])}')
-        self.p_data.append(f'Touch Defense: {int(self.hp_sys.defenses[damages.DamageTypes.TOUCHING])}')
-        self.p_data.append(f'Break: {self.shield_break:.1f}%')
+        self.p_data.append(f'break {self.shield_break:.1f}%')
+        self.p_data.append(f'magic def. {int(self.hp_sys.defenses[damages.DamageTypes.MAGICAL])}')
+        self.p_data.append(f'phy.  def. {int(self.hp_sys.defenses[damages.DamageTypes.TOUCHING])}')
         if len([1 for eff in self.hp_sys.effects if eff.NAME == 'Gravity']):
             self.obj.apply_force(vector.Vector(180, 200))
         if pg.K_e in game.get_game().get_keys():
@@ -1154,8 +1171,8 @@ class Player:
                     displayer.canvas.blit(f, ffr)
         for _entity in game.get_game().entities:
             _entity.obj.touched_player = False
-            _entity.obj.object_collision(self.obj, (_entity.img.get_width() + _entity.img.get_height()) // 4 + 50)
-            if self.obj.object_collision(_entity.obj, (_entity.img.get_width() + _entity.img.get_height()) // 4 + 50):
+            _entity.obj.object_collision(self.obj, ((_entity.img.get_width() + _entity.img.get_height()) if _entity.img is not None else 0) // 4 + 50)
+            if self.obj.object_collision(_entity.obj, (_entity.img.get_width() + _entity.img.get_height() if _entity.img is not None else 0) // 4 + 50):
                 _entity.obj.touched_player = True
                 _entity.on_damage_player()
                 if 'lt' in dir(_entity) and self.tick - getattr(_entity, 'lt') <= self.hp_sys.IMMUNE_TIME * 5:

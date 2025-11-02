@@ -27,6 +27,9 @@ MUSICS = {
     'sanctuary': ['fallen_sea0', 'fallen_sea1', 'hell0', 'heaven0', 'heaven1', 'ocean1'],
     #'here_we_are': ['inner0', 'inner1'],
     'amalgam': ['inner0', 'inner1', 'none0', 'none1', 'wither0', 'wither1'],
+    'left_alone': ['hot_spring0', 'hot_spring1', 'hell0', 'hell1'],
+    'hadopelagic_pressure': ['hot_spring0', 'hot_spring1', 'ocean0', 'ocean1', 'hell0', 'fallen_sea1'],
+    'hydrothermophobia': ['hot_spring0', 'hot_spring1', 'hell1', 'hell0', 'fallen_sea1'],
     'null': [],
     'rude_buster': ['battle'],
     'worlds_revolving': ['battle'],
@@ -59,7 +62,10 @@ MUSIC_DATA = {
     '3rd_sanctuary': 'Toby Fox - 3rd Sanctuary (Deltarune)',
     'knight': 'Toby Fox - Black Knife (Deltarune)',
     'hesitation': 'Hesitation (Terraria Calamity)',
-    'fallen_sea': 'Sanctuary (Terraria Calamity)'
+    'sanctuary': 'Sanctuary (Terraria Calamity)',
+    'hadopelagic_pressure': 'Hadopelagic Pressure (Terraria Calamity)',
+    'hydrothermophobia': 'Hydrothermophobia (Terraria Calamity)',
+    'left_alone': 'Left Alone (Terraria Calamity)',
 }
 
 class Game:
@@ -171,6 +177,10 @@ class Game:
             r = 40
             g = 40
             b = 120
+        if self.get_biome() == 'hot_spring':
+            r = 60
+            g = 20
+            b = 20
         if self.get_biome() == 'hell' and self.chapter == 2:
             r = 255
             g = 0
@@ -187,6 +197,10 @@ class Game:
             r = 255 - (255 - r) // 2
             g = 255 - (255 - g) // 2
             b = 255 - (255 - b) // 2
+        if self.get_biome() == 'hot_spring':
+            r = (120 + r) // 3
+            g = (40 + r) // 3
+            b = (40 + r) // 3
         return r, g, b
 
     def on_day_start(self):
@@ -356,6 +370,11 @@ class Game:
                 self.player.inventory.is_enough(inventory.ITEMS['chaos_heart']):
             return 'inner'
 
+        if self.chapter == 2:
+            if (pos[1] - 120) * self.CHUNK_SIZE < -100000:
+                return 'ancient_city'
+            elif (pos[1] - 120) * self.CHUNK_SIZE < -80000:
+                return 'ancient'
 
         pos_fallen_sea = physics.Vector2D(self.fun ** 3 % 360, ((self.fun * 3 // 4 + 1000 // self.fun) ** 2 * 17 % 1000) + 300)
         if (pos[0] - pos_fallen_sea.x - 120) ** 2 + (pos[1] - pos_fallen_sea.y - 120) ** 2 < 10000:
@@ -364,12 +383,10 @@ class Game:
             return 'desert'
 
 
+        if pos[1] > 2500 and self.stage >= 1:
+            return 'hot_spring'
         if (pos[0] - 120) ** 2 + (pos[1] - 120) ** 2 < 5000:
             return 'forest'
-        elif (pos[0] - 120) ** 2 + (pos[1] - 120) ** 2 > 5000000:
-            return 'ocean'
-        if pos[1] < -100000 and self.chapter == 2:
-            return 'inner'
 
 
         lvs = ['hell', 'desert', 'rainforest', 'forest', 'snowland', 'heaven', 'hallow', 'wither', 'ancient']
@@ -391,7 +408,21 @@ class Game:
             self.wm_min = min(self.m_min, w)
             self.wm_max = max(self.m_max, w)
         w = (w - self.wm_min) / (self.wm_max - self.wm_min + 0.01)
-        if 5 > idx > 0:
+        if (pos[0] - 120) ** 2 + (pos[1] - 120) ** 2 * 4 > 12000000:
+            dt = w * .5 + idx / 12
+            if dt > .9:
+                idx = 2
+            elif dt > .75:
+                idx = 3
+            elif dt > .65:
+                idx = 1
+            else:
+                return 'ocean'
+        elif abs(w * .291 + self.map_ns[pos] * .7098 - .5) < .01 + .05 * (((pos[0] - 120) ** 2 + (pos[1] - 120) ** 2 * 4) / 12000000) ** .5:
+            return 'ocean'
+        elif 12000000 > (pos[0] - 120) ** 2 + (pos[1] - 120) ** 2 * 4 > 11000000:
+            return 'desert'
+        elif 5 > idx > 0:
             if w < 0.2:
                 if idx == 4:
                     idx = 3
@@ -417,9 +448,6 @@ class Game:
             for pp, r in self.wither_points:
                 if physics.distance(pp[0] - (pos[0] - 120) * self.CHUNK_SIZE, pp[1] - (pos[1] - 120) * self.CHUNK_SIZE) < r:
                     idx = 7
-        if self.chapter == 2:
-            if (pos[1] - 120) * self.CHUNK_SIZE < -80000:
-                idx = 8
         if idx != 1 and len([1 for e in self.entities if type(e) in [underia3.TralaleroTralala]]):
             return 'ocean'
         biome = lvs[idx]
@@ -439,7 +467,7 @@ class Game:
 
     YCOLS = {'hell': (255, 0, 0), 'desert': (255, 191, 63), 'forest': (0, 255, 0), 'rainforest': (127, 255, 0),
                 'snowland': (255, 255, 255), 'heaven': (127, 127, 255), 'inner': (0, 0, 0), 'none': (0, 0, 0),
-                'hallow': (0, 255, 255), 'fallen_sea': (0, 100, 255)}
+                'hallow': (0, 255, 255), 'fallen_sea': (0, 100, 255), 'hot_spring': (50, 0, 0)}
 
     @lru_cache(maxsize=int(constants.MEMORY_USE * .05))
     def get_chunked_images(self, biomes, bg_size):
@@ -470,7 +498,8 @@ class Game:
         cols = {'hell': (255, 0, 0), 'desert': (255, 191, 63), 'forest': (0, 255, 0), 'rainforest': (127, 255, 0),
                 'snowland': (255, 255, 255), 'heaven': (127, 127, 255), 'inner': (0, 0, 0), 'none': (0, 0, 0),
                 'hallow': (0, 255, 255), 'wither': (50, 0, 0), 'life_forest': (50, 127, 0), 'ancient': (50, 0, 0),
-                'ancient_city': (255, 200, 128), 'ancient_wall': (100, 50, 0), 'ocean': (0, 0, 255), 'fallen_sea': (0, 100, 255)}
+                'ancient_city': (255, 200, 128), 'ancient_wall': (100, 50, 0), 'ocean': (0, 0, 255),
+                'fallen_sea': (0, 100, 255), 'hot_spring': (50, 0, 0)}
         if not self.graphics.is_loaded('nbackground_hell') or self.graphics['nbackground_hell'].get_width() != bg_size:
             for k in cols.keys():
                 self.graphics['nbackground_' + k] = pg.transform.scale(self.graphics['background_' + k],
