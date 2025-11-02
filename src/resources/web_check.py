@@ -45,12 +45,12 @@ def check(c_hash=None) -> tuple[bool, bool, str]:
             v2e = version_sup.find('second').text
             v3e = version_sup.find('third').text
             print('Supported version:', '%s.%s.%s' % (v1e, v2e, v3e))
-            assert compare((v1, v2, v3), (v1e, v2e, v3e)) >= 0, 'Newest version is not supported'
-            c1 = compare((v1, v2, v3), version.VERSION)
-            c2 = compare((v1e, v2e, v3e), version.VERSION)
+            assert compare((v1, v2, v3), (v1e, v2e, v3e)) <= 0, 'Newest version is not supported'
+            c1 = compare((v1e, v2e, v3e), version.VERSION)
+            c2 = compare((v1, v2, v3), version.VERSION)
+            print(c1, c2)
             if c1 < 0:
                 print('Version no longer supported!')
-                messagebox.showerror('Error', 'Your version is no longer supported!')
                 return b, False, 'Your version is no longer supported!'
             elif c2 >= 0:
                 print('Newest version!')
