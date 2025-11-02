@@ -6,6 +6,7 @@ import constants
 from resources import path
 from mods import UnderiaModData
 import pickle
+import mod_downloads
 
 if constants.OS == "Windows":
     pass
@@ -44,7 +45,7 @@ def load_mod():
     clk = pg.time.Clock()
     screen = pg.display.get_surface()
     font = pg.font.Font(path.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 32)
-    btn_t = ['Open Mod Folder', 'Reload Mods', 'Done']
+    btn_t = ['Download Mods', 'Reload Mods', 'Done']
     btn_r = [pg.Rect(300, 50, 320, 80), pg.Rect(640, 50, 320, 80), pg.Rect(980, 50, 320, 80)]
 
     tick = 0
@@ -60,11 +61,7 @@ def load_mod():
                 if event.button == 1:
                     pos = pg.mouse.get_pos()
                     if btn_r[0].collidepoint(pos):
-                        if constants.OS == "Windows":
-                            os.system(f'explorer {mod_dir}')
-                        else:
-                            appscript.app('Finder').reveal(appscript.mactypes.Alias(mod_dir).alias)
-                            appscript.app('Finder').activate()
+                        mod_downloads.load_mod()
                     elif btn_r[1].collidepoint(pos):
                         mod_datas = [pickle.load(open(os.path.join(mod_dir, d, 'data.umod'), 'rb')) for d in os.listdir(mod_dir)]
                         icos = [pg.image.load(os.path.join(mod_dir, d, 'assets/assets/icon.png')) for d in os.listdir(mod_dir)]
@@ -93,11 +90,7 @@ def load_mod():
                     pg.quit()
                     return cmds, None
                 elif event.key in [pg.K_f, pg.K_c]:
-                    if constants.OS == "Windows":
-                        os.system(f'explorer {mod_dir}')
-                    else:
-                        appscript.app('Finder').reveal(appscript.mactypes.Alias(mod_dir).alias)
-                        appscript.app('Finder').activate()
+                    mod_downloads.load_mod()
                 elif event.key in [pg.K_r, pg.K_x]:
                     mod_datas = [pickle.load(open(os.path.join(mod_dir, d, 'data.umod'), 'rb')) for d in os.listdir(mod_dir)]
                     icos = [pg.image.load(os.path.join(mod_dir, d, 'assets/assets/icon.png')) for d in os.listdir(mod_dir)]

@@ -2199,8 +2199,8 @@ class MagicWeapon(Weapon):
         self.projectile = projectile
         self.spell_name = spell_name
         self.mana_cost = mana_cost
-        if speed + at_time > 3:
-            self.sk_mcd = speed + at_time
+        if speed > 3:
+            self.sk_mcd = speed
 
     def on_start_attack(self):
         if game.get_game().player.mana < round(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True),1):
@@ -2209,16 +2209,30 @@ class MagicWeapon(Weapon):
         if self.sk_cd:
             self.timer = 0
             return
+        self.face_to(
+            *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+        game.get_game().player.mana -= round(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True),1)
+        game.get_game().player.hp_sys.effect(effects.WeakManaI([.5, 1, 3, 6][constants.DIFFICULTY], 1))
+        if constants.DIFFICULTY:
+            game.get_game().player.hp_sys.effect(effects.ManaDrain([0, 3, 6, 10][constants.DIFFICULTY], 1))
+
+
+    def on_attack(self):
+        super().on_attack()
+        if self.sk_mcd:
+            self.sk_cd = (self.at_time - self.timer) * self.sk_mcd / self.at_time
+            pg.draw.circle(game.get_game().displayer.canvas, self.projectile.COL if 'COL' in dir(self.projectile) else (255, 255, 255),
+                            position.displayed_position((self.x + game.get_game().player.obj.pos[0], self.y + game.get_game().player.obj.pos[1])),
+                           int(150 * (self.timer / self.at_time) ** .7 / game.get_game().player.get_screen_scale()), 3)
+
+    def on_end_attack(self):
         self.sk_cd = self.sk_mcd
+        super().on_end_attack()
         self.face_to(
             *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
         game.get_game().projectiles.append(
             self.projectile((self.x + game.get_game().player.obj.pos[0], self.y + game.get_game().player.obj.pos[1]),
                             self.rot))
-        game.get_game().player.mana -= round(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True),1)
-        game.get_game().player.hp_sys.effect(effects.WeakManaI([.5, 1, 3, 6][constants.DIFFICULTY], 1))
-        if constants.DIFFICULTY:
-            game.get_game().player.hp_sys.effect(effects.ManaDrain([0, 3, 6, 10][constants.DIFFICULTY], 1))
 
 class PoetWeapon(MagicWeapon):
     ATTACK_SOUND = None
@@ -3171,6 +3185,30 @@ class WorldBow(Bow):
                 pj.AIMING = .5
             game.get_game().projectiles.append(pj)
 
+class HeavyBow(Bow):
+    def on_start_attack(self):
+        self.face_to(
+            *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+        if game.get_game().player.ammo[0] not in projectiles.AMMOS or not game.get_game().player.ammo[1]:
+            self.timer = 0
+            return
+        if game.get_game().player.ammo[
+            1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data(
+                'ammo_save', False) / 100:
+            game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
+
+        pj = projectiles.AMMOS[game.get_game().player.ammo[0]]((self.x + game.get_game().player.obj.pos[0],
+                                                                self.y + game.get_game().player.obj.pos[1]),
+                                                               self.rot + random.uniform(-self.precision,
+                                                                                              self.precision), self.spd,
+                                                               self.damages[dmg.DamageTypes.PIERCING])
+        pj.obj.velocity *= 1.5
+        pj.obj.FRICTION **= 2
+        pj.DELETE = False
+        pj.DECAY_RATE = 1
+        pj.ENABLE_IMMUNE = 4
+        game.get_game().projectiles.append(pj)
+
 class WForget(Bow):
     def on_start_attack(self):
         self.face_to(
@@ -4121,11 +4159,13 @@ def set_weapons():
                           0, 10, 400, auto_fire=True),
         'sky': WSky('sky', {dmg.DamageTypes.PIERCING: 80}, 3, 'items_null',
                     0, 40, 600, auto_fire=True, tail_col=(255, 255, 0), tw=5),
+        'heavybow': HeavyBow('heavybow', {dmg.DamageTypes.PIERCING: 70}, 2, 'items_weapons_heavybow',
+                             10, 5, 0, auto_fire=True),
         'kuangkuangkuang': KuangKuangKuang('kuangkuangkuang', {dmg.DamageTypes.PIERCING: 6}, 0.5, 'items_weapons_kuangkuangkuang',
                                             0, 1, 550, auto_fire=True, tail_col=(200, 255, 255), ammo_save_chance=1 / 3),
-        'recurve_bow': Bow('recurve bow', {dmg.DamageTypes.PIERCING: 92}, 0.6, 'items_weapons_recurve_bow',
-                           8, 2, 200, auto_fire=True),
-        'spiritual_piercer': Bow('spiritual piercer', {dmg.DamageTypes.PIERCING: 108}, 0.5,
+        'recurve_bow': Bow('recurve bow', {dmg.DamageTypes.PIERCING: 100}, 0.6, 'items_weapons_recurve_bow',
+                           6, 2, 500, auto_fire=True),
+        'spiritual_piercer': Bow('spiritual piercer', {dmg.DamageTypes.PIERCING: 110}, 0.5,
                                  'items_weapons_spiritual_piercer',
                                  1, 4, 650, auto_fire=True),
         'discord_storm': DiscordStorm('discord storm', {dmg.DamageTypes.PIERCING: 98}, 0.5,
@@ -4301,11 +4341,11 @@ def set_weapons():
                                     5, projectiles.Projectiles.BloodWatcherWand, 20, spell_name='Scarlett Watch'),
         'platinum_wand': MagicWeapon('platinum wand', {dmg.DamageTypes.MAGICAL: 32}, 0.3,
                                      'items_weapons_platinum_wand', 2,
-                                     5, projectiles.Projectiles.PlatinumWand, 5, True,
+                                     5, projectiles.Projectiles.PlatinumWand, 9, True,
                                      'Energy Bomb'),
         'mana_wand': MagicWeapon('mana wand', {dmg.DamageTypes.MAGICAL: 66}, 0.2,
                                  'items_weapons_mana_wand', 3,
-                                 7, projectiles.Projectiles.ManaWand, 11, True,
+                                 7, projectiles.Projectiles.ManaWand, 14, True,
                                   'Mana Erupt'),
 
         'life_wooden_wand': MagicWeapon('life wooden wand', {dmg.DamageTypes.MAGICAL: 28}, 0.4,
@@ -4332,11 +4372,11 @@ def set_weapons():
                                  True),
         'air_float': MagicWeapon('air float', {}, 0,
                                   'items_weapons_air_float', 0,
-                                  1, projectiles.Projectiles.AirFloat, 1, True,
+                                  1, projectiles.Projectiles.AirFloat, 3, True,
                                   'Float'),
         'blood_wand': MagicWeapon('blood wand', {dmg.DamageTypes.MAGICAL: 60}, 0.1,
                                   'items_weapons_blood_wand', 4,
-                                  12, projectiles.Projectiles.BloodWand, 8, True,
+                                  12, projectiles.Projectiles.BloodWand, 13, True,
                                   'Blood Condense'),
         'fireball_magic': MagicWeapon('fireball magic', {dmg.DamageTypes.MAGICAL: 70}, 0.1,
                                        'items_weapons_fireball_magic', 6,
@@ -4344,19 +4384,19 @@ def set_weapons():
                                        'Fireball'),
         'sunfire': MagicWeapon('sunfire', {dmg.DamageTypes.MAGICAL: 110}, 0.1,
                                 'items_weapons_sunfire', 12,
-                                10, projectiles.Projectiles.Sunfire, 18, True,
+                                10, projectiles.Projectiles.Sunfire, 28, True,
                                 'Sunfire'),
         'obsidian_wand': MagicWeapon('obsidian wand', {dmg.DamageTypes.MAGICAL: 70}, 0.1,
                                      'items_weapons_obsidian_wand', 1,
-                                     8, projectiles.Projectiles.ObsidianWand, 12, True,
+                                     8, projectiles.Projectiles.ObsidianWand, 15, True,
                                      'Obsidian Blast'),
         'ice_shard': MagicWeapon('ice shard', {dmg.DamageTypes.MAGICAL: 40}, 0.1,
                                   'items_weapons_ice_shard', 3,
-                                  15, projectiles.Projectiles.IceShard, 14, True,
+                                  15, projectiles.Projectiles.IceShard, 24, True,
                                   'Ice Blast'),
         'fire_magic_sword': SweepMagicWeapon('fire magic sword', {dmg.DamageTypes.MAGICAL: 76}, 0.1,
                                               'items_weapons_fire_magic_sword', 1,
-                                              4, 30, 60, False, 3, True,
+                                              4, 30, 60, False, 5, True,
                                              spell_name='Fire Sword'),
         'fruit_wand': MagicWeapon('fruit wand', {dmg.DamageTypes.MAGICAL: 66}, 0.1,
                                    'items_weapons_fruit_wand', 1,
@@ -4364,8 +4404,16 @@ def set_weapons():
                                    'Newton\'s Apple'),
         'rock_wand': MagicWeapon('rock wand', {dmg.DamageTypes.MAGICAL: 88}, 0.6,
                                  'items_weapons_rock_wand', 0,
-                                 4, projectiles.Projectiles.RockWand, 3, True,
+                                 4, projectiles.Projectiles.RockWand, 7, True,
                                  'Rock Storm'),
+        'isobar': MagicWeapon('isobar', {dmg.DamageTypes.MAGICAL: 80}, 0.1,
+                               'items_weapons_isobar', 18,
+                            12, projectiles.Projectiles.Isobar, 25, True,
+                               'Pressure'),
+        'tropical_cyclone': MagicWeapon('tropical cyclone', {dmg.DamageTypes.MAGICAL: 110}, 0.1,
+                                         'items_weapons_tropical_cyclone', 18,
+                                         18, projectiles.Projectiles.TropicalCyclone, 38, True,
+                                         'Tropical Cyclone'),
         'tornado': Tornado('tornado', {}, 0.1, 'items_weapons_tornado',
                            2, 18, projectiles.Projectiles.Projectile, 25, spell_name='Tornado'),
         'midnights_wand': MidnightsWand('midnights wand', {dmg.DamageTypes.MAGICAL: 98}, 0.3,

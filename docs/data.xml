@@ -5,7 +5,7 @@
     <version id="newest">
         <first>1</first>
         <second>5</second>
-        <third>0a</third>
+        <third>0b</third>
     </version>
     <version id="supported">
         <first>1</first>
@@ -13,7 +13,8 @@
         <third>0a</third>
     </version>
     <content>
-        <hash version="1.3.0a">377123776</hash>
+        <hash version="1.5.0a">377123776</hash>
+        <hash version="1.5.0b">321141689</hash>
     </content>
     <mods>
         <mod>
@@ -32,7 +33,7 @@
                 <version id="newest">
                     <first>1</first>
                     <second>5</second>
-                    <third>0a</third>
+                    <third>0b</third>
                 </version>
                 <version id="supported">
                     <first>1</first>
@@ -58,7 +59,60 @@
                 <version id="newest">
                     <first>1</first>
                     <second>5</second>
+                    <third>0b</third>
+                </version>
+                <version id="supported">
+                    <first>1</first>
+                    <second>3</second>
                     <third>0a</third>
+                </version>
+            </support>
+        </mod>
+
+
+        <mod>
+            <mid value="talent" />
+            <name>Talented</name>
+            <author>KLpig</author>
+            <desc>Adds up all skill trees.</desc>
+            <version>
+                <first>1</first>
+                <second>0</second>
+                <third>0</third>
+            </version>
+            <support>
+                <platform id="OSX" />
+                <platform id="Windows" />
+                <version id="newest">
+                    <first>1</first>
+                    <second>5</second>
+                    <third>0b</third>
+                </version>
+                <version id="supported">
+                    <first>1</first>
+                    <second>3</second>
+                    <third>0a</third>
+                </version>
+            </support>
+        </mod>
+
+        <mod>
+            <mid value="moneys" />
+            <name>Money's Mod</name>
+            <author>KLpig</author>
+            <desc>Everything can be solved by money.</desc>
+            <version>
+                <first>1</first>
+                <second>0</second>
+                <third>0</third>
+            </version>
+            <support>
+                <platform id="OSX" />
+                <platform id="Windows" />
+                <version id="newest">
+                    <first>1</first>
+                    <second>5</second>
+                    <third>0b</third>
                 </version>
                 <version id="supported">
                     <first>1</first>

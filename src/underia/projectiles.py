@@ -50,14 +50,14 @@ class Projectiles:
         def get_closest_entity(self) -> tuple[entity.Entities.Entity | None, float]:
             closest_entity = None
             closest_distance = 1000000
-            for entity in game.get_game().entities:
-                if not entity.obj.IS_OBJECT and not entity.VITAL and not entity.IS_MENACE:
+            for ee in game.get_game().entities:
+                if not ee.obj.IS_OBJECT and not ee.VITAL and not ee.IS_MENACE:
                     continue
-                if vector.distance(self.obj.pos[0] - entity.obj.pos[0],
-                                   self.obj.pos[1] - entity.obj.pos[1]) - 1000 * entity.IS_MENACE < closest_distance:
-                    closest_entity = entity
-                    closest_distance = vector.distance(self.obj.pos[0] - entity.obj.pos[0],
-                                                       self.obj.pos[1] - entity.obj.pos[1]) - 1000 * entity.IS_MENACE
+                if vector.distance(self.obj.pos[0] - ee.obj.pos[0],
+                                   self.obj.pos[1] - ee.obj.pos[1]) - 1000 * ee.IS_MENACE < closest_distance:
+                    closest_entity = ee
+                    closest_distance = vector.distance(self.obj.pos[0] - ee.obj.pos[0],
+                                                       self.obj.pos[1] - ee.obj.pos[1]) - 1000 * ee.IS_MENACE
             if closest_entity is None:
                 return None, 0.0
             return closest_entity, vector.coordinate_rotation(closest_entity.obj.pos[0] - self.obj.pos[0],
@@ -80,7 +80,7 @@ class Projectiles:
             return {'pos': self.obj.pos, 'rot': self.rot, 'img_idx': self.img_idx}
 
         def set_rotation(self, rot):
-            if self.img.get_width() < 5:
+            if type(self.img) is not pg.Surface or self.img.get_width() < 5:
                 return
             p = position.displayed_position(self.obj.pos)
             if p[0] < -50 or p[0] > game.get_game().displayer.SCREEN_WIDTH + 50 or p[1] < -50 or p[
@@ -410,6 +410,8 @@ class Projectiles:
             self.obj = ProjectileMotion(pos, rotation, spd=self.SPD)
             self.obj.apply_force(vector.Vector(rotation, 100))
             self.tick = 0
+            df = 1 - self.obj.FRICTION
+            self.obj.FRICTION = 1 - df * game.get_game().player.friction_mult()
 
         def update(self):
             self.tick += 1
@@ -479,7 +481,57 @@ class Projectiles:
         def update(self):
             super().update()
             pg.draw.circle(game.get_game().displayer.canvas, (0, 255, 255), position.displayed_position(self.obj.pos),
-                           int(50 / game.get_game().player.get_screen_scale()))
+                           int(50 / game.get_game().player.get_screen_scale()), int(10 / game.get_game().player.get_screen_scale()))
+
+    class Isobar(CopperWand):
+        DAMAGE_AS = 'isobar'
+        IMG = 'projectiles_null'
+        COL = (0, 50, 100)
+        DEL = False
+        ENABLE_IMMUNE = 4
+        LIMIT_VEL = -1
+        DECAY_RATE = 1.0
+
+        def __init__(self, *args):
+            super().__init__(*args)
+            self.obj.velocity *= 0
+
+        def update(self):
+            super().update()
+            pg.draw.circle(game.get_game().displayer.canvas, (0, 50, 100), position.displayed_position(self.obj.pos),
+                           int((80 + math.sin(self.tick / 20) * 20) / game.get_game().player.get_screen_scale()), 3)
+            tar, _ = self.get_closest_entity()
+            if tar is not None:
+                self.obj.SPEED = 1
+                self.obj.apply_force((tar.obj.pos - self.obj.pos) / 50 * self.obj.MASS)
+                self.obj.SPEED = 0
+            self.dead = self.dead or self.tick > 100
+
+    class TropicalCyclone(CopperWand):
+        DAMAGE_AS = 'tropical_cyclone'
+        IMG = 'projectiles_null'
+        COL = (0, 255, 255)
+        DEL = False
+        ENABLE_IMMUNE = 4
+        LIMIT_VEL = -1
+        DECAY_RATE = 1.0
+
+        def __init__(self, *args):
+            super().__init__(*args)
+            self.obj.velocity *= 0
+
+        def update(self):
+            super().update()
+            pg.draw.circle(game.get_game().displayer.canvas, (0, 255, 255), position.displayed_position(self.obj.pos),
+                           int((80 + math.sin(self.tick / 20) * 20) / game.get_game().player.get_screen_scale()), 3)
+            tar, dt = self.get_closest_entity()
+            self.obj.SPEED = 1
+            if tar is not None and dt < 500:
+                self.obj.apply_force((tar.obj.pos - self.obj.pos) / 50 * self.obj.MASS)
+            else:
+                self.obj.apply_force(vector.Vector(self.rot, 300))
+            self.obj.SPEED = 0
+            self.dead = self.dead or self.tick > 100
 
     class Mantle(PlatinumWand):
         SPD = 20
@@ -620,7 +672,10 @@ class Projectiles:
         def __init__(self, pos, rotation):
             super().__init__(pos, rotation)
             self.dead = True
-            game.get_game().player.z = -.5
+            if game.get_game().get_biome() == 'fallen_sea':
+                game.get_game().player.z = -1.2
+            else:
+                game.get_game().player.z = -.5
 
         def update(self):
             pass
@@ -1286,7 +1341,7 @@ class Projectiles:
             self.img = game.get_game().graphics['entity_null']
             self.d_img = self.img
             self.tx, self.ty = position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
-            self.obj.pos << self.tx, self.ty
+            self.obj.pos << (self.tx, self.ty)
             self.te = []
             for e in game.get_game().entities:
                 ex, ey = e.obj.pos
@@ -2556,6 +2611,8 @@ class Projectiles:
             self.set_rotation(rotation)
             self.ps = [pos]
             self.kb = kb
+            df = 1 - self.obj.FRICTION
+            self.obj.FRICTION = 1 - df * game.get_game().player.friction_mult()
 
         def update(self):
             if self.TAIL_SIZE:

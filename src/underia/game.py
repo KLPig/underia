@@ -17,13 +17,14 @@ import underia.settings as settings
 MUSICS = {
     'lantern': ['snowland1', 'snowland0', 'heaven1', 'heaven0', 'forest0', 'rainforest0', 'desert0'],
     'wild_east': ['desert1', 'desert0', 'wither0', 'wither1'],
-    'waterfall': ['forest0', 'rainforest0', 'desert0', 'snowland0', 'heaven0', 'heaven1', 'inner0', 'wither1'],
-    'fields': ['forest1', 'rainforest1', 'snowland1', 'forest0'],
+    'waterfall': ['forest0', 'rainforest0', 'desert0', 'snowland0', 'heaven0', 'heaven1', 'inner0', 'wither1',
+                  'ocean0', 'ocean1'],
+    'fields': ['forest1', 'rainforest1', 'snowland1', 'forest0', 'ocean'],
     'empty': ['hell0', 'hell1', 'forest1', 'rainforest1', 'battle', 'hallow0', 'hallow1', 'wither0', 'wither1',
               'life_forest0', 'life_forest1', 'ocean0', 'ocean1'],
     'snow': ['snowland0', 'snowland1', 'hallow0', 'hallow1'],
-    'hesitation': ['fallen_sea0', 'fallen_sea1', 'heaven1', 'wither1'],
-    'sanctuary': ['fallen_sea0', 'fallen_sea1', 'hell0', 'heaven0', 'heaven1'],
+    'hesitation': ['fallen_sea0', 'fallen_sea1', 'heaven1', 'wither1', 'ocean1', 'ocean0'],
+    'sanctuary': ['fallen_sea0', 'fallen_sea1', 'hell0', 'heaven0', 'heaven1', 'ocean1'],
     #'here_we_are': ['inner0', 'inner1'],
     'amalgam': ['inner0', 'inner1', 'none0', 'none1', 'wither0', 'wither1'],
     'null': [],
@@ -362,8 +363,11 @@ class Game:
         elif (pos[0] - pos_fallen_sea.x - 120) ** 2 + (pos[1] - pos_fallen_sea.y - 120) ** 2 < 15000:
             return 'desert'
 
+
         if (pos[0] - 120) ** 2 + (pos[1] - 120) ** 2 < 5000:
             return 'forest'
+        elif (pos[0] - 120) ** 2 + (pos[1] - 120) ** 2 > 5000000:
+            return 'ocean'
         if pos[1] < -100000 and self.chapter == 2:
             return 'inner'
 

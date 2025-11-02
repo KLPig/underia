@@ -2611,6 +2611,10 @@ class Entities:
             IndividualLoot('cell_organization', .7, 10, 20),
             IndividualLoot('coral_reef', .5, 10, 20),
             IndividualLoot('silver_ingot', .5, 5, 10),
+            IndividualLoot('azure_amulet', .03, 1, 1),
+            IndividualLoot('tsunamic_bottle', .03, 1, 1),
+            IndividualLoot('diving_boots', .03, 1, 1),
+            IndividualLoot('isobar', .03, 1, 1),
         ])
 
         SOUND_HURT = 'corrupt'
@@ -2648,6 +2652,8 @@ class Entities:
             IndividualLoot('silver_ingot', .5, 5, 10),
             IndividualLoot('seaprick', .03, 1, 1),
             IndividualLoot('dim_heavysword', .03, 1, 1),
+            IndividualLoot('heavybow', .03, 1, 1),
+            IndividualLoot('sunken_shield', .03, 1, 1),
         ])
 
         SOUND_HURT = 'corrupt'

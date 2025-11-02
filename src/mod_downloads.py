@@ -6,6 +6,8 @@ import pygame as pg
 from resources import path
 import os
 from mods import UnderiaModData
+if constants.OS == 'OSX':
+    import appscript
 
 def compare(x: tuple[str, str, str], y: tuple[str, str, str]):
     if x[0] != y[0]:
@@ -31,7 +33,7 @@ class Mod:
         self.version = (et_data.find('version/first').text, et_data.find('version/second').text, et_data.find('version/third').text)
         self.support_min = et_data.find('support/version[@id="supported"]')
         self.support_max = et_data.find('support/version[@id="newest"]')
-        self.support = [d for d in ["OSX", "Windows"] if et_data.find(f"support/platform[@id=\"{d}\"]")]
+        self.support = [dd for dd in ["OSX", "Windows"] if et_data.find(f"support/platform[@id=\"{dd}\"]") is not None]
 
     def __str__(self):
         return f'(#{self.mid}){self.name} - by {self.author}\n> {self.desc}\n V.{"%s.%s.%s" % self.version}\nSupport: {"; ".join(self.support)}'
@@ -80,7 +82,7 @@ if not os.path.exists(mod_dir):
 def load_mod():
     global anchor, cmds, cb, mod_datas, icos, scr, ds
     clk = pg.time.Clock()
-    screen = pg.display.set_mode((2400, 1800), pg.SRCALPHA | pg.RESIZABLE)# pg.display.get_surface()
+    screen = pg.display.get_surface()
     font = pg.font.Font(path.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 32)
     btn_t = ['Open Mod Folder']
     btn_r = [pg.Rect(300, 50, 1000, 80)]
@@ -91,7 +93,6 @@ def load_mod():
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
-                pg.quit()
                 return cmds, None
             elif event.type == pg.MOUSEBUTTONDOWN:
                 last_tick = tt
@@ -113,7 +114,6 @@ def load_mod():
                     constants.FULLSCREEN = not constants.FULLSCREEN
                     pg.display.set_mode(pg.display.get_window_size(), (pg.FULLSCREEN if constants.FULLSCREEN else 0) | constants.FLAGS)
                 elif event.key == pg.K_ESCAPE:
-                    pg.quit()
                     return cmds, None
                 elif event.key in [pg.K_f, pg.K_c]:
                     if constants.OS == "Windows":
@@ -140,7 +140,7 @@ def load_mod():
             r = (300, 180 + 240 * i - scr, 1000, 200)
             pg.draw.rect(screen, (0, 0, 0), (300, 180 + 240 * i - scr,
                                              screen.get_width() - 600, 200), border_radius=20)
-            pg.draw.rect(screen, (255, 255, 255) if not pg.Rect(r).collidepoint(pg.mouse.get_pos()) else (255, 255, 0),
+            pg.draw.rect(screen, (255, 255, 255) if not pg.Rect(r).collidepoint(pg.mouse.get_pos()) and not os.path.exists(path.get_save_path(f'mods/{mdatas[i].name}/')) else (255, 255, 0),
                          (300, 180 + 240 * i - scr, screen.get_width() - 600, 200), 5, border_radius=20)
             data = mod_datas[i]
             name = font.render(data.name, True, (255, 255, 255), (0, 0, 0))
@@ -161,6 +161,9 @@ def load_mod():
                             f.write(chunk)
                             f.flush()
                             os.fsync(f.fileno())
+
+                        if constants.OS == "OSX":
+                            os.system(f'unzip -o {path.get_save_path(f"mods/{mdatas[i].mid}.zip")} -d "{path.get_save_path(f"mods/{mdatas[i].name}")}"')
                 else:
                     print('Error 91919')
 
