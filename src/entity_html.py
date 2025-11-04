@@ -1,7 +1,7 @@
 import pygame as pg
 
 import underia, values
-import underia3 as ee
+
 import constants
 
 pg.init()

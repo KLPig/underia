@@ -41,6 +41,8 @@ MUSICS = {
     'from_now_on': ['battle'],
     'knight_appears': ['battle'],
     'knight': ['battle'],
+    'ruf_calamity': ['battle'],
+    'platinum_star': ['battle'],
 }
 
 MUSIC_DATA = {
@@ -66,6 +68,9 @@ MUSIC_DATA = {
     'hadopelagic_pressure': 'Hadopelagic Pressure (Terraria Calamity)',
     'hydrothermophobia': 'Hydrothermophobia (Terraria Calamity)',
     'left_alone': 'Left Alone (Terraria Calamity)',
+
+    'platinum_star': 'Platinum Star (Terraria Fargo)',
+    'ruf_calamity': 'Raw, Unfiltered Calamity (Terraria Calamity)'
 }
 
 class Game:
@@ -575,6 +580,10 @@ class Game:
                     self.prepared_music = 'worlds_revolving'
                 elif len([1 for e in self.entities if type(e) is entity.Entities.Plantera]):
                     self.prepared_music = 'plantera'
+                elif len([1 for e in self.entities if type(e) is entity.Entities.Ray]):
+                    self.prepared_music = 'platinum_star'
+                elif len([1 for e in self.entities if type(e) is entity.Entities.Irec]):
+                    self.prepared_music = 'ruf_calamity'
                 elif len([1 for e in self.entities if type(e) is entity.Entities.ReincarnationTheWorldsTree]):
                     self.prepared_music = 'mercy_remix'
                 elif len([1 for e in self.entities if type(e) is entity.Entities.Faith]):

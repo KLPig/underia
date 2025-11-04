@@ -91,7 +91,8 @@ class PlayerProfile:
         b = max(0, min(255, b))
         return r, g, b
 
-    def get_surface(self, r = 255, g = 255, b = 255):
+    @staticmethod
+    def get_surface(r = 255, g = 255, b = 255):
         sl = [
             [0, 1, 1, 0, 0, 1, 1, 0],
             [1, 1, 1, 1, 1, 1, 1, 1],
