@@ -84,6 +84,8 @@ def load_mod():
     clk = pg.time.Clock()
     screen = pg.display.get_surface()
     font = pg.font.Font(path.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 32)
+    if constants.LANG == 'zh':
+        font.set_bold(True)
     btn_t = ['Open Mod Folder']
     btn_r = [pg.Rect(300, 50, 1000, 80)]
 

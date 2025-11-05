@@ -875,6 +875,9 @@ class Game:
                     mask.set_alpha(200)
                     window.blit(mask, (0, 0))
                     font = pg.font.Font(resources.get_path('assets/dtm-sans.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 30)
+
+                    if constants.LANG == 'zh':
+                        font.set_bold(True)
                     text = font.render('Underia', True, (255, 255, 255))
                     text_rect = text.get_rect(center=(window.get_rect().centerx,
                                                       window.get_rect().centery - 300))

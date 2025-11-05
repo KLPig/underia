@@ -11,7 +11,7 @@ class FirstConnectData:
 class SinglePlayerData:
     def __init__(self, player_id, p: player.Player):
         self.player_id = player_id
-        self.pos << p.obj.pos
+        self.pos = p.obj.pos
         self.hp_sys = p.hp_sys
         self.col = p.profile.get_color()
 

@@ -59,6 +59,8 @@ def show_notebook(chapter=0):
     window = pg.display.get_surface()
     font = pg.font.Font(path.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'),
                         54)
+    if constants.LANG == 'zh':
+        font.set_bold(True)
     while True:
         window.fill((0, 0, 0))
         for event in pg.event.get():

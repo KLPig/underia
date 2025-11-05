@@ -7,6 +7,8 @@ class Dialogger:
     def __init__(self, font_size: int = 64, rect: pg.Rect = None, with_border: bool = False,
                  target_surface: pg.Surface = None, speed: float = 10):
         self.font = pg.font.Font(resources.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), font_size)
+        if constants.LANG == 'zh':
+            self.font.set_bold(True)
         self.word_queue = []
         self.curr_text = ''
         self.curr_idx = 0

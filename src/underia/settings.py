@@ -36,6 +36,8 @@ def set_settings():
     window = pg.display.get_surface()
     font = pg.font.Font(path.get_path('assets/fz-pixel.ttf'),
                         54)
+    if constants.LANG == 'zh':
+        font.set_bold(True)
     while True:
         window.fill((0, 0, 0))
         for event in pg.event.get():

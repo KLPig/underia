@@ -58,6 +58,10 @@ def choose_save(modified, stop, msg):
     font = pg.font.Font(path.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 48)
     font_s = pg.font.Font(path.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 20)
     font_large = pg.font.Font(path.get_path('assets/dtm-mono.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf'), 72)
+    if constants.LANG == 'zh':
+        font.set_bold(True)
+        font_s.set_bold(True)
+        font_large.set_bold(True)
 
     font_large.set_bold(True)
     font.set_bold(True)

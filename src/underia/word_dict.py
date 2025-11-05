@@ -804,6 +804,9 @@ en_cn = {
 
     'quark_rusher': '夸克突进者',
 
+    'gods are formless': '神本无相',
+    'irec': '以睿客',
+
 
     'can only be placed in the first slot': '只能放在第一饰品栏',
     'can only be placed in the second slot': '只能放在第二饰品栏',
