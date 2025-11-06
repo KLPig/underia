@@ -143,6 +143,9 @@ class Game:
             return 255, 200, 200
         if len([1 for e in self.entities if type(e) is entity.Entities.CLOCK]):
             return 0, 50, 50
+        dd = [e.d_cols[0] for e in self.entities if type(e) is entity.Entities.Irec]
+        if len(dd):
+            return dd[0][0] // 2 + 127, dd[0][1] // 2 + 127, dd[0][2] // 2 + 127
         dd = [e.nightstate for e in self.entities if type(e) is underia3.StanoZolol]
         if len(dd):
             return 150 - dd[0] * 150, 150 - dd[0] * 150, 0
@@ -570,10 +573,10 @@ class Game:
                                         'ancient_wall0', 'ancient_wall1']
         if (self.prepared_music is None and self.channel.get_busy() == 0) or \
                 (self.cur_music is not None and (self.get_biome() + str(int(0.3 < self.day_time < 0.7))) not in
-                 self.MUSICS[self.cur_music] and not len([1 for e in self.entities if e.IS_MENACE])) \
-                or (self.cur_music is not None and len([1 for e in self.entities if e.IS_MENACE]) and
+                 self.MUSICS[self.cur_music] and not len([1 for e in self.entities if e.IS_MENACE or type(e) in [entity.Entities.Irec]])) \
+                or (self.cur_music is not None and len([1 for e in self.entities if e.IS_MENACE or type(e) in [entity.Entities.Irec]]) and
                     'battle' not in self.MUSICS[self.cur_music]):
-            if len([1 for e in self.entities if e.IS_MENACE]):
+            if len([1 for e in self.entities if e.IS_MENACE or type(e) in [entity.Entities.Irec]]):
                 self.cur_music = None
                 self.channel.stop()
                 if len([1 for e in self.entities if type(e) in [entity.Entities.Jevil, entity.Entities.Jevil2]]):

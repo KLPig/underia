@@ -151,6 +151,7 @@ class Player:
         self.ui_attributes = False
         self.ui_recipes = False
         self.ui_recipe_overlook = False
+        self.ui_recipe_view = False
         self.mouse: tuple[str, int] = ('null', 0)
         self.cd_z = 0
         self.cd_x = 0
@@ -214,8 +215,7 @@ class Player:
             dmg *= 1 + self.profile.point_magic ** 1.1 / 400
         return dmg
 
-    @staticmethod
-    def friction_mult():
+    def friction_mult(self):
         nf = 1
         b = game.get_game().get_biome()
         if b == 'fallen_sea':
@@ -226,6 +226,10 @@ class Player:
             nf *= .5
         if b in ['sea', 'ocean']:
             nf *= 1.75
+        if nf > 1:
+            anf = nf - 1
+            anf *= self.calculate_data('bio_fric', True, rate_multiply=True)
+            nf = 1 + anf
         return nf
 
     def calculate_data(self, data_idx, rate_data, rate_plus = False, rate_multiply = False):
@@ -1825,6 +1829,14 @@ class Player:
                                 entity.entity_spawn(entity.Entities.MagmaKing, 2000, 2000, 0, 1145, 100000)
                                 entity.entity_spawn(entity.Entities.MagmaKingCounter, 2000, 2000, 0, 1145, 100000)
                                 self.inventory.remove_item(item)
+                        elif item.id == 'monument':
+                            if not len([1 for e in game.get_game().player.hp_sys.effects if
+                                        type(e) is effects.StoneAltar]):
+                                game.get_game().dialog.dialog('Unable to summon Azure Stele.',
+                                                              'There is no Stone Altar nearby.')
+                            else:
+                                entity.entity_spawn(entity.Entities.AzureStele, 2000, 2000, 0, 1145, 100000)
+                                self.inventory.remove_item(item)
                         elif item.id == 'red_apple':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.StoneAltar]):
@@ -2258,6 +2270,14 @@ class Player:
             imr = im.get_rect(center=(nx, ny))
             if self.ui_recipes:
                 displayer.canvas.blit(im, imr)
+            ny += 60
+            rcv_rect = pg.Rect(nx - 30, ny - 30, 60, 60)
+            im = game.get_game().graphics['background_ui_recipe_view']
+            if not rcv_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
+                im = pg.transform.scale(im, (54, 54))
+            imr = im.get_rect(center=(nx, ny))
+            if self.ui_recipes:
+                displayer.canvas.blit(im, imr)
             if rec_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
                 self.in_ui = True
                 mouse_text = True
@@ -2282,7 +2302,18 @@ class Player:
                 mx -= f.get_width()
                 game.get_game().displayer.canvas.blit(fb, (mx + 3, my + 3))
                 game.get_game().displayer.canvas.blit(f, (mx, my))
-            self.recipes = [r for r in inventory.RECIPES if r.is_valid(self.inventory)]
+            if self.ui_recipes and rcv_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
+                self.in_ui = True
+                mouse_text = True
+                if 1 in game.get_game().get_mouse_press():
+                    self.ui_recipe_view = not self.ui_recipe_view
+                f = displayer.font.render(styles.text(f"Recipes: " + ("All" if self.ui_recipe_view else "Craftable")), True, (255, 255, 255))
+                fb = displayer.font.render(styles.text(f"Recipes: " + ("All" if self.ui_recipe_view else "Craftable")), True, (0, 0, 0))
+                mx, my = game.get_game().displayer.reflect(*pg.mouse.get_pos())
+                mx -= f.get_width()
+                game.get_game().displayer.canvas.blit(fb, (mx + 3, my + 3))
+                game.get_game().displayer.canvas.blit(f, (mx, my))
+            self.recipes = [r for r in inventory.RECIPES if r.is_valid(self.inventory) or (self.ui_recipe_view and r.is_related(self.inventory))]
             if len(self.recipes) and self.ui_recipes:
                 self.sel_recipe %= len(self.recipes)
                 if pg.K_UP in game.get_game().get_keys():
@@ -2292,7 +2323,8 @@ class Player:
                 cur_recipe = self.recipes[self.sel_recipe]
                 styles.item_display(game.get_game().displayer.SCREEN_WIDTH - 260 + self.inv_pos // 3,
                                     game.get_game().displayer.SCREEN_HEIGHT - 170,
-                                    cur_recipe.result, str(self.sel_recipe + 1), str(cur_recipe.crafted_amount), 2)
+                                    cur_recipe.result, str(self.sel_recipe + 1), str(cur_recipe.crafted_amount), 2,
+                                    red= not cur_recipe.is_valid(self.inventory))
                 i = 0
                 for item, amount in cur_recipe.material.items():
                     styles.item_display(
@@ -2301,14 +2333,14 @@ class Player:
                     i += 1
                 if pg.Rect(game.get_game().displayer.SCREEN_WIDTH - 260 + self.inv_pos // 3, game.get_game().displayer.SCREEN_HEIGHT - 170,
                            160, 160).collidepoint(game.get_game().displayer.reflect(
-                        *pg.mouse.get_pos())) and 1 in game.get_game().get_mouse_press():
+                        *pg.mouse.get_pos())) and 1 in game.get_game().get_mouse_press() and cur_recipe.is_valid(self.inventory):
                     rc = cur_recipe
                     cur_recipe.make(self.inventory)
                     game.get_game().play_sound('grab')
                     if len(self.inventory.items) > self.inv_capacity:
                         k, v = self.inventory.items.popitem()
                         game.get_game().drop_items.append(entity.Entities.DropItem(self.obj.pos, k, v))
-                    self.recipes = [r for r in inventory.RECIPES if r.is_valid(self.inventory)]
+                    self.recipes = [r for r in inventory.RECIPES if r.is_valid(self.inventory) or (self.ui_recipe_view and r.is_related(self.inventory))]
                     res = [i for i, r in enumerate(self.recipes) if r is rc]
                     self.sel_recipe = res[0] if res else 0
                     if self.tutorial_step == 3:
@@ -2318,7 +2350,7 @@ class Player:
                         s = (self.sel_recipe + i + len(self.recipes)) % len(self.recipes)
                         cur_recipe = self.recipes[s]
                         styles.item_display(displayer.SCREEN_WIDTH - 10 - 80 + self.inv_pos // 3, displayer.SCREEN_HEIGHT // 2 + i * 90 - 40,
-                                            cur_recipe.result, str(s + 1), str(cur_recipe.crafted_amount), 1 if i else 1.2)
+                                            cur_recipe.result, str(s + 1), str(cur_recipe.crafted_amount), 1 if i else 1.2, red=not cur_recipe.is_valid(self.inventory))
                         i += 1
                     cur_recipe = self.recipes[self.sel_recipe]
                     styles.item_mouse(game.get_game().displayer.SCREEN_WIDTH - 260 + self.inv_pos // 3,
@@ -2334,9 +2366,9 @@ class Player:
                     for i in range(-10, 10):
                         s = (self.sel_recipe + i + len(self.recipes)) % len(self.recipes)
                         cur_recipe = self.recipes[s]
-                        styles.item_mouse(displayer.SCREEN_WIDTH - 90, displayer.SCREEN_HEIGHT // 2 + i * 80 - 40 + self.inv_pos // 3,
+                        styles.item_mouse(displayer.SCREEN_WIDTH - 10 - 80 + self.inv_pos // 3, displayer.SCREEN_HEIGHT // 2 + i * 90 - 40,
                                           cur_recipe.result, str(s + 1), str(cur_recipe.crafted_amount), 1, anchor='right')
-                        r = pg.Rect(displayer.SCREEN_WIDTH - 90, displayer.SCREEN_HEIGHT // 2 + i * 80 - 40, 80, 80)
+                        r = pg.Rect(displayer.SCREEN_WIDTH - 10 - 80 + self.inv_pos // 3, displayer.SCREEN_HEIGHT // 2 + i * 90 - 40, 80, 80)
                         if r.collidepoint(game.get_game().displayer.reflect(
                                 *pg.mouse.get_pos())) and 1 in game.get_game().get_mouse_press():
                             self.sel_recipe = s
@@ -2353,7 +2385,7 @@ class Player:
                 for i, r in enumerate(self.recipes):
                     x = i % w * 80 - w * 80 / 2 + displayer.SCREEN_WIDTH // 2
                     y = i // w * 80 - l * 80 / 2 + displayer.SCREEN_HEIGHT // 2
-                    styles.item_display(x, y, r.result, str(i + 1), str(r.crafted_amount), 1)
+                    styles.item_display(x, y, r.result, str(i + 1), str(r.crafted_amount), 1, red=not r.is_valid(self.inventory))
                 for i, r in enumerate(self.recipes):
                     x = i % w * 80 - w * 80 / 2 + displayer.SCREEN_WIDTH // 2
                     y = i // w * 80 - l * 80 / 2 + displayer.SCREEN_HEIGHT // 2

@@ -6146,7 +6146,6 @@ class Entities:
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 25
             self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 45
             self.show_bar = False
-            self.hp_sys.IMMUNE = True
 
         def on_update(self):
             super().on_update()
@@ -6192,8 +6191,8 @@ class Entities:
         RCOLS = [(255, 0, 0), (255, 127, 0), (255, 255, 0), (0, 255, 0), (0, 255, 255), (0, 0, 255), (255, 0, 255)]
 
         def __init__(self, pos):
-            super().__init__(pos, pg.Surface((150, 150), pg.SRCALPHA), BuildingAI, 1200)
-            self.obj.MASS = 100
+            super().__init__(pos, pg.Surface((150, 150), pg.SRCALPHA), BuildingAI, 200000)
+            self.obj.MASS = 200
             self.obj.FRICTION = .95
             self.obj.SIGHT_DISTANCE = 9999
             self.obj.TOUCHING_DAMAGE = 500
@@ -6205,8 +6204,13 @@ class Entities:
             self.state = 1
             self.worms = []
             self.projs = []
-            self.PHASE_SEGMENTS = [1 - .7 / 1200]
+            self.PHASE_SEGMENTS = [1 - .7 / 200000]
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 360
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 360
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 360
+            self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 300
             self.hp_sys.IMMUNE = True
+            self.phase = 0
 
         def t_draw(self):
             ms = 0
@@ -6237,7 +6241,7 @@ class Entities:
                                       (self.d_cols[i][2] + t_col[2]) // 2)
                 tp = game.get_game().player.obj.pos + (0, -1200)
                 self.obj.apply_force((tp - self.obj.pos) * .5)
-            elif self.tick < 1500:
+            elif self.tick < 1500 - self.phase * 800:
                 for i, d in enumerate(self.d_pos):
                     if not i:
                         t_pos = vector.Vector2D()
@@ -6253,7 +6257,7 @@ class Entities:
                 if self.state == 1:
                     if self.tick % 200 in [60, 100, 130, 150]:
                         we = Entities.WormEntity(game.get_game().player.obj.pos + (1000, random.randint(-500, 500)),
-                                                 10, game.get_game().graphics['entity_destroyer_head'],
+                                                 10 + self.phase * 5, game.get_game().graphics['entity_destroyer_head'],
                                                   game.get_game().graphics['entity_destroyer_body_open'], BuildingAI, 100000,
                                                  120, 600)
                         we.obj.TOUCHING_DAMAGE = 600
@@ -6265,8 +6269,8 @@ class Entities:
                         w.obj.apply_force(vector.Vector2D(w.obj.rot, 350000))
                         w.hp_sys.hp -= 1500
                         w.t_draw()
-                        if (self.tick + int(w.obj.rot // 3)) % (7 - constants.DIFFICULTY) == 0:
-                            at = (self.tick + int(w.obj.rot // 3)) % (4 *  (7 - constants.DIFFICULTY)) // (7 - constants.DIFFICULTY)
+                        if (self.tick + int(w.obj.rot // 3)) % (18 - self.phase * 9 - constants.DIFFICULTY) == 0:
+                            at = (self.tick + int(w.obj.rot // 3)) % (4 * (18 - self.phase * 9 - constants.DIFFICULTY)) // (7 - constants.DIFFICULTY)
                             for b in w.body[1:][at::4]:
                                 lz = Entities.Lazer(b.obj.pos, vector.coordinate_rotation(*(game.get_game().player.obj.pos - b.obj.pos)))
                                 lz.DMG = 330
@@ -6292,7 +6296,7 @@ class Entities:
                             self.worms.append(we)
                     elif self.tick % 200 in [50, 90, 120, 140, 150]:
                         we = Entities.WormEntity(game.get_game().player.obj.pos + (-1500, random.randint(-1000, 1000)),
-                                                 4, game.get_game().graphics['entity_devil_python_head'],
+                                                 4 + self.phase * 8, game.get_game().graphics['entity_devil_python_head'],
                                                  game.get_game().graphics['entity_devil_python_body'], BuildingAI,
                                                  100000,
                                                  90, 650)
@@ -6305,8 +6309,8 @@ class Entities:
                         w.obj.apply_force(vector.Vector2D(w.obj.rot, 150000))
                         w.hp_sys.hp -= 500
                         w.t_draw()
-                        if (self.tick + int(w.obj.rot // 3)) % (18 - 3 * constants.DIFFICULTY) == 0:
-                            for b in w.body[1:][1::3]:
+                        if (self.tick + int(w.obj.rot // 3)) % (48 - self.phase * 16 - 3 * constants.DIFFICULTY) == 0:
+                            for b in w.body[:1]:
                                 lz = Entities.DevilsMark(b.obj.pos)
                                 lz.DMG = 450
                                 self.projs.append(lz)
@@ -6330,14 +6334,14 @@ class Entities:
                 elif self.state == 3:
                     if self.tick % 300 < 5:
                         self.ents.clear()
-                        for ar in range(constants.DIFFICULTY + 5):
-                            dr = ar * 360 // (constants.DIFFICULTY + 5)
+                        for ar in range(constants.DIFFICULTY + 5 + self.phase * 3):
+                            dr = ar * 360 // (constants.DIFFICULTY + 5 + self.phase * 3)
                             ent = Entities.Entity(game.get_game().player.obj.pos + vector.Vector2D(dr, 1400),
                                                   game.get_game().graphics['entity_the_cpu'], BuildingAI, 100000, )
                             ent.DISPLAY_MODE = 2
                             ent.obj.TOUCHING_DAMAGE = 600
                             self.ents.append(ent)
-                        fe = random.choices(self.ents, k=1 + (constants.DIFFICULTY + 1) // 2)
+                        fe = random.choices(self.ents, k=1 + (constants.DIFFICULTY + 1) // 2 + self.phase * 3)
 
                         for e in fe:
                             e.img = copy.copy(e.img)
@@ -6346,7 +6350,7 @@ class Entities:
                             e.NAME = 'Phantom'
                     elif self.tick % 300 < 200:
                         for i, e in enumerate(self.ents):
-                            ar = i * 360 // (constants.DIFFICULTY + 5)
+                            ar = i * 360 // (constants.DIFFICULTY + 5 + self.phase * 3)
                             e.obj.pos = game.get_game().player.obj.pos + vector.Vector2D(ar - self.rt // 2, 1400 - 2 * (self.tick % 300))
                             if e.hp_sys.hp < e.hp_sys.max_hp - 1 and e.NAME != 'Phantom':
                                 e.hp_sys.hp = e.hp_sys.max_hp
@@ -6388,7 +6392,7 @@ class Entities:
                         if len(self.ents) and self.tick % 5 == 0:
                             self.ents = random.choices(self.ents, k=min(12 + constants.DIFFICULTY * 3, len(self.ents)))
                             for e in self.ents:
-                                for ar in range(0, 360, 60):
+                                for ar in range(0, 360, 60 - self.phase * 15):
                                     lz = Entities.Time(e.obj.pos, ar + e.rot)
                                     lz.DMG = 400
                                     self.projs.append(lz)
@@ -6436,6 +6440,7 @@ class Entities:
                             ent.DISPLAY_MODE = 1
                             ent.obj.TOUCHING_DAMAGE = 700
                             self.ents.append(ent)
+                            ent.obj.FRICTION = .9
 
                             ent = Entities.Entity(
                                 game.get_game().player.obj.pos + vector.Vector2D(random.randint(0, 360), 1000),
@@ -6443,34 +6448,32 @@ class Entities:
                             ent.DISPLAY_MODE = 1
                             ent.obj.TOUCHING_DAMAGE = 700
                             self.ents.append(ent)
+                            ent.obj.FRICTION = .9
                         e1, e2 = self.ents[:2]
                         e1.obj.pos = game.get_game().player.obj.pos + vector.Vector2D(-self.rt * 1.5, 1500)
                         e1.set_rotation(self.rt * 1.5 + 180)
                         e2.obj.pos = game.get_game().player.obj.pos + vector.Vector2D(-self.rt * 1.5, -1500)
                         e2.set_rotation(self.rt * 1.5)
 
-                        if self.tick % 18 == 0:
-                            lz = Entities.FaithlessCurse(e1.obj.pos, e1.rot)
+                        if self.tick % 4 == 0:
+                            lz = Entities.FaithlessCurse(e1.obj.pos, -e1.rot)
                             lz.DMG = 350
-                            lz.obj.velocity *= 3
+                            lz.obj.SPEED *= 5
                             self.projs.append(lz)
-                        elif self.tick % 18 == 9:
-                            lz = Entities.TruthlessCurse(e2.obj.pos, e2.rot)
+                        elif self.tick % 4 == 2:
+                            lz = Entities.TruthlessCurse(e2.obj.pos, -e2.rot)
                             lz.DMG = 450
-                            lz.obj.velocity *= 3
+                            lz.obj.SPEED *= 5
                             self.projs.append(lz)
 
                     elif self.tick % 300 < 270:
                         e1, e2 = self.ents[:2]
-                        dt = 1500 - ((self.tick % 300 - 250) / 20) ** 2 * 1500
-                        rt = 1500 - (((self.tick - 1) % 300 - 250) / 20) ** 2 * 1500
-                        at = dt - rt
-                        e1.obj.pos += vector.Vector2D(e1.rot, at)
-                        e2.obj.pos += vector.Vector2D(e2.rot, at)
+                        e1.obj.pos = (self.obj.pos + e1.obj.pos) / 2
+                        e2.obj.pos = (self.obj.pos + e1.obj.pos) / 2
                     else:
                         if len(self.ents):
-                            for ar in range(0, 360, 60):
-                                lz = Entities.TruthlessCurse(self.ents[0].obj.pos, self.ents[0].rot)
+                            for ar in range(0, 360, 10):
+                                lz = Entities.TruthlessCurse(self.ents[0].obj.pos, self.ents[0].rot + ar)
                                 lz.DMG = 550
                                 lz.obj.velocity *= 3
                                 self.projs.append(lz)
@@ -6480,13 +6483,42 @@ class Entities:
                         if self.hp_sys.hp <= 0:
                             self.ents.remove(e)
                     ap = game.get_game().player.obj.pos - self.obj.pos
-                    ap = ap / abs(ap) * (500 if self.tick % 300 < 250 else 2500) + ap
+                    ap = -ap / abs(ap) * (500 if self.tick % 300 < 250 else 2500) + ap
                     self.obj.apply_force(ap * .7)
+
+                elif self.state == 6:
+                    if self.tick % (30 - self.phase * 15) == 0:
+                        rt = random.randint(0, 360)
+                        ent = Entities.Entity(
+                            game.get_game().player.obj.pos + vector.Vector2D(rt, 2000),
+                            game.get_game().graphics['entity_greed'], BuildingAI, 100000, )
+                        ent.DISPLAY_MODE = 1
+                        ent.set_rotation(-rt + 180)
+                        ent.obj.TOUCHING_DAMAGE = 750
+                        ent.obj.MASS = 1000
+                        ent.obj.FRICTION = .4
+                        self.ents.append(ent)
+                    for e in self.ents:
+                        e.obj.apply_force(vector.Vector2D(e.rot, 20000))
+                        e.t_draw()
+                        if self.hp_sys.hp <= 0:
+                            self.ents.remove(e)
+
+                elif self.state == 0:
+                    if not self.phase:
+                        self.IS_MENACE = False
+                        return
+
             else:
                 self.tick = 0
                 self.hp_sys.hp -= .1
-                self.state += 1
+                if not self.state and not self.phase:
+                    self.phase = 1
+                    self.hp_sys.IMMUNE = False
+                self.state = (self.state + 1) % 7
                 self.ents.clear()
+                self.IS_MENACE = True
+
                 self.projs.clear()
 
             for p in self.projs:

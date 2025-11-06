@@ -241,6 +241,7 @@ try:
         game.player.boot_footprints = []
         game.player.t_ntc_timer = 200
         game.player.tick = 0
+        game.player.ui_recipe_view = False
     else:
         game = underia.Game()
 except Exception as e:

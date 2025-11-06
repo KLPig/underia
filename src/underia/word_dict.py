@@ -263,6 +263,7 @@ en_cn = {
     'kill': '击败',
     'summon and kill': '召唤并击败',
     'recipe': '配方',
+    'recipes': '配方',
     'endless': '无尽',
     'fireball': '火球',
     'dragon': '龙',
@@ -806,6 +807,11 @@ en_cn = {
 
     'gods are formless': '神本无相',
     'irec': '以睿客',
+
+    'aerialite': '天蓝',
+    'coral_reef': '珊瑚礁',
+    'forgotten': '遗忘',
+    'stele': '碑石',
 
 
     'can only be placed in the first slot': '只能放在第一饰品栏',

@@ -111,6 +111,9 @@ class Inventory:
             elif desc.endswith('snowcurse'):
                 cdata['snow_curse'] = 1
 
+            elif desc.endswith('biomefrictioneffect'):
+                cdata['bio_fric'] = 1
+
             elif desc.endswith('dodgerate'):
                 cdata['dodge_rate'] = float(desc.removesuffix('%dodgerate')) / 100
 
@@ -1467,6 +1470,8 @@ items_dict: dict[str, Inventory.Item] = {
     'magnificent_ring': Inventory.Item('Magnificent Ring', '+25% speed\n+8 touching defense\n'
                                                            '+8 magic defense\n+8/sec mana regeneration',
                                        'magnificent_ring', 3, [TAGS['item'], TAGS['accessory']]),
+    'aerialite_necklace': Inventory.Item('Aerialite Necklace', '-50% biome friction effect',
+                                         'aerialite_necklace', 3, [TAGS['item'], TAGS['accessory']]),
     'bloody_traveller_boots': Inventory.Item('Bloody Traveller Boots', '20kg\n+100% speed\n+12 touching defense',
                                               'bloody_traveller_boots', 4, [TAGS['item'], TAGS['accessory']]),
     'fire_eye': Inventory.Item('Fire Eye', '+10% ranged damage\n+5% critical', 'fire_eye', 2,
@@ -1871,6 +1876,7 @@ items_dict: dict[str, Inventory.Item] = {
     'wild_fluffball': Inventory.Item('Wild Fluffball', 'Summon the fluffff', 'wild_fluffball', 0, [TAGS['item']]),
     'fire_slime': Inventory.Item('Fire Slime', 'Summon the magma king', 'fire_slime', 0, [TAGS['item']]),
     'red_apple': Inventory.Item('Red Apple', 'Summon the world\'s fruit', 'red_apple', 0, [TAGS['item']]),
+    'monument': Inventory.Item('Monument', 'Summon the azure stele','monument', 0, [TAGS['item']]),
     'wind': Inventory.Item('Wind', 'Summon the sandstorm', 'wind', 0, [TAGS['item']]),
     'legend_soul': Inventory.Item('Legend Soul', 'rainbow"Is this, the god?"', 'legend_soul', 5, [TAGS['item']]),
     'blood_substance': Inventory.Item('Blood Substance', 'Summon the Abyss Eye', 'blood_substance', 0, [TAGS['item']]),
@@ -2655,6 +2661,7 @@ RECIPES = [
     Recipe({'cell_organization': 2, 'flufffur': 12}, 'wild_fluffball'),
     Recipe({'cell_organization': 10, 'firite_ingot': 25}, 'fire_slime'),
     Recipe({'cell_organization': 10, 'leaf': 20}, 'red_apple'),
+    Recipe({'cell_organization': 10, 'floatstone': 25}, 'monument'),
     Recipe({'cell_organization': 10, 'mysterious_substance': 20}, 'wind'),
     Recipe({'cell_organization': 20, 'obsidian_ingot': 20, 'otherworld_stone': 100}, 'blood_substance'),
     Recipe({'eye_lens': 1, 'worm_scarf': 1, 'worlds_seed': 1, 'otherworld_stone': 150}, 'legend_soul'),
