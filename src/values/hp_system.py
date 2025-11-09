@@ -157,6 +157,14 @@ class HPSystem:
             self.hp -= dmg
         if damage_type == damages.DamageTypes.THINKING:
             game.get_game().player.hp_sys.heal(dmg * game.get_game().player.hp_sys.max_hp // 1200000)
+            game.get_game().player.profile.skill_points['illusion'] += dmg / 5
+        if damage_type == damages.DamageTypes.PHYSICAL:
+            game.get_game().player.profile.skill_points['melee'] += damage / 10
+        if damage_type == damages.DamageTypes.PIERCING:
+            game.get_game().player.profile.skill_points['ranged'] += dmg / 14 + penetrate / 14
+        if self is game.get_game().player.hp_sys:
+            game.get_game().player.profile.skill_points['vessel'] += damage / 7
+
         if self.hp <= 0:
             self.hp = 0
 

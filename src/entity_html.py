@@ -1,7 +1,7 @@
 import pygame as pg
 
 import underia, values
-
+import underia3
 import constants
 
 pg.init()
@@ -47,7 +47,7 @@ ets = dir(underia.Entities)
 for entity in ets:
     try:
         e: underia.Entities.Entity = getattr(underia.Entities, entity)((0, 0))
-    except TypeError:
+    except Exception as _:
         continue
     try:
         ss = [k.removeprefix('entity_') for k, v in game.graphics.graphics.items() if v == e.img]
@@ -68,6 +68,8 @@ for entity in ets:
         f += "</tr>\n"
     except AttributeError:
         pass
+
+ee = underia3
 
 for entity in dir(ee):
     try:

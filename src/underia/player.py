@@ -19,8 +19,15 @@ class PlayerObject(mover.Mover):
     FRICTION = 0.9
     SPEED = 20
 
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.lt = self.pos.to_value()
+
     def on_update(self):
         keys = game.get_game().get_pressed_keys()
+        dt = self.pos - self.lt
+        self.lt = self.pos.to_value()
+        game.get_game().player.profile.skill_points['traveler'] += abs(dt) / 30
         if pg.K_w in keys:
             self.apply_force(vector.Vector(0, self.SPEED / 2))
         elif pg.K_s in keys:
@@ -116,6 +123,7 @@ class Player:
         self.accessories = 10 * ['null']
         self.sel_accessory = 0
         self.open_inventory = False
+        self.open_chest = None
         self.attack = 0
         self.mana = 0
         self.max_mana = 30
@@ -166,6 +174,7 @@ class Player:
         self.inv_pos = 0
         self.shield_break = 0.0
         self.nts = []
+        self.cc_t = 0
 
     def calculate_regeneration(self):
         ACCESSORY_REGEN = {}
@@ -234,7 +243,7 @@ class Player:
 
     def calculate_data(self, data_idx, rate_data, rate_plus = False, rate_multiply = False):
         if rate_plus == rate_multiply and rate_data:
-            raise ValueError('Rate only chooses a strategy.')
+            raise ValueError('Rate chooses exactly one strategy.')
         if rate_data:
             val = 1.0
         else:
@@ -336,7 +345,7 @@ class Player:
             self.inv_pos
         except AttributeError:
             self.inv_pos = 0
-        if self.open_inventory:
+        if self.open_inventory or self.open_chest is not None:
             self.inv_pos = self.inv_pos * 5 // 6
         elif self.inv_pos < 900:
             self.inv_pos = (self.inv_pos * 9 + 1000) // 10
@@ -641,7 +650,10 @@ class Player:
         if len([1 for eff in self.hp_sys.effects if eff.NAME == 'Gravity']):
             self.obj.apply_force(vector.Vector(180, 200))
         if pg.K_e in game.get_game().get_keys():
-            self.open_inventory = not self.open_inventory
+            if self.open_chest is not None:
+                self.open_chest = None
+            else:
+                self.open_inventory = not self.open_inventory
 
         tp_r = self.talent / self.max_talent if self.max_talent else 1
         if tp_r < .8:
@@ -1566,11 +1578,13 @@ class Player:
                 styles.item_mouse(10 + i * 60, 190, ww.name.replace(' ', '_'), str(i), '1', 0.75)
         except AttributeError:
             pass
-        if self.open_inventory or self.inv_pos < 1500:
-            for i in range(len(self.accessories)):
-                styles.item_display(10 + i * 90 - self.inv_pos, game.get_game().displayer.SCREEN_HEIGHT - 90,
-                                    self.accessories[i].replace(' ', '_'), str(i), '1', 1,
-                                    selected=i == self.sel_accessory)
+
+        if self.open_inventory or self.open_chest is not None or self.inv_pos < 1500:
+            if self.open_inventory:
+                for i in range(len(self.accessories)):
+                    styles.item_display(10 + i * 90 - self.inv_pos, game.get_game().displayer.SCREEN_HEIGHT - 90,
+                                        self.accessories[i].replace(' ', '_'), str(i), '1', 1,
+                                        selected=i == self.sel_accessory)
             l = 12
             lr = 4 + {0: 0, 1: 1, 2: 2, 3: 4, 4: 6, 5: 1, 6: 2, 7: 3, 8: 4, 9: 4, 10: 6}[game.get_game().stage]
             while lr * l > len(self.inventory.items) + 2 * lr:
@@ -1585,6 +1599,26 @@ class Player:
                     item = inventory.ITEMS[item]
                     styles.item_display(10 + i * 85 - self.inv_pos, game.get_game().displayer.SCREEN_HEIGHT - 180 - j * 85,
                                         item.id, '', str(amount), 1)
+
+            if self.open_chest is not None:
+                chest: inventory.Inventory.Chest = self.open_chest
+                lw = 12
+                for jj in range(chest.n):
+                    lx = jj % lw
+                    ly = jj // lw
+                    ni, nn = chest.items[jj]
+                    styles.item_display(displayer.SCREEN_WIDTH - 300 - 80 * (lw - lx),
+                                        ly * 80 + 200, ni, '', str(nn), 1,
+                                        selected=chest.sel == jj)
+                    styles.item_mouse(displayer.SCREEN_WIDTH - 300 - 80 * (lw - lx),
+                                      ly * 80 + 200, ni, '', str(nn), 1)
+                    rect = pg.Rect(displayer.SCREEN_WIDTH - 300 - 80 * (lw - lx), ly * 80 + 200, 80, 80)
+                    if rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())) and 1 in game.get_game().get_mouse_press():
+                        if chest.sel == jj:
+                            nn = chest.items[jj]
+                            self.inventory.add_item(inventory.ITEMS[nn[0]], nn[1])
+                            chest.items[chest.sel] = ('null', 1)
+                        chest.sel = jj
             for i in range(lr):
                 for j in range(l):
                     if i + j * lr < len(self.inventory.items):
@@ -1601,7 +1635,18 @@ class Player:
                                 del self.inventory.items[item.id]
                     if rect.collidepoint(game.get_game().displayer.reflect(
                             *pg.mouse.get_pos())) and 1 in game.get_game().get_mouse_press():
-                        if inventory.TAGS['accessory'] in item.tags:
+                        if self.open_chest is not None:
+                            chest: inventory.Inventory.Chest = self.open_chest
+                            nt, ni = chest.items[chest.sel]
+                            self.inventory.add_item(inventory.ITEMS[nt], ni)
+
+                            if i + j * lr < len(self.inventory.items):
+                                item, amount = list(self.inventory.items.items())[i + j * lr]
+                            else:
+                                item, amount = 'null', 1
+                            self.inventory.remove_item(inventory.ITEMS[item], amount)
+                            chest.items[chest.sel] = (item, amount)
+                        elif inventory.TAGS['accessory'] in item.tags:
                             if self.tutorial_step == 4:
                                 self.tutorial_process += 15
                             self.inventory.remove_item(item)
@@ -1806,6 +1851,12 @@ class Player:
                             self.inventory.items[item.id] = 0
                             self.inventory.add_item(inventory.ITEMS[self.ammo_bullet[0]], self.ammo_bullet[1])
 
+
+                        elif item.id == 'chest':
+                            self.inventory.remove_item(item)
+                            ee = entity.Entities.Chest(self.obj.pos, 1)
+                            ee.sm = False
+                            game.get_game().furniture.append(ee)
                         elif item.id == 'suspicious_eye':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if type(e) is effects.StoneAltar]):
                                 game.get_game().dialog.dialog('Unable to summon True Eye.', 'There is no Stone Altar nearby.')
@@ -2345,6 +2396,27 @@ class Player:
                     self.sel_recipe = res[0] if res else 0
                     if self.tutorial_step == 3:
                         self.tutorial_process += 20
+                    if rc.result == 'chest':
+                        self.cc_t += 1
+                        if self.cc_t == 1:
+                            tr = inventory.Recipe({'iron_ingot': 10, 'cobalt_ingot': 10, 'silver_ingot': 7, 'steel_ingot': 7, 'anvil': 1}, 'chest')
+                        elif self.cc_t == 2:
+                            tr = inventory.Recipe({'zirconium_ingot': 15, 'platinum_ingot': 15, 'anvil': 1}, 'chest')
+                        elif self.cc_t == 3:
+                            tr = inventory.Recipe({'firite_ingot': 15, 'aerialite_ingot': 15, 'anvil': 1}, 'chest')
+                        elif self.cc_t == 4:
+                            tr = inventory.Recipe({'mysterious_ingot': 10, 'storm_core': 2, 'anvil': 1}, 'chest')
+                        elif self.cc_t == 5:
+                            tr = inventory.Recipe({'soul': 20, 'evil_ingot': 30, 'mithrill_anvil': 1}, 'chest')
+                        elif self.cc_t == 6:
+                            tr = inventory.Recipe({'mystery_core': 3, 'soul': 50, 'mithrill_anvil': 1}, 'chest')
+                        elif self.cc_t == 7:
+                            tr = inventory.Recipe({'chaos_ingot': 30, 'chlororphyte_ingot': 10, 'chlorophyll': 1}, 'chest')
+                        elif self.cc_t == 8:
+                            tr = inventory.Recipe({'chaos_ingot': 150, 'substance_fountain': 1}, 'chest')
+                        else:
+                            tr = inventory.Recipe({'the_final_ingot': 1, 'my_soul': 1}, 'chest')
+                        inventory.RECIPES[0] = tr
                 if len(self.recipes):
                     for i in range(-10, 10):
                         s = (self.sel_recipe + i + len(self.recipes)) % len(self.recipes)

@@ -234,6 +234,11 @@ try:
             game.player.nts
         except AttributeError:
             game.player.nts = []
+        try:
+            game.furniture
+        except AttributeError:
+            game.furniture = []
+            game.player.cc_t = 0
         while len(game.player.accessories) < 9:
             game.player.accessories.insert(0, 'null')
         while len(game.player.accessories) < 10:
@@ -242,6 +247,7 @@ try:
         game.player.t_ntc_timer = 200
         game.player.tick = 0
         game.player.ui_recipe_view = False
+        game.player.open_chest = None
     else:
         game = underia.Game()
 except Exception as e:
@@ -544,6 +550,15 @@ def update():
                                  rate=60)
             underia.entity_spawn(underia.Entities.Urchin, target_number=20, to_player_max=2000, to_player_min=1500,
                                  rate=50)
+        elif game.get_biome() == 'hot_spting':
+            underia.entity_spawn(underia.Entities.ForgottenFlower, target_number=5, to_player_max=2000, to_player_min=1500,
+                                 rate=30)
+            underia.entity_spawn(underia.Entities.Urchin, target_number=10, to_player_max=2000, to_player_min=1500,
+                                 rate=20)
+            underia.entity_spawn(underia.Entities.MagmaCube, target_number=20, to_player_max=2000, to_player_min=1500,
+                                 rate=50)
+            underia.entity_spawn(underia.Entities.LazerFish, target_number=20, to_player_max=2000, to_player_min=1500,
+                                 rate=55)
 
         underia.entity_spawn(underia.Entities.SwordInTheStone, target_number=1, to_player_max=2500, to_player_min=2000,
                              rate=50)

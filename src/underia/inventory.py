@@ -112,7 +112,7 @@ class Inventory:
                 cdata['snow_curse'] = 1
 
             elif desc.endswith('biomefrictioneffect'):
-                cdata['bio_fric'] = 1
+                cdata['bio_fric'] = int(desc.removesuffix('biomefrictioneffect'))
 
             elif desc.endswith('dodgerate'):
                 cdata['dodge_rate'] = float(desc.removesuffix('%dodgerate')) / 100
@@ -356,6 +356,12 @@ class Inventory:
                       sorted(self.items.items(), key=lambda item: ITEMS[item[0]].inner_id, reverse=True) if k != 'null'}
 
 
+    class Chest:
+        def __init__(self, n=48):
+            self.items = [('null', 1) for _ in range(n)]
+            self.sel = 0
+            self.n = n
+
 TAGS = {
     'item': Inventory.Item.Tag('item', 'item'),
     'weapon': Inventory.Item.Tag('weapon', 'weapon'),
@@ -423,6 +429,9 @@ items_dict: dict[str, Inventory.Item] = {
     '_developer_tool__speed': Inventory.Item('Developer Tool - Speed', 'dt\n+1000% speed', '_developer_tool__speed', 0, [TAGS['accessory']], specify_img='null'),
 
     'recipe_book': Inventory.Item('Recipe Book', 'Find related recipes', 'recipe_book', 0, [TAGS['item']]),
+    'chest': Inventory.Item('Chest', 'Place for storage', 'chest', 0,
+                            [TAGS['item']]),
+
 
     'star': Inventory.Item('Star', 'It suppose to recover you 40 mp.', 'star', 0, [TAGS['item']]),
 
@@ -505,6 +514,7 @@ items_dict: dict[str, Inventory.Item] = {
                                      [TAGS['item']]),
     'soul_of_coldness': Inventory.Item('Soul of Coldness', 'Soul of strong chilling creatures.', 'soul_of_coldness', 5,
                                        [TAGS['item']]),
+    'soul_of_fire': Inventory.Item('Soul of Fire', 'Soul of strong scorching creatures.', 'soul_of_fire', 5, [TAGS['item']]),
     'soul_of_growth': Inventory.Item('Soul of Growth', 'Soul of strong growing creatures.', 'soul_of_growth', 7, [TAGS['item']]),
     'palladium': Inventory.Item('Palladium', '', 'palladium', 5, [TAGS['item']]),
     'mithrill': Inventory.Item('Mithrill', '', 'mithrill', 5, [TAGS['item']]),
@@ -623,6 +633,8 @@ items_dict: dict[str, Inventory.Item] = {
                                        [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'nights_edge': Inventory.Item('Night\'s Edge', 'colff7fffThe sunset has gone, it\'s now night...', 'nights_edge', 4,
                                   [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
+    'chaos_reap': Inventory.Item('Chaos Reap', 'rainbowDamage and size increases within progress.\nrainbowChaoticly sacrifice enemies in freeze, wither and bleeding.\nrainbowStrike to throw it.', 'chaos_reap', 12,
+                                  [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'virus_defeater': Inventory.Item('Virus Defeater', 'rainbowYou are safe now.', 'virus_defeater', 4,
                                      [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'storm_swift_sword': Inventory.Item('Storm Swift Sword', 'Press Q to sprint.\n0 mana cost', 'storm_swift_sword', 4,
@@ -638,14 +650,19 @@ items_dict: dict[str, Inventory.Item] = {
                                        'balanced_stabber', 5, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'excalibur': Inventory.Item('Excalibur', 'colffff7fThe legendary sword of hallow.', 'excalibur', 6,
                                 [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
+    'glacier': Inventory.Item('Glacier', 'Chance to freeze enemies.', 'glacier', 6, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'true_excalibur': Inventory.Item('True Excalibur', 'col7f7f00Inviolable hallow.', 'true_excalibur', 7,
                                      [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
+    'forbidden_oath': Inventory.Item('Forbidden Oath', '', 'forbidden_oath', 6, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'wooden_club': Inventory.Item('Wooden Club', '', 'wooden_club', 6, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
+    'guardian': Inventory.Item('Guardian', 'Gain 5 damage when hit, maximum 300.', 'guardian', 7, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'remote_sword': Inventory.Item('Remote Sword', '', 'remote_sword', 6,
                                     [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'true_nights_edge': Inventory.Item('True Night\'s Edge', 'col7f007fInviolable dark.', 'true_nights_edge', 7,
                                        [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'muramasa': Inventory.Item('Muramasa', 'Ghost\'s blade.', 'muramasa', 7, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
+    'fiery_iceberg': Inventory.Item('Fiery Iceberg', 'Chance to freeze or ignite enemies.', 'fiery_iceberg', 7,
+                                    [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'perseverance_sword': Inventory.Item('Perseverance Sword', 'Ignore the distance.', 'perseverance_sword', 6,
                                          [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'black_hole_sword': Inventory.Item('The Black Hole Sword', 'Attracts enemies.', 'black_hole_sword', 6,
@@ -676,8 +693,11 @@ items_dict: dict[str, Inventory.Item] = {
     'fur_spear': Inventory.Item('Fur Spear', 'Shoots several fur, each dealing 8% damage.', 'fur_spear', 2, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'blood_pike': Inventory.Item('Blood Pike', '', 'blood_pike', 2, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'firite_spear': Inventory.Item('Firite Spear', '', 'firite_spear', 2, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
-    'valkyrien': Inventory.Item('Valkyrien', '', 'valkyrien', 2, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
-    'seaprick': Inventory.Item('Seaprick', '', 'seaprick', 2, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
+    'aerialite_shortsword': Inventory.Item('Aerialite Shortsword', '', 'aerialite_shortsword', 3, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
+    'forgotten_shortsword': Inventory.Item('Forgotten Shortsword', '', 'forgotten_shortsword', 4, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
+    'valkyrien': Inventory.Item('Valkyrien', 'Sprints toward enemy.', 'valkyrien', 2, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
+    'seaprick': Inventory.Item('Seaprick', '', 'seaprick', 3, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
+    'poseidon': Inventory.Item('Poseidon', 'Sprints toward enemy.(max. 2)\nEffects increases in water bodies or shallow abyss.', 'poseidon', 2, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'nights_pike': Inventory.Item('Night\'s Pike', 'colff7fffThe sunset has gone, it now night...', 'nights_pike', 4,
                                   [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'energy_spear': Inventory.Item('Energy Spear', 'Contained unparalleled energy.', 'energy_spear', 6,
@@ -722,13 +742,15 @@ items_dict: dict[str, Inventory.Item] = {
     'bone_bow': Inventory.Item('Bone Bow', '', 'bone_bow', 0, [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
     'platinum_bow': Inventory.Item('Platinum Bow', '', 'platinum_bow', 1, [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
     'bloody_bow': Inventory.Item('Bloody Bow', '', 'bloody_bow', 2, [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
+    'aerialite_bow': Inventory.Item('Aerialite Bow', '', 'aerialite_bow', 3, [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
+    'recurve_bow': Inventory.Item('Recurve Bow', '', 'recurve_bow', 3, [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
+    'forgotten_bow': Inventory.Item('Forgotten Bow', '', 'forgotten_bow', 3, [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
     'forests_bow': Inventory.Item('Forest\'s Bow', '+100% damage if is coniferous leaf as ammo.', 'forests_bow', 2, [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
     'world_bow': Inventory.Item('World Bow', 'col00ff00Try to use it.', 'world_bow', 2, [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
     'kuangkuangkuang': Inventory.Item('Kuangkuangkuang', 'Sometimes you cannot handle this.', 'kuangkuangkuang', 2, [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
     'forget': Inventory.Item('Forget', 'Shoots 3 invisible arrows.', 'forget', 2, [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
     'sky': Inventory.Item('Sky', 'col00ff00Stats varies with time.', 'sky', 2, [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
     'heavybow': Inventory.Item('Heavy Bow', 'Shoots slow but piercive arrows.', 'heavybow', 3, [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
-    'recurve_bow': Inventory.Item('Recurve Bow', '', 'recurve_bow', 3, [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
     'spiritual_piercer': Inventory.Item('Spiritual Piercer', '\n\'Destroy the mark to enhance\'', 'spiritual_piercer',
                                         4, [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
     'discord_storm': Inventory.Item('Discord Storm',
@@ -755,18 +777,27 @@ items_dict: dict[str, Inventory.Item] = {
                             [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
     'magma_assaulter': Inventory.Item('Magma Assaulter', 'When shooting, press Q to sprint back.', 'magma_assaulter', 2,
                                       [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
+    'aerialite_pulse': Inventory.Item('Aerialite Pulse', '', 'aerialite_pulse', 2,
+                                      [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
+    'forgotten_assaulter': Inventory.Item('Forgotten Assaulter', '', 'forgotten_assaulter', 3,
+                                           [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
     'phoenix_exploder': Inventory.Item('Phoenix Exploder', 'Shoots 3 at once.', 'phoenix_exploder', 2,
                                         [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
+    'minishark': Inventory.Item('Minishark', '', 'minishark', 2,
+                                 [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
     'shadow': Inventory.Item('Shadow', 'colff7fffWhen there\'s light, there\'s dark.', 'shadow', 4,
                              [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
     'witness': Inventory.Item('Witness', 'rainbowI saw all you did.', 'witness', 4,
                               [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
+
     'palladium_gun': Inventory.Item('Palladium Gun', '', 'palladium_gun', 5,
                                     [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
     'mithrill_gun': Inventory.Item('Mithrill Gun', '', 'mithrill_gun', 5, [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
     'titanium_gun': Inventory.Item('Titanium Gun', '', 'titanium_gun', 5, [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
     'dark_exploder': Inventory.Item('Dark Exploder', '', 'dark_exploder', 5,
                                      [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
+    'demolisher': Inventory.Item('Demolisher', '', 'demolisher', 5, [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
+
     'true_shadow': Inventory.Item('True Shadow', 'col7f007fNot the others, \'Pong! Nobody left.\'', 'true_shadow', 7,
                                   [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
     'shotgun': Inventory.Item('Shotgun', 'Why a ranger should stand close?\nShoot three times.', 'shotgun', 6, [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
@@ -933,9 +964,12 @@ items_dict: dict[str, Inventory.Item] = {
     'fire_magic_sword': Inventory.Item('Fire Magic Sword', 'Attack using a enormous sword.', 'fire_magic_sword', 3,
                                        [TAGS['item'], TAGS['weapon'], TAGS['magic_weapon'], TAGS['magic_element_fire'],
                                         TAGS['magic_lv_3']]),
+    'nameless_fire': Inventory.Item('Nameless Fire', 'Shoots noname fire that destroys enemies\' defense by 2.5. (maximum 50)', 'nameless_fire', 3,
+                                     [TAGS['item'], TAGS['weapon'], TAGS['magic_weapon'], TAGS['magic_element_fire'],
+                                      TAGS['magic_lv_3']]),
     'fruit_wand': Inventory.Item('Fruit Wand', 'Makes apple fall from the sky.', 'fruit_wand', 3,
                                   [TAGS['item'], TAGS['weapon'], TAGS['magic_weapon'], TAGS['magic_element_life'],
-                                   TAGS['magic_lv_3']]),
+                                   TAGS['magic_lv_2']]),
     'rock_wand': Inventory.Item('Rock Wand', 'Shoots a rock bomb.', 'rock_wand', 3,
                                 [TAGS['item'], TAGS['weapon'], TAGS['magic_weapon'], TAGS['magic_element_earth'],
                                  TAGS['magic_lv_3']]),
@@ -1472,6 +1506,8 @@ items_dict: dict[str, Inventory.Item] = {
                                        'magnificent_ring', 3, [TAGS['item'], TAGS['accessory']]),
     'aerialite_necklace': Inventory.Item('Aerialite Necklace', '-50% biome friction effect',
                                          'aerialite_necklace', 3, [TAGS['item'], TAGS['accessory']]),
+    'wing_boots': Inventory.Item('Wing Boots', '20kg\n+100% speed\n-20% air resistance',
+                                 'wing_boots', 3, [TAGS['item'], TAGS['accessory']]),
     'bloody_traveller_boots': Inventory.Item('Bloody Traveller Boots', '20kg\n+100% speed\n+12 touching defense',
                                               'bloody_traveller_boots', 4, [TAGS['item'], TAGS['accessory']]),
     'fire_eye': Inventory.Item('Fire Eye', '+10% ranged damage\n+5% critical', 'fire_eye', 2,
@@ -1967,6 +2003,7 @@ class Recipe:
         return False
 
 RECIPES = [
+    Recipe({'wood': 50, 'copper_ingot': 10, 'wooden_hammer': 1}, 'chest'),
     Recipe({'wood': 15}, 'wooden_hammer'),
     Recipe({'wood': 35, 'wooden_hammer': 1}, 'wooden_sword'),
     Recipe({'wood': 40, 'copper': 1}, 'torch'),
@@ -2121,6 +2158,10 @@ RECIPES = [
     Recipe({'fairy_wings': 1, 'hermes_boots': 1, 'lucky_clover': 2, 'floatstone': 3, 'anvil': 1}, 'fairy_boots'),
     Recipe({'firite_ingot': 10, 'floatstone': 20, 'aerialite_ingot': 10, 'anvil': 1}, 'sunrise'),
     Recipe({'firite_ingot': 25, 'floatstone': 15, 'aerialite_ingot': 25, 'anvil': 1}, 'sky'),
+    Recipe({'firite_ingot': 10, 'aerialite_ingot': 20, 'floatstone': 10, 'anvil': 1}, 'nameless_fire'),
+    Recipe({'aerialite_ingot': 12, 'anvil': 1}, 'aerialite_shortsword'),
+    Recipe({'aerialite_ingot': 14, 'anvil': 1}, 'aerialite_bow'),
+    Recipe({'aerialite_ingot': 14, 'anvil': 1}, 'aerialite_pulse'),
     Recipe({'obsidian_ingot': 28, 'anvil': 1}, 'obsidian_sword'),
     Recipe({'obsidian_ingot': 24, 'anvil': 1}, 'obsidian_wand'),
     Recipe({'obsidian_ingot': 32, 'anvil': 1}, 'obsidian_knife'),
@@ -2141,6 +2182,10 @@ RECIPES = [
     Recipe({'mysterious_ingot': 32, 'obisidan_ingot': 18, 'anvil': 1}, 'grenade_kings_jade_mask'),
     Recipe({'mysterious_ingot': 1, 'blood_ingot': 2, 'anvil': 1}, 'rock_bullet', 200),
     Recipe({'mysterious_ingot': 11, 'blood_ingot': 20, 'mana_crystal': 2}, 'rock_wand'),
+    Recipe({'forgotten_ingot': 12, 'anvil': 1}, 'forgotten_shortsword'),
+    Recipe({'forgotten_ingot': 14, 'anvil': 1}, 'forgotten_bow'),
+    Recipe({'forgotten_ingot': 14, 'anvil': 1}, 'forgotten_assaulter'),
+    Recipe({'forgotten_ingot': 20, 'coral_reef': 30, 'submachine_gun': 1, 'anvil': 1}, 'minishark'),
     Recipe({'tearblade': 1, 'magic_sword': 1, 'sky': 1, 'volcano': 1, 'storm_core': 1},
            'nights_edge'),
     Recipe({'platinum_ingot': 32, 'blood_ingot': 20, 'firite_ingot': 20, 'mysterious_ingot': 20, 'storm_core': 1},
@@ -2156,6 +2201,7 @@ RECIPES = [
     Recipe({'gaze': 1, 'eye_lens': 1, 'storm_core': 1}, 'witness'),
     Recipe({'furfur': 1, 'worm_scarf': 1, 'storm_core': 1}, 'dydy'),
     Recipe({'isobar': 1, 'air_float': 1, 'forgotten_shard': 20, 'floatstone': 20, 'storm_core': 1}, 'tropical_cyclone'),
+    Recipe({'valkyrien': 1, 'seaprick': 1, 'forgotten_shard': 20, 'coral_reef': 20, 'storm_core': 1}, 'poseidon'),
     Recipe({'storm_core': 3, 'floatstone': 20}, 'windstorm_warlock_mark'),
     Recipe({'storm_core': 3, 'floatstone': 20}, 'windstorm_assassin_mark'),
     Recipe({'storm_core': 3, 'floatstone': 20}, 'windstorm_swordman_mark'),
@@ -2196,6 +2242,7 @@ RECIPES = [
     Recipe({'mithrill_ingot': 1, 'titanium_ingot': 2, 'soul': 5, 'mithrill_anvil': 1}, 'daedalus_ingot'),
     Recipe({'palladium_ingot': 2, 'titanium_ingot': 1, 'soul': 5, 'mithrill_anvil': 1}, 'dark_ingot'),
     Recipe({'balanced_stabber': 1, 'saint_steel_ingot': 8, 'mithrill_anvil': 1}, 'excalibur'),
+    Recipe({'magic_sword': 1, 'saint_steel_ingot': 4, 'soul_of_coldness': 15, 'mithrill_anvil': 1}, 'glacier'),
     Recipe({'windstorm_swordman_mark': 1, 'saint_steel_ingot': 5, 'mithrill_anvil': 1}, 'paladins_mark'),
     Recipe({'discord_storm': 1, 'daedalus_ingot': 8, 'mithrill_anvil': 1}, 'daedalus_stormbow'),
     Recipe({'daedalus_ingot': 12, 'mithrill_anvil': 1}, 'daedalus_knife'),
@@ -2215,6 +2262,7 @@ RECIPES = [
     Recipe({'mithrill_ingot': 12, 'soul_of_bravery': 18, 'soul_of_integrity': 12, 'mithrill_anvil': 1},
            'forward_bow'),
     Recipe({'mithrill_ingot': 24, 'soul_of_kindness': 10, 'mithrill_anvil': 1}, 'shield_wand'),
+    Recipe({'saint_steel_ingot': 12, 'soul_of_bravery': 10, 'soul_of_integrity': 15, 'mithrill_anvil': 1}, 'guardian'),
     Recipe({'mithrill_ingot': 20, 'soul_of_kindness': 24}, 'energy_spear'),
     Recipe({'dark_ingot': 6, 'soul_of_kindness': 20}, 'burnt_pan'),
     Recipe(
@@ -2226,6 +2274,9 @@ RECIPES = [
     Recipe(
         {'saint_steel_ingot': 24, 'evil_ingot': 24, 'soul_of_integrity': 10, 'soul_of_bravery': 10, 'soul_of_kindness': 10,
          'mithrill_anvil': 1}, 'muramasa'),
+    Recipe(
+        {'saint_steel_ingot': 16, 'evil_ingot': 24, 'mystery_core': 4, 'soul_of_fire': 15,
+         'mithrill_anvil': 1}, 'forbidden_oath'),
     Recipe({'shadow': 1, 'soul_of_integrity': 10, 'soul_of_bravery': 10, 'soul_of_kindness': 10, 'mithrill_anvil': 1},
            'true_shadow'),
     Recipe({'daedalus_twinknife': 1, 'soul_of_integrity': 10, 'soul_of_bravery': 10, 'soul_of_kindness': 10, 'mithrill_anvil': 1},
@@ -2235,6 +2286,7 @@ RECIPES = [
     Recipe({'mystery_core': 2, 'soul_of_integrity': 1}, 'tension_bit', 20),
     Recipe({'mithrill_ingot': 30, 'mystery_core': 3, 'soul': 300}, 'forbidden_curse__spirit'),
     Recipe({'mithrill_ingot': 30, 'mystery_core': 3, 'evil_ingot': 100}, 'forbidden_curse__evil'),
+    Recipe({'glacier': 1, 'mantle': 1, 'soul_of_coldness': 15, 'soul_of_fire': 30, 'soul_of_kindness': 15, 'mithrill_anvil': 1}, 'fiery_iceberg'),
     Recipe({'daedalus_stormbow': 1, 'soul_of_integrity': 10, 'soul_of_bravery': 10, 'soul_of_kindness': 10,
             'mithrill_anvil': 1}, 'true_daedalus_stormbow'),
     Recipe({'soul_of_perseverance': 15, 'saint_steel_ingot': 18}, 'perseverance_sword'),

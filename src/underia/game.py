@@ -5,7 +5,6 @@ import time
 import datetime
 from functools import lru_cache
 import asyncio
-from importlib.metadata import version
 
 import pygame as pg
 
@@ -89,6 +88,7 @@ class Game:
         self.pressed_keys = []
         self.pressed_mouse = []
         self.entities: list[entity.Entities.Entity | object] = []
+        self.furniture: list[entity.Entities.Entity | object] = []
         self.projectiles: list[projectiles.Projectiles.Projectile | object] = []
         self.clock = resources.Clock()
         self.damage_texts: list[tuple[str, int, tuple[int, int]]] = []
@@ -267,6 +267,7 @@ class Game:
             self.fun = random.randint(1, 13)
         self.player.shield_break = 0
         self.dimension = 'overworld'
+        self.player.profile.setup()
         rr = random.Random()
         for weapon in weapons.WEAPONS.values():
             for d in weapon.damages.keys():
@@ -475,7 +476,7 @@ class Game:
 
     YCOLS = {'hell': (255, 0, 0), 'desert': (255, 191, 63), 'forest': (0, 255, 0), 'rainforest': (127, 255, 0),
                 'snowland': (255, 255, 255), 'heaven': (127, 127, 255), 'inner': (0, 0, 0), 'none': (0, 0, 0),
-                'hallow': (0, 255, 255), 'fallen_sea': (0, 100, 255), 'hot_spring': (50, 0, 0)}
+                'hallow': (0, 255, 255), 'fallen_sea': (0, 100, 255), 'hot_spring': (50, 0, 0), 'ocean': (0, 0, 255)}
 
     @lru_cache(maxsize=int(constants.MEMORY_USE * .05))
     def get_chunked_images(self, biomes, bg_size):
@@ -671,6 +672,9 @@ class Game:
                         self.drop_items.append(entity.Entities.DropItem((e.obj.pos[0] + random.randint(-10, 10),
                                                                          e.obj.pos[1] + random.randint(-10, 10)),
                                                                         item, amount // k + (i < amount % k)))
+        for e in self.furniture:
+            if e.hp_sys.hp <= 0:
+                self.furniture.remove(e)
         if self.client is not None or self.server is not None:
             players = self.client.player_datas.values() if self.client is not None else self.server.players.values()
             for p in players:
@@ -712,6 +716,8 @@ class Game:
                 self.projectiles.remove(proj)
                 del proj
         for i, e in enumerate(self.entities):
+            e.t_draw()
+        for i, e in enumerate(self.furniture):
             e.t_draw()
         self.displayer.night_darkness_color = self.get_night_color(self.day_time % 1.0)
         self.displayer.night_darkness()
@@ -1010,6 +1016,8 @@ class Game:
         st = time.time()
         while True:
             for ee in self.entities:
+                ee.t_update()
+            for ee in self.furniture:
                 ee.t_update()
             nt = time.time()
             await asyncio.sleep(max(0.0, 1 / 40 - (nt - st)))

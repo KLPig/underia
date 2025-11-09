@@ -90,8 +90,8 @@ class CircularLighter(effects.Effect):
         if self.tick >= self.t:
             return False
         game.get_game().displayer.point_light(self.color, (self.x, self.y),
-                                              self.pr / 40 * (self.t - self.tick) / self.t,
-                                              self.radius * 1.1)
+                                              self.pr / 120 * (self.t - self.tick) / self.t,
+                                              self.radius * .5)
         return True
 
 

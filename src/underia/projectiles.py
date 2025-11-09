@@ -174,11 +174,85 @@ class Projectiles:
         def damage(self):
             imr = self.d_img.get_rect(center=self.obj.pos())
             for ee in game.get_game().entities:
-                if imr.collidepoint(ee.obj.pos[0], ee.obj.pos[1]):
+                if vector.distance(ee.obj.pos[0] - self.obj.pos[0],
+                                   ee.obj.pos[1] - self.obj.pos[1]) < 100 + (ee.img.get_width() + ee.img.get_height()) / 4 and not ee.hp_sys.is_immune:
                     ee.hp_sys.damage(weapons.WEAPONS['magic_sword'].damages[
                                              damages.DamageTypes.PHYSICAL] * 0.8 * game.get_game().player.attack *
                                      game.get_game().player.attacks[0],
                                      damages.DamageTypes.PHYSICAL)
+                    ee.hp_sys.enable_immune()
+                    self.dead = True
+                    break
+
+    class Glacier(Projectile):
+        NAME = 'Magic Sword'
+
+        def __init__(self, pos, rotation):
+            self.img = game.get_game().graphics['items_weapons_glacier']
+            self.obj = ProjectileMotion(pos, rotation)
+            self.d_img = self.img
+            self.rot = rotation
+            self.set_rotation(rotation)
+            self.tick = 0
+            self.dead = False
+            self.obj.velocity.add(vector.Vector(rotation, 100))
+
+        def update(self):
+            super().update()
+            self.tick += 1
+            if self.tick > 200:
+                self.dead = True
+            self.damage()
+
+        def damage(self):
+            imr = self.d_img.get_rect(center=self.obj.pos())
+            for ee in game.get_game().entities:
+                if vector.distance(ee.obj.pos[0] - self.obj.pos[0],
+                                   ee.obj.pos[1] - self.obj.pos[1]) < 100 + (ee.img.get_width() + ee.img.get_height()) / 4 and not ee.hp_sys.is_immune:
+                    ee.hp_sys.damage(weapons.WEAPONS['glacier'].damages[
+                                             damages.DamageTypes.PHYSICAL] * 0.8 * game.get_game().player.attack *
+                                     game.get_game().player.attacks[0],
+                                     damages.DamageTypes.PHYSICAL)
+                    if random.random() < .4:
+                        ee.hp_sys.effect(effects.Frozen(.3, 1))
+                    ee.hp_sys.enable_immune()
+                    self.dead = True
+                    break
+
+    class FieryIceberg(Projectile):
+        NAME = 'Magic Sword'
+
+        def __init__(self, pos, rotation):
+            self.img = game.get_game().graphics['items_weapons_fiery_iceberg']
+            self.obj = ProjectileMotion(pos, rotation)
+            self.d_img = self.img
+            self.rot = rotation
+            self.set_rotation(rotation)
+            self.tick = 0
+            self.dead = False
+            self.obj.velocity.add(vector.Vector(rotation, 100))
+
+        def update(self):
+            super().update()
+            self.tick += 1
+            if self.tick > 200:
+                self.dead = True
+            self.damage()
+
+        def damage(self):
+            imr = self.d_img.get_rect(center=self.obj.pos())
+            for ee in game.get_game().entities:
+                if vector.distance(ee.obj.pos[0] - self.obj.pos[0],
+                                   ee.obj.pos[1] - self.obj.pos[1]) < 100 + (ee.img.get_width() + ee.img.get_height()) / 4 and not ee.hp_sys.is_immune:
+                    ee.hp_sys.damage(weapons.WEAPONS['fiery_iceberg'].damages[
+                                             damages.DamageTypes.PHYSICAL] * 0.8 * game.get_game().player.attack *
+                                     game.get_game().player.attacks[0],
+                                     damages.DamageTypes.PHYSICAL)
+                    if random.random() < .5:
+                        ee.hp_sys.effect(effects.Frozen(.4, 1))
+                    else:
+                        ee.hp_sys.effect(effects.Burning(4, 30))
+                    ee.hp_sys.enable_immune()
                     self.dead = True
                     break
 
@@ -453,6 +527,25 @@ class Projectiles:
             super().update()
             self.set_rotation(12 * self.tick)
 
+
+    class Demolisher(PlatinumWand):
+        COL = (255, 0, 0)
+        DMG_RATE = 1.5
+        DEL = True
+        DURATION = 100
+        SPD = 500
+        DAMAGE_AS = 'demolisher'
+        DMG_TYPE = damages.DamageTypes.PIERCING
+        WT = damages.DamageTypes.PIERCING
+        ENABLE_IMMUNE = 0
+        IMG = 'entity_null'
+
+        def update(self):
+            super().update()
+            draw.line(game.get_game().displayer.canvas, (255, 0, 0),
+                      position.displayed_position(self.obj.pos),
+                      position.displayed_position(self.obj.pos + self.obj.velocity / max(abs(self.obj.velocity), 1) * 200), 3)
+
     class Witness(PlatinumWand):
         COL = (255, 0, 0)
         DMG_RATE = 2
@@ -651,6 +744,37 @@ class Projectiles:
                     self.damage_particle()
                     self.dead = True
 
+    class NamelessFire(PlatinumWand):
+        DAMAGE_AS = 'nameless_fire'
+        IMG = 'entity_nameless_fire'
+        WT = damages.DamageTypes.MAGICAL
+        SPD = 240
+        COL = (0, 255, 255)
+        EFF = False
+        ENABLE_IMMUNE = 5
+
+        def damage(self):
+            imr = self.d_img.get_rect(center=self.obj.pos())
+            for ee in game.get_game().entities:
+                if imr.collidepoint(ee.obj.pos[0], ee.obj.pos[1]) or ee.d_img.get_rect(
+                        center=ee.obj.pos.to_value()).collidepoint(self.obj.pos[0], self.obj.pos[1]) and not ee.hp_sys.is_immune:
+                    ee.hp_sys.damage(weapons.WEAPONS['nameless_fire'].damages[
+                                             damages.DamageTypes.MAGICAL] * game.get_game().player.attack *
+                                     game.get_game().player.attacks[2], damages.DamageTypes.MAGICAL,
+                                     )
+                    if 'nmf' in dir(ee.hp_sys.defenses):
+                        if getattr(ee.hp_sys.defenses, 'nmf') + 1 < 20:
+                            ee.hp_sys.defenses.nmf += 1
+                            ee.hp_sys.defenses[damages.DamageTypes.MAGICAL] -= 2.5
+                            ee.hp_sys.enable_immune(2)
+                        else:
+                            ee.hp_sys.enable_immune(.5)
+                    else:
+                        ee.hp_sys.defenses.nmf = 1
+                        ee.hp_sys.defenses[damages.DamageTypes.MAGICAL] -= 5
+                        ee.hp_sys.enable_immune(2)
+                    self.damage_particle()
+
     class NightsEdge(PlatinumWand):
         DAMAGE_AS = 'nights_edge'
         IMG = 'projectiles_nights_edge'
@@ -714,15 +838,29 @@ class Projectiles:
             self.img = pg.transform.scale_by(game.get_game().graphics['projectiles_nights_edge'],
                                              min(1.8, 0.3 * 1.14 ** self.tick))
 
-    class ForbiddenCurseEvil(RockWand):
+    class ForbiddenCurseEvil(PlatinumWand):
         DAMAGE_AS = 'forbidden_curse__evil'
         IMG = 'projectiles_forbidden_curse__evil'
         DMG_TYPE = damages.DamageTypes.ARCANE
         COL = (50, 0, 50)
+        SPD = 50
+        ENABLE_IMMUNE = 0
+        DURATION = 300
+        DELETE = True
+
+        def __init__(self, pos, rot, t=1):
+            super().__init__(pos, rot)
+            if t:
+                for ar in range(1, 18):
+                    ee = Projectiles.ForbiddenCurseEvil(self.obj.pos, rot + ar * 20, 0)
+                    ee.obj.velocity *= 1 - ar % 3 * .3
+                    game.get_game().projectiles.append(ee)
 
         def update(self):
             super().update()
-            self.obj.apply_force(vector.Vector(self.obj.velocity.get_net_rotation(), 200))
+            tar, dt = self.get_closest_entity()
+            if tar is not None and self.tick > 50:
+                self.obj.apply_force((tar.obj.pos - self.obj.pos) / 20 * self.obj.MASS)
 
     class BalletShoes(TalentBook):
         DAMAGE_AS = 'ballet_shoes'
@@ -1120,7 +1258,7 @@ class Projectiles:
         DURATION = 100
         AUTO_FOLLOW = True
         DMG_TYPE = damages.DamageTypes.MAGICAL
-        ENABLE_IMMUNE = False
+        ENABLE_IMMUNE = 1.5
 
         def __init__(self, pos, rotation):
             self.obj = mover.Mover(pos)
@@ -1137,7 +1275,7 @@ class Projectiles:
 
         def update(self):
             game.get_game().displayer.point_light((255, 255, 255), position.displayed_position(self.obj.pos), 1.5,
-                                                  self.d_img.get_width() // 2)
+                                                  self.d_img.get_width() // 4)
             mx, my = self.ttx
             if self.AUTO_FOLLOW:
                 self.obj.pos << ((mx + self.obj.pos[0]) // 2, (my + self.obj.pos[1]) // 2)
@@ -1156,18 +1294,17 @@ class Projectiles:
                 if constants.USE_ALPHA:
                     self.img.set_alpha(self.ALPHA * (self.DURATION - self.tick) ** 2 // 25)
                 self.d_img = self.img
-            else:
+            elif self.tick < 7:
                 self.img = copy.copy(game.get_game().graphics[self.IMG])
                 if constants.USE_ALPHA:
                     self.img.set_alpha(self.ALPHA)
                 self.d_img = self.img
+            self.set_rotation(self.rot)
+            self.rotate(self.ROT_SPEED)
+            self.damage()
             if self.tick > self.DURATION:
                 self.dead = True
-            displayer = game.get_game().displayer
-            self.set_rotation(self.ROT_SPEED * self.tick)
-            imr = self.d_img.get_rect(center=position.displayed_position((self.obj.pos[0], self.obj.pos[1])))
-            displayer.canvas.blit(self.d_img, imr)
-            self.damage()
+            self.draw()
 
         def damage(self):
             for ee in game.get_game().entities:
@@ -1179,7 +1316,7 @@ class Projectiles:
                         weapons.WEAPONS[self.DAMAGE_AS].damages[self.DMG_TYPE] * game.get_game().player.attack *
                         game.get_game().player.attacks[2], self.DMG_TYPE)
                     if self.ENABLE_IMMUNE:
-                        ee.hp_sys.enable_immune()
+                        ee.hp_sys.enable_immune(self.ENABLE_IMMUNE)
 
     class CactusWand(MagicCircle):
         DAMAGE_AS = 'cactus_wand'
@@ -1187,6 +1324,7 @@ class Projectiles:
         ROT_SPEED = 0.2
         ALPHA = 255
         DURATION = 200
+        ENABLE_IMMUNE = .5
 
     class CurseBook(MagicCircle):
         DAMAGE_AS = 'curse_book'
@@ -1264,11 +1402,19 @@ class Projectiles:
     class ForbiddenCurseSpirit(MagicCircle):
         DAMAGE_AS = 'forbidden_curse__spirit'
         IMG = 'projectiles_forbidden_curse__spirit'
-        DURATION = 240
+        DURATION = 500
         ALPHA = 80
-        ROT_SPEED = 3
-        AUTO_FOLLOW = True
+        ROT_SPEED = .5
+        AUTO_FOLLOW = False
         DMG_TYPE = damages.DamageTypes.ARCANE
+        COL = (0, 255, 255)
+        ENABLE_IMMUNE = 2
+
+        def __init__(self, *args):
+            super().__init__(*args)
+            game.get_game().graphics[self.IMG + '_b'] = pg.transform.scale_by(self.img, 1.5)
+            self.IMG += '_b'
+
 
     class GravityWand(MagicCircle):
         DAMAGE_AS = 'gravity_wand'
@@ -1951,6 +2097,7 @@ class Projectiles:
         DAMAGE_AS = 'excalibur'
         IMG = 'projectiles_excalibur'
         WT = damages.DamageTypes.PHYSICAL
+        DMG_TYPE = damages.DamageTypes.PHYSICAL
         COL = (255, 255, 200)
         DMG_RATE = 0.5
 
@@ -1974,6 +2121,7 @@ class Projectiles:
     class TrueExcalibur(Excalibur):
         DAMAGE_AS = 'true_excalibur'
         DMG_RATE = 0.6
+        DMG_TYPE = damages.DamageTypes.PHYSICAL
 
     class TrueNightsEdge(NightsEdge):
         DAMAGE_AS = 'true_nights_edge'
@@ -2010,6 +2158,25 @@ class Projectiles:
                                              min(2.0, 0.3 * 1.12 ** self.tick))
             self.rotate(self.tick * 18)
             self.obj.velocity.reset(1.1)
+
+    class ForbiddenOath(NightsEdge):
+        DAMAGE_AS = 'forbidden_oath'
+        IMG = 'projectiles_forbidden_oath'
+        DMG_RATE = 1
+        DMG_TYPE = damages.DamageTypes.PHYSICAL
+        COL = (150, 0, 50)
+        ENABLE_IMMUNE = 1.5
+
+
+        def update(self):
+            super().update()
+            self.tick += 1
+            if self.tick > 400:
+                self.dead = True
+            else:
+                self.dead = False
+            self.set_rotation(self.tick * 18)
+
 
     class BloodWand(PlatinumWand):
         DAMAGE_AS = 'blood_wand'

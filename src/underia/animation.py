@@ -54,6 +54,8 @@ ANIMATIONS = [
     Animation("items_dark_matter", [1, 2], 30),
     Animation("items_stone_of_faith", [1, 2, 3], 20),
     Animation("items_chaos_diamond", [1, 2, 3, 4, 5, 6, 7, 8], 15),
+    Animation("items_chaos_reap", [1, 2, 3, 4], 10),
+    Animation("items_weapons_chaos_reap", [1, 2, 3, 4], 10),
     SoulAnimation()
 ]
 

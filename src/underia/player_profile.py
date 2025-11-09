@@ -63,6 +63,21 @@ class PlayerProfile:
         self.point_magics = 0
         self.point_armors = 0
         self.point_ranged = 0
+        self.skill_points = {}
+
+    def setup(self):
+        if 'skill_points' not in dir(self):
+            self.skill_points = {}
+        if not len(self.skill_points):
+            self.skill_points = {
+                'vessel': 0,
+                'traveler': 0,
+                'melee': 0,
+                'ranged': 0,
+                'nature_magic': 0,
+                'law_magic': 0,
+                'illusion': 0,
+            }
 
     def get_color(self, w = 0, s = 0, a = 0, ml = 0, rg = 0, mg = 0):
         r, g, b = 255, 255, 255

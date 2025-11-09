@@ -1529,6 +1529,19 @@ class Entities:
                                                                             sp=(self.d_img.get_width() * 1.2 + 5) / 50 * game.get_game().player.get_screen_scale(),
                                                                             t=50))
 
+        def get_shown_txt(self):
+            txt1 = f'{styles.text(self.NAME)}'
+            if self.adj:
+                txt1 = styles.text(self.adj) + ' ' + txt1
+            dm, df = 0, 0
+            for dt, d in game.get_game().player.weapons[game.get_game().player.sel_weapon].damages.items():
+                dm += d
+                df += self.hp_sys.defenses[dt]
+            txt2 = (f'{int(self.hp_sys.hp)}/{int(self.hp_sys.max_hp)} HP '
+                   f'{self.obj.TOUCHING_DAMAGE / self.o_atk * 100 if self.o_atk else 0:.0f}% AT '
+                   f'{df / dm * 100 if dm else 0:.0f}% DF')
+            return txt1, txt2
+
         def draw(self):
             if 'o_atk' not in dir(self) or (self.obj.TOUCHING_DAMAGE and not self.o_atk):
                 self.o_atk = self.obj.TOUCHING_DAMAGE
@@ -1547,19 +1560,13 @@ class Entities:
                                   self.img.get_width() * 2)
                 if r.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())) and self.show_bar:
                     mx, my = game.get_game().displayer.reflect(*pg.mouse.get_pos())
-                    f = displayer.font.render(f'{styles.text(self.adj)}: {styles.text(self.NAME)}', True, (255, 255, 255))
-                    f_bg = displayer.font.render(f'{styles.text(self.adj)}: {styles.text(self.NAME)}', True, (0, 0, 0))
+                    txt1, txt2 = self.get_shown_txt()
+                    f = displayer.font.render(txt1, True, (255, 255, 255))
+                    f_bg = displayer.font.render(txt1, True, (0, 0, 0))
                     displayer.canvas.blit(f_bg, (mx + 2, my + 2))
                     displayer.canvas.blit(f, (mx, my))
-                    dm, df = 0, 0
-                    for dt, d in game.get_game().player.weapons[game.get_game().player.sel_weapon].damages.items():
-                        dm += d
-                        df += self.hp_sys.defenses[dt]
-                    txt = (f'{int(self.hp_sys.hp)}/{int(self.hp_sys.max_hp)} HP '
-                           f'{self.obj.TOUCHING_DAMAGE / self.o_atk * 100 if self.o_atk else 0:.0f}% AT '
-                           f'{df / dm * 100 if dm else 0:.0f}% DF')
-                    f = displayer.font.render(txt, True, (255, 255, 255))
-                    f_bg = displayer.font.render(txt, True, (0, 0, 0))
+                    f = displayer.font.render(txt2, True, (255, 255, 255))
+                    f_bg = displayer.font.render(txt2, True, (0, 0, 0))
                     displayer.canvas.blit(f_bg, (mx + 2, my + 2 + f.get_height()))
                     displayer.canvas.blit(f, (mx, my + f.get_height()))
 
@@ -1568,6 +1575,7 @@ class Entities:
 
         def __repr__(self):
             return str(self)
+
     class Ore(Entity):
         IMG = 'entity_ore'
         DISPLAY_MODE = 3
@@ -1655,6 +1663,29 @@ class Entities:
 
         def __init__(self, pos, hp=0):
             super().__init__(pos, self.HP if not hp else hp)
+            self.chest = inventory.Inventory.Chest()
+            sr = self.LOOT_TABLE()
+            ni = 0
+            for ns, ni in sr:
+                if not ni:
+                    continue
+                nn = min(10, max(ni, 1))
+                np = [0 for _ in range(nn)]
+                for _ in range(ni):
+                    np[random.randint(0, nn - 1)] += 1
+                for n in np:
+                    if n:
+                        if ni >= self.chest.n:
+                            self.chest.n += 1
+                            self.chest.items.append(('null', 1))
+                        self.chest.items[ni] = (ns, n)
+                        ni += 1
+            random.shuffle(self.chest.items)
+            self.hp_sys.IMMUNE = True
+            self.sm = True
+
+        def get_shown_txt(self):
+            return self.NAME, 'Press [E] to open'
 
         @staticmethod
         def is_suitable(biome: str):
@@ -1665,16 +1696,31 @@ class Entities:
             rd = random.randint(1, 2)
             self.hp_sys(op='config', minimum_damage=rd, maximum_damage=rd + 3)
 
+        def t_draw(self):
+            d_rect = self.d_img.get_rect(center=position.displayed_position(self.obj.pos))
+            if d_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
+                if pg.K_e in game.get_game().get_keys() and game.get_game().player.open_inventory:
+                    game.get_game().player.open_chest = self.chest
+            super().t_draw()
+            if not self.sm:
+                return
+            for n, _ in self.chest.items:
+                if n != 'null':
+                    return
+            self.LOOT_TABLE = LootTable([])
+            self.hp_sys.hp = 0
+            game.get_game().player.open_chest = None
+
     class GreenChest(Chest):
         IMG = 'entity_green_chest'
         LOOT_TABLE = LootTable([
             SelectionLoot([('iron', 16, 22), ('steel', 16, 22), ('cobalt', 16, 22), ('silver', 16, 22), ('platinum', 6, 10), ('zirconium', 6, 10)], 1, 2),
             IndividualLoot('leaf', 1, 10, 12),
-            SelectionLoot([('mana_flower', 1, 1), ('life_flower', 0, 1), ('star_amulet', 1, 1)], 0, 1),
-            SelectionLoot([('hermes_boots', 0, 1), ('lucky_clover', 1, 1), ('seed_amulet', 1, 1)], 0, 2),
+            SelectionLoot([('mana_flower', 1, 1), ('life_flower', 0, 1), ('star_amulet', 1, 1)], 1, 1),
+            SelectionLoot([('hermes_boots', 0, 1), ('lucky_clover', 1, 1), ('seed_amulet', 1, 1)], 1, 2),
             IndividualLoot('fairy_wings', 0.1, 1, 1),
             SelectionLoot([('purple_ring', 0, 1), ('cyan_ring', 0, 1), ('yellow_ring', 0, 1),
-                            ('green_ring', 0, 1), ('blue_ring', 0, 1), ('orange_ring', 0, 1)], 0, 3),
+                            ('green_ring', 0, 1), ('blue_ring', 0, 1), ('orange_ring', 0, 1)], 1, 3),
         ])
         BIOMES = ['forest', 'rainforest']
 
@@ -1704,10 +1750,10 @@ class Entities:
         IMG = 'entity_white_chest'
         LOOT_TABLE = LootTable([
             SelectionLoot([('silver', 10, 12), ('steel', 10, 12), ('magic_stone', 10, 12)], 1, 2),
-            SelectionLoot([('coniferous_leaf', 100, 200), ('snowball', 100, 200)], 0, 1),
-            SelectionLoot([('white_guard', 1, 2), ('snowstorm_bottle', 1, 1), ('snow_wings', 0, 1)], 0, 1),
+            SelectionLoot([('coniferous_leaf', 100, 200), ('snowball', 100, 200)], 1, 1),
+            SelectionLoot([('white_guard', 1, 2), ('snowstorm_bottle', 1, 1), ('snow_wings', 0, 1)], 1, 1),
             SelectionLoot([('purple_ring', 0, 1), ('cyan_ring', 0, 1), ('yellow_ring', 0, 1),
-                            ('green_ring', 0, 1), ('blue_ring', 0, 1), ('orange_ring', 0, 1)], 0, 3),
+                            ('green_ring', 0, 1), ('blue_ring', 0, 1), ('orange_ring', 0, 1)], 1, 3),
         ])
         BIOMES = ['snowland']
         TOUGHNESS = 4
@@ -2660,19 +2706,29 @@ class Entities:
         SOUND_DEATH = 'sticky'
 
         def __init__(self, pos):
-            super().__init__(pos, copy.copy(game.get_game().graphics['entity_urchin']), UrchinAI, 900)
-            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 85
-            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 85
-            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 85
+            if game.get_game().stage > 0:
+                super().__init__(pos, copy.copy(game.get_game().graphics['entity_urchin']), UrchinAI, 3000)
+                self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 285
+                self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 285
+                self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 285
+                self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 335
+                self.tr = 2.5
+                self.obj.TOUCHING_DAMAGE *= 4
+            else:
+                super().__init__(pos, copy.copy(game.get_game().graphics['entity_urchin']), UrchinAI, 900)
+                self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 85
+                self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 85
+                self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 85
+                self.tr = 1.0
             self.dr = 0
 
         def on_update(self):
             nr = max(min(abs(game.get_game().player.obj.pos - self.obj.pos) / 2 - 300, 300), 0) - self.dr
             self.dr += nr
             self.img.set_alpha(255 - self.dr * 127 // 300)
-            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] += nr
-            self.hp_sys.defenses[damages.DamageTypes.PIERCING] += nr
-            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] += nr
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] += nr * self.tr
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] += nr * self.tr
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] += nr * self.tr
             super().on_update()
             self.rotate(abs(self.obj.velocity) / 20)
 
@@ -2796,36 +2852,88 @@ class Entities:
 
         @staticmethod
         def is_suitable(biome: str):
-            return biome in ['hell']
+            return biome in ['hell', 'hot_spring']
 
         def __init__(self, pos):
             if game.get_game().stage > 0:
-                super().__init__(pos, game.get_game().graphics['entity_magma_cube'], RangedAI, 36000)
+                super().__init__(pos, game.get_game().graphics['entity_magma_cube'], RangedAI, 12000)
             else:
                 super().__init__(pos, game.get_game().graphics['entity_magma_cube'], MagmaCubeAI, 1100)
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 10
             self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 8
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 15
             if game.get_game().stage > 0:
-                self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 12
-                self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 10
-                self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 20
+                self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 62
+                self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 60
+                self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 60
+                self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 30
                 self.NAME = 'The Fireball Magma Cube'
                 self.obj.SPEED *= 1.5
                 self.obj.MASS *= 1.5
                 self.obj.TOUCHING_DAMAGE *= 6
+                self.LOOT_TABLE = LootTable([
+                    IndividualLoot('cell_organization', .3, 10, 15),
+                    IndividualLoot('blood_ingot', .3, 15, 20),
+                    IndividualLoot('firite_ingot', 1, 18, 25),
+                    IndividualLoot('firy_plant', 1, 5, 8),
+                    IndividualLoot('soul_of_fire', 1, 5, 7),
+                ])
+
             self.tick = 0
 
         def on_update(self):
             super().on_update()
             self.tick += 1
-            if game.get_game().stage and self.tick % 40 == 0:
+            if game.get_game().stage and self.tick % 5 == 0:
                 px, py = game.get_game().player.obj.pos
                 px -= self.obj.pos[0]
                 py -= self.obj.pos[1]
                 if vector.distance(px, py) > 800:
                     return
-                game.get_game().entities.append(Entities.MagmaKingFireball(self.obj.pos, vector.coordinate_rotation(px, py)))
+                fb = Entities.MagmaKingFireball(self.obj.pos, vector.coordinate_rotation(px, py))
+                fb.DMG = 150
+                game.get_game().entities.append(fb)
+
+    class LazerFish(Entity):
+        NAME = 'Lazer Fish'
+        DISPLAY_MODE = 2
+        LOOT_TABLE =  LootTable([
+            IndividualLoot('soul', .3, 10, 15),
+            IndividualLoot('evil_ingot', .3, 15, 20),
+            IndividualLoot('firite_ingot', 1, 18, 25),
+            IndividualLoot('firy_plant', 1, 5, 8),
+            IndividualLoot('coral_reef', 1, 10, 15),
+            IndividualLoot('soul_of_fire', 1, 5, 7),
+        ])
+
+        SOUND_HURT = 'sticky'
+        SOUND_DEATH = 'sticky'
+
+        @staticmethod
+        def is_suitable(biome: str):
+            return biome in ['hot_spring', 'fallen_sea', 'ocean']
+
+        def __init__(self, pos):
+            super().__init__(pos, game.get_game().graphics['entity_lazer_fish'], CleverRangedAI, 12000)
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 240
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 200
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 300
+            self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 100
+            self.obj.SPEED *= 2
+            self.obj.SIGHT_DISTANCE = 800
+            self.obj.FRICTION = .5
+            self.obj.TOUCHING_DAMAGE = 450
+            self.tick = 0
+
+        def on_update(self):
+            super().on_update()
+            self.tick += 1
+            if self.tick % 3 == 0:
+                tar = self.obj.cur_target
+                if tar is not None and abs(tar.pos - self.obj.pos) > 300:
+                    game.get_game().entities.append(Entities.Lazer(self.obj.pos,
+                                                                   vector.coordinate_rotation(*(tar.pos - self.obj.pos))))
+
 
     class DropItem(Entity):
         NAME = 'Drop Item'
@@ -4327,7 +4435,7 @@ class Entities:
             self.dr = .7
             self.dl = 1
             self.lhp = self.hp_sys.hp
-            self.dhp = self.hp_sys.max_hp * 8
+            self.dhp = self.hp_sys.max_hp * 25
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 120
             self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 120
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 120
@@ -4376,6 +4484,7 @@ class Entities:
             if self.hp_sys.hp <= 10:
                 if self.obj.MASS < 120000:
                     game.get_game().drop_items.append(Entities.DropItem(self.obj.pos, 'soulfeather', 81))
+                    game.get_game().drop_items.append(Entities.DropItem(self.obj.pos, 'chaos_reap', 1))
                     game.get_game().dialog.dialog('ITS TIME.')
                     self.hp_sys.hp = 10
                 self.obj.MASS += 1500000
@@ -5877,7 +5986,7 @@ class Entities:
         LOOT_TABLE = LootTable([
             SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 1, 3),
             IndividualLoot('soul_of_integrity', 1, 10, 22),
-            IndividualLoot('double_watcher_wand', 0.5, 1, 1),
+            IndividualLoot('double_watcher_wand', 0.25, 1, 1),
         ])
 
         SOUND_SPAWN = 'boss'
@@ -5933,7 +6042,7 @@ class Entities:
         LOOT_TABLE = LootTable([
             SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 1, 3),
             IndividualLoot('soul_of_integrity', 1, 10, 22),
-            IndividualLoot('double_watcher_wand', 0.5, 1, 1),
+            IndividualLoot('double_watcher_wand', 0.25, 1, 1),
         ])
 
         SOUND_SPAWN = 'boss'
@@ -6074,6 +6183,7 @@ class Entities:
         LOOT_TABLE = LootTable([
             SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 1, 3),
             IndividualLoot('soul_of_bravery', 1, 10, 22),
+            IndividualLoot('demolisher', .5, 1, 1),
         ])
 
         SOUND_SPAWN = 'boss'
@@ -6132,7 +6242,7 @@ class Entities:
         LOOT_TABLE = LootTable([
             SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 1, 3),
             IndividualLoot('soul_of_kindness', 1, 10, 22),
-            IndividualLoot('remote_sword', 0.8, 1, 1),
+            IndividualLoot('remote_sword', 0.5, 1, 1),
         ])
 
         SOUND_SPAWN = 'boss'
