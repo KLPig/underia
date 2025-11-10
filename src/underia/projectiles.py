@@ -2182,6 +2182,23 @@ class Projectiles:
         DAMAGE_AS = 'blood_wand'
         IMG = 'projectiles_blood_wand'
 
+    class DarkSpiderLily(PlatinumWand):
+        DAMAGE_AS = 'dark_spider_lily'
+        IMG = 'projectiles_dark_spider_lily'
+        SPD = 80
+        LIMIT_VEL = -1
+        DURATION = 200
+        DEL = False
+        COL =(100, 0, 0)
+        ENABLE_IMMUNE = 2
+        DECAY_RATE = 1.0
+
+        def update(self):
+            self.set_rotation((self.tick - 100) ** 2 // 10)
+            super().update()
+            if self.tick > 100:
+                self.obj.apply_force(vector.Vector2D(self.rot, -500))
+
     class MidnightsWand(BloodWand):
         DAMAGE_AS = 'midnights_wand'
         IMG = 'projectiles_midnights_wand'

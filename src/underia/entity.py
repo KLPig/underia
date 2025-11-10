@@ -1675,7 +1675,7 @@ class Entities:
                     np[random.randint(0, nn - 1)] += 1
                 for n in np:
                     if n:
-                        if ni >= self.chest.n:
+                        while ni >= self.chest.n:
                             self.chest.n += 1
                             self.chest.items.append(('null', 1))
                         self.chest.items[ni] = (ns, n)
@@ -4412,6 +4412,8 @@ class Entities:
                 self.hp_sys.hp = 0
 
             self.tick += 1
+            if self.tick < 26:
+                return
             self.damage()
 
         def damage(self):
@@ -4435,7 +4437,7 @@ class Entities:
             self.dr = .7
             self.dl = 1
             self.lhp = self.hp_sys.hp
-            self.dhp = self.hp_sys.max_hp * 25
+            self.dhp = self.hp_sys.max_hp * 40
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 120
             self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 120
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 120

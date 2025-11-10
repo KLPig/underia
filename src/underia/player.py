@@ -608,6 +608,11 @@ class Player:
                     self.obj.FRICTION = 0
             except AttributeError:
                 pass
+        if 'beyond_horizon' in self.accessories and self.tick % 40 == 0:
+            for e in game.get_game().entities:
+                if 'd_byh' not in dir(e):
+                    e.d_byh = 1
+                    e.obj.SPEED *= .2
         self.domain_size = self.calculate_data('domain_size', True, rate_multiply=True)
         mtp_regen = self.calculate_data('mentality_regen', False)
         self.REGENERATION = 0.015 + self.calculate_regeneration() + self.calculate_data('regen', rate_data=False) / 1000 * game.get_game().clock.last_tick
