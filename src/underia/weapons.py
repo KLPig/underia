@@ -975,19 +975,19 @@ class Volcano(Blade):
 class Guardian(Blade):
     def __init__(self, *args):
         super().__init__(*args)
-        self.tick = 0
+        self.tt = 0
+        self.at = 0
 
     def update(self):
         super().update()
-        self.tick += 1
-        if self.tick % 15 == 0:
-            dt = self.damages[dmg.DamageTypes.PHYSICAL]
-            self.damages[dmg.DamageTypes.PHYSICAL] = max(100, dt - 1)
+        self.tt += 1
+        if self.tt % 15 == 0:
+            self.at = max(0, self.at - 1)
+        self.damages[dmg.DamageTypes.PHYSICAL] = 100 + 5 * self.at
 
     def on_damage(self, target):
         super().on_damage(target)
-        dt = self.damages[dmg.DamageTypes.PHYSICAL]
-        self.damages[dmg.DamageTypes.PHYSICAL] = min(300, dt + 5)
+        self.at = min(60, self.at + 1)
 
 
 class JevilKnife(Blade):
@@ -3599,8 +3599,9 @@ class Resolution(Bow):
 class GaiaPaladinSpear(Spear):
     def update(self):
         super().update()
-        self.damages = {dmg.DamageTypes.PHYSICAL: 50 + int(abs(game.get_game().player.obj.velocity))}
-        self.knock_back = .5 + round(abs(game.get_game().player.obj.velocity) / 100, 2)
+        akb = 1 - math.e ** (-abs(game.get_game().player.obj.velocity) / 500)
+        self.damages[dmg.DamageTypes.PHYSICAL] = int(akb * 300) + 100
+        self.knock_back = .5 + int(akb * 90) / 20
 
 class DaedelusStormbow(Bow):
     def on_start_attack(self):

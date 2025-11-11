@@ -550,7 +550,7 @@ def update():
                                  rate=60)
             underia.entity_spawn(underia.Entities.Urchin, target_number=20, to_player_max=2000, to_player_min=1500,
                                  rate=50)
-        elif game.get_biome() == 'hot_spting':
+        elif game.get_biome() == 'hot_spring':
             underia.entity_spawn(underia.Entities.ForgottenFlower, target_number=5, to_player_max=2000, to_player_min=1500,
                                  rate=30)
             underia.entity_spawn(underia.Entities.Urchin, target_number=10, to_player_max=2000, to_player_min=1500,
@@ -558,6 +558,8 @@ def update():
             underia.entity_spawn(underia.Entities.MagmaCube, target_number=20, to_player_max=2000, to_player_min=1500,
                                  rate=50)
             underia.entity_spawn(underia.Entities.LazerFish, target_number=20, to_player_max=2000, to_player_min=1500,
+                                 rate=55)
+            underia.entity_spawn(underia.Entities.PressureEye, target_number=20, to_player_max=2000, to_player_min=1500,
                                  rate=55)
 
         underia.entity_spawn(underia.Entities.SwordInTheStone, target_number=1, to_player_max=2500, to_player_min=2000,

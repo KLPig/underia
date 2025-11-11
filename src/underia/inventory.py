@@ -2255,6 +2255,8 @@ RECIPES = [
     Recipe({'red_ring': 1, 'palladium_ingot': 20, 'mithrill_ingot': 20, 'titanium_ingot': 20,
             'soul': 50, 'mithrill_anvil': 1}, 'red_spirit_ring'),
     Recipe({'spiritual_stabber': 1, 'evil_ingot': 20, 'soul': 120, 'mithrill_anvil': 1}, 'balanced_stabber'),
+    Recipe({'saint_steel_ingot': 10, 'life_core': 15, 'titanium_ingot': 20, 'soul_of_growth': 10,
+         'mithrill_anvil': 1}, 'gaia_paladin_spear'),
     Recipe({'spiritual_piercer': 1, 'evil_ingot': 20, 'soul': 120, 'mithrill_anvil': 1}, 'discord_storm'),
     Recipe({'spiritual_piercer': 1, 'evil_ingot': 20, 'soul': 120, 'mithrill_anvil': 1}, 'spiritual_knife'),
     Recipe({'spiritual_destroyer': 1, 'evil_ingot': 20, 'soul': 120, 'mithrill_anvil': 1}, 'evil_book'),
