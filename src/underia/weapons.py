@@ -82,8 +82,12 @@ class Weapon:
         self.set_rotation((self.rot + angle) % 360)
 
     def set_rotation(self, angle: int):
-        self.img = game.get_game().graphics[self.img_index]
-        self.d_img = pg.transform.rotate(pg.transform.scale_by(self.img, self.scale / game.get_game().player.get_screen_scale()), 90 - angle)
+        self.img = pg.transform.rotate(pg.transform.scale_by(game.get_game().graphics[self.img_index.replace('items_weapons_', 'items_')],
+                                                             self.scale / game.get_game().player.get_screen_scale()), -45)
+
+        self.d_img = pg.Surface((2 * self.img.get_width(), self.img.get_height()), pg.SRCALPHA)
+        self.d_img.blit(self.img, (self.img.get_width(), 0))
+        self.d_img = pg.transform.rotate(self.d_img, 90 - angle)
         self.rot = angle
 
     def face_to(self, x: int, y: int):
@@ -306,7 +310,7 @@ class SweepWeapon(Weapon):
             r = int(vector.coordinate_rotation(px, py)) % 360
             if r in rot_range or r + 360 in rot_range or (
                     self.double_sided and ((r + 180) % 360 in rot_range or r + 180 in rot_range)):
-                if vector.distance(px, py) < self.img.get_width() * self.scale + (
+                if vector.distance(px, py) < self.img.get_width() * 1.414 * self.scale + (
                 (e.img.get_width() + e.img.get_height()) // 2 if e.img is not None else 10):
                     self.on_damage(e)
                     for t, d in self.damages.items():
@@ -387,7 +391,7 @@ class ThiefWeapon(SweepWeapon):
             for e in game.get_game().entities:
                 if vector.distance(e.obj.pos[0] - self.x - game.get_game().player.obj.pos[0],
                                     e.obj.pos[1] - self.y - game.get_game().player.obj.pos[1]) \
-                    < self.img.get_width() + (e.img.get_width() + e.img.get_height()) // 2:
+                    < self.img.get_width() * 1.414 * self.scale + (e.img.get_width() + e.img.get_height()) // 2:
                     f = 1
                     break
             if not f:
@@ -3299,6 +3303,29 @@ class WorldBow(Bow):
                 pj.AIMING = .5
             game.get_game().projectiles.append(pj)
 
+class Aiolos(Bow):
+    def on_start_attack(self):
+        self.face_to(
+            *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+        if game.get_game().player.ammo[0] not in projectiles.AMMOS or not game.get_game().player.ammo[1]:
+            self.timer = 0
+            return
+        if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
+            game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
+        for ar in range(-5, 6, 5):
+            pj = projectiles.AMMOS[game.get_game().player.ammo[0]]((self.x + game.get_game().player.obj.pos[0],
+                                                                   self.y + game.get_game().player.obj.pos[1]),
+                                                                  self.rot + ar + random.uniform(-self.precision, self.precision), self.spd,
+                                                                  self.damages[dmg.DamageTypes.PIERCING])
+            pj.DELETE = False
+            pj.ENABLE_IMMUNE = 4.5
+            pj.TAIL_COLOR = (0, 255, 255)
+            pj.TAIL_SIZE = 5
+            pj.TAIL_WIDTH = 8
+
+            game.get_game().projectiles.append(pj)
+
+
 class HeavyBow(Bow):
     def on_start_attack(self):
         self.face_to(
@@ -3568,6 +3595,12 @@ class Resolution(Bow):
     def update(self):
         super().update()
         self.sk_mcd = 40
+
+class GaiaPaladinSpear(Spear):
+    def update(self):
+        super().update()
+        self.damages = {dmg.DamageTypes.PHYSICAL: 50 + int(abs(game.get_game().player.obj.velocity))}
+        self.knock_back = .5 + round(abs(game.get_game().player.obj.velocity) / 100, 2)
 
 class DaedelusStormbow(Bow):
     def on_start_attack(self):
@@ -4157,6 +4190,9 @@ def set_weapons():
         'remote_sword': RemoteWeapon('remote sword', {dmg.DamageTypes.PHYSICAL: 144}, 0.8,
                                       'items_weapons_remote_sword',
                                       1, 5, 72, 180, auto_fire=True),
+        'gaia_paladin_spear': GaiaPaladinSpear('gaia paladin spear', {dmg.DamageTypes.PHYSICAL: 100}, .5,
+                                               'items_weapons_gaia_paladin_spear',
+                                               2, 8, 40, 250, auto_fire=True),
         'true_excalibur': TrueExcalibur('true excalibur',
                                         {dmg.DamageTypes.PHYSICAL: 155}, 1,
                                         'items_weapons_true_excalibur',
@@ -4308,6 +4344,8 @@ def set_weapons():
                                             0, 1, 550, auto_fire=True, tail_col=(200, 255, 255), ammo_save_chance=1 / 3),
         'recurve_bow': Bow('recurve bow', {dmg.DamageTypes.PIERCING: 100}, 0.6, 'items_weapons_recurve_bow',
                            6, 2, 500, auto_fire=True),
+        'aiolos': Aiolos('aiolos', {dmg.DamageTypes.PIERCING: 90}, 1.5, 'items_weapons_aiolos',
+                         2, 4, 800, auto_fire=True),
         'spiritual_piercer': Bow('spiritual piercer', {dmg.DamageTypes.PIERCING: 110}, 0.5,
                                  'items_weapons_spiritual_piercer',
                                  1, 4, 650, auto_fire=True),
