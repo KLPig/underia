@@ -1721,6 +1721,31 @@ class Entities:
             self.hp_sys.hp = 0
             game.get_game().player.open_chest = None
 
+    class Checkpoint(Chest):
+        IMG = 'entity_checkpoint'
+        DISPLAY_MODE = 1
+        NAME = 'Checkpoint'
+
+        def __init__(self, *args):
+            super().__init__(*args)
+            self.tick = 0
+
+        def on_update(self):
+            super().on_update()
+            self.tick += 1
+            if self.tick % 20 == 0:
+                self.rotate(45)
+                tn = game.get_game().player.cc_t * 48 + 48
+                if self.chest.n < tn:
+                    an = tn - self.chest.n
+                    self.chest.items.extend([('null', 1) for _ in range(an)])
+                    self.chest.n = tn
+
+        def t_draw(self):
+            game.get_game().displayer.point_light((255, 255, 150), position.displayed_position(self.obj.pos), 2.5,
+                                                  80 / game.get_game().player.get_screen_scale())
+            super().t_draw()
+
     class GreenChest(Chest):
         IMG = 'entity_green_chest'
         LOOT_TABLE = LootTable([

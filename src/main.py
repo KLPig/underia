@@ -235,6 +235,10 @@ try:
         except AttributeError:
             game.player.nts = []
         try:
+            game.c_chest
+        except AttributeError:
+            game.c_chest = underia.Inventory.Chest()
+        try:
             game.furniture
         except AttributeError:
             game.furniture = []
@@ -348,6 +352,7 @@ def update():
             try_delete_attribute(dgame, 'mus_text')
             dgame.events = []
             dgame.projectiles = []
+            dgame.furniture = []
             for de in dgame.entities:
                 de.dump_process()
                 ddp = (int(de.obj.pos[0] / underia.Entities.ENTITY_DUMP_CHUNK),
@@ -743,6 +748,7 @@ else:
             try_delete_attribute(game, 'mus_text')
             game.events = []
             game.projectiles = []
+            game.furniture = []
             for e in game.entities:
                 e.dump_process()
                 dp = (int(e.obj.pos[0] / underia.Entities.ENTITY_DUMP_CHUNK),

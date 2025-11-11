@@ -1861,7 +1861,7 @@ class Player:
                             self.inventory.remove_item(item)
                             ee = entity.Entities.Chest(self.obj.pos, 1)
                             ee.sm = False
-                            game.get_game().furniture.append(ee)
+                            # game.get_game().furniture.append(ee)
                         elif item.id == 'suspicious_eye':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if type(e) is effects.StoneAltar]):
                                 game.get_game().dialog.dialog('Unable to summon True Eye.', 'There is no Stone Altar nearby.')

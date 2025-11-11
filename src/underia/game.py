@@ -5,6 +5,7 @@ import time
 import datetime
 from functools import lru_cache
 import asyncio
+from importlib.metadata import version
 
 import pygame as pg
 
@@ -137,6 +138,7 @@ class Game:
         self.further_entities: dict[tuple[int, int], list[entity.Entities.Entity | object]] = {}
         self.t_cmd = ''
         self.save_time = datetime.datetime.now()
+        self.c_chest = inventory.Inventory.Chest(n=48)
 
     def get_night_color(self, time_days: float):
         if len([1 for e in self.entities if type(e) is entity.Entities.AbyssEye]):
@@ -209,6 +211,13 @@ class Game:
             r = (120 + r) // 3
             g = (40 + r) // 3
             b = (40 + r) // 3
+        cp = self.furniture[0]
+        dt = abs(cp.obj.pos - self.player.obj.pos)
+        ap = min(.8, 12000000 // dt ** 2 / 100)
+        r = int(r - r * ap + ap * 255)
+        g = int(g - g * ap + ap * 255)
+        b = int(b - b * ap + ap * 150)
+
         return r, g, b
 
     def on_day_start(self):
@@ -337,6 +346,10 @@ class Game:
             if x % 40 == 0:
                 self._display_progress((x + 200) / 400, 0)
         self.save_time = datetime.datetime.now()
+        cp = entity.Entities.Checkpoint((0, 0))
+        cp.chest = self.c_chest
+        cp.sm = False
+        self.furniture.append(cp)
 
     def play_sound(self, sound: str, vol=1.0, stop_if_need=True, fadeout=0):
         self.sounds[sound].set_volume(vol * constants.SOUND_VOL)
@@ -358,7 +371,15 @@ class Game:
     def is_wall(pos):
         return int(random.random() * 10 + pos[0] * 114 + pos[1] * 77) % 10 < 8
 
+    def can_in_home(self):
+        return not len([1 for e in self.entities if e.IS_MENACE or type(e).IS_MENACE])
+
     def get_biome(self, pos=None):
+        if len(self.furniture):
+            cp = self.furniture[0]
+            dt = abs(cp.obj.pos - self.player.obj.pos)
+            if dt < 500 and self.can_in_home():
+                return 'forest'
         if pos is None:
             pos = self.chunk_pos
         if self.dimension == 'ancient_city':
@@ -715,8 +736,12 @@ class Game:
             if proj.dead:
                 self.projectiles.remove(proj)
                 del proj
-        for i, e in enumerate(self.entities):
-            e.t_draw()
+
+        cp = self.furniture[0]
+        dt = abs(cp.obj.pos - self.player.obj.pos)
+        if dt > 500 or not self.can_in_home():
+            for i, e in enumerate(self.entities):
+                e.t_draw()
         for i, e in enumerate(self.furniture):
             e.t_draw()
         self.displayer.night_darkness_color = self.get_night_color(self.day_time % 1.0)
@@ -1015,8 +1040,11 @@ class Game:
     async def entity_update(self):
         st = time.time()
         while True:
-            for ee in self.entities:
-                ee.t_update()
+            cp = self.furniture[0]
+            dt = abs(cp.obj.pos - self.player.obj.pos)
+            if dt > 500 or not self.can_in_home():
+                for ee in self.entities:
+                    ee.t_update()
             for ee in self.furniture:
                 ee.t_update()
             nt = time.time()
