@@ -3171,6 +3171,7 @@ class EarthWall(MagicWeapon):
 
 class Bow(Weapon):
     ATTACK_SOUND = 'attack_bow'
+    TRANS_AMMO = None
 
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, projectile_speed: int,
                  auto_fire: bool = False, tail_col: tuple[int, int, int] | None = None, ammo_save_chance: float = 0.0, precision: float = 0.0, tw=3, ts=3):
@@ -3223,10 +3224,13 @@ class Bow(Weapon):
             return
         if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() > self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
             game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
-        pj = projectiles.AMMOS[game.get_game().player.ammo[0]]((self.x + game.get_game().player.obj.pos[0],
-                                                               self.y + game.get_game().player.obj.pos[1]),
-                                                              self.rot + random.uniform(-self.precision, self.precision), self.spd,
-                                                              self.damages[dmg.DamageTypes.PIERCING], self.knock_back)
+        pt = projectiles.AMMOS[game.get_game().player.ammo[0]]
+        if self.TRANS_AMMO:
+            pt = self.TRANS_AMMO
+        pj = pt((self.x + game.get_game().player.obj.pos[0],
+                 self.y + game.get_game().player.obj.pos[1]),
+                self.rot + random.uniform(-self.precision, self.precision), self.spd,
+                self.damages[dmg.DamageTypes.PIERCING], self.knock_back)
         if self.tail_col is not None:
             pj.TAIL_COLOR = self.tail_col
             pj.TAIL_SIZE = max(pj.TAIL_SIZE, self.ts)
