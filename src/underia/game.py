@@ -5,7 +5,6 @@ import time
 import datetime
 from functools import lru_cache
 import asyncio
-from importlib.metadata import version
 
 import pygame as pg
 
@@ -139,6 +138,8 @@ class Game:
         self.t_cmd = ''
         self.save_time = datetime.datetime.now()
         self.c_chest = inventory.Inventory.Chest(n=48)
+        self.diff = 1
+        self.diff2 = 1
 
     def get_night_color(self, time_days: float):
         if len([1 for e in self.entities if type(e) is entity.Entities.AbyssEye]):
@@ -305,6 +306,12 @@ class Game:
         self.wm_max = 0
         self.gcnt = 0
         self.decors = []
+        if not 'diff' in dir(self):
+            self.diff = constants.DIFFICULTY
+            self.diff2 = constants.DIFFICULTY2
+        else:
+            constants.DIFFICULTY = self.diff
+            constants.DIFFICULTY2 = self.diff2
         self.get_chunked_images.cache_clear()
         self.dialog = dialog.Dialogger(32, pg.Rect(0, pg.display.get_surface().get_height() * 3 // 4, pg.display.get_surface().get_width(), pg.display.get_surface().get_height() // 4), with_border=True, speed=1.6,
                                        target_surface=pg.display.get_surface())
@@ -582,6 +589,8 @@ class Game:
         self.update_map()
 
     def update(self):
+        self.diff = constants.DIFFICULTY2
+        self.diff2 = constants.DIFFICULTY2
         for a in animation.ANIMATIONS:
             a.update()
         if self.client is not None and not self.client.started:

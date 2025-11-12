@@ -895,20 +895,29 @@ class DestroyerAI(SlowMoverAI):
         super().__init__(pos)
         self.tick = 0
         self.state = 0
+        self.tr = 0
 
     def on_update(self):
         player = self.cur_target.pos if self.cur_target is not None else (0, 0)
         px = player[0] - self.pos[0]
         py = player[1] - self.pos[1]
-        if self.tick > 200:
-            self.state = (self.state + 1) % 2
-            self.tick = 0
         self.tick += 1
+        if self.tick > 700:
+            self.tick = 0
+            self.state = (self.state + 1) % constants.DIFFICULTY2
         if self.state == 0:
-            self.apply_force(
-                vector.Vector(vector.coordinate_rotation(px, py), 8000 + min(vector.distance(px, py) * 9, 22000)))
+            if self.tick % 300 < 240:
+                self.apply_force(
+                    vector.Vector(vector.coordinate_rotation(px, py), 8000 + min(vector.distance(px, py) * 9, 22000)))
+                self.tr = self.velocity.get_net_rotation()
+            else:
+                self.apply_force(vector.Vector(self.tr, 40000))
+        elif self.state == 1:
+            self.apply_force(vector.Vector(self.tr, 2000))
         else:
-            self.apply_force(vector.Vector(vector.coordinate_rotation(px, py), vector.distance(px, py) * 45))
+            dr = vector.coordinate_rotation(px, py)
+            self.apply_force(vector.Vector2D(dr + 55, 35000))
+
 
 
 class DevilPythonAI(DestroyerAI):
@@ -1387,6 +1396,7 @@ class Entities:
             self.ueid = Entities.Entity.ENO
             Entities.Entity.ENO += 1
 
+            self.hp_sys.max_hp *= [0, 1, 1.23, 1.49][constants.DIFFICULTY2]
             self.hp_sys.max_hp *= [.6, 1.0, 1.9, 2.4][constants.DIFFICULTY]
             self.hp_sys.hp = self.hp_sys.max_hp
 
@@ -2110,6 +2120,14 @@ class Entities:
             Entities.Entity.ENO += 1
             self.body[0].show_bar = True
             self.body[0].NAME = self.NAME
+
+            self.hp_sys.max_hp *= [0, 1, 1.23, 1.49][constants.DIFFICULTY2]
+            self.hp_sys.max_hp *= [.6, 1.0, 1.9, 2.4][constants.DIFFICULTY]
+            self.hp_sys.hp = self.hp_sys.max_hp
+
+            self.obj.MASS *= [.5, 1.0, 1.8, 2.6][constants.DIFFICULTY]
+            self.obj.SPEED *= [.45, 1.0, 2.0, 3.5][constants.DIFFICULTY]
+            self.obj.SPEED *= random.uniform(0.9, 1.1)
 
         def play_sound(self, sound):
             self.body[0].play_sound(sound)
@@ -3978,6 +3996,7 @@ class Entities:
             self.set_rotation(90 - rot)
             self.obj.SPEED *= 5
             self.obj.apply_force(vector.Vector(rot, 32000))
+            self.hp_sys.IMMUNE = True
 
         def on_update(self):
             super().on_update()
@@ -6321,6 +6340,7 @@ class Entities:
             self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 200
             self.obj.SPEED *= 2
             self.tick = 0
+            self.ft = 0
             for b in self.body:
                 setattr(b, 'ot', -1000)
                 setattr(b, 'op', False)
@@ -6330,14 +6350,41 @@ class Entities:
 
         def on_update(self):
             self.tick += 1
+            if self.obj.state == 1:
+                if self.ft > 0:
+                    self.ft -= 1
+                else:
+                    self.ft = 120 - constants.DIFFICULTY * 10 - constants.DIFFICULTY2 * 15
+                    for b in self.body:
+                        setattr(b, 'orr', random.randint(0, 360))
+            if self.obj.state == 2:
+                self.ft = 0
+                if self.tick % 70 == 0:
+                    bb = random.choices(self.body, k=len(self.body) - 3)
+                    for b in bb:
+                        game.get_game().entities.append(Entities.Lazer(b.obj.pos,
+                                                                       vector.coordinate_rotation(
+                                                                           *(game.get_game().player.obj.pos - b.obj.pos))
+                                                                       ))
             for b in self.body:
-                if random.randint(0, 300) == 0:
+                if random.randint(0, 300 - constants.DIFFICULTY * 15 - constants.DIFFICULTY2 * 20) == 0 and self.obj.state == 0:
                     rot = vector.coordinate_rotation(game.get_game().player.obj.pos[0] - b.obj.pos[0],
                                                      game.get_game().player.obj.pos[1] - b.obj.pos[1])
                     l = Entities.Lazer(b.obj.pos, rot)
                     l.obj.apply_force(vector.Vector(rot, 5000))
                     game.get_game().entities.append(l)
                     setattr(b, 'ot', self.tick)
+                if self.obj.state == 1:
+                    if self.ft == 10:
+                        l = Entities.Lazer(b.obj.pos, b.orr)
+                        l.DMG += 80
+                        game.get_game().entities.append(l)
+                        if constants.DIFFICULTY2 == 3:
+                            l = Entities.Lazer(b.obj.pos + vector.Vector2D(random.randint(0, 360), 50), b.orr)
+                            l.DMG += 80
+                            game.get_game().entities.append(l)
+
+
                 op =  self.tick - getattr(b, 'ot') <= 100
                 if b != self.body[0]:
                     if op:
@@ -6352,6 +6399,15 @@ class Entities:
                         b.hp_sys.resistances.resistances[r] *= .3 - constants.DIFFICULTY * .05
                 setattr(b, 'op', op)
             super().on_update()
+
+        def t_draw(self):
+            for b in self.body:
+                if self.obj.state == 1 and 'orr' in dir(b) and self.ft > 10:
+                    draw.line(game.get_game().displayer.canvas, (255, 0, 0), position.displayed_position(b.obj.pos),
+                              position.displayed_position(b.obj.pos + vector.Vector2D(b.orr, 3000)), 2
+                              )
+            super().t_draw()
+
 
 
     class TheCPU(Entity):
@@ -6375,13 +6431,22 @@ class Entities:
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 30
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 25
             self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 45
-            self.show_bar = False
+            self.rs = []
+            for _ in range(constants.DIFFICULTY2 * 4 + 2):
+                rx = random.uniform(-1, 1)
+                ry = (1 - rx ** 2) ** .5 * random.choice([-1, 1])
+
+                self.rs.append(vector.Vector2D(0, 0, rx, ry) * 2 ** random.uniform(-1, 1))
 
         def on_update(self):
             super().on_update()
             if self.hp_sys.hp < self.hp_sys.max_hp * 0.5 and self.obj.phase == 1:
                 self.obj.phase = 2
                 self.img = game.get_game().graphics['entity_the_cpu_phase2']
+                self.set_rotation(self.rot)
+                self.obj.tick = -200
+            if self.hp_sys.hp < self.hp_sys.max_hp * 0.35 and self.obj.phase == 2 and constants.DIFFICULTY2 > 1:
+                self.obj.phase = 3
                 self.set_rotation(self.rot)
                 self.obj.tick = -200
 
@@ -6402,7 +6467,7 @@ class Entities:
             displayer.canvas.blit(self.d_img, r)
             r.center = position.displayed_position((px - aax, py - aay))
             displayer.canvas.blit(self.d_img, r)
-            if self.obj.phase == 2:
+            if self.obj.phase >= 2:
                 r.center = position.displayed_position((px + aay, py + aax))
                 displayer.canvas.blit(self.d_img, r)
                 r.center = position.displayed_position((px - aay, py - aax))
@@ -6411,6 +6476,27 @@ class Entities:
                 displayer.canvas.blit(self.d_img, r)
                 r.center = position.displayed_position((px - aay, py + aax))
                 displayer.canvas.blit(self.d_img, r)
+            dt = vector.distance(aax, aay)
+            pax = aax
+            pay = aay
+            if self.obj.phase == 3:
+                for rx, ry in self.rs:
+                    aax = (rx * dt + pax) / 2
+                    aay = (ry * dt + pay) / 2
+                    r.center = position.displayed_position((px - aax, py + aay))
+                    displayer.canvas.blit(self.d_img, r)
+                    r.center = position.displayed_position((px + aax, py - aay))
+                    displayer.canvas.blit(self.d_img, r)
+                    r.center = position.displayed_position((px - aax, py - aay))
+                    displayer.canvas.blit(self.d_img, r)
+                    r.center = position.displayed_position((px + aay, py + aax))
+                    displayer.canvas.blit(self.d_img, r)
+                    r.center = position.displayed_position((px - aay, py - aax))
+                    displayer.canvas.blit(self.d_img, r)
+                    r.center = position.displayed_position((px + aay, py - aax))
+                    displayer.canvas.blit(self.d_img, r)
+                    r.center = position.displayed_position((px - aay, py + aax))
+                    displayer.canvas.blit(self.d_img, r)
             self.d_img.set_alpha(255)
 
     class Irec(Entity):
