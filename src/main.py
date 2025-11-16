@@ -608,6 +608,14 @@ def update():
                                          rate=0.0008 + bm * 0.002, number_factor=0)
             underia.entity_spawn(underia.Entities.Star, target_number=12 + bm * 10, to_player_max=2000, to_player_min=1500, rate=30)
         elif game.get_biome() == 'inner':
+            underia.entity_spawn(underia.Entities.ForgottenFlower, target_number=5, to_player_max=2000, to_player_min=1500,
+                                 rate=15)
+            underia.entity_spawn(underia.Entities.Urchin, target_number=10, to_player_max=2000, to_player_min=1500,
+                                 rate=10)
+            underia.entity_spawn(underia.Entities.LazerFish, target_number=20, to_player_max=2000, to_player_min=1500,
+                                 rate=25)
+            underia.entity_spawn(underia.Entities.PressureEye, target_number=20, to_player_max=2000, to_player_min=1500,
+                                 rate=25)
             underia.entity_spawn(underia.Entities.PlanteraBulb, target_number=5, to_player_max=2500, to_player_min=1000, rate=50)
             if 5 > game.stage > 2:
                 underia.entity_spawn(underia.Entities.GhostFace, target_number=5, to_player_max=2500, to_player_min=2000, rate=23)

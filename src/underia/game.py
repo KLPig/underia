@@ -28,7 +28,8 @@ MUSICS = {
     'amalgam': ['inner0', 'inner1', 'none0', 'none1', 'wither0', 'wither1'],
     'left_alone': ['hot_spring0', 'hot_spring1', 'hell0', 'hell1'],
     'hadopelagic_pressure': ['hot_spring0', 'hot_spring1', 'ocean0', 'ocean1', 'hell0', 'fallen_sea1'],
-    'hydrothermophobia': ['hot_spring0', 'hot_spring1', 'hell1', 'hell0', 'fallen_sea1'],
+    'hydrothermophobia': ['hot_spring0', 'hot_spring1', 'hell1', 'hell0', 'fallen_sea1', 'inner0', 'inner1'],
+    'rlyeh': ['hot_spring1', 'inner0', 'inner1'],
     'null': [],
     'rude_buster': ['battle'],
     'worlds_revolving': ['battle'],
@@ -67,6 +68,7 @@ MUSIC_DATA = {
     'hadopelagic_pressure': 'Hadopelagic Pressure (Terraria Calamity)',
     'hydrothermophobia': 'Hydrothermophobia (Terraria Calamity)',
     'left_alone': 'Left Alone (Terraria Calamity)',
+    'rlyeh': '"R\'lyeh\'" (Terraria Calamity)',
 
     'platinum_star': 'Platinum Star (Terraria Fargo)',
     'ruf_calamity': 'Raw, Unfiltered Calamity (Terraria Calamity)'
@@ -210,11 +212,15 @@ class Game:
             b = 255 - (255 - b) // 2
         if self.get_biome() == 'hot_spring':
             r = (120 + r) // 3
-            g = (40 + r) // 3
-            b = (40 + r) // 3
+            g = (40 + g) // 3
+            b = (40 + b) // 3
+        if self.get_biome() == 'inner':
+            r = r * 2 // 7
+            g = g * 2 // 7
+            b = b * 2 // 7
         cp = self.furniture[0]
         dt = abs(cp.obj.pos - self.player.obj.pos)
-        ap = min(.8, 12000000 // dt ** 2 / 100)
+        ap = min(.8, 12000000 // max(100, dt) ** 2 / 100)
         r = int(r - r * ap + ap * 255)
         g = int(g - g * ap + ap * 255)
         b = int(b - b * ap + ap * 150)
@@ -403,7 +409,7 @@ class Game:
             return 'life_forest'
         if len([1 for e in self.entities if type(e) is entity.Entities.MATTER]):
             return 'hell'
-        if len([1 for e in self.entities if type(e) in [entity.Entities.Jevil, entity.Entities.Jevil2, entity.Entities.OblivionAnnihilator]]) or \
+        if len([1 for e in self.entities if e.IS_MENACE and type(e) in [entity.Entities.Jevil, entity.Entities.Jevil2, entity.Entities.OblivionAnnihilator]]) or \
                 self.player.inventory.is_enough(inventory.ITEMS['chaos_heart']):
             return 'inner'
 
@@ -420,6 +426,8 @@ class Game:
             return 'desert'
 
 
+        if pos[1] > 3500 and self.stage >= 2:
+            return 'inner'
         if pos[1] > 2500 and self.stage >= 1:
             return 'hot_spring'
         if (pos[0] - 120) ** 2 + (pos[1] - 120) ** 2 < 5000:
@@ -610,14 +618,14 @@ class Game:
             if len([1 for e in self.entities if e.IS_MENACE or type(e) in [entity.Entities.Irec]]):
                 self.cur_music = None
                 self.channel.stop()
-                if len([1 for e in self.entities if type(e) in [entity.Entities.Jevil, entity.Entities.Jevil2]]):
+                if len([1 for e in self.entities if type(e) is entity.Entities.Irec]):
+                    self.prepared_music = 'ruf_calamity'
+                elif len([1 for e in self.entities if type(e) in [entity.Entities.Jevil, entity.Entities.Jevil2]]):
                     self.prepared_music = 'worlds_revolving'
                 elif len([1 for e in self.entities if type(e) is entity.Entities.Plantera]):
                     self.prepared_music = 'plantera'
                 elif len([1 for e in self.entities if type(e) is entity.Entities.Ray]):
                     self.prepared_music = 'platinum_star'
-                elif len([1 for e in self.entities if type(e) is entity.Entities.Irec]):
-                    self.prepared_music = 'ruf_calamity'
                 elif len([1 for e in self.entities if type(e) is entity.Entities.ReincarnationTheWorldsTree]):
                     self.prepared_music = 'mercy_remix'
                 elif len([1 for e in self.entities if type(e) is entity.Entities.Faith]):

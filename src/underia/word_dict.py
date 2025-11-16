@@ -347,6 +347,8 @@ en_cn = {
     'sunrise': '日出',
     'gaia': '盖亚',
 
+    'the proof of embracing eternity': '拥抱永恒的证明',
+
     'fluffy': '毛绒',
     'fairy': '仙灵',
     'hermes': '赫尔墨斯',

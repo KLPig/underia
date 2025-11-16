@@ -231,6 +231,8 @@ class Player:
             nf *= 3
         if b == 'hot_spring':
             nf *= 4
+        if b == 'inner':
+            nf *= 2.5
         if b in ['heaven', 'hell']:
             nf *= .5
         if b in ['sea', 'ocean']:
@@ -483,8 +485,13 @@ class Player:
                         self.calculate_data('octave_damage', rate_data=True, rate_multiply=True),
                         self.calculate_data('hallow_damage', rate_data=True, rate_multiply=True),
                         self.calculate_data('pacify_damage', rate_data=True, rate_multiply=True)]
+        dr = .5
+        if game.get_game().stage > 1:
+            dr = 1.0
+        elif game.get_game().stage == 1:
+            dr = .8
         for i in range(len(self.attacks)):
-            self.attacks[i] = math.sqrt(max(0, self.attacks[i]))
+            self.attacks[i] = max(0.001, self.attacks[i]) ** dr
         if 'black_hole_pluvial' in self.accessories:
             for e in game.get_game().entities:
                 px, py = self.obj.pos[0] - e.obj.pos[0], self.obj.pos[1] - e.obj.pos[1]
@@ -536,21 +543,32 @@ class Player:
         self.hp_sys.DODGE_RATE = max(0, 1 - 1 / (((self.calculate_speed() - 1) * 100) ** .7 / 100 + self.calculate_data('dodge_rate', rate_data=True, rate_multiply=True)) + bool(self.afterimage_shadow))
         nf = self.friction_mult()
         b = game.get_game().get_biome()
-        d_t = constants.DIFFICULTY * 2
-        if b == 'hell':
-            game.get_game().player.hp_sys.effect(effects.Burning(1, d_t + 1))
+        d_t = constants.DIFFICULTY * 2 + constants.DIFFICULTY2 * 3 - 3
+        nk = 'naturalify_necklace' in self.accessories
+        if b == 'inner':
+            if not nk:
+                game.get_game().player.hp_sys.effect(effects.Wither(1, d_t * 3 + 5))
+                game.get_game().player.hp_sys.effect(effects.Freezing(1, 1))
+            if nk:
+                game.get_game().player.hp_sys.effect(effects.SDarkened(1, 1))
+            else:
+                game.get_game().player.hp_sys.effect(effects.Darkened(1, 1))
         if b == 'hot_spring':
-            game.get_game().player.hp_sys.effect(effects.Burning(1, d_t * 2 + 5))
-            game.get_game().player.hp_sys.effect(effects.Darkened(1, 1))
-        if b == 'heaven':
-            if constants.DIFFICULTY >= 1:
-                game.get_game().player.hp_sys.effect(effects.SEnlightened(1, 1))
-        if b == 'desert':
-            if constants.DIFFICULTY >= 2:
-                game.get_game().player.hp_sys.effect(effects.BleedingR(1, 1))
-        if b == 'snow':
-            if constants.DIFFICULTY >= 2:
-                game.get_game().player.hp_sys.effect(effects.SFreezing(1, 1))
+            game.get_game().player.hp_sys.effect(effects.Burning(1, d_t * 2 + 5 - nk * (5 * d_t)))
+            if not nk:
+                game.get_game().player.hp_sys.effect(effects.SDarkened(1, 1))
+        if not nk:
+            if b == 'hell':
+                game.get_game().player.hp_sys.effect(effects.Burning(1, d_t + 1))
+            if b == 'heaven':
+                if constants.DIFFICULTY >= 1:
+                    game.get_game().player.hp_sys.effect(effects.SEnlightened(1, 1))
+            if b == 'desert':
+                if constants.DIFFICULTY >= 2:
+                    game.get_game().player.hp_sys.effect(effects.BleedingR(1, 1))
+            if b == 'snow':
+                if constants.DIFFICULTY >= 2:
+                    game.get_game().player.hp_sys.effect(effects.SFreezing(1, 1))
         self.obj.FRICTION = max(0, 1 - nf * 0.1 * self.calculate_data('air_res', rate_data=True, rate_multiply=True) * (20 ** self.z))
         self.obj.MASS = max(40, 80 + self.calculate_data('mass', False))
         self.p_data.append(f'{int(self.obj.SPEED / 2) / 10} speed')
@@ -712,6 +730,23 @@ class Player:
         for e, im, imr, ax, az in effs:
             if az > 0:
                 game.get_game().displayer.canvas.blit(im, imr)
+
+        if 'twin_glasses' in self.accessories:
+            rs = self.tick % 360
+            img = entity.entity_get_surface(1, -rs, 2 * self.get_screen_scale(),
+                                            game.get_game().graphics['entity_mechanic_eye'])
+            img_r = img.get_rect(center=position.displayed_position(self.obj.pos + vector.Vector2D(rs, -200)))
+            game.get_game().displayer.canvas.blit(img, img_r)
+            img = entity.entity_get_surface(1, -rs + 180, 2 * self.get_screen_scale(),
+                                            game.get_game().graphics['entity_mechanic_eye'])
+            img_r = img.get_rect(center=position.displayed_position(self.obj.pos + vector.Vector2D(rs, 200)))
+            game.get_game().displayer.canvas.blit(img, img_r)
+            if pg.BUTTON_LEFT in game.get_game().get_pressed_mouse() and self.tick % 4 == 0 and self.mana >= round(7 * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True),1):
+                self.mana -= round(7 * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True),1)
+                game.get_game().projectiles.append(projectiles.Projectiles.TwinGlasses(self.obj.pos + vector.Vector2D(rs, -200), rs))
+                game.get_game().projectiles.append(projectiles.Projectiles.TwinGlasses(self.obj.pos + vector.Vector2D(rs, 200), 180 + rs))
+
+
         self.hp_sys.update()
         w = self.weapons[self.sel_weapon]
         if pg.K_EQUALS in game.get_game().get_pressed_keys():

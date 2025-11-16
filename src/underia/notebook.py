@@ -16,7 +16,11 @@ STORIES = [
          [["Fluffff - The fluffy worm", "90AT 0/4/54/77 DF\n10/12/18/24 BODY PARTS", "The further the distance between, the higher the speed.\nSummon: Wild Fluffball"]],
          [['"Everyday Apple"', "Doctor won\'t find me anymore!!", "How to summon? Just eat it."]],
          [["Worlds Fruit - The Gods Heritage", "64 AT 25/27/32/42 DF\nDrops from the worlds\' tree.", "Teleport to player.\nSummon several servants to protect and attack.", 'Summon: World\'s Apple, drops from some trees.']],
-          [['"A red plant"', 'Seems to drop from a huge cubic flexible organism.', 'How to summon? Where everything\'s red.']]
+          [['"A red plant"', 'Seems to drop from a huge cubic flexible organism.', 'How to summon? Where everything\'s red.']],
+         [["Magma King - The fire monster", "72AT 9/11/13/15 DF\nSeparative cubes.", "Decreasing defense to separate into 2/2/3/3 cubes.\nSummon: Fire Slime"]],
+         [["Tornado and Car Park Destroy", "The desert is mystery!\nLet's go to play, shall we?"]],
+         [["Sandstorm - The Ghost of Desert", "180 AT 10/12/14/16 DF\nSeveral sandstorms.", "Summon: Storm"]],
+         [["'Post-chaotic Angel'", "'The world is in chaos, \nuntil a angel appears.'", "We call it: 'The Spirit Angel'"]]
       ],
 
      ),
@@ -42,7 +46,9 @@ STORIES = [
 
 CHAPTERS = [
     [('L1', 'Ore'), ('M1', 'Unknown Eye Organism'), ('D1', 'True Eye - The Watcher of Terror'), ('M1B', 'Spherical Icy Stuff'),
-     ('D1B', 'Fluffff - The fluffy worm'), ('M1C', 'Everyday Apple'), ('D1C', 'Worlds Fruit - The Gods Heritage'), ('M2', 'Red Plant')],
+     ('D1B', 'Fluffff - The fluffy worm'), ('M1C', 'Everyday Apple'), ('D1C', 'Worlds Fruit - The Gods Heritage'), ('M2', 'Red Plant'),
+     ('D2', 'Magma King - The fire monster'), ('M3', "Tornado and Car Park Destroy"), ("D3", "Sandstorm - The Ghost of Desert"),
+     ("MS1", "Post-chaotic Angel")],
     [('Intro', 5), ('1.', 6), ('2.', 7), ('3.', 8), ('4.', 9)],
     [('Intro', 10), ('Kun Kun', 10), ('Chicken Soup', 10), ('Tung Tung', 10), ('Hadi', 10), ('Spiked Head', 10), ('Final', 11)],
 ]
@@ -77,8 +83,10 @@ def show_notebook(chapter=0):
                         story.show_story(f'note{chapter}{chapters[sel_c][0]}', words[sel_c])
                 elif event.key == pg.K_ESCAPE:
                     return
-        for i, (cht, nm) in enumerate(chapters):
-            y = 120 + i * 80
+        di = sel_c // 8
+        for j, (cht, nm) in enumerate(chapters[di * 8:di * 8 + 8]):
+            i = j + di * 8
+            y = 120 + j * 80
             x = 100
             if i == sel_c:
                 c = (255, 255, 0)

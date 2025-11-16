@@ -546,6 +546,13 @@ class Projectiles:
                       position.displayed_position(self.obj.pos),
                       position.displayed_position(self.obj.pos + self.obj.velocity / max(abs(self.obj.velocity), 1) * 200), 3)
 
+    class TwinGlasses(Demolisher):
+        DAMAGE_AS = 'obsidian_wand'
+        DMG_TYPE = damages.DamageTypes.MAGICAL
+        WT = damages.DamageTypes.MAGICAL
+        DMG_RATE = 1.0
+
+
     class Witness(PlatinumWand):
         COL = (255, 0, 0)
         DMG_RATE = 2
@@ -775,6 +782,37 @@ class Projectiles:
                         ee.hp_sys.enable_immune(2)
                     self.damage_particle()
 
+    class KarmicFire(PlatinumWand):
+        DAMAGE_AS = 'karmic_fire'
+        IMG = 'entity_nameless_fire'
+        WT = damages.DamageTypes.MAGICAL
+        SPD = 240
+        COL = (0, 255, 255)
+        EFF = False
+        ENABLE_IMMUNE = 5
+
+        def damage(self):
+            imr = self.d_img.get_rect(center=self.obj.pos())
+            for ee in game.get_game().entities:
+                if imr.collidepoint(ee.obj.pos[0], ee.obj.pos[1]) or ee.d_img.get_rect(
+                        center=ee.obj.pos.to_value()).collidepoint(self.obj.pos[0], self.obj.pos[1]) and not ee.hp_sys.is_immune:
+                    ee.hp_sys.damage(weapons.WEAPONS['karmic_fire'].damages[
+                                             damages.DamageTypes.MAGICAL] * game.get_game().player.attack *
+                                     game.get_game().player.attacks[2], damages.DamageTypes.MAGICAL,
+                                     )
+                    if 'nmf' in dir(ee.hp_sys.defenses):
+                        if getattr(ee.hp_sys.defenses, 'nmf') + 1 < 30:
+                            ee.hp_sys.defenses.nmf += 1
+                            ee.hp_sys.defenses[damages.DamageTypes.MAGICAL] -= 2
+                            ee.hp_sys.enable_immune(2)
+                        else:
+                            ee.hp_sys.enable_immune(.5)
+                    else:
+                        ee.hp_sys.defenses.nmf = 1
+                        ee.hp_sys.defenses[damages.DamageTypes.MAGICAL] -= 4
+                        ee.hp_sys.enable_immune(2)
+                    self.damage_particle()
+
     class NightsEdge(PlatinumWand):
         DAMAGE_AS = 'nights_edge'
         IMG = 'projectiles_nights_edge'
@@ -787,10 +825,8 @@ class Projectiles:
             self.WT = damages.DamageTypes.PHYSICAL
             super().update()
             self.tick += 1
-            if self.tick > 100 or abs(self.obj.velocity) < 1:
+            if self.tick > self.DURATION or abs(self.obj.velocity) < 1:
                 self.dead = True
-            else:
-                self.dead = False
 
     class AirFloat(PlatinumWand):
         def __init__(self, pos, rotation):
@@ -1553,6 +1589,14 @@ class Projectiles:
             self.img = pg.Surface((1, 1))
             self.d_img = self.img
 
+        def set_rotation(self, rot):
+            self.rot = rot
+            ax, ay = vector.Vector2D(rot, 2)
+            self.tar_reg = abs(ax - ay * (-1 if ((ax > 0) != (ay > 0)) else 1))
+            self.lf = ax > 0
+            self.lr = ay > 0
+            self.slope = ax / ay
+
         def update(self):
             mx, my = position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
             if self.FACE_TO_MOUSE:
@@ -1646,7 +1690,7 @@ class Projectiles:
         LENGTH = 3200
         DAMAGE_AS = 'the_blade'
         COLOR = (0, 150, 50)
-        DURATION = 12
+        DURATION = 20
         DMG_TYPE = damages.DamageTypes.PHYSICAL
 
     class QuarkBeam(Beam):
@@ -2077,6 +2121,17 @@ class Projectiles:
         COLOR = (200, 255, 200)
         DURATION = 20
 
+
+    class BChaosAnnihilator(Beam):
+        WIDTH = 300
+        LENGTH = 3500
+        DAMAGE_AS = 'chaos_annihilator'
+        COLOR = (0, 0, 0)
+        DURATION = 100
+        ENABLE_IMMUNE = 3
+        DMG_RATE = 2
+        FACE_TO_MOUSE = True
+
     class LightsBeam(Beam):
         WIDTH = 30
         LENGTH = 1500
@@ -2085,6 +2140,7 @@ class Projectiles:
         DURATION = 15
 
     class LifeDevourer(Beam):
+        DMG_TYPE = damages.DamageTypes.PHYSICAL
         WIDTH = 16
         LENGTH = 2000
         DAMAGE_AS = 'life_devourer'
@@ -2167,7 +2223,6 @@ class Projectiles:
         COL = (150, 0, 50)
         ENABLE_IMMUNE = 1.5
 
-
         def update(self):
             super().update()
             self.tick += 1
@@ -2175,6 +2230,22 @@ class Projectiles:
                 self.dead = True
             else:
                 self.dead = False
+            self.set_rotation(self.tick * 18)
+
+    class Cosmic(NightsEdge):
+        DAMAGE_AS = 'cosmos'
+        IMG = 'projectiles_cosmic'
+        DMG_RATE = 1
+        DMG_TYPE = damages.DamageTypes.PHYSICAL
+        COL = (150, 0, 50)
+        SPD = 200
+        ENABLE_IMMUNE = 0
+        DEL = True
+        DURATION = 400
+
+        def update(self):
+            super().update()
+            self.tick += 1
             self.set_rotation(self.tick * 18)
 
 
@@ -2195,9 +2266,78 @@ class Projectiles:
 
         def update(self):
             self.set_rotation((self.tick - 100) ** 2 // 10)
-            super().update()
             if self.tick > 100:
-                self.obj.apply_force(vector.Vector2D(self.rot, -500))
+                self.obj.velocity *= 0
+            super().update()
+
+    class TimeLilyS(PlatinumWand):
+        DAMAGE_AS = 'time_lily'
+        IMG = 'projectiles_time_lily'
+        SPD = 200
+        LIMIT_VEL = 5
+        DURATION = 80
+        DEL = False
+        COL = (0, 255, 255)
+        ENABLE_IMMUNE = 2
+        DECAY_RATE = .5
+
+        def draw(self):
+            pg.draw.circle(game.get_game().displayer.canvas, self.COL, position.displayed_position(self.obj.pos),
+                           radius=int(15 / game.get_game().player.get_screen_scale()))
+            pg.draw.circle(game.get_game().displayer.canvas, (0, 100, 255), position.displayed_position(self.obj.pos),
+                           radius=int(15 / game.get_game().player.get_screen_scale()), width=int(3 / game.get_game().player.get_screen_scale()))
+
+    class TimeLily(PlatinumWand):
+        DAMAGE_AS = 'time_lily'
+        IMG = 'projectiles_time_lily'
+        SPD = 150
+        LIMIT_VEL = -1
+        DURATION = 300
+        DEL = False
+        COL = (0, 255, 255)
+        ENABLE_IMMUNE = 2
+        DECAY_RATE = 1.0
+
+        def update(self):
+            self.set_rotation((self.tick - 150) ** 2 // 20)
+            if self.tick > 150:
+                self.obj.velocity *= 0
+                if self.tick % 8 == 0:
+                    game.get_game().projectiles.append(Projectiles.TimeLilyS(self.obj.pos, self.rot))
+            super().update()
+
+    class GrowthS(PlatinumWand):
+        DAMAGE_AS = 'growth'
+        SPD = 100
+        LIMIT_VEL = 5
+        DURATION = 80
+        DEL = False
+        COL = (100, 255, 100)
+        ENABLE_IMMUNE = 2
+        DECAY_RATE = .5
+
+        def draw(self):
+            pg.draw.circle(game.get_game().displayer.canvas, self.COL, position.displayed_position(self.obj.pos),
+                           radius=int((15 - self.tick * 15 // self.DURATION) / game.get_game().player.get_screen_scale()))
+
+    class Growth(PlatinumWand):
+        DAMAGE_AS = 'growth'
+        SPD = 100
+        LIMIT_VEL = 5
+        DURATION = 220
+        DEL = False
+        COL = (100, 255, 100)
+        ENABLE_IMMUNE = 2.5
+        DECAY_RATE = 1.5
+
+        def draw(self):
+            pg.draw.circle(game.get_game().displayer.canvas, self.COL, position.displayed_position(self.obj.pos),
+                           radius=int((45 - self.tick * 45 // self.DURATION) / game.get_game().player.get_screen_scale()))
+
+        def update(self):
+            super().update()
+            if self.tick % 3 == 0:
+                game.get_game().projectiles.append(Projectiles.GrowthS(self.obj.pos, random.randint(0, 360)))
 
     class MidnightsWand(BloodWand):
         DAMAGE_AS = 'midnights_wand'
@@ -2951,10 +3091,10 @@ class Projectiles:
         TAIL_WIDTH = 10
         TAIL_COLOR = (127, 255, 0)
 
-        def __init__(self, pos, rotation, speed, damage):
-            super().__init__(pos, rotation, speed, damage)
+        def __init__(self, *args):
+            super().__init__(*args)
             self.obj.velocity.clear()
-            self.spd = speed + self.SPEED
+            self.spd = self.SPEED
 
         def update(self):
             tr = min(self.spd / 2400, .6)
@@ -3248,6 +3388,30 @@ class Projectiles:
         TAIL_SIZE = 2
         TAIL_WIDTH = 8
         TAIL_COLOR = (0, 0, 0)
+
+    class ChaosAnnihilator(Bullet):
+        DAMAGES = 100
+        SPEED = 500
+        IMG = 'null'
+        TAIL_SIZE = 2
+        TAIL_WIDTH = 8
+        TAIL_COLOR = (255, 255, 255)
+
+        def damage(self, pos, cd):
+            for ee in game.get_game().entities:
+                if vector.distance(ee.obj.pos[0] - pos[0], ee.obj.pos[1] - pos[1]) < (
+                        ee.d_img.get_width() + self.d_img.get_height()) / 4 + 200 and ee not in cd:
+                    for e2 in game.get_game().entities:
+                        if vector.distance(e2.obj.pos[0] - pos[0], e2.obj.pos[1] - pos[1]) < 200 + (
+                                e2.d_img.get_width() + self.d_img.get_height()) / 4:
+                            e2.hp_sys.defenses[damages.DamageTypes.PIERCING] -= 5
+                            e2.hp_sys.damage(self.dmg, damages.DamageTypes.PIERCING)
+                    weapons.WEAPONS['chaos_annihilator'].d_count += 4
+                    if self.DELETE:
+                        self.dead = True
+                    else:
+                        cd.append(ee)
+            return cd
 
     class DirectBullet(Bullet):
         DAMAGES = 0

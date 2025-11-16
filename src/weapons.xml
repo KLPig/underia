@@ -1,0 +1,3048 @@
+<weapons>
+	<version>4</version>
+	<weapon id="null">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="physical">0</damage>
+		</damages>
+	</weapon>
+	<weapon id="arrow_thrower">
+		<speed>2</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="piercing">3</damage>
+		</damages>
+	</weapon>
+	<weapon id="wooden_sword">
+		<speed>10</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="physical">8</damage>
+		</damages>
+	</weapon>
+	<weapon id="copper_sword">
+		<speed>16</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="physical">10</damage>
+		</damages>
+	</weapon>
+	<weapon id="iron_sword">
+		<speed>12</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="physical">16</damage>
+		</damages>
+	</weapon>
+	<weapon id="cobalt_sword">
+		<speed>8</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="physical">15</damage>
+		</damages>
+	</weapon>
+	<weapon id="iron_blade">
+		<speed>8</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="physical">12</damage>
+		</damages>
+	</weapon>
+	<weapon id="cobalt_blade">
+		<speed>6</speed>
+		<at_time>14</at_time>
+		<damages>
+			<damage type="physical">14</damage>
+		</damages>
+	</weapon>
+	<weapon id="steel_sword">
+		<speed>20</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="physical">22</damage>
+		</damages>
+	</weapon>
+	<weapon id="silver_sword">
+		<speed>16</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="physical">26</damage>
+		</damages>
+	</weapon>
+	<weapon id="platinum_sword">
+		<speed>0</speed>
+		<at_time>30</at_time>
+		<damages>
+			<damage type="physical">52</damage>
+		</damages>
+	</weapon>
+	<weapon id="zirconium_sword">
+		<speed>2</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="physical">46</damage>
+		</damages>
+	</weapon>
+	<weapon id="platinum_blade">
+		<speed>20</speed>
+		<at_time>24</at_time>
+		<damages>
+			<damage type="physical">28</damage>
+		</damages>
+	</weapon>
+	<weapon id="e_wingblade">
+		<speed>4</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="physical">36</damage>
+		</damages>
+	</weapon>
+	<weapon id="tearblade">
+		<speed>6</speed>
+		<at_time>18</at_time>
+		<damages>
+			<damage type="physical">44</damage>
+		</damages>
+	</weapon>
+	<weapon id="life_wooden_sword">
+		<speed>6</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="physical">22</damage>
+		</damages>
+	</weapon>
+	<weapon id="magic_sword">
+		<speed>0</speed>
+		<at_time>32</at_time>
+		<damages>
+			<damage type="physical">50</damage>
+		</damages>
+	</weapon>
+	<weapon id="magic_blade">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="physical">25</damage>
+		</damages>
+	</weapon>
+	<weapon id="bloody_sword">
+		<speed>4</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="physical">60</damage>
+		</damages>
+	</weapon>
+	<weapon id="sunrise">
+		<speed>2</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="physical">70</damage>
+		</damages>
+	</weapon>
+	<weapon id="mantle">
+		<speed>2</speed>
+		<at_time>18</at_time>
+		<damages>
+			<damage type="physical">45</damage>
+		</damages>
+	</weapon>
+	<weapon id="obsidian_sword">
+		<speed>4</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="physical">40</damage>
+		</damages>
+	</weapon>
+	<weapon id="swwwword">
+		<speed>4</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="physical">60</damage>
+		</damages>
+	</weapon>
+	<weapon id="volcano">
+		<speed>4</speed>
+		<at_time>36</at_time>
+		<damages>
+			<damage type="physical">90</damage>
+		</damages>
+	</weapon>
+	<weapon id="doctor_expeller">
+		<speed>2</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="physical">50</damage>
+		</damages>
+	</weapon>
+	<weapon id="virus_defeater">
+		<speed>4</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="physical">100</damage>
+		</damages>
+	</weapon>
+	<weapon id="sand_sword">
+		<speed>0</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="physical">110</damage>
+		</damages>
+	</weapon>
+	<weapon id="dim_heavysword">
+		<speed>14</speed>
+		<at_time>24</at_time>
+		<damages>
+			<damage type="physical">180</damage>
+		</damages>
+	</weapon>
+	<weapon id="nights_edge">
+		<speed>2</speed>
+		<at_time>36</at_time>
+		<damages>
+			<damage type="physical">90</damage>
+		</damages>
+	</weapon>
+	<weapon id="chaos_reap">
+		<speed>14</speed>
+		<at_time>22</at_time>
+		<damages>
+			<damage type="physical">0</damage>
+		</damages>
+	</weapon>
+	<weapon id="storm_swift_sword">
+		<speed>0</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="physical">70</damage>
+		</damages>
+	</weapon>
+	<weapon id="spiritual_stabber">
+		<speed>4</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="physical">120</damage>
+		</damages>
+	</weapon>
+	<weapon id="palladium_sword">
+		<speed>2</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="physical">120</damage>
+		</damages>
+	</weapon>
+	<weapon id="mithrill_sword">
+		<speed>2</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="physical">240</damage>
+		</damages>
+	</weapon>
+	<weapon id="titanium_sword">
+		<speed>2</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="physical">320</damage>
+		</damages>
+	</weapon>
+	<weapon id="rune_blade">
+		<speed>2</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="physical">95</damage>
+		</damages>
+	</weapon>
+	<weapon id="glacier">
+		<speed>4</speed>
+		<at_time>14</at_time>
+		<damages>
+			<damage type="physical">125</damage>
+		</damages>
+	</weapon>
+	<weapon id="balanced_stabber">
+		<speed>2</speed>
+		<at_time>14</at_time>
+		<damages>
+			<damage type="physical">144</damage>
+		</damages>
+	</weapon>
+	<weapon id="excalibur">
+		<speed>2</speed>
+		<at_time>24</at_time>
+		<damages>
+			<damage type="physical">140</damage>
+		</damages>
+	</weapon>
+	<weapon id="guardian">
+		<speed>8</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="physical">100</damage>
+		</damages>
+	</weapon>
+	<weapon id="remote_sword">
+		<speed>2</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="physical">144</damage>
+		</damages>
+	</weapon>
+	<weapon id="gaia_paladin_spear">
+		<speed>4</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="physical">100</damage>
+		</damages>
+	</weapon>
+	<weapon id="true_excalibur">
+		<speed>2</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="physical">155</damage>
+		</damages>
+	</weapon>
+	<weapon id="true_nights_edge">
+		<speed>2</speed>
+		<at_time>64</at_time>
+		<damages>
+			<damage type="physical">180</damage>
+			<damage type="magical">130</damage>
+		</damages>
+	</weapon>
+	<weapon id="wooden_club">
+		<speed>4</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="physical">480</damage>
+		</damages>
+	</weapon>
+	<weapon id="muramasa">
+		<speed>0</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="physical">222</damage>
+		</damages>
+	</weapon>
+	<weapon id="forbidden_oath">
+		<speed>8</speed>
+		<at_time>14</at_time>
+		<damages>
+			<damage type="physical">190</damage>
+		</damages>
+	</weapon>
+	<weapon id="fiery_iceberg">
+		<speed>4</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="physical">160</damage>
+		</damages>
+	</weapon>
+	<weapon id="perseverance_sword">
+		<speed>2</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="physical">140</damage>
+		</damages>
+	</weapon>
+	<weapon id="black_hole_sword">
+		<speed>0</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="physical">130</damage>
+		</damages>
+	</weapon>
+	<weapon id="life_devourer">
+		<speed>6</speed>
+		<at_time>14</at_time>
+		<damages>
+			<damage type="physical">180</damage>
+		</damages>
+	</weapon>
+	<weapon id="leavigour">
+		<speed>8</speed>
+		<at_time>22</at_time>
+		<damages>
+			<damage type="physical">220</damage>
+		</damages>
+	</weapon>
+	<weapon id="jevil_knife">
+		<speed>4</speed>
+		<at_time>40</at_time>
+		<damages>
+			<damage type="physical">720</damage>
+		</damages>
+	</weapon>
+	<weapon id="the_blade">
+		<speed>12</speed>
+		<at_time>32</at_time>
+		<damages>
+			<damage type="physical">300</damage>
+		</damages>
+	</weapon>
+	<weapon id="demon_blade__muramasa">
+		<speed>0</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="physical">350</damage>
+		</damages>
+	</weapon>
+	<weapon id="uncanny_valley">
+		<speed>0</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="physical">550</damage>
+		</damages>
+	</weapon>
+	<weapon id="hour_hand">
+		<speed>0</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="physical">500</damage>
+		</damages>
+	</weapon>
+	<weapon id="deconstruction">
+		<speed>0</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="physical">600</damage>
+		</damages>
+	</weapon>
+	<weapon id="starfury">
+		<speed>0</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="physical">400</damage>
+		</damages>
+	</weapon>
+	<weapon id="lysis">
+		<speed>12</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="physical">888</damage>
+		</damages>
+	</weapon>
+	<weapon id="star_wrath">
+		<speed>0</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="physical">540</damage>
+		</damages>
+	</weapon>
+	<weapon id="galaxy_broadsword">
+		<speed>0</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="physical">4500</damage>
+			<damage type="thinking">3500</damage>
+		</damages>
+	</weapon>
+	<weapon id="eternal_echo">
+		<speed>0</speed>
+		<at_time>80</at_time>
+		<damages>
+			<damage type="physical">4500</damage>
+			<damage type="thinking">4000</damage>
+		</damages>
+	</weapon>
+	<weapon id="star_of_devotion">
+		<speed>0</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="physical">5500</damage>
+			<damage type="thinking">3500</damage>
+		</damages>
+	</weapon>
+	<weapon id="quark_rusher">
+		<speed>10</speed>
+		<at_time>90</at_time>
+		<damages>
+			<damage type="physical">4800</damage>
+			<damage type="thinking">2400</damage>
+		</damages>
+	</weapon>
+	<weapon id="highlight">
+		<speed>0</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="physical">800</damage>
+			<damage type="thinking">800</damage>
+		</damages>
+	</weapon>
+	<weapon id="turning_point">
+		<speed>2</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="physical">1200</damage>
+			<damage type="thinking">2000</damage>
+		</damages>
+	</weapon>
+	<weapon id="spikeflower">
+		<speed>2</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="physical">5</damage>
+		</damages>
+	</weapon>
+	<weapon id="spear">
+		<speed>4</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="physical">15</damage>
+		</damages>
+	</weapon>
+	<weapon id="ranseur">
+		<speed>6</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="physical">20</damage>
+		</damages>
+	</weapon>
+	<weapon id="platinum_spear">
+		<speed>4</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="physical">35</damage>
+		</damages>
+	</weapon>
+	<weapon id="zirconium_spear">
+		<speed>6</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="physical">45</damage>
+		</damages>
+	</weapon>
+	<weapon id="blood_pike">
+		<speed>2</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="physical">60</damage>
+		</damages>
+	</weapon>
+	<weapon id="fur_spear">
+		<speed>0</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="physical">55</damage>
+		</damages>
+	</weapon>
+	<weapon id="firite_spear">
+		<speed>4</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="physical">75</damage>
+		</damages>
+	</weapon>
+	<weapon id="valkyrien">
+		<speed>8</speed>
+		<at_time>18</at_time>
+		<damages>
+			<damage type="physical">70</damage>
+		</damages>
+	</weapon>
+	<weapon id="aerialite_shortsword">
+		<speed>12</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="physical">90</damage>
+		</damages>
+	</weapon>
+	<weapon id="forgotten_shortsword">
+		<speed>12</speed>
+		<at_time>14</at_time>
+		<damages>
+			<damage type="physical">110</damage>
+		</damages>
+	</weapon>
+	<weapon id="seaprick">
+		<speed>4</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="physical">75</damage>
+		</damages>
+	</weapon>
+	<weapon id="poseidon">
+		<speed>10</speed>
+		<at_time>22</at_time>
+		<damages>
+			<damage type="physical">95</damage>
+		</damages>
+	</weapon>
+	<weapon id="nights_pike">
+		<speed>4</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="physical">125</damage>
+		</damages>
+	</weapon>
+	<weapon id="energy_spear">
+		<speed>4</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="physical">180</damage>
+		</damages>
+	</weapon>
+	<weapon id="millennium_persists">
+		<speed>0</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="physical">250</damage>
+		</damages>
+	</weapon>
+	<weapon id="chlorophyte_pike">
+		<speed>6</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="physical">280</damage>
+		</damages>
+	</weapon>
+	<weapon id="metal_hand">
+		<speed>4</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="physical">350</damage>
+		</damages>
+	</weapon>
+	<weapon id="wilson_knife">
+		<speed>2</speed>
+		<at_time>14</at_time>
+		<damages>
+			<damage type="physical">240</damage>
+		</damages>
+	</weapon>
+	<weapon id="prophecy">
+		<speed>4</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="physical">400</damage>
+			<damage type="thinking">1600</damage>
+		</damages>
+	</weapon>
+	<weapon id="prophecy_ii">
+		<speed>2</speed>
+		<at_time>14</at_time>
+		<damages>
+			<damage type="physical">1500</damage>
+			<damage type="thinking">500</damage>
+		</damages>
+	</weapon>
+	<weapon id="zenith">
+		<speed>0</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="physical">0</damage>
+			<damage type="thinking">0</damage>
+		</damages>
+	</weapon>
+	<weapon id="bow">
+		<speed>6</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="piercing">3</damage>
+		</damages>
+	</weapon>
+	<weapon id="copper_bow">
+		<speed>8</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="piercing">10</damage>
+		</damages>
+	</weapon>
+	<weapon id="iron_bow">
+		<speed>6</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="piercing">6</damage>
+		</damages>
+	</weapon>
+	<weapon id="sky_bow">
+		<speed>8</speed>
+		<at_time>14</at_time>
+		<damages>
+			<damage type="piercing">14</damage>
+		</damages>
+	</weapon>
+	<weapon id="steel_bow">
+		<speed>18</speed>
+		<at_time>24</at_time>
+		<damages>
+			<damage type="piercing">35</damage>
+		</damages>
+	</weapon>
+	<weapon id="bone_bow">
+		<speed>10</speed>
+		<at_time>18</at_time>
+		<damages>
+			<damage type="piercing">28</damage>
+		</damages>
+	</weapon>
+	<weapon id="platinum_bow">
+		<speed>4</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="piercing">12</damage>
+		</damages>
+	</weapon>
+	<weapon id="bloody_bow">
+		<speed>10</speed>
+		<at_time>18</at_time>
+		<damages>
+			<damage type="piercing">45</damage>
+		</damages>
+	</weapon>
+	<weapon id="aerialite_bow">
+		<speed>6</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="piercing">35</damage>
+		</damages>
+	</weapon>
+	<weapon id="forgotten_bow">
+		<speed>14</speed>
+		<at_time>24</at_time>
+		<damages>
+			<damage type="piercing">70</damage>
+		</damages>
+	</weapon>
+	<weapon id="forests_bow">
+		<speed>2</speed>
+		<at_time>4</at_time>
+		<damages>
+			<damage type="piercing">22</damage>
+		</damages>
+	</weapon>
+	<weapon id="world_bow">
+		<speed>6</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="piercing">32</damage>
+		</damages>
+	</weapon>
+	<weapon id="forget">
+		<speed>0</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="piercing">35</damage>
+		</damages>
+	</weapon>
+	<weapon id="sky">
+		<speed>0</speed>
+		<at_time>80</at_time>
+		<damages>
+			<damage type="piercing">80</damage>
+		</damages>
+	</weapon>
+	<weapon id="heavybow">
+		<speed>20</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="piercing">70</damage>
+		</damages>
+	</weapon>
+	<weapon id="kuangkuangkuang">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="piercing">6</damage>
+		</damages>
+	</weapon>
+	<weapon id="recurve_bow">
+		<speed>12</speed>
+		<at_time>4</at_time>
+		<damages>
+			<damage type="piercing">100</damage>
+		</damages>
+	</weapon>
+	<weapon id="aiolos">
+		<speed>4</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="piercing">90</damage>
+		</damages>
+	</weapon>
+	<weapon id="spiritual_piercer">
+		<speed>2</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="piercing">120</damage>
+		</damages>
+	</weapon>
+	<weapon id="discord_storm">
+		<speed>2</speed>
+		<at_time>14</at_time>
+		<damages>
+			<damage type="piercing">100</damage>
+		</damages>
+	</weapon>
+	<weapon id="daedalus_stormbow">
+		<speed>0</speed>
+		<at_time>4</at_time>
+		<damages>
+			<damage type="piercing">66</damage>
+		</damages>
+	</weapon>
+	<weapon id="forward_bow">
+		<speed>0</speed>
+		<at_time>14</at_time>
+		<damages>
+			<damage type="piercing">130</damage>
+		</damages>
+	</weapon>
+	<weapon id="chlorophyte_bow">
+		<speed>6</speed>
+		<at_time>18</at_time>
+		<damages>
+			<damage type="piercing">220</damage>
+		</damages>
+	</weapon>
+	<weapon id="true_daedalus_stormbow">
+		<speed>0</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="piercing">88</damage>
+		</damages>
+	</weapon>
+	<weapon id="bow_of_sanction">
+		<speed>14</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="piercing">250</damage>
+		</damages>
+	</weapon>
+	<weapon id="celestic">
+		<speed>10</speed>
+		<at_time>60</at_time>
+		<damages>
+			<damage type="piercing">250</damage>
+		</damages>
+	</weapon>
+	<weapon id="lazer_rain">
+		<speed>2</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="piercing">160</damage>
+		</damages>
+	</weapon>
+	<weapon id="true_worlds_bow">
+		<speed>36</speed>
+		<at_time>32</at_time>
+		<damages>
+			<damage type="piercing">180</damage>
+		</damages>
+	</weapon>
+	<weapon id="chaos_abyss">
+		<speed>12</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="piercing">150</damage>
+		</damages>
+	</weapon>
+	<weapon id="accelerationism">
+		<speed>0</speed>
+		<at_time>4</at_time>
+		<damages>
+			<damage type="piercing">270</damage>
+		</damages>
+	</weapon>
+	<weapon id="resolution">
+		<speed>4</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="piercing">550</damage>
+		</damages>
+	</weapon>
+	<weapon id="pistol">
+		<speed>6</speed>
+		<at_time>30</at_time>
+		<damages>
+			<damage type="piercing">24</damage>
+		</damages>
+	</weapon>
+	<weapon id="rifle">
+		<speed>12</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="piercing">14</damage>
+		</damages>
+	</weapon>
+	<weapon id="submachine_gun">
+		<speed>0</speed>
+		<at_time>4</at_time>
+		<damages>
+			<damage type="piercing">2</damage>
+		</damages>
+	</weapon>
+	<weapon id="magma_assaulter">
+		<speed>4</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="piercing">30</damage>
+		</damages>
+	</weapon>
+	<weapon id="aerialite_pulse">
+		<speed>14</speed>
+		<at_time>30</at_time>
+		<damages>
+			<damage type="piercing">70</damage>
+		</damages>
+	</weapon>
+	<weapon id="forgotten_assaulter">
+		<speed>6</speed>
+		<at_time>14</at_time>
+		<damages>
+			<damage type="piercing">55</damage>
+		</damages>
+	</weapon>
+	<weapon id="gaze">
+		<speed>4</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="piercing">7</damage>
+		</damages>
+	</weapon>
+	<weapon id="witness">
+		<speed>8</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="piercing">35</damage>
+		</damages>
+	</weapon>
+	<weapon id="phoenix_exploder">
+		<speed>16</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="piercing">75</damage>
+		</damages>
+	</weapon>
+	<weapon id="minishark">
+		<speed>4</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="piercing">25</damage>
+		</damages>
+	</weapon>
+	<weapon id="shadow">
+		<speed>4</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="piercing">90</damage>
+		</damages>
+	</weapon>
+	<weapon id="palladium_gun">
+		<speed>2</speed>
+		<at_time>4</at_time>
+		<damages>
+			<damage type="piercing">60</damage>
+		</damages>
+	</weapon>
+	<weapon id="mithrill_gun">
+		<speed>2</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="piercing">140</damage>
+		</damages>
+	</weapon>
+	<weapon id="titanium_gun">
+		<speed>6</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="piercing">300</damage>
+		</damages>
+	</weapon>
+	<weapon id="dark_exploder">
+		<speed>12</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="piercing">200</damage>
+		</damages>
+	</weapon>
+	<weapon id="lavashark">
+		<speed>4</speed>
+		<at_time>4</at_time>
+		<damages>
+			<damage type="piercing">65</damage>
+		</damages>
+	</weapon>
+	<weapon id="demolisher">
+		<speed>4</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="piercing">80</damage>
+		</damages>
+	</weapon>
+	<weapon id="true_shadow">
+		<speed>10</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="piercing">200</damage>
+		</damages>
+	</weapon>
+	<weapon id="frozen_fire_exploder">
+		<speed>24</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="piercing">120</damage>
+		</damages>
+	</weapon>
+	<weapon id="shotgun">
+		<speed>6</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="piercing">240</damage>
+		</damages>
+	</weapon>
+	<weapon id="justice_shotgun">
+		<speed>4</speed>
+		<at_time>4</at_time>
+		<damages>
+			<damage type="piercing">140</damage>
+		</damages>
+	</weapon>
+	<weapon id="chaos_assaulter">
+		<speed>2</speed>
+		<at_time>4</at_time>
+		<damages>
+			<damage type="piercing">120</damage>
+		</damages>
+	</weapon>
+	<weapon id="chaos_annihilator">
+		<speed>6</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="piercing">240</damage>
+		</damages>
+	</weapon>
+	<weapon id="climax">
+		<speed>0</speed>
+		<at_time>0</at_time>
+		<damages>
+			<damage type="piercing">240</damage>
+		</damages>
+	</weapon>
+	<weapon id="lazer_gun">
+		<speed>2</speed>
+		<at_time>24</at_time>
+		<damages>
+			<damage type="piercing">180</damage>
+		</damages>
+	</weapon>
+	<weapon id="lazer_sniper">
+		<speed>60</speed>
+		<at_time>24</at_time>
+		<damages>
+			<damage type="piercing">350</damage>
+		</damages>
+	</weapon>
+	<weapon id="matter_disintegrator">
+		<speed>6</speed>
+		<at_time>14</at_time>
+		<damages>
+			<damage type="piercing">450</damage>
+		</damages>
+	</weapon>
+	<weapon id="rocket_launcher">
+		<speed>24</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="piercing">24</damage>
+		</damages>
+	</weapon>
+	<weapon id="rapid_rocket_launcher">
+		<speed>4</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="piercing">45</damage>
+		</damages>
+	</weapon>
+	<weapon id="rocket_launcher_v2">
+		<speed>8</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="piercing">144</damage>
+		</damages>
+	</weapon>
+	<weapon id="rapid_rocket_launcher_v2">
+		<speed>2</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="piercing">125</damage>
+		</damages>
+	</weapon>
+	<weapon id="rocket_launcher_v3">
+		<speed>6</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="piercing">648</damage>
+		</damages>
+	</weapon>
+	<weapon id="rapid_rocket_launcher_v3">
+		<speed>0</speed>
+		<at_time>4</at_time>
+		<damages>
+			<damage type="piercing">288</damage>
+		</damages>
+	</weapon>
+	<weapon id="rocket_launcher_v4">
+		<speed>6</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="piercing">1024</damage>
+		</damages>
+	</weapon>
+	<weapon id="rapid_rocket_launcher_max">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="piercing">880</damage>
+		</damages>
+	</weapon>
+	<weapon id="copper_knife">
+		<speed>10</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="piercing">9</damage>
+		</damages>
+	</weapon>
+	<weapon id="dagger">
+		<speed>2</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="piercing">12</damage>
+		</damages>
+	</weapon>
+	<weapon id="platinum_doubleknife">
+		<speed>2</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="piercing">24</damage>
+		</damages>
+	</weapon>
+	<weapon id="bloody_shortsword">
+		<speed>2</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="piercing">36</damage>
+		</damages>
+	</weapon>
+	<weapon id="obsidian_knife">
+		<speed>2</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="piercing">66</damage>
+		</damages>
+	</weapon>
+	<weapon id="twilight_shortsword">
+		<speed>2</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="piercing">66</damage>
+		</damages>
+	</weapon>
+	<weapon id="apple_knife">
+		<speed>2</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="piercing">58</damage>
+		</damages>
+	</weapon>
+	<weapon id="grenade">
+		<speed>14</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="piercing">188</damage>
+		</damages>
+	</weapon>
+	<weapon id="dawn_shortsword">
+		<speed>2</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="piercing">88</damage>
+		</damages>
+	</weapon>
+	<weapon id="night_twinsword">
+		<speed>0</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="piercing">108</damage>
+		</damages>
+	</weapon>
+	<weapon id="storm_stabber">
+		<speed>2</speed>
+		<at_time>24</at_time>
+		<damages>
+			<damage type="piercing">98</damage>
+		</damages>
+	</weapon>
+	<weapon id="jade_grenade">
+		<speed>10</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="piercing">158</damage>
+		</damages>
+	</weapon>
+	<weapon id="spiritual_knife">
+		<speed>0</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="piercing">118</damage>
+		</damages>
+	</weapon>
+	<weapon id="daedalus_knife">
+		<speed>0</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="piercing">132</damage>
+		</damages>
+	</weapon>
+	<weapon id="daedalus_twinknife">
+		<speed>0</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="piercing">100</damage>
+		</damages>
+	</weapon>
+	<weapon id="true_twinblade">
+		<speed>0</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="piercing">320</damage>
+		</damages>
+	</weapon>
+	<weapon id="chaos_chaos">
+		<speed>0</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="piercing">320</damage>
+		</damages>
+	</weapon>
+	<weapon id="time_flies">
+		<speed>0</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="piercing">200</damage>
+		</damages>
+	</weapon>
+	<weapon id="generation">
+		<speed>0</speed>
+		<at_time>18</at_time>
+		<damages>
+			<damage type="piercing">1000</damage>
+			<damage type="thinking">2000</damage>
+		</damages>
+	</weapon>
+	<weapon id="generation_ii">
+		<speed>10</speed>
+		<at_time>50</at_time>
+		<damages>
+			<damage type="piercing">5000</damage>
+		</damages>
+	</weapon>
+	<weapon id="shuriken">
+		<speed>2</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="piercing">5</damage>
+		</damages>
+	</weapon>
+	<weapon id="spikeball">
+		<speed>20</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="piercing">120</damage>
+		</damages>
+	</weapon>
+	<weapon id="glowing_splint">
+		<speed>0</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="magical">3</damage>
+		</damages>
+	</weapon>
+	<weapon id="copper_wand">
+		<speed>0</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="magical">12</damage>
+		</damages>
+	</weapon>
+	<weapon id="iron_wand">
+		<speed>0</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="magical">18</damage>
+		</damages>
+	</weapon>
+	<weapon id="sky_wand">
+		<speed>0</speed>
+		<at_time>4</at_time>
+		<damages>
+			<damage type="magical">12</damage>
+		</damages>
+	</weapon>
+	<weapon id="cactus_wand">
+		<speed>0</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="magical">4</damage>
+		</damages>
+	</weapon>
+	<weapon id="watcher_wand">
+		<speed>0</speed>
+		<at_time>4</at_time>
+		<damages>
+			<damage type="magical">12</damage>
+		</damages>
+	</weapon>
+	<weapon id="blood_watcher_wand">
+		<speed>0</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="magical">40</damage>
+		</damages>
+	</weapon>
+	<weapon id="platinum_wand">
+		<speed>0</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="magical">32</damage>
+		</damages>
+	</weapon>
+	<weapon id="mana_wand">
+		<speed>0</speed>
+		<at_time>14</at_time>
+		<damages>
+			<damage type="magical">66</damage>
+		</damages>
+	</weapon>
+	<weapon id="life_wooden_wand">
+		<speed>0</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="magical">28</damage>
+		</damages>
+	</weapon>
+	<weapon id="burning_book">
+		<speed>0</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="magical">50</damage>
+		</damages>
+	</weapon>
+	<weapon id="talent_book">
+		<speed>0</speed>
+		<at_time>4</at_time>
+		<damages>
+			<damage type="magical">25</damage>
+		</damages>
+	</weapon>
+	<weapon id="furfur">
+		<speed>2</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="magical">40</damage>
+		</damages>
+	</weapon>
+	<weapon id="dydy">
+		<speed>0</speed>
+		<at_time>4</at_time>
+		<damages>
+			<damage type="magical">80</damage>
+		</damages>
+	</weapon>
+	<weapon id="hematology">
+		<speed>0</speed>
+		<at_time>6</at_time>
+		<damages />
+	</weapon>
+	<weapon id="air_float">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages />
+	</weapon>
+	<weapon id="blood_wand">
+		<speed>0</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="magical">80</damage>
+		</damages>
+	</weapon>
+	<weapon id="fireball_magic">
+		<speed>0</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="magical">70</damage>
+		</damages>
+	</weapon>
+	<weapon id="sunfire">
+		<speed>0</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="magical">110</damage>
+		</damages>
+	</weapon>
+	<weapon id="obsidian_wand">
+		<speed>0</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="magical">70</damage>
+		</damages>
+	</weapon>
+	<weapon id="ice_shard">
+		<speed>0</speed>
+		<at_time>30</at_time>
+		<damages>
+			<damage type="magical">40</damage>
+		</damages>
+	</weapon>
+	<weapon id="nameless_fire">
+		<speed>0</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="magical">20</damage>
+		</damages>
+	</weapon>
+	<weapon id="fire_magic_sword">
+		<speed>2</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="magical">76</damage>
+		</damages>
+	</weapon>
+	<weapon id="fruit_wand">
+		<speed>2</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="magical">66</damage>
+		</damages>
+	</weapon>
+	<weapon id="rock_wand">
+		<speed>0</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="magical">88</damage>
+		</damages>
+	</weapon>
+	<weapon id="isobar">
+		<speed>0</speed>
+		<at_time>24</at_time>
+		<damages>
+			<damage type="magical">80</damage>
+		</damages>
+	</weapon>
+	<weapon id="tropical_cyclone">
+		<speed>0</speed>
+		<at_time>36</at_time>
+		<damages>
+			<damage type="magical">110</damage>
+		</damages>
+	</weapon>
+	<weapon id="tornado">
+		<speed>0</speed>
+		<at_time>36</at_time>
+		<damages />
+	</weapon>
+	<weapon id="dark_spider_lily">
+		<speed>0</speed>
+		<at_time>30</at_time>
+		<damages>
+			<damage type="magical">70</damage>
+		</damages>
+	</weapon>
+	<weapon id="midnights_wand">
+		<speed>0</speed>
+		<at_time>24</at_time>
+		<damages>
+			<damage type="magical">98</damage>
+		</damages>
+	</weapon>
+	<weapon id="spiritual_destroyer">
+		<speed>0</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="magical">108</damage>
+		</damages>
+	</weapon>
+	<weapon id="blood_sacrifice">
+		<speed>0</speed>
+		<at_time>24</at_time>
+		<damages>
+			<damage type="magical">108</damage>
+		</damages>
+	</weapon>
+	<weapon id="blade_wand">
+		<speed>0</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="magical">118</damage>
+		</damages>
+	</weapon>
+	<weapon id="evil_book">
+		<speed>0</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="magical">128</damage>
+		</damages>
+	</weapon>
+	<weapon id="water_of_disability">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="magical">88</damage>
+		</damages>
+	</weapon>
+	<weapon id="curse_book">
+		<speed>0</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="magical">144</damage>
+		</damages>
+	</weapon>
+	<weapon id="gravity_wand">
+		<speed>0</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="magical">100</damage>
+		</damages>
+	</weapon>
+	<weapon id="double_watcher_wand">
+		<speed>0</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="magical">70</damage>
+		</damages>
+	</weapon>
+	<weapon id="karmic_fire">
+		<speed>0</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="magical">10</damage>
+		</damages>
+	</weapon>
+	<weapon id="shield_wand">
+		<speed>0</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="magical">100</damage>
+		</damages>
+	</weapon>
+	<weapon id="forbidden_curse__spirit">
+		<speed>0</speed>
+		<at_time>160</at_time>
+		<damages>
+			<damage type="arcane">7</damage>
+		</damages>
+	</weapon>
+	<weapon id="forbidden_curse__evil">
+		<speed>0</speed>
+		<at_time>50</at_time>
+		<damages>
+			<damage type="arcane">2</damage>
+		</damages>
+	</weapon>
+	<weapon id="forbidden_curse__time">
+		<speed>0</speed>
+		<at_time>100</at_time>
+		<damages />
+	</weapon>
+	<weapon id="time_lily">
+		<speed>0</speed>
+		<at_time>40</at_time>
+		<damages>
+			<damage type="magical">170</damage>
+		</damages>
+	</weapon>
+	<weapon id="prism">
+		<speed>0</speed>
+		<at_time>30</at_time>
+		<damages>
+			<damage type="magical">160</damage>
+		</damages>
+	</weapon>
+	<weapon id="prism_wand">
+		<speed>0</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="magical">200</damage>
+		</damages>
+	</weapon>
+	<weapon id="light_purify">
+		<speed>0</speed>
+		<at_time>22</at_time>
+		<damages>
+			<damage type="magical">160</damage>
+		</damages>
+	</weapon>
+	<weapon id="growth">
+		<speed>0</speed>
+		<at_time>70</at_time>
+		<damages>
+			<damage type="magical">300</damage>
+		</damages>
+	</weapon>
+	<weapon id="astigmatism">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="magical">240</damage>
+		</damages>
+	</weapon>
+	<weapon id="life_wand">
+		<speed>0</speed>
+		<at_time>16</at_time>
+		<damages />
+	</weapon>
+	<weapon id="lights_bible">
+		<speed>2</speed>
+		<at_time>0</at_time>
+		<damages>
+			<damage type="magical">540</damage>
+		</damages>
+	</weapon>
+	<weapon id="energy_bible">
+		<speed>2</speed>
+		<at_time>0</at_time>
+		<damages>
+			<damage type="magical">540</damage>
+		</damages>
+	</weapon>
+	<weapon id="chaos_teleporter">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages />
+	</weapon>
+	<weapon id="chaos_killer">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="magical">3200</damage>
+		</damages>
+	</weapon>
+	<weapon id="skyfire__meteor">
+		<speed>2</speed>
+		<at_time>4</at_time>
+		<damages>
+			<damage type="magical">350</damage>
+		</damages>
+	</weapon>
+	<weapon id="azure_guard">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages />
+	</weapon>
+	<weapon id="great_forbidden_curse__fire">
+		<speed>0</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="arcane">11</damage>
+		</damages>
+	</weapon>
+	<weapon id="great_forbidden_curse__light">
+		<speed>20</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="arcane">8</damage>
+		</damages>
+	</weapon>
+	<weapon id="great_forbidden_curse__water">
+		<speed>0</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="arcane">13</damage>
+		</damages>
+	</weapon>
+	<weapon id="storm">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="magical">200</damage>
+		</damages>
+	</weapon>
+	<weapon id="earth_wall">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages />
+	</weapon>
+	<weapon id="lifebringer">
+		<speed>0</speed>
+		<at_time>20</at_time>
+		<damages />
+	</weapon>
+	<weapon id="target_dummy">
+		<speed>0</speed>
+		<at_time>20</at_time>
+		<damages />
+	</weapon>
+	<weapon id="judgement_light">
+		<speed>0</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="magical">350</damage>
+		</damages>
+	</weapon>
+	<weapon id="dark_restrict">
+		<speed>0</speed>
+		<at_time>28</at_time>
+		<damages />
+	</weapon>
+	<weapon id="death_note">
+		<speed>0</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="arcane">15</damage>
+		</damages>
+	</weapon>
+	<weapon id="great_forbidden_curse__dark">
+		<speed>0</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="arcane">7</damage>
+		</damages>
+	</weapon>
+	<weapon id="great_forbidden_curse__evil">
+		<speed>0</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="arcane">5</damage>
+		</damages>
+	</weapon>
+	<weapon id="stop">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages />
+	</weapon>
+	<weapon id="sun_pearl">
+		<speed>0</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="magical">360</damage>
+		</damages>
+	</weapon>
+	<weapon id="falling_action">
+		<speed>2</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="magical">400</damage>
+			<damage type="thinking">400</damage>
+		</damages>
+	</weapon>
+	<weapon id="rising_action">
+		<speed>0</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="magical">400</damage>
+			<damage type="thinking">800</damage>
+		</damages>
+	</weapon>
+	<weapon id="relevation_of_cycles">
+		<speed>2</speed>
+		<at_time>4</at_time>
+		<damages>
+			<damage type="magical">100</damage>
+			<damage type="thinking">500</damage>
+		</damages>
+	</weapon>
+	<weapon id="primal__winds_wand">
+		<speed>2</speed>
+		<at_time>0</at_time>
+		<damages>
+			<damage type="magical">540</damage>
+		</damages>
+	</weapon>
+	<weapon id="_circulates_domain">
+		<speed>0</speed>
+		<at_time>38</at_time>
+		<damages />
+	</weapon>
+	<weapon id="_wd_circulate_clockwise">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages />
+	</weapon>
+	<weapon id="_wd_circulate_anticlockwise">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages />
+	</weapon>
+	<weapon id="_wd_circulate_attract">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages />
+	</weapon>
+	<weapon id="_wd_circulate_repel">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages />
+	</weapon>
+	<weapon id="_wd_strong_wind">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="arcane">3</damage>
+		</damages>
+	</weapon>
+	<weapon id="_wd_extinct">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="arcane">2</damage>
+		</damages>
+	</weapon>
+	<weapon id="primal__life_wand">
+		<speed>2</speed>
+		<at_time>0</at_time>
+		<damages>
+			<damage type="magical">540</damage>
+		</damages>
+	</weapon>
+	<weapon id="_life_domain">
+		<speed>0</speed>
+		<at_time>38</at_time>
+		<damages />
+	</weapon>
+	<weapon id="_ld_summon_tree">
+		<speed>0</speed>
+		<at_time>4</at_time>
+		<damages />
+	</weapon>
+	<weapon id="_ld_summon_cactus">
+		<speed>0</speed>
+		<at_time>4</at_time>
+		<damages />
+	</weapon>
+	<weapon id="_ld_summon_coniferous_tree">
+		<speed>0</speed>
+		<at_time>4</at_time>
+		<damages />
+	</weapon>
+	<weapon id="_ld_summon_huge_tree">
+		<speed>0</speed>
+		<at_time>4</at_time>
+		<damages />
+	</weapon>
+	<weapon id="_ld_summon_tree_monster">
+		<speed>0</speed>
+		<at_time>4</at_time>
+		<damages />
+	</weapon>
+	<weapon id="_ld_summon_bloodflower">
+		<speed>0</speed>
+		<at_time>4</at_time>
+		<damages />
+	</weapon>
+	<weapon id="_ld_summon_soulflower">
+		<speed>0</speed>
+		<at_time>4</at_time>
+		<damages />
+	</weapon>
+	<weapon id="_ld_heal">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages />
+	</weapon>
+	<weapon id="gold_fine">
+		<speed>0</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="octave">388</damage>
+		</damages>
+	</weapon>
+	<weapon id="ancient_flute">
+		<speed>0</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="octave">108</damage>
+		</damages>
+	</weapon>
+	<weapon id="storm_harp">
+		<speed>0</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="octave">78</damage>
+		</damages>
+	</weapon>
+	<weapon id="snare">
+		<speed>0</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="octave">256</damage>
+		</damages>
+	</weapon>
+	<weapon id="watcher_bell">
+		<speed>0</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="octave">72</damage>
+		</damages>
+	</weapon>
+	<weapon id="apple_smells_good">
+		<speed>0</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="octave">188</damage>
+		</damages>
+	</weapon>
+	<weapon id="holy_stormer">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="octave">256</damage>
+		</damages>
+	</weapon>
+	<weapon id="wither_oboe">
+		<speed>0</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="octave">325</damage>
+		</damages>
+	</weapon>
+	<weapon id="dragon_flute">
+		<speed>0</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="octave">488</damage>
+		</damages>
+	</weapon>
+	<weapon id="the_song_of_ice_and_fire">
+		<speed>0</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="octave">488</damage>
+		</damages>
+	</weapon>
+	<weapon id="dance_of_fire">
+		<speed>0</speed>
+		<at_time>4</at_time>
+		<damages>
+			<damage type="octave">488</damage>
+		</damages>
+	</weapon>
+	<weapon id="dance_of_frost">
+		<speed>0</speed>
+		<at_time>4</at_time>
+		<damages>
+			<damage type="octave">488</damage>
+		</damages>
+	</weapon>
+	<weapon id="dance_of_shadow">
+		<speed>0</speed>
+		<at_time>4</at_time>
+		<damages>
+			<damage type="octave">488</damage>
+		</damages>
+	</weapon>
+	<weapon id="dance_of_shine">
+		<speed>0</speed>
+		<at_time>4</at_time>
+		<damages>
+			<damage type="octave">488</damage>
+		</damages>
+	</weapon>
+	<weapon id="the_godfall_poem">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="octave">888</damage>
+		</damages>
+	</weapon>
+	<weapon id="saint_healer">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages />
+	</weapon>
+	<weapon id="holy_shine">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="hallow">128</damage>
+		</damages>
+	</weapon>
+	<weapon id="the_gods_penalty">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="hallow">68</damage>
+		</damages>
+	</weapon>
+	<weapon id="great_heal">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages />
+	</weapon>
+	<weapon id="the_prayer">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages />
+	</weapon>
+	<weapon id="the_true_gods_penalty">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="hallow">88</damage>
+		</damages>
+	</weapon>
+	<weapon id="holy_light">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="hallow">128</damage>
+		</damages>
+	</weapon>
+	<weapon id="mystery_watch">
+		<speed>16</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="pacify">188</damage>
+		</damages>
+	</weapon>
+	<weapon id="hand_of_pacify">
+		<speed>30</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="pacify">255</damage>
+		</damages>
+	</weapon>
+	<weapon id="sleep_splint">
+		<speed>8</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="pacify">180</damage>
+		</damages>
+	</weapon>
+	<weapon id="sleep_eye">
+		<speed>4</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="pacify">180</damage>
+		</damages>
+	</weapon>
+	<weapon id="good_dream">
+		<speed>10</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="pacify">440</damage>
+		</damages>
+	</weapon>
+	<weapon id="nightmare">
+		<speed>16</speed>
+		<at_time>24</at_time>
+		<damages>
+			<damage type="pacify">640</damage>
+		</damages>
+	</weapon>
+	<weapon id="wooden_pickaxe">
+		<speed>10</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="mine power">1</damage>
+		</damages>
+	</weapon>
+	<weapon id="copper_pickaxe">
+		<speed>10</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="mine power">3</damage>
+		</damages>
+	</weapon>
+	<weapon id="heavy_pickaxe">
+		<speed>10</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="mine power">6</damage>
+		</damages>
+	</weapon>
+	<weapon id="platinum_pickaxe">
+		<speed>10</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="mine power">12</damage>
+		</damages>
+	</weapon>
+	<weapon id="bloody_pickaxe">
+		<speed>10</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="mine power">22</damage>
+		</damages>
+	</weapon>
+	<weapon id="firite_pickaxe">
+		<speed>10</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="mine power">36</damage>
+		</damages>
+	</weapon>
+	<weapon id="mystery_pickaxe">
+		<speed>10</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="mine power">48</damage>
+		</damages>
+	</weapon>
+	<weapon id="spiritual_pickaxe">
+		<speed>10</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="mine power">66</damage>
+		</damages>
+	</weapon>
+	<weapon id="evil_pickaxe">
+		<speed>10</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="mine power">88</damage>
+		</damages>
+	</weapon>
+	<weapon id="tough_pickaxe">
+		<speed>10</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="mine power">114</damage>
+		</damages>
+	</weapon>
+	<weapon id="true_pickaxe">
+		<speed>10</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="mine power">144</damage>
+		</damages>
+	</weapon>
+	<weapon id="light_pickaxe">
+		<speed>10</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="mine power">256</damage>
+		</damages>
+	</weapon>
+	<weapon id="destruct_thoughts">
+		<speed>10</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="thinking">5999</damage>
+			<damage type="mine power">999</damage>
+		</damages>
+	</weapon>
+	<weapon id="ballet_shoes">
+		<speed>0</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="magical">120</damage>
+		</damages>
+	</weapon>
+	<weapon id="tough_gloves">
+		<speed>6</speed>
+		<at_time>24</at_time>
+		<damages>
+			<damage type="piercing">180</damage>
+		</damages>
+	</weapon>
+	<weapon id="burnt_pan">
+		<speed>4</speed>
+		<at_time>24</at_time>
+		<damages>
+			<damage type="physical">150</damage>
+		</damages>
+	</weapon>
+	<weapon id="toy_knife">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="magical">160</damage>
+		</damages>
+	</weapon>
+	<weapon id="worn_notebook">
+		<speed>2</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="physical">190</damage>
+		</damages>
+	</weapon>
+	<weapon id="empty_gun">
+		<speed>2</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="piercing">200</damage>
+		</damages>
+	</weapon>
+	<weapon id="dragon_swift_sword">
+		<speed>2</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="physical">1280</damage>
+		</damages>
+	</weapon>
+	<weapon id="dragon_bow">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="piercing">800</damage>
+		</damages>
+	</weapon>
+	<weapon id="fire_quench__dragon_sword">
+		<speed>2</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="physical">1280</damage>
+		</damages>
+	</weapon>
+	<weapon id="ice_quench__dragon_sword">
+		<speed>2</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="physical">1280</damage>
+		</damages>
+	</weapon>
+	<weapon id="dark_quench__dragon_sword">
+		<speed>2</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="physical">1280</damage>
+		</damages>
+	</weapon>
+	<weapon id="light_quench__dragon_sword">
+		<speed>2</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="physical">1280</damage>
+		</damages>
+	</weapon>
+	<weapon id="the_ruling_sword">
+		<speed>2</speed>
+		<at_time>18</at_time>
+		<damages>
+			<damage type="physical">2500</damage>
+		</damages>
+	</weapon>
+	<weapon id="fire_quench__dragon_bow">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="piercing">800</damage>
+		</damages>
+	</weapon>
+	<weapon id="ice_quench__dragon_bow">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="piercing">800</damage>
+		</damages>
+	</weapon>
+	<weapon id="dark_quench__dragon_bow">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="piercing">800</damage>
+		</damages>
+	</weapon>
+	<weapon id="light_quench__dragon_bow">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="piercing">800</damage>
+		</damages>
+	</weapon>
+	<weapon id="the_fairy_bow">
+		<speed>2</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="piercing">400</damage>
+		</damages>
+	</weapon>
+	<weapon id="fire_dragon_breath_wand">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="magical">600</damage>
+		</damages>
+	</weapon>
+	<weapon id="ice_dragon_breath_wand">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="magical">600</damage>
+		</damages>
+	</weapon>
+	<weapon id="dark_dragon_breath_wand">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="magical">600</damage>
+		</damages>
+	</weapon>
+	<weapon id="light_dragon_breath_wand">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="magical">600</damage>
+		</damages>
+	</weapon>
+	<weapon id="the_magisters_wand">
+		<speed>0</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="magical">800</damage>
+		</damages>
+	</weapon>
+	<weapon id="murders_knife">
+		<speed>0</speed>
+		<at_time>24</at_time>
+		<damages />
+	</weapon>
+	<weapon id="savior">
+		<speed>0</speed>
+		<at_time>10</at_time>
+		<damages />
+	</weapon>
+	<weapon id="e_wooden_sword">
+		<speed>6</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="physical">55</damage>
+		</damages>
+	</weapon>
+	<weapon id="feather_sword">
+		<speed>0</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="physical">40</damage>
+		</damages>
+	</weapon>
+	<weapon id="lychee_sword">
+		<speed>2</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="physical">90</damage>
+		</damages>
+	</weapon>
+	<weapon id="lychee_pike">
+		<speed>6</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="physical">110</damage>
+		</damages>
+	</weapon>
+	<weapon id="hidden_sword">
+		<speed>14</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="physical">380</damage>
+		</damages>
+	</weapon>
+	<weapon id="heaven_trident">
+		<speed>4</speed>
+		<at_time>24</at_time>
+		<damages>
+			<damage type="physical">220</damage>
+		</damages>
+	</weapon>
+	<weapon id="corrupt_sword">
+		<speed>2</speed>
+		<at_time>14</at_time>
+		<damages>
+			<damage type="physical">160</damage>
+		</damages>
+	</weapon>
+	<weapon id="arc_spear">
+		<speed>4</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="physical">180</damage>
+		</damages>
+	</weapon>
+	<weapon id="iceberg">
+		<speed>4</speed>
+		<at_time>14</at_time>
+		<damages>
+			<damage type="physical">140</damage>
+		</damages>
+	</weapon>
+	<weapon id="gauss_dagger">
+		<speed>2</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="physical">120</damage>
+		</damages>
+	</weapon>
+	<weapon id="soulid_dagger">
+		<speed>6</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="physical">500</damage>
+		</damages>
+	</weapon>
+	<weapon id="scar_dagger">
+		<speed>2</speed>
+		<at_time>4</at_time>
+		<damages>
+			<damage type="physical">55</damage>
+		</damages>
+	</weapon>
+	<weapon id="chaos_dagger">
+		<speed>4</speed>
+		<at_time>4</at_time>
+		<damages>
+			<damage type="physical">2000</damage>
+		</damages>
+	</weapon>
+	<weapon id="hightech_steel_sword">
+		<speed>2</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="physical">450</damage>
+		</damages>
+	</weapon>
+	<weapon id="clear_icy_prism">
+		<speed>4</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="physical">360</damage>
+		</damages>
+	</weapon>
+	<weapon id="turbid_icy_prism">
+		<speed>2</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="physical">240</damage>
+		</damages>
+	</weapon>
+	<weapon id="wheel_frogile_sword">
+		<speed>2</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="physical">180</damage>
+		</damages>
+	</weapon>
+	<weapon id="purple_clay_broad_blade">
+		<speed>2</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="physical">110</damage>
+		</damages>
+	</weapon>
+	<weapon id="starnight_broadsword">
+		<speed>2</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="physical">200</damage>
+		</damages>
+	</weapon>
+	<weapon id="wingblade">
+		<speed>2</speed>
+		<at_time>24</at_time>
+		<damages>
+			<damage type="physical">500</damage>
+		</damages>
+	</weapon>
+	<weapon id="poise_blade">
+		<speed>8</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="physical">150</damage>
+		</damages>
+	</weapon>
+	<weapon id="mystery_sword">
+		<speed>0</speed>
+		<at_time>14</at_time>
+		<damages>
+			<damage type="physical">190</damage>
+		</damages>
+	</weapon>
+	<weapon id="mystery_spear">
+		<speed>0</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="physical">100</damage>
+		</damages>
+	</weapon>
+	<weapon id="mystery_swiftsword">
+		<speed>2</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="physical">60</damage>
+		</damages>
+	</weapon>
+	<weapon id="e_muramasa">
+		<speed>2</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="physical">360</damage>
+		</damages>
+	</weapon>
+	<weapon id="celestial_piercer">
+		<speed>6</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="physical">400</damage>
+		</damages>
+	</weapon>
+	<weapon id="substance_rend_sword">
+		<speed>2</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="physical">1000</damage>
+		</damages>
+	</weapon>
+	<weapon id="proof">
+		<speed>16</speed>
+		<at_time>4</at_time>
+		<damages>
+			<damage type="physical">60</damage>
+		</damages>
+	</weapon>
+	<weapon id="observe">
+		<speed>2</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="physical">70</damage>
+		</damages>
+	</weapon>
+	<weapon id="intestinal_sword">
+		<speed>2</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="physical">120</damage>
+		</damages>
+	</weapon>
+	<weapon id="critical_thinking">
+		<speed>2</speed>
+		<at_time>30</at_time>
+		<damages>
+			<damage type="physical">340</damage>
+		</damages>
+	</weapon>
+	<weapon id="primordial_monument">
+		<speed>4</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="physical">260</damage>
+		</damages>
+	</weapon>
+	<weapon id="ender_monument">
+		<speed>4</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="physical">390</damage>
+		</damages>
+	</weapon>
+	<weapon id="longer_intestine">
+		<speed>20</speed>
+		<at_time>60</at_time>
+		<damages>
+			<damage type="physical">480</damage>
+		</damages>
+	</weapon>
+	<weapon id="e_whip">
+		<speed>4</speed>
+		<at_time>40</at_time>
+		<damages>
+			<damage type="physical">400</damage>
+		</damages>
+	</weapon>
+	<weapon id="destroy">
+		<speed>30</speed>
+		<at_time>50</at_time>
+		<damages>
+			<damage type="physical">120</damage>
+		</damages>
+	</weapon>
+	<weapon id="generate">
+		<speed>10</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="physical">40</damage>
+		</damages>
+	</weapon>
+	<weapon id="ancient_swiftsword">
+		<speed>4</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="physical">110</damage>
+		</damages>
+	</weapon>
+	<weapon id="feather_feather_sword">
+		<speed>4</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="physical">100</damage>
+		</damages>
+	</weapon>
+	<weapon id="confuse">
+		<speed>4</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="physical">55</damage>
+		</damages>
+	</weapon>
+	<weapon id="e_wooden_bow">
+		<speed>4</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="piercing">45</damage>
+		</damages>
+	</weapon>
+	<weapon id="hand_of_social">
+		<speed>10</speed>
+		<at_time>60</at_time>
+		<damages>
+			<damage type="piercing">240</damage>
+		</damages>
+	</weapon>
+	<weapon id="crossbow">
+		<speed>16</speed>
+		<at_time>30</at_time>
+		<damages>
+			<damage type="piercing">70</damage>
+		</damages>
+	</weapon>
+	<weapon id="lychee_bow">
+		<speed>6</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="piercing">60</damage>
+		</damages>
+	</weapon>
+	<weapon id="mechanic_crossbow">
+		<speed>6</speed>
+		<at_time>44</at_time>
+		<damages>
+			<damage type="piercing">110</damage>
+		</damages>
+	</weapon>
+	<weapon id="pollutant">
+		<speed>6</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="piercing">180</damage>
+		</damages>
+	</weapon>
+	<weapon id="em_trackgun">
+		<speed>16</speed>
+		<at_time>36</at_time>
+		<damages>
+			<damage type="piercing">20</damage>
+		</damages>
+	</weapon>
+	<weapon id="storm_weaver">
+		<speed>6</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="piercing">90</damage>
+		</damages>
+	</weapon>
+	<weapon id="ion_beam">
+		<speed>20</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="piercing">160</damage>
+		</damages>
+	</weapon>
+	<weapon id="fusion_pulser">
+		<speed>12</speed>
+		<at_time>18</at_time>
+		<damages>
+			<damage type="piercing">400</damage>
+		</damages>
+	</weapon>
+	<weapon id="soubow">
+		<speed>14</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="piercing">80</damage>
+		</damages>
+	</weapon>
+	<weapon id="bloody_rain">
+		<speed>6</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="piercing">550</damage>
+		</damages>
+	</weapon>
+	<weapon id="ceremony">
+		<speed>4</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="piercing">220</damage>
+		</damages>
+	</weapon>
+	<weapon id="skyfire">
+		<speed>2</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="piercing">300</damage>
+		</damages>
+	</weapon>
+	<weapon id="e_pistol">
+		<speed>18</speed>
+		<at_time>18</at_time>
+		<damages>
+			<damage type="piercing">300</damage>
+		</damages>
+	</weapon>
+	<weapon id="sniper">
+		<speed>16</speed>
+		<at_time>60</at_time>
+		<damages>
+			<damage type="piercing">650</damage>
+		</damages>
+	</weapon>
+	<weapon id="heaven_shotgun">
+		<speed>6</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="piercing">110</damage>
+		</damages>
+	</weapon>
+	<weapon id="purple_clay_kuangkuang">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="piercing">18</damage>
+		</damages>
+	</weapon>
+	<weapon id="lychee_twinblade">
+		<speed>2</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="piercing">150</damage>
+		</damages>
+	</weapon>
+	<weapon id="earths_twinblade">
+		<speed>2</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="piercing">350</damage>
+		</damages>
+	</weapon>
+	<weapon id="poise_bow">
+		<speed>2</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="piercing">80</damage>
+		</damages>
+	</weapon>
+	<weapon id="poise_submachine_gun">
+		<speed>2</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="piercing">25</damage>
+		</damages>
+	</weapon>
+	<weapon id="hate">
+		<speed>16</speed>
+		<at_time>30</at_time>
+		<damages>
+			<damage type="piercing">70</damage>
+		</damages>
+	</weapon>
+	<weapon id="triumph">
+		<speed>6</speed>
+		<at_time>90</at_time>
+		<damages>
+			<damage type="piercing">250</damage>
+		</damages>
+	</weapon>
+	<weapon id="supernova">
+		<speed>40</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="piercing">90</damage>
+		</damages>
+	</weapon>
+	<weapon id="plasma_launcher">
+		<speed>4</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="piercing">140</damage>
+		</damages>
+	</weapon>
+	<weapon id="gandiva">
+		<speed>12</speed>
+		<at_time>4</at_time>
+		<damages>
+			<damage type="piercing">125</damage>
+		</damages>
+	</weapon>
+	<weapon id="ullr_bow">
+		<speed>6</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="piercing">720</damage>
+		</damages>
+	</weapon>
+	<weapon id="gravity_slingshot">
+		<speed>30</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="piercing">1200</damage>
+		</damages>
+	</weapon>
+	<weapon id="gemini">
+		<speed>36</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="piercing">240</damage>
+		</damages>
+	</weapon>
+	<weapon id="dark_cannon">
+		<speed>24</speed>
+		<at_time>30</at_time>
+		<damages>
+			<damage type="piercing">350</damage>
+		</damages>
+	</weapon>
+	<weapon id="eden">
+		<speed>240</speed>
+		<at_time>60</at_time>
+		<damages>
+			<damage type="piercing">6500</damage>
+		</damages>
+	</weapon>
+	<weapon id="wierswin">
+		<speed>30</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="piercing">550</damage>
+		</damages>
+	</weapon>
+	<weapon id="e_wooden_wand">
+		<speed>0</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="magical">40</damage>
+		</damages>
+	</weapon>
+	<weapon id="lychee_wand">
+		<speed>0</speed>
+		<at_time>18</at_time>
+		<damages>
+			<damage type="magical">42</damage>
+		</damages>
+	</weapon>
+	<weapon id="lychee_spike">
+		<speed>0</speed>
+		<at_time>50</at_time>
+		<damages>
+			<damage type="magical">550</damage>
+		</damages>
+	</weapon>
+	<weapon id="brainstorm">
+		<speed>0</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="magical">280</damage>
+		</damages>
+	</weapon>
+	<weapon id="poison_needle">
+		<speed>0</speed>
+		<at_time>6</at_time>
+		<damages>
+			<damage type="magical">180</damage>
+		</damages>
+	</weapon>
+	<weapon id="starry_night">
+		<speed>0</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="magical">900</damage>
+		</damages>
+	</weapon>
+	<weapon id="wingknock">
+		<speed>0</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="magical">1800</damage>
+		</damages>
+	</weapon>
+	<weapon id="nightmare_gaze">
+		<speed>0</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="magical">3000</damage>
+		</damages>
+	</weapon>
+	<weapon id="organ_wand">
+		<speed>0</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="magical">900</damage>
+		</damages>
+	</weapon>
+	<weapon id="nyxs_dim_star_wand">
+		<speed>0</speed>
+		<at_time>18</at_time>
+		<damages>
+			<damage type="magical">1000</damage>
+		</damages>
+	</weapon>
+	<weapon id="merlins_wand">
+		<speed>0</speed>
+		<at_time>32</at_time>
+		<damages>
+			<damage type="magical">650</damage>
+		</damages>
+	</weapon>
+	<weapon id="merlins_great_wand">
+		<speed>2</speed>
+		<at_time>0</at_time>
+		<damages>
+			<damage type="magical">540</damage>
+		</damages>
+	</weapon>
+	<weapon id="wooden_flute">
+		<speed>0</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="octave">90</damage>
+		</damages>
+	</weapon>
+	<weapon id="the_roving_chord">
+		<speed>0</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="octave">60</damage>
+		</damages>
+	</weapon>
+	<weapon id="talent_fruit">
+		<speed>0</speed>
+		<at_time>100</at_time>
+		<damages />
+	</weapon>
+	<weapon id="holy_condense_wand">
+		<speed>0</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="hallow">120</damage>
+		</damages>
+	</weapon>
+	<weapon id="lost__growth_eater">
+		<speed>4</speed>
+		<at_time>14</at_time>
+		<damages>
+			<damage type="physical">130</damage>
+		</damages>
+	</weapon>
+	<weapon id="lost__star_broadsword">
+		<speed>2</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="physical">280</damage>
+		</damages>
+	</weapon>
+	<weapon id="e_galaxy_broadsword">
+		<speed>2</speed>
+		<at_time>10</at_time>
+		<damages>
+			<damage type="physical">2500</damage>
+		</damages>
+	</weapon>
+	<weapon id="abyss_ranseur">
+		<speed>4</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="physical">400</damage>
+		</damages>
+	</weapon>
+	<weapon id="abyss_gaze">
+		<speed>4</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="piercing">220</damage>
+		</damages>
+	</weapon>
+	<weapon id="abyss_fury">
+		<speed>0</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="magical">170</damage>
+		</damages>
+	</weapon>
+	<weapon id="miracle_crystal_blade">
+		<speed>2</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="physical">220</damage>
+		</damages>
+	</weapon>
+	<weapon id="murakumo">
+		<speed>6</speed>
+		<at_time>30</at_time>
+		<damages>
+			<damage type="physical">470</damage>
+		</damages>
+	</weapon>
+	<weapon id="longinus">
+		<speed>16</speed>
+		<at_time>36</at_time>
+		<damages>
+			<damage type="physical">320</damage>
+		</damages>
+	</weapon>
+	<weapon id="xuanyuan">
+		<speed>200</speed>
+		<at_time>24</at_time>
+		<damages>
+			<damage type="physical">1800</damage>
+		</damages>
+	</weapon>
+	<weapon id="durendal">
+		<speed>6</speed>
+		<at_time>30</at_time>
+		<damages>
+			<damage type="physical">0</damage>
+		</damages>
+	</weapon>
+	<weapon id="bident">
+		<speed>4</speed>
+		<at_time>16</at_time>
+		<damages>
+			<damage type="physical">555</damage>
+		</damages>
+	</weapon>
+	<weapon id="hell">
+		<speed>4</speed>
+		<at_time>8</at_time>
+		<damages>
+			<damage type="physical">666</damage>
+		</damages>
+	</weapon>
+	<weapon id="wvector">
+		<speed>0</speed>
+		<at_time>2</at_time>
+		<damages>
+			<damage type="physical">0</damage>
+		</damages>
+	</weapon>
+	<weapon id="entrophic_broadsword">
+		<speed>12</speed>
+		<at_time>24</at_time>
+		<damages>
+			<damage type="physical">1200</damage>
+		</damages>
+	</weapon>
+	<weapon id="hope_scorch_bow">
+		<speed>6</speed>
+		<at_time>12</at_time>
+		<damages>
+			<damage type="piercing">300</damage>
+		</damages>
+	</weapon>
+	<weapon id="insights">
+		<speed>6</speed>
+		<at_time>20</at_time>
+		<damages>
+			<damage type="physical">320</damage>
+		</damages>
+	</weapon>
+	<weapon id="pierce">
+		<speed>4</speed>
+		<at_time>4</at_time>
+		<damages>
+			<damage type="piercing">140</damage>
+		</damages>
+	</weapon>
+	<weapon id="mystery">
+		<speed>0</speed>
+		<at_time>50</at_time>
+		<damages>
+			<damage type="magical">250</damage>
+		</damages>
+	</weapon>
+<weapon id="cosmic"><speed>2</speed><at_time>12</at_time><damages><damage type="physical">350</damage></damages></weapon><weapon id="cosmos"><speed>2</speed><at_time>12</at_time><damages><damage type="physical">350</damage></damages></weapon></weapons>

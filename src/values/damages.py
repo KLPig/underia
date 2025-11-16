@@ -15,6 +15,7 @@ class DamageTypes:
     HALLOW: int = 0
     PACIFY: int = 0
 
+
 for element in dir(elements.ElementTypes):
     if not element.startswith('__'):
         setattr(DamageTypes, 'ELEMENT_' + elements.NAMES[getattr(elements.ElementTypes, element)].upper(), 0)
@@ -31,3 +32,10 @@ NAMES = {}
 
 for i in range(len(dirs)):
     NAMES[getattr(DamageTypes, dirs[i])] = dirs[i].lower().replace('_', '')
+
+
+DamageKeys = {}
+
+for k in dir(DamageTypes):
+    if not k.startswith('__'):
+        DamageKeys[getattr(DamageTypes, k)] = k.lower().replace('_', ' ')
