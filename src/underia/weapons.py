@@ -951,6 +951,98 @@ class ChaosReap(Blade):
         self.scale = 2
         self.tr = 0
 
+class AbyssSever(Blade):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.adr = 0
+        self.n_d = self.img
+        self.at_t = 0
+        self.r_des = []
+        self.mr = 0
+
+
+    def on_special_attack(self, strike: int):
+        if strike > 80:
+            self.at_t = 0
+            if self.at_t == 0:
+                self.set_rotation(vector.coordinate_rotation(*(-game.get_game().player.obj.pos + position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))))
+                self.mr = self.rot
+                for target in self.r_des:
+                    for r in target.hp_sys.resistances:
+                        target.hp_sys.resistances[r] *= .5
+                self.r_des = []
+
+    def on_start_attack(self):
+        super().on_start_attack()
+        self.at_t = (self.at_t + 1) % 7
+        if self.at_t == 0:
+            self.set_rotation(vector.coordinate_rotation(*(-game.get_game().player.obj.pos + position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))))
+            self.mr = self.rot
+            for target in self.r_des:
+                for r in target.hp_sys.resistances:
+                    target.hp_sys.resistances[r] *= .5
+            self.r_des = []
+
+    def on_end_attack(self):
+        super().on_end_attack()
+
+    def on_attack(self):
+        if self.at_t:
+            super().on_attack()
+            self.adr = -int(math.sin(self.timer / self.at_time * math.pi) * 15)
+        else:
+            self.forward(5)
+            self.adr = -int(math.sin(self.timer / self.at_time * math.pi) * 45)
+            self.damage()
+
+    def draw(self):
+        super().draw()
+        imr = self.n_d.get_rect(center=position.displayed_position(
+            (self.x + game.get_game().player.obj.pos[0], self.y + game.get_game().player.obj.pos[1])))
+        game.get_game().displayer.canvas.blit(self.n_d, imr)
+
+    def on_damage(self, target):
+        super().on_damage(target)
+        if self.at_t == 0:
+
+            target.hp_sys.effect(effects.Frozen([.1, .15, .2, .23, .25][min(4, game.get_game().stage)] * 7, 1))
+        if target not in self.r_des and self.at_t == 0:
+            self.r_des.append(target)
+            for r in target.hp_sys.resistances:
+                target.hp_sys.resistances[r] *= 2
+
+    def set_rotation(self, angle: int):
+        self.img = pg.transform.rotate(pg.transform.scale_by(game.get_game().graphics[self.img_index.replace('items_weapons_', 'items_') + '_l'],
+                                                             self.scale ** .5 / game.get_game().player.get_screen_scale()), -45 + self.adr)
+        self.n_d = pg.Surface((2 * self.img.get_width(), self.img.get_height()), pg.SRCALPHA)
+        self.n_d.blit(self.img, (self.img.get_width(), 0))
+        self.n_d = pg.transform.rotate(self.n_d, 90 - angle)
+
+        self.img = pg.transform.rotate(pg.transform.scale_by(game.get_game().graphics[self.img_index.replace('items_weapons_', 'items_') + '_r'],
+                                                             self.scale ** .5 / game.get_game().player.get_screen_scale()), -45)
+
+        self.d_img = pg.Surface((2 * self.img.get_width(), self.img.get_height()), pg.SRCALPHA)
+        self.d_img.blit(self.img, (self.img.get_width(), 0))
+        self.d_img = pg.transform.rotate(self.d_img, 90 - angle)
+
+        self.rot = angle
+
+    def on_idle(self):
+        super().on_idle()
+        self.x //= 2
+        self.y //= 2
+
+    def update(self):
+        super().update()
+        if self.at_t:
+            self.sk_mcd = 6
+            self.sk_cd = self.at_t
+        else:
+            self.sk_cd = max(0, self.timer)
+            self.sk_mcd = self.at_time
+        self.damages[dmg.DamageTypes.PHYSICAL] = [50, 90, 140, 300, 1500][min(4, game.get_game().stage)] * (.5 + 2 * bool(self.at_t))
+        self.set_rotation(self.rot)
+
 class MagicBlade(Blade):
     def on_start_attack(self):
         r = self.rot_speed // abs(self.rot_speed)
@@ -3978,7 +4070,7 @@ class ChaosAnnihilator(Gun):
         if self.d_count >= 100:
             self.sk_cd = 100
             self.timer = 100
-            self.set_rotation(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())) - game.get_game().player.obj.pos)
+            self.set_rotation(-game.get_game().player.obj.pos + position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())) )
             self.ppjs = projectiles.Projectiles.BChaosAnnihilator(game.get_game().player.obj.pos + (self.x, self.y), self.rot)
             self.display = True
         else:
@@ -4227,6 +4319,12 @@ def set_weapons():
         'arrow_thrower': Bow('arrow thrower', {dmg.DamageTypes.PIERCING: 3}, 0.3,
                              'items_weapons_arrow_thrower', 1,
                              4, 100, auto_fire=True),
+
+        'chaos_reap': ChaosReap('chaos reap', {dmg.DamageTypes.PHYSICAL: 0}, 3,
+                                'items_weapons_chaos_reap', 7, 11, 30, 180),
+        'abyss_sever': AbyssSever('abyss sever', {dmg.DamageTypes.PHYSICAL: 0}, 3,
+                                 'items_weapons_abyss_sever', 3, 15, 20, 200),
+
         'wooden_sword': SweepWeapon('wooden sword', {dmg.DamageTypes.PHYSICAL: 8}, 0.1,
                                     'items_weapons_wooden_sword', 5,
                                     5, 18, 45),
@@ -4303,8 +4401,6 @@ def set_weapons():
         'nights_edge': NightsEdge('nights edge', {dmg.DamageTypes.PHYSICAL: 90}, 0.6,
                                   'items_weapons_nights_edge',
                                   1, 18, 20, 100),
-        'chaos_reap': ChaosReap('chaos reap', {dmg.DamageTypes.PHYSICAL: 0}, 3,
-                                 'items_weapons_chaos_reap', 7, 11, 30, 180),
         'storm_swift_sword': SwiftSword('storm swift sword', {dmg.DamageTypes.PHYSICAL: 70}, 0.8,
                                                'items_weapons_storm_swift_sword',
                                                0, 3, 100, 180, auto_fire=True),

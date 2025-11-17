@@ -62,9 +62,9 @@ Overall, **Underia** is a very good game(wordless).
 ## 1.5.0b
 > Changelogs:
 > 
-> [ [weapons2](https://img.shields.io/badge/underia-weapon2-cyan) ](https://raw.githubusercontent.com/KLPig/underia/master/src/changelog/weapons2.html)
+> [![weapons2](https://img.shields.io/badge/underia-weapon2-cyan) ](https://raw.githubusercontent.com/KLPig/underia/master/src/changelog/weapons2.html)
 > 
-> [ [weapons3](https://img.shields.io/badge/underia-weapon3-cyan) ](https://raw.githubusercontent.com/KLPig/underia/master/src/changelog/weapons3.html)
+> [![weapons3](https://img.shields.io/badge/underia-weapon3-cyan) ](https://raw.githubusercontent.com/KLPig/underia/master/src/changelog/weapons3.html)
 
 ## The End
 > *I didn't just copy it from README*

@@ -571,6 +571,13 @@ items_dict: dict[str, Inventory.Item] = {
                                                                                          TAGS['arcane_weapon'], TAGS['magic_lv_primal_magic'], TAGS['magic_element_time']]),
     'destroy_shard': Inventory.Item('Destroy Shard', 'The crush and demolish in the world.', 'destroy_shard', 13, [TAGS['item']]),
 
+    'chaos_reap': Inventory.Item('Chaos Reap',
+                                 'rainbowDamage and size increases within progress.\nrainbowChaoticly sacrifice enemies in freeze, wither and bleeding.\nrainbowStrike to throw it.',
+                                 'chaos_reap', 12,
+                                 [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
+    'abyss_sever': Inventory.Item('Abyss Sever', 'rainbowDamage increases within progress.\nrainbowEach 7 hit or strike will "cut" off enemies.\nrainbow"Cutting" enemies will freeze them and they will receive double damage.', 'abyss_sever', 12,
+                                  [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
+
     'wooden_pickaxe': Inventory.Item('Wooden Pickaxe', 'Able to mine a few ore.', 'wooden_pickaxe', 1, [TAGS['item'], TAGS['weapon'], TAGS['pickaxe']]),
     'copper_pickaxe': Inventory.Item('Copper Pickaxe', 'Able to mine metal ores.', 'copper_pickaxe', 1, [TAGS['item'], TAGS['weapon'], TAGS['pickaxe']]),
     'heavy_pickaxe': Inventory.Item('Heavy Pickaxe', 'Able to mine platinum ore.', 'heavy_pickaxe', 1, [TAGS['item'], TAGS['weapon'], TAGS['pickaxe']]),
@@ -634,8 +641,6 @@ items_dict: dict[str, Inventory.Item] = {
     'doctor_expeller': Inventory.Item('Doctor Expeller', 'Daily apple, daily non-doctor.', 'doctor_expeller', 3,
                                        [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'nights_edge': Inventory.Item('Night\'s Edge', 'colff7fffThe sunset has gone, it\'s now night...', 'nights_edge', 4,
-                                  [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
-    'chaos_reap': Inventory.Item('Chaos Reap', 'rainbowDamage and size increases within progress.\nrainbowChaoticly sacrifice enemies in freeze, wither and bleeding.\nrainbowStrike to throw it.', 'chaos_reap', 12,
                                   [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'virus_defeater': Inventory.Item('Virus Defeater', 'rainbowYou are safe now.', 'virus_defeater', 4,
                                      [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),

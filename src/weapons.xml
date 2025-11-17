@@ -1,5 +1,5 @@
 <weapons>
-	<version>4</version>
+	<version>5</version>
 	<weapon id="null">
 		<speed>0</speed>
 		<at_time>2</at_time>
@@ -3045,4 +3045,4 @@
 			<damage type="magical">250</damage>
 		</damages>
 	</weapon>
-<weapon id="cosmic"><speed>2</speed><at_time>12</at_time><damages><damage type="physical">350</damage></damages></weapon><weapon id="cosmos"><speed>2</speed><at_time>12</at_time><damages><damage type="physical">350</damage></damages></weapon></weapons>
+<weapon id="cosmic"><speed>2</speed><at_time>12</at_time><damages><damage type="physical">350</damage></damages></weapon><weapon id="cosmos"><speed>2</speed><at_time>12</at_time><damages><damage type="physical">350</damage></damages></weapon><weapon id="abyss_sever"><speed>6</speed><at_time>30</at_time><damages><damage type="physical">0</damage></damages></weapon></weapons>

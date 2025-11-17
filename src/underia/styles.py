@@ -59,6 +59,7 @@ def text(txt: str) -> str:
     items = list(Dictionary.items())
     items.sort(key=lambda x: len(x[0]), reverse=True)
     wc = ''
+    df = 0
     while i < len(word):
         f = False
         for k, v in items:
@@ -77,14 +78,13 @@ def text(txt: str) -> str:
                 wc += word[i]
             s += word[i]
             i += 1
-        else:
-            if wc not in un_trans and wc:
-                un_trans.append(wc)
-                print(f"Untranslated word: {wc}")
-                wc = ''
-    if wc not in un_trans and wc:
-        un_trans.append(wc)
-        print(f"Untranslated word: {wc}")
+        elif wc:
+            df = 1
+            wc = ''
+    if wc:
+        df = 1
+    if df:
+        print('Untranslated: ', txt, '-', s)
     if word not in Dictionary.keys() and len(word) < 50:
         Dictionary[word] = s
     return s
