@@ -3042,7 +3042,7 @@ class Projectiles:
         SPEED_RATE = 0.6
 
     class PlatinumBullet(Bullet):
-        DAMAGES = 16
+        DAMAGES = 10
         TAIL_COLOR = (150, 150, 200)
 
     class Plasma(Bullet):
@@ -3057,7 +3057,7 @@ class Projectiles:
         IMG = 'exploder'
 
     class SnowBall(Bullet):
-        DAMAGES = -20
+        DAMAGES = 5
         SPEED = 500
         TAIL_SIZE = 5
         TAIL_WIDTH = 2
@@ -3069,7 +3069,7 @@ class Projectiles:
         TAIL_COLOR = (255, 200, 127)
 
     class ShadowBullet(Bullet):
-        DAMAGES = 24
+        DAMAGES = 15
         SPEED = 100
         AIMING = 0.3
         TAIL_COLOR = (50, 0, 50)
@@ -3084,7 +3084,7 @@ class Projectiles:
         TAIL_COLOR = (200, 200, 255)
 
     class ChloroArrow(Bullet):
-        DAMAGES = 120
+        DAMAGES = 35
         SPEED = 500
         IMG = 'null'
         TAIL_SIZE = 5
@@ -3110,7 +3110,7 @@ class Projectiles:
             self.obj.pos = vp
 
     class ScorchingArrow(Bullet):
-        DAMAGES = 320
+        DAMAGES = 80
         SPEED = 500
         IMG = 'null'
         TAIL_SIZE = 3
@@ -3364,7 +3364,7 @@ class Projectiles:
             return cd
 
     class QuickArrow(Arrow):
-        DAMAGES = 40
+        DAMAGES = 10
         SPEED = 200
         DELETE = False
         IMG = 'quick_arrow'
@@ -3373,7 +3373,7 @@ class Projectiles:
         TAIL_COLOR = (0, 0, 255)
 
     class QuickBullet(Bullet):
-        DAMAGES = 80
+        DAMAGES = 20
         SPEED = 500
         DELETE = False
         IMG = 'null'
@@ -3382,7 +3382,7 @@ class Projectiles:
         TAIL_COLOR = (255, 127, 0)
 
     class SpaceJumper(Bullet):
-        DAMAGES = 300
+        DAMAGES = 60
         SPEED = 2000
         IMG = 'null'
         TAIL_SIZE = 2

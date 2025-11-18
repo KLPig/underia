@@ -4070,7 +4070,7 @@ class ChaosAnnihilator(Gun):
         if self.d_count >= 100:
             self.sk_cd = 100
             self.timer = 100
-            self.set_rotation(-game.get_game().player.obj.pos + position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())) )
+            self.set_rotation(vector.coordinate_rotation(*(-game.get_game().player.obj.pos + position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))) ))
             self.ppjs = projectiles.Projectiles.BChaosAnnihilator(game.get_game().player.obj.pos + (self.x, self.y), self.rot)
             self.display = True
         else:

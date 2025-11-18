@@ -6527,6 +6527,14 @@ class Entities:
             self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 300
             self.hp_sys.IMMUNE = True
             self.phase = 0
+            if constants.LANG == 'en':
+                game.get_game().dialog.dialog(
+                    'Good...\nIt takes much longer than expected...',
+                )
+            else:
+                game.get_game().dialog.dialog(
+                    '不错...\n这比我预期中花费了更多的时间...',
+                )
 
         def t_draw(self):
             ms = 0
@@ -6562,6 +6570,45 @@ class Entities:
                                       (self.d_cols[i][2] + t_col[2]) // 2)
                 tp = game.get_game().player.obj.pos + (0, -1200)
                 self.obj.apply_force((tp - self.obj.pos) * .5)
+            elif self.tick == 400:
+
+                if self.state == 1 and self.phase == 0:
+                    if constants.LANG == 'en':
+                        game.get_game().dialog.dialog(
+                            'Destroyer...\nIf everything\'s right, will it destroy your mind?'
+                        )
+                    else:
+                        game.get_game().dialog.dialog(
+                            '毁灭者...\n如果一切如常，它能毁灭你的魂魄吗？'
+                        )
+                if self.state == 3 and self.phase == 0:
+                    if constants.LANG == 'en':
+                        game.get_game().dialog.dialog(
+                            'We wasted lots if time...\nBut there are still something to do...'
+                        )
+                    else:
+                        game.get_game().dialog.dialog(
+                            '我们浪费了不少时间...\n但我们还有很多事情需要完成...'
+                        )
+                if self.state == 5 and self.phase == 0:
+                    if constants.LANG == 'en':
+                        game.get_game().dialog.dialog(
+                            'In between the hurricane of faith, \nwill you be able to survive?'
+                        )
+                    else:
+                        game.get_game().dialog.dialog(
+                            '在信仰的漩涡之中，\n你能否仍然可以幸存？'
+                        )
+                if self.state == 0 and self.phase == 0:
+                    if constants.LANG == 'en':
+                        game.get_game().dialog.dialog(
+                            'Below the shadow of despair, \nwho keeps you to stay forward?'
+                        )
+                    else:
+                        game.get_game().dialog.dialog(
+                            '在绝望的阴影之下，\n是谁让你保持前進？'
+                        )
+
             elif self.tick < 1500 - self.phase * 800:
                 for i, d in enumerate(self.d_pos):
                     if not i:
@@ -6808,19 +6855,19 @@ class Entities:
                     self.obj.apply_force(ap * .7)
 
                 elif self.state == 6:
-                    if self.tick % (30 - self.phase * 15) == 0:
+                    if self.tick % (27 - self.phase * 15) == 0:
                         rt = random.randint(0, 360)
                         ent = Entities.Entity(
                             game.get_game().player.obj.pos + vector.Vector2D(rt, 2000),
                             game.get_game().graphics['entity_greed'], BuildingAI, 100000, )
                         ent.DISPLAY_MODE = 1
-                        ent.set_rotation(-rt + 180)
+                        ent.set_rotation(rt + 180)
                         ent.obj.TOUCHING_DAMAGE = 750
                         ent.obj.MASS = 1000
                         ent.obj.FRICTION = .4
                         self.ents.append(ent)
                     for e in self.ents:
-                        e.obj.apply_force(vector.Vector2D(e.rot, 20000))
+                        e.obj.apply_force(vector.Vector2D(e.rot, 50000))
                         e.t_draw()
                         if self.hp_sys.hp <= 0:
                             self.ents.remove(e)
