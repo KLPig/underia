@@ -1004,8 +1004,8 @@ class AbyssSever(Blade):
     def on_damage(self, target):
         super().on_damage(target)
         if self.at_t == 0:
-
             target.hp_sys.effect(effects.Frozen([.1, .15, .2, .23, .25][min(4, game.get_game().stage)] * 7, 1))
+            target.hp_sys.enable_immune(3)
         if target not in self.r_des and self.at_t == 0:
             self.r_des.append(target)
             for r in target.hp_sys.resistances:
@@ -1040,7 +1040,7 @@ class AbyssSever(Blade):
         else:
             self.sk_cd = max(0, self.timer)
             self.sk_mcd = self.at_time
-        self.damages[dmg.DamageTypes.PHYSICAL] = [50, 90, 140, 300, 1500][min(4, game.get_game().stage)] * (.5 + 2 * bool(self.at_t))
+        self.damages[dmg.DamageTypes.PHYSICAL] = [200, 350, 500, 1000, 9000][min(4, game.get_game().stage)] * (1.5 + (not self.at_t) * 1.5)
         self.set_rotation(self.rot)
 
 class MagicBlade(Blade):
@@ -4079,7 +4079,7 @@ class ChaosAnnihilator(Gun):
 
     def on_attack(self):
         if self.ppjs is not None:
-            self.set_rotation(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())) - game.get_game().player.obj.pos)
+            self.set_rotation(vector.coordinate_rotation(*(-game.get_game().player.obj.pos + position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))) ))
             pt = int(255 * math.sin(self.timer / 20 * math.pi))
             self.ppjs.COLOR = (pt, pt, pt)
             self.d_count = self.timer
@@ -4534,6 +4534,8 @@ def set_weapons():
                                5, 11, 30, 240, auto_fire=True),
         'nights_pike': Spear('nights pike', {dmg.DamageTypes.PHYSICAL: 125}, 1.8, 'items_weapons_nights_pike',
                              2, 5, 60, 160, auto_fire=True),
+        'thermal_pike': Spear('thermal pike', {dmg.DamageTypes.PHYSICAL: 155}, 2.5, 'items_weapons_thermal_pike',
+                              2, 7, 55, 200, auto_fire=True),
         'energy_spear': ComplexWeapon('energy spear', {dmg.DamageTypes.PHYSICAL: 180},
                                       {dmg.DamageTypes.PHYSICAL: 220}, 2, 'items_weapons_energy_spear',
                                       2, 8, 6, 40, 120, 80,

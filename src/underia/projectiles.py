@@ -3031,6 +3031,14 @@ class Projectiles:
         TAIL_WIDTH = 3
         TAIL_COLOR = (255, 0, 0)
 
+    class Wavic(Arrow):
+        DAMAGES = 45
+        SPEED = 80
+        IMG = 'wavic'
+        TAIL_SIZE = 3
+        TAIL_WIDTH = 3
+        TAIL_COLOR = (0, 255, 255)
+
     class Bullet(Arrow):
         NAME = 'Bullet'
         DAMAGES = 12
@@ -3069,11 +3077,36 @@ class Projectiles:
         TAIL_COLOR = (255, 200, 127)
 
     class ShadowBullet(Bullet):
-        DAMAGES = 15
+        DAMAGES = 35
         SPEED = 100
         AIMING = 0.3
         TAIL_COLOR = (50, 0, 50)
         TAIL_SIZE = 3
+
+    class Thermality(Bullet):
+        DAMAGES = 75
+        SPEED = 300
+        IMG = 'thermality'
+        TAIL_SIZE = 2
+        TAIL_WIDTH = 2
+        TAIL_COLOR = (100, 0, 0)
+
+    class Judgement(Arrow):
+        DAMAGES = 75
+        SPEED = 300
+        IMG = 'wavic'
+        TAIL_SIZE = 2
+        TAIL_WIDTH = 2
+        TAIL_COLOR = (255, 255, 100)
+
+    class Chlorommo(Bullet):
+        DAMAGES = 5
+        SPEED = 800
+        SPEED_RATE = .2
+        AIMING = 0.7
+        TAIL_COLOR = (100, 100, 255)
+        TAIL_SIZE = 6
+        TAIL_WIDTH = 5
 
     class Accelerationism(Bullet):
         DAMAGES = 320
@@ -3087,27 +3120,11 @@ class Projectiles:
         DAMAGES = 35
         SPEED = 500
         IMG = 'null'
+        AIMING = 1.0
+        SPEED_RATE = .1
         TAIL_SIZE = 5
         TAIL_WIDTH = 10
         TAIL_COLOR = (127, 255, 0)
-
-        def __init__(self, *args):
-            super().__init__(*args)
-            self.obj.velocity.clear()
-            self.spd = self.SPEED
-
-        def update(self):
-            tr = min(self.spd / 2400, .6)
-            tar, _ = self.get_closest_entity()
-            if tar is None:
-                super().update()
-                return
-            tx, ty = tar.obj.pos
-            self.obj.pos << (self.obj.pos[0] + (tx - self.obj.pos[0]) * tr,
-                            self.obj.pos[1] + (ty - self.obj.pos[1]) * tr)
-            vp = self.obj.pos
-            super().update()
-            self.obj.pos = vp
 
     class ScorchingArrow(Bullet):
         DAMAGES = 80
@@ -3364,7 +3381,7 @@ class Projectiles:
             return cd
 
     class QuickArrow(Arrow):
-        DAMAGES = 10
+        DAMAGES = 0
         SPEED = 200
         DELETE = False
         IMG = 'quick_arrow'
@@ -3373,7 +3390,7 @@ class Projectiles:
         TAIL_COLOR = (0, 0, 255)
 
     class QuickBullet(Bullet):
-        DAMAGES = 20
+        DAMAGES = 0
         SPEED = 500
         DELETE = False
         IMG = 'null'
@@ -3883,13 +3900,17 @@ AMMOS = {
     'blood_arrow': Projectiles.BloodArrow,
     'bullet': Projectiles.Bullet,
     'snowball': Projectiles.SnowBall,
+    'wavic': Projectiles.Wavic,
     'platinum_bullet': Projectiles.PlatinumBullet,
     'plasma': Projectiles.Plasma,
     'rock_bullet': Projectiles.RockBullet,
     'shadow_bullet': Projectiles.ShadowBullet,
+    'thermality': Projectiles.Thermality,
+    'judgement': Projectiles.Judgement,
     'quick_arrow': Projectiles.QuickArrow,
     'quick_bullet': Projectiles.QuickBullet,
     'chloro_arrow': Projectiles.ChloroArrow,
+    'chlorommo': Projectiles.Chlorommo,
     'space_jumper': Projectiles.SpaceJumper,
     'scorching_arrow': Projectiles.ScorchingArrow,
     'seperator': Projectiles.Seperator,
