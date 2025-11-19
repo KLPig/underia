@@ -14,8 +14,8 @@ def show_legend():
     dialogger = dialog.Dialogger(48, pg.Rect(0, window.get_height() - 180, window.get_width(), 180), target_surface=window, speed=.3)#12)
     texts = [[f'UNDERIA version {version.VERSION[0]}.{version.VERSION[1]}.{version.VERSION[2]}',
               'Copyright © 2025 KLPIG,\nlicensed under BSD 2-clause license.', 'by KLPIG\n',
-              'Released in 02/11/2025.(Long Time No See)',
-              'Press [C] to continue.', 'Press [ESC] to quit.', 'Assets:', 'Music from Undertale OST, Deltarune OST(Chapters 1-4),\nand Terraria OST.',
+              'Released in 19/11/2025.',
+              'Press [C] to continue.', 'Press [ESC] to quit.', 'Assets:', 'Music from Undertale OST, Deltarune OST(Chapters 1-4),\nand Terraria.',
               'Sound effects from game Undertale, Deltarune\n, and Terraria.',
               'Image drawn by KLPIG', 'All for purposes in studying.'],
              ['Once upon a time, the world was full in chaos.',
@@ -45,9 +45,9 @@ def show_legend():
         dialogger.speed *= 8
         texts = [[f'UNDERIA, v.{version.VERSION[0]}.{version.VERSION[1]}.{version.VERSION[2]}',
                   '版权所有 © 2025 KLPIG，\n采用 BSD-2 Simplified 许可证授权。', '由 KLPIG 制作\n',
-                  '于2025年11月2日发布。（孩子们我打赢复活赛了）',
+                  '于2025年11月19日发布。',
                   '按 [C] 继续。', '按 [ESC] 退出。',
-                  '音乐、音效来自 Undertale(传说之下), Deltarune(三角符文), \nTerraria(泰拉瑞亚) 原声带。',
+                  '音乐、音效来自 Undertale(传说之下), Deltarune(三角符文), \nTerraria(泰拉瑞亚)。',
                   '图像由 KLPIG 绘制', 'ai翻译，勿喷（改了一点）。', '只用于学习用途。'],
                  ['很久很久以前，世界充满了混沌。',
                   '一切既黑暗而光明，\n非善亦非恶。',

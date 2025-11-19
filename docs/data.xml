@@ -5,7 +5,7 @@
     <version id="newest">
         <first>1</first>
         <second>5</second>
-        <third>0b</third>
+        <third>0c</third>
     </version>
     <version id="supported">
         <first>1</first>
@@ -15,6 +15,8 @@
     <content>
         <hash version="1.5.0a">377123776</hash>
         <hash version="1.5.0b">321141689</hash>
+        <hash version="1.5.0c">356054969</hash>
+
     </content>
     <mods>
         <mod>
@@ -33,7 +35,7 @@
                 <version id="newest">
                     <first>1</first>
                     <second>5</second>
-                    <third>0b</third>
+                    <third>0c</third>
                 </version>
                 <version id="supported">
                     <first>1</first>
@@ -59,7 +61,7 @@
                 <version id="newest">
                     <first>1</first>
                     <second>5</second>
-                    <third>0b</third>
+                    <third>0c</third>
                 </version>
                 <version id="supported">
                     <first>1</first>
@@ -86,7 +88,7 @@
                 <version id="newest">
                     <first>1</first>
                     <second>5</second>
-                    <third>0b</third>
+                    <third>0</third>
                 </version>
                 <version id="supported">
                     <first>1</first>
@@ -112,7 +114,7 @@
                 <version id="newest">
                     <first>1</first>
                     <second>5</second>
-                    <third>0b</third>
+                    <third>0</third>
                 </version>
                 <version id="supported">
                     <first>1</first>
