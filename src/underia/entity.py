@@ -471,6 +471,7 @@ class BuildingAI(MonsterAI):
 class WorldsFruitAI(MonsterAI):
     MASS = 5000
     FRICTION = 0.9
+    SPEED = .5
     TOUCHING_DAMAGE = 64
     SIGHT_DISTANCE = 99999
 
@@ -487,7 +488,7 @@ class WorldsFruitAI(MonsterAI):
             self.idle()
 
 class AppleProtectionAI(MonsterAI):
-    MASS = 40
+    MASS = 80
     FRICTION = 0.9
     TOUCHING_DAMAGE = 48
     VITAL = True
@@ -503,7 +504,7 @@ class AppleProtectionAI(MonsterAI):
             self.apply_force(vv / abs(vv) * (abs(vv) - 150) / 5)
 
 class AppleAttackAI(MonsterAI):
-    MASS = 40
+    MASS = 80
     FRICTION = 0.9
     TOUCHING_DAMAGE = 48
     VITAL = True
@@ -524,7 +525,7 @@ class AbyssEyeAI(BuildingAI):
     TOUCHING_DAMAGE = 100
 
 class TrueEyeAI(MonsterAI):
-    MASS = 300
+    MASS = 700
     FRICTION = 0.97
     TOUCHING_DAMAGE = 55
     SIGHT_DISTANCE = 99999
@@ -3407,14 +3408,15 @@ class Entities:
 
         def on_update(self):
             if self.phase == 0:
-                for a in self.apples:
-                    ap = a.obj.pos - self.obj.pos
-                    if a.hp_sys.hp <= 0 or a not in game.get_game().entities:
-                        self.apples.remove(a)
-                        self.obj.SPEED *= 1.02
-                        for a in self.apples:
-                            a.obj.SPEED *= 1.025
-                self.hp_sys.hp = self.o_hp + max(0, sum([a.hp_sys.hp for a in self.apples])- 10000)
+                if constants.DIFFICULTY >= 1:
+                    for a in self.apples:
+                        ap = a.obj.pos - self.obj.pos
+                        if a.hp_sys.hp <= 0 or a not in game.get_game().entities:
+                            self.apples.remove(a)
+                            self.obj.SPEED *= 1.001
+                            for aa in self.apples:
+                                aa.obj.SPEED *= 1.002
+                self.hp_sys.hp = self.o_hp + max(0, sum([a.hp_sys.hp for a in self.apples]) - 20000)
                 if self.hp_sys.hp <= self.o_hp or not len(self.apples):
                     self.phase = 1
                     dm = [6, 7, 15, 25][constants.DIFFICULTY]
@@ -3434,10 +3436,10 @@ class Entities:
                 elif self.tick > 150:
                     self.img.set_alpha((self.tick - 150) * 255 // 30)
             else:
-                if constants.DIFFICULTY >= 3:
-                    if not random.randint(0, 50):
+                if constants.DIFFICULTY >= 2:
+                    if not random.randint(0, 3000):
                         self.apples.append(Entities.ProtectApple((self.obj.pos[0] + random.randint(-1000, 1000), self.obj.pos[1] + random.randint(-1000, 1000))))
-                    if not random.randint(0, 50):
+                    if not random.randint(0, 3000):
                         self.apples.append(Entities.AttackApple((self.obj.pos[0] + random.randint(-1000, 1000), self.obj.pos[1] + random.randint(-1000, 1000))))
                 self.hp_sys(op='config', immune=False)
                 self.tick = (self.tick + 1) % 80

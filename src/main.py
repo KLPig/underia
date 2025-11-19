@@ -325,7 +325,7 @@ fpss = []
 
 @game.update_function
 def update():
-    if datetime.datetime.now() - game.save_time > datetime.timedelta(minutes=5):
+    if datetime.datetime.now() - game.save_time > datetime.timedelta(minutes=5) and False:
         f_end_time = datetime.datetime.now()
         dgame = copy.deepcopy(game)
         dgame.game_time += (f_end_time - start_time).total_seconds()

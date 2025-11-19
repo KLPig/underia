@@ -1953,7 +1953,8 @@ items_dict: dict[str, Inventory.Item] = {
     'toilet_paper': Inventory.Item('Toilet Paper', 'Recover all TP', 'toilet_paper', 7, [TAGS['item'], TAGS['healing_potion']]),
     'legendary_hero': Inventory.Item('Legendary Hero', 'Hero shaped sandwich.\nRecover 500 HP and adds a 800 HP shield', 'legendary_hero', 8, [TAGS['item'], TAGS['healing_potion']]),
 
-    'mana_crystal': Inventory.Item('Mana Crystal', '+15 maximum mana.', 'mana_crystal', 2, [TAGS['item']]),
+    'mana_crystal': Inventory.Item('Mana Crystal', '+15 maximum mana', 'mana_crystal', 2, [TAGS['item']]),
+    'regenerative_crystal': Inventory.Item('Regenerative Crystal', '+35 maximum mana (when MP >= 180)', 'regenerative_crystal', 3, [TAGS['item']]),
     'firy_plant': Inventory.Item('Firy Plant', '+20 maximum hp', 'firy_plant', 3, [TAGS['item']]),
     'white_guard': Inventory.Item('White Guard', 'Add a 20 hp shield', 'white_guard', 2, [TAGS['item']]),
     'spiritual_heart': Inventory.Item('Spiritual Heart',
@@ -2212,6 +2213,8 @@ RECIPES = [
     Recipe({'wood': 60, 'magic_stone': 15, 'leaf': 5, 'zirconium_ingot': 5, 'life_core': 10, 'anvil': 1}, 'life_wooden_sword'),
     Recipe({'wood': 60, 'mana_crystal': 2, 'leaf': 10, 'life_core': 10, 'anvil': 1}, 'life_wooden_wand'),
     Recipe({'wood': 120, 'mana_crystal': 2, 'leaf': 20, 'life_core': 20, 'anvil': 1}, 'life_wooden_shield'),
+    Recipe({'floatstone': 5, 'mana_crystal': 2, 'life_core': 4, 'anvil': 1}, 'regenerative_crystal'),
+    Recipe({'obsidian_ingot': 3, 'mana_crystal': 2, 'life_core': 4, 'anvil': 1}, 'regenerative_crystal'),
 
     Recipe({'blood_ingot': 20, 'obsidian_ingot': 10, 'firite_ingot': 20, 'anvil': 1}, 'aimer'),
     Recipe({'blood_ingot': 8, 'firite_ingot': 22, 'obsidian_ingot': 6, 'anvil': 1}, 'firite_spear'),
@@ -2385,8 +2388,7 @@ RECIPES = [
     Recipe({'chlorophyll': 1, 'crabapple': 1}, 'photon', 2),
     Recipe({'chlorophyll': 1, 'butterscotch_pie': 1}, 'photon', 3),
     Recipe({'dark_ingot': 10, 'photon': 20}, 'prism'),
-    Recipe({'chlorophyll': 1, 'photon': 5, 'soul_of_perseverance': 1, 'soul_of_patience': 1,
-            'soul_of_justice': 1, 'soul_of_growth': 1}, 'chlorophyte_ingot', 3),
+    Recipe({'chlorophyll': 1, 'photon': 3, 'soul_of_growth': 3, 'life_core': 1}, 'chlorophyte_ingot'),
     Recipe({'chlorophyte_ingot': 16, 'soul_of_perseverance': 18},
            'life_devourer'),
     Recipe({'chlorophyte_ingot': 18, 'soul_of_perseverance': 15, 'soul_of_growth': 25},

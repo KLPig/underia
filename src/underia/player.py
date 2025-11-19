@@ -1780,8 +1780,12 @@ class Player:
                                     inventory.ITEMS[self.weapons[self.sel_weapon].name.replace(' ', '_')])
                             self.weapons[self.sel_weapon] = weapons.WEAPONS[item.id]
                         elif item.id == 'mana_crystal':
-                            if self.max_mana < 120:
-                                self.max_mana += 15
+                            if self.max_mana < 180:
+                                self.max_mana = min(self.max_mana + 15, 180)
+                                self.inventory.remove_item(item)
+                        elif item.id == 'regenerative_crystal':
+                            if self.max_mana < 320:
+                                self.max_mana = min(self.max_mana + 35, 320)
                                 self.inventory.remove_item(item)
                         elif item.id == 'enchanted_book':
                             if self.max_mana < 300:
