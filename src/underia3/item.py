@@ -111,7 +111,7 @@ ITEMS = {
                                                                      'A lower HP increases damage, maximum 100%[cmd]\nWhen HP < 80%, +25% melee damage\nWhen HP < 60%, +25% melee damage\n'
                                                                      'When HP < 40%, +25% melee damage\nWhen HP < 20%, +25% melee damage',
                                                   'berserker_gloves', 3, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
-    'struggle': inventory.Inventory.Item('Struggle', 'It hopes to escape.\n50kg\nEnable splint\nWith effect of wings\nAble to dodge attacks[cmd]\n+20% dodge rate\n-50% air resistance\n+50% wing control\n+100 splint\n-50% splint cd',
+    'struggle': inventory.Inventory.Item('Struggle', 'It hopes to escape.\n50kg\nEnable sprint\nWith effect of wings\nAble to dodge attacks[cmd]\n+20% dodge rate\n-50% air resistance\n+50% wing control\n+100 sprint\n-50% sprint cd',
                                            'struggle', 3, [inventory.TAGS['item'], inventory.TAGS['accessory']]),
 
     'balanced_sheath': inventory.Inventory.Item('Balanced Sheath', '+160 touching defense\n+110 magic defense\nGrants melee damage.\n'
@@ -682,7 +682,7 @@ ITEMS = {
                                        [inventory.TAGS['item'], inventory.TAGS['leg'], inventory.TAGS['accessory']]),
     '_ancient_set_bonus_helmet': inventory.Inventory.Item('Ancient Armor Set Bonus', '9% damage absorb\n+20 magic defense', '_ancient_set_bonus_helmet',
                                                           4, [inventory.TAGS['item'], inventory.TAGS['accessory']], specify_img='null'),
-    '_ancient_set_bonus_headgear': inventory.Inventory.Item('Ancient Armor Set Bonus', '-50% air resistance\n-50% splint cd\n-20 attack speed', '_ancient_set_bonus_headgear',
+    '_ancient_set_bonus_headgear': inventory.Inventory.Item('Ancient Armor Set Bonus', '-50% air resistance\n-50% sprint cd\n-20 attack speed', '_ancient_set_bonus_headgear',
                                                    4, [inventory.TAGS['item'], inventory.TAGS['accessory']], specify_img='null'),
     '_ancient_set_bonus_hood': inventory.Inventory.Item('Ancient Armor Set Bonus', '+30/sec mana regeneration\n+5/sec regeneration\n-25% mana cost', '_ancient_set_bonus_hood',
                                                         4, [inventory.TAGS['item'], inventory.TAGS['accessory']], specify_img='null'),
@@ -753,7 +753,7 @@ ITEMS = {
                                          [inventory.TAGS['item'], inventory.TAGS['accessory']]),
     'bioic_thaumaturgy': inventory.Inventory.Item('Bioic Thaumaturgy', 'Summon a slowly-regenerating shield.', 'bioic_thaumaturgy', 2,
                                          [inventory.TAGS['item'], inventory.TAGS['accessory']]),
-    'logos_thaumaturgy': inventory.Inventory.Item('Logos Thaumaturgy', '-20% air resistance\nEnable sprinting, sprinting makes you more likely to strike.[cmd]\n+50 splint', 'logos_thaumaturgy', 3,
+    'logos_thaumaturgy': inventory.Inventory.Item('Logos Thaumaturgy', '-20% air resistance\nEnable sprinting, sprinting makes you more likely to strike.[cmd]\n+50 sprint', 'logos_thaumaturgy', 3,
                                                   [inventory.TAGS['item'], inventory.TAGS['accessory']]),
     'dendro_thaumaturgy': inventory.Inventory.Item('Dendro Thaumaturgy', '+12% damage absorb\nMaximum damage is restricted to 99% maximum HP.', 'dendro_thaumaturgy', 3,
                                                    [inventory.TAGS['item'], inventory.TAGS['accessory']]),

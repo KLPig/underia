@@ -468,6 +468,39 @@ class BuildingAI(MonsterAI):
     FRICTION = 0.5
     TOUCHING_DAMAGE = 0
 
+class GlimmerSkateAI(MonsterAI):
+    MASS = 2000
+    FRICTION = 0.8
+    IDLE_SPEED = 12000
+    IDLE_TIME = 15
+    SPEED = .7
+    IDLE_CHANGER = 40
+    TOUCHING_DAMAGE = 450
+
+    SIGHT_DISTANCE = 9999
+
+
+    def __init__(self, pos):
+        super().__init__(pos)
+        self.tick = 0
+        self.dr = 0
+        self.state = 0
+
+    def update(self):
+        super().update()
+        self.tick += 1
+        if self.tick % 800 < 400:
+            self.idle()
+            self.state = 0
+        elif self.tick % 800 == 400:
+            self.dr = vector.coordinate_rotation(*(game.get_game().player.obj.pos - self.pos))
+        elif self.tick % 800 < 500:
+            self.apply_force(vector.Vector2D(-self.dr, 25000))
+            self.state = 1
+        else:
+            self.apply_force(vector.Vector2D(self.dr + self.tick * 3, 35000))
+            self.state = 2
+
 class WorldsFruitAI(MonsterAI):
     MASS = 5000
     FRICTION = 0.9
@@ -1752,10 +1785,143 @@ class Entities:
                     self.chest.items.extend([('null', 1) for _ in range(an)])
                     self.chest.n = tn
 
+        def get_shown_txt(self):
+            return self.NAME, 'Press [E] for storage'
+
         def t_draw(self):
             game.get_game().displayer.point_light((255, 255, 150), position.displayed_position(self.obj.pos), 2.5,
                                                   80 / game.get_game().player.get_screen_scale())
             super().t_draw()
+
+    class NPCGuide(Chest):
+        NAMES = [
+            'Bowen',
+            'Eric',
+            'Johnson',
+            'Wilson',
+            'Andy',
+            'Jack',
+            'Jackson'
+        ]
+
+        def __init__(self, pos):
+            if 'guide' not in game.get_game().npc_data:
+                self.name = random.choice(self.NAMES)
+                game.get_game().npc_data['guide'] = {'name': self.name }
+            else:
+                self.name = game.get_game().npc_data['guide']['name']
+            super().__init__(pos)
+            nh = 0
+            for c in self.name:
+                nh = (nh * 43349191 + ord(c) * 3834119) % 2147483648
+            self.img = pg.transform.scale_by(player_profile.PlayerProfile.get_surface(r=nh // 65536 % 256,
+                                                                                      g=nh // 256 % 256,
+                                                                                      b=nh % 256), 8)
+
+
+            self.ii_set = False
+
+            self.ct1 = [('npc_gd_f', 1), ('npc_gd_p', 1)]
+            self.ct2 = [('npc_gd_home', 1), ('npc_gd_blood_ingot', 5), ('npc_gd_aimer', 1), ('npc_gd_watcher_wand', 1)]
+            self.state = 0
+
+            self.chest.items = self.ct1
+            self.chest.n = len(self.ct1)
+            self.chest.locked = True
+            self.sm = False
+
+        def get_shown_txt(self):
+            return self.name, 'Press [E] to talk'
+
+        def t_draw(self):
+            if not self.ii_set:
+                self.ii_set = True
+                inventory.ITEMS['npc_gd_home'] = inventory.Inventory.Item(
+                    'Back',
+                    '',
+                    'npc_gd_home',
+                    0, [],
+                    specify_img='null'
+                )
+                inventory.ITEMS['npc_gd_f'] = inventory.Inventory.Item(
+                    'World Analyse',
+                    'col00ffffEmm, this is an interesting world...\n'
+                    'col00ffffThe type of this world is: ' + str('A234567890JQK'[game.get_game().fun - 1]) +
+                    '\ncol00ffffOnce upon a time, a massive part of ocean is buried...\n' +
+                    'col00ffffIt\'s located at.. ' + str(['N', 'N', 'NNE', 'NE', 'SE', 'SW', 'NNW', 'NE', 'N', 'W', 'WNW', 'W', 'NE'][game.get_game().fun - 1]) +  # direction=fun ^ 3
+                    '\ncol00ffffWait, you know what these "compass bearing" means, don\'t you?',
+                    'npc_gd_f',
+                    0, [],
+                    specify_img='null'
+                )
+                inventory.ITEMS['npc_gd_p'] = inventory.Inventory.Item(
+                    'Purchase',
+                    'col00ffffPurchase?\n'
+                    'col00ffffAlright, these cell organisations looks good.',
+                    'npc_gd_p',
+                    0, [],
+                    specify_img='null'
+                )
+
+                inventory.ITEMS['npc_gd_watcher_wand'] = inventory.Inventory.Item(
+                    'Watcher Wand',
+                    'col00ffffSummon a sudden beam.\ncol00ff00Cost: 20 cell organisations.',
+                    'npc_gd_watcher_wand',
+                    2, [],
+                    specify_img='watcher_wand'
+                )
+                inventory.ITEMS['npc_gd_blood_ingot'] = inventory.Inventory.Item(
+                    'Blood Ingot',
+                    'col00ffffStrong condense of blood.\ncol00ff00Cost: 3 cell organisations each, ttl. 15.',
+                    'npc_gd_blood_ingot',
+                    2, [],
+                    specify_img='blood_ingot'
+                )
+                inventory.ITEMS['npc_gd_aimer'] = inventory.Inventory.Item(
+                    'Aimer',
+                    'col00ffffIt targets to the bosses.\ncol00ff00Cost: 10 cell organisations.',
+                    'npc_gd_aimer',
+                    2, [],
+                    specify_img='aimer'
+                )
+
+            self.obj.pos << vector.Vector2D(game.get_game().player.tick / 8, 200)
+            super().t_draw()
+
+            player = game.get_game().player
+
+            if player.open_chest == self.chest:
+                while player.inventory.is_enough(inventory.ITEMS['npc_gd_p']):
+                    self.state = 1
+                    player.inventory.remove_item(inventory.ITEMS['npc_gd_p'])
+                while player.inventory.is_enough(inventory.ITEMS['npc_gd_home']):
+                    self.state = 0
+                    player.inventory.remove_item(inventory.ITEMS['npc_gd_home'])
+
+
+                while player.inventory.is_enough(inventory.ITEMS['npc_gd_watcher_wand']):
+                    if player.inventory.is_enough(inventory.ITEMS['cell_organization'], 20):
+                        player.inventory.remove_item(inventory.ITEMS['cell_organization'], 20)
+                        player.inventory.add_item(inventory.ITEMS['watcher_wand'])
+                    player.inventory.remove_item(inventory.ITEMS['npc_gd_watcher_wand'])
+                while player.inventory.is_enough(inventory.ITEMS['npc_gd_blood_ingot']):
+                    if player.inventory.is_enough(inventory.ITEMS['cell_organization'], 3):
+                        player.inventory.remove_item(inventory.ITEMS['cell_organization'], 3)
+                        player.inventory.add_item(inventory.ITEMS['blood_ingot'])
+                    player.inventory.remove_item(inventory.ITEMS['npc_gd_blood_ingot'])
+                while player.inventory.is_enough(inventory.ITEMS['npc_gd_aimer']):
+                    if player.inventory.is_enough(inventory.ITEMS['cell_organization'], 10):
+                        player.inventory.remove_item(inventory.ITEMS['cell_organization'], 10)
+                        player.inventory.add_item(inventory.ITEMS['aimer'])
+                    player.inventory.remove_item(inventory.ITEMS['npc_gd_aimer'])
+
+                if self.state == 0:
+                    self.chest.items = copy.copy(self.ct1)
+                    self.chest.n = len(self.ct1)
+                elif self.state == 1:
+                    self.chest.items = copy.copy(self.ct2)
+                    self.chest.n = len(self.ct2)
+
 
     class GreenChest(Chest):
         IMG = 'entity_green_chest'
@@ -2552,6 +2718,11 @@ class Entities:
                 if b:
                     game.get_game().dialog.push_dialog('Notebook Updated!')
 
+                if not len([1 for f in game.get_game().furniture if type(f) is Entities.NPCGuide]):
+                    gd = Entities.NPCGuide((0, 0))
+                    game.get_game().furniture.append(gd)
+                    game.get_game().dialog.push_dialog(f'{gd.name} arrived!')
+
     class Tree(Entity):
         NAME = 'Tree'
         DISPLAY_MODE = 3
@@ -3107,6 +3278,41 @@ class Entities:
                 game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
 
+    class GlimmerBubble(Entity):
+        NAME = 'Glimmer Bubble'
+        DISPLAY_MODE = 3
+        DMG = 90
+
+        def __init__(self, pos, rot):
+            super().__init__(pos, game.get_game().graphics['entity_null'], MagmaKingFireballAI, 200)
+            self.obj.rot = rot
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 50
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 50
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 50
+            if constants.DIFFICULTY >= 3:
+                self.hp_sys.IMMUNE = True
+
+        def t_draw(self):
+            super().t_draw()
+            pg.draw.circle(game.get_game().displayer.canvas,
+                           (0, 255, 255),
+                           position.displayed_position(self.obj.pos),
+                           int(60 / game.get_game().player.get_screen_scale()),
+                           int(10 / game.get_game().player.get_screen_scale()))
+
+        def on_update(self):
+            super().on_update()
+            self.set_rotation(self.rot)
+            self.hp_sys.hp -= 5
+            self.damage()
+
+        def damage(self):
+            if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
+                               self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 50:
+                game.get_game().player.hp_sys.damage(self.DMG, damages.DamageTypes.MAGICAL)
+                game.get_game().player.hp_sys.enable_immune()
+                self.hp_sys.hp = 0
+
     class ForgottenStone(Entity):
         NAME = 'Forgotten Stone'
         DISPLAY_MODE = 3
@@ -3203,7 +3409,7 @@ class Entities:
         PHASE_SEGMENTS = [.3, .6]
 
         LOOT_TABLE = LootTable([
-            IndividualLoot('aerialite_ingot', 1, 12, 15),
+            IndividualLoot('aerialite_ingot', 1, 35, 45),
             IndividualLoot('floatstone', 1, 50, 70),
             SelectionLoot([('valkyrien', 1, 1), ('forget', 1, 1), ('air_float', 1, 1)], 1, 1),
         ])
@@ -3860,21 +4066,21 @@ class Entities:
         DISPLAY_MODE = 1
 
         def __init__(self, pos, rot):
-            super().__init__(pos, game.get_game().graphics['entity_seed'], FastBulletAI, 50000000)
+            super().__init__(pos, game.get_game().graphics['entity_seed'], FastBulletAI, 5000)
             self.obj.rot = rot
             self.obj.speed = 3200
             self.obj.MASS *= 5
 
         def on_update(self):
             super().on_update()
-            self.hp_sys.hp -= 200000
+            self.hp_sys.hp -= 20
             self.set_rotation(-self.obj.rot)
             self.damage()
 
         def damage(self):
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 320:
-                game.get_game().player.hp_sys.damage(360, damages.DamageTypes.MAGICAL)
+                game.get_game().player.hp_sys.damage(400, damages.DamageTypes.MAGICAL)
                 game.get_game().player.hp_sys.effect(effects.Poison(5, 24))
                 game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
@@ -3884,21 +4090,24 @@ class Entities:
         DISPLAY_MODE = 1
 
         def __init__(self, pos, rot):
-            super().__init__(pos, game.get_game().graphics['entity_spikeball'], FastBulletAI, 50000000)
+            super().__init__(pos, game.get_game().graphics['entity_spikeball'], FastBulletAI, 50000)
             self.obj.rot = rot
             self.obj.speed = 0
             self.set_rotation(self.obj.rot)
             self.obj.MASS *= 8
+            self.dp = vector.Vector2D(0, 0, random.uniform(-1000, 1000), random.uniform(-1000, 1000)) * 10
+            self.obj.apply_force(self.dp)
 
         def on_update(self):
             super().on_update()
-            self.hp_sys.hp -= 200000
+            self.obj.apply_force(self.dp / 15)
+            self.hp_sys.hp -= 1000
             self.damage()
 
         def damage(self):
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 220:
-                game.get_game().player.hp_sys.damage(640, damages.DamageTypes.MAGICAL)
+                game.get_game().player.hp_sys.damage(700, damages.DamageTypes.MAGICAL)
                 game.get_game().player.hp_sys.effect(effects.Poison(8, 45))
                 game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
@@ -4776,38 +4985,71 @@ class Entities:
         DISPLAY_MODE = 1
         IS_MENACE= True
         LOOT_TABLE = LootTable([
+            IndividualLoot('coral_reef', 1, 30, 50),
+            IndividualLoot('forgotten_shard', 1, 30, 50),
+            IndividualLoot('sea_pearl', 1, 3, 6),
             ])
 
         def __init__(self, pos):
             super().__init__(pos,  pg.transform.scale2x(game.get_game().graphics['entity_glimmer_skate_body'].subsurface((42, 12, 108, 66))),
-                             BuildingAI, 32000)
+                             GlimmerSkateAI, 9000)
             b_img = [
+                game.get_game().graphics['entity_glimmer_skate_tail'].subsurface((54, 54, 84, 138)),
                 game.get_game().graphics['entity_glimmer_skate_lwing'].subsurface((0, 24, 96, 60)),
                 game.get_game().graphics['entity_glimmer_skate_rwing'].subsurface((96, 24, 96, 60)),
-                game.get_game().graphics['entity_glimmer_skate_tail'].subsurface((54, 54, 84, 138)),
             ]
             self.obj.TOUCHING_DAMAGE = 220
             self.bodies = []
             for i, b in enumerate(b_img):
-                e = Entities.Entity(pos, pg.transform.scale2x(b), BuildingAI, 12000 - (i == 2) * 5000)
-                e.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 120
-                e.hp_sys.defenses[damages.DamageTypes.PIERCING] = 120
-                e.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 120
+                e = Entities.Entity(pos, pg.transform.scale2x(b), BuildingAI, 11000 - (i == 0) * 3000)
+                adf = (not i) * 40
+                e.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 40 + adf
+                e.hp_sys.defenses[damages.DamageTypes.PIERCING] = 40 + adf
+                e.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 40 + adf
                 e.obj.IS_OBJECT = False
                 e.DISPLAY_MODE = 1
+                e.get_shown_txt = lambda *args: ('', '')
                 self.bodies.append(e)
                 game.get_game().entities.insert(0, e)
-            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 150
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 400
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 400
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 400
             self.tick = 0
+            self.dt = 3
 
         def t_draw(self):
+            self.tick += 1
+            self.set_rotation(-self.obj.velocity.get_net_rotation())
             super().t_draw()
-            ap = [vector.Vector2D(-48, -24), vector.Vector2D(48, -24), vector.Vector2D(0, 78)]
+            sn = len([1 for b in self.bodies if b.hp_sys.hp > 0])
+            if sn < self.dt:
+                an = self.dt - sn
+                self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] -= 95 * an
+                self.hp_sys.defenses[damages.DamageTypes.PIERCING] -= 95 * an
+                self.hp_sys.defenses[damages.DamageTypes.MAGICAL] -= 95 * an
+                self.dt -= an
+                self.obj.SPEED *= 1.3 ** an
+            ap = [vector.Vector2D(0, 78), vector.Vector2D(48, -24), vector.Vector2D(-48, -24), ]
             for i, b in enumerate(self.bodies):
                 b.DISPLAY_MODE = 1
                 b.set_rotation(self.rot)
                 ax, ay = ap[i] * 2
-                b.obj.pos = self.obj.pos + vector.Vector2D(self.rot, ay) + vector.Vector2D(self.rot + 90, ax)
+                b.obj.pos = self.obj.pos + vector.Vector2D(-self.rot, ay) + vector.Vector2D(-self.rot + 90, ax)
+            if sn == 0:
+                if self.tick % 18 == 1 and self.obj.state != 1:
+                    for r in range(0, 360, 60 - (constants.DIFFICULTY + 1) // 2 * 15):
+                        game.get_game().entities.append(Entities.GlimmerBubble(self.obj.pos, -self.rot + r))
+            elif self.obj.state == 1:
+                if self.tick % 15 == 1:
+                    if self.bodies[1].hp_sys.hp > 0:
+                        game.get_game().entities.append(Entities.GlimmerBubble(self.obj.pos, -self.rot - 90))
+                    if self.bodies[2].hp_sys.hp > 0:
+                        game.get_game().entities.append(Entities.GlimmerBubble(self.obj.pos, -self.rot + 90))
+            elif self.obj.state == 2:
+                if self.tick % 5 == 1:
+                    if self.bodies[1].hp_sys.hp > 0:
+                        game.get_game().entities.append(Entities.GlimmerBubble(self.obj.pos, -self.rot - 90))
+
 
 
     class AbyssEye(Entity):
@@ -7177,25 +7419,30 @@ class Entities:
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([
             IndividualLoot('soul_of_growth', 1, 5, 10),
-            IndividualLoot('chlorophyll', 0.03, 1, 1)
+            IndividualLoot('leaf', 1, 15, 20),
+            IndividualLoot('chlorophyll', 0.03, 1, 1),
+            IndividualLoot('life_core', 0.3, 5, 10),
+            IndividualLoot('photon', 0.3, 5, 10)
         ])
 
         SOUND_DEATH = 'monster'
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_leaf'], LeafAI, 2000)
-            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 25
-            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 15
-            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 50
+            super().__init__(pos, game.get_game().graphics['entity_leaf'], LeafAI, 6000)
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 65
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 65
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 60
 
     class LifeTree(Entity):
         NAME = 'Life Tree'
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([
             IndividualLoot('soul_of_growth', 1, 5, 10),
-            IndividualLoot('leaf', 1, 5, 10),
+            IndividualLoot('leaf', 1, 15, 20),
             IndividualLoot('wood', 1, 25, 30),
             IndividualLoot('chlorophyll', 0.03, 1, 1),
+            IndividualLoot('life_core', 0.5, 5, 10),
+            IndividualLoot('photon', 0.5, 5, 10),
             IndividualLoot('chlorophyte_ingot', 0.3, 1, 5),
             ])
 
@@ -7450,42 +7697,88 @@ class Entities:
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 150
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 150
             self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 150
-            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 75
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 150
             self.sps = pos
             self.phase = 1
             self.cur_fs = 3200
             self.ctfs = 3200
             self.t = 0
+            self.drr = [random.randint(0, 360) for _ in range(8)]
 
         def t_draw(self):
             self.t += 1
             pcs = int(10 * self.hp_sys.hp / self.hp_sys.max_hp) + 12 - self.phase * 6
-            if self.t % (13 - 7 * self.phase + int(8 * self.hp_sys.hp / self.hp_sys.max_hp)) == 0:
-                for _ in range(random.randint(1, 1 + self.phase)):
-                    py = random.randint(-pcs, pcs) * 2
-                    if random.randint(0, 10) >= self.phase * 4 - 1:
-                        bul = Entities.Seed(self.obj.pos, self.obj.velocity.get_net_rotation() + py)
-                        game.get_game().entities.append(bul)
-                    elif random.randint(0, 10) > 4 - self.phase * 2:
-                        bul = Entities.SpikeBall(self.obj.pos, self.obj.velocity.get_net_rotation() + py)
-                        game.get_game().entities.append(bul)
+
+            if self.t % 1800 > 1600 and self.phase + constants.DIFFICULTY2 > 4:
+                self.ctfs = 1500
+                pr = vector.coordinate_rotation(*(game.get_game().player.obj.pos - self.obj.pos))
+                self.set_rotation((self.rot * 12 - pr) / 13)
+                self.obj.pos = (self.obj.pos + self.sps ) / 2
+                if self.t % 5 == 1:
+                    bul = Entities.SpikeBall(self.obj.pos, self.rot)
+                    game.get_game().entities.append(bul)
+                if self.t % 7 == 1:
+                    bul = Entities.Seed(self.obj.pos, -self.rot)
+                    game.get_game().entities.append(bul)
+            elif self.t % 1800 > 1400 and self.phase + constants.DIFFICULTY2 > 3:
+                self.ctfs = 1000
+                self.set_rotation((self.rot + self.t) / 2)
+                self.obj.pos = (self.obj.pos + self.sps ) / 2
+                if self.t % 9 == 3:
+                    bul = Entities.SpikeBall(self.obj.pos, self.rot)
+                    game.get_game().entities.append(bul)
+                elif self.t % 9 % 2 == 1:
+                    bul = Entities.Seed(self.obj.pos, -self.rot)
+                    game.get_game().entities.append(bul)
+            elif self.t % 1800 > 1200 and self.phase + constants.DIFFICULTY2 > 2:
+                self.ctfs = 1200
+                self.obj.pos = (self.obj.pos + self.sps ) / 2
+                self.set_rotation(self.t * 6)
+                if self.t % 4 == 1:
+                    bul = Entities.SpikeBall(self.obj.pos, self.rot)
+                    game.get_game().entities.append(bul)
+            else:
+                self.ctfs = 3900 - 700 * self.phase
+                rot = -self.obj.velocity.get_net_rotation()
+                self.set_rotation((self.rot + rot) // 2)
+                if self.t % (25 - 4 * self.phase + int(8 * self.hp_sys.hp / self.hp_sys.max_hp)) == 0:
+                    for _ in range(random.randint(1, 1 + self.phase)):
+                        py = random.randint(-pcs, pcs) * 2
+                        if random.randint(-20, 10) >= self.phase * 4 - 1:
+                            for _ in range(2 + constants.DIFFICULTY + self.phase * 2):
+                                bul = Entities.Seed(self.obj.pos, self.obj.velocity.get_net_rotation() + py)
+                                game.get_game().entities.append(bul)
+                        elif random.randint(0, 10) > 4 - self.phase * 2:
+                            bul = Entities.SpikeBall(self.obj.pos, self.obj.velocity.get_net_rotation() + py)
+                            game.get_game().entities.append(bul)
             if self.hp_sys.hp < self.hp_sys.max_hp * 0.6 and self.phase == 1:
                 self.phase = 2
                 self.ctfs = 2500
                 for k in self.hp_sys.defenses.defences.keys():
-                    self.hp_sys.defenses[k] -= 10000
-                    self.hp_sys.defenses[k] //= 5
+                    self.hp_sys.defenses[k] -= 300
+                    self.hp_sys.resistances[k] /= 2
                 self.obj.phase = 2
+                self.img = game.get_game().graphics['entity_plantera_phase2']
+                self.set_rotation(self.rot)
+                self.obj.TOUCHING_DAMAGE += 200
             self.cur_fs = (self.cur_fs + self.ctfs) // 2
-            rot = -self.obj.velocity.get_net_rotation()
-            self.set_rotation((self.rot + rot) // 2)
-            pg.draw.circle(game.get_game().displayer.canvas, (255, 0, 0),
-                           position.displayed_position(self.sps), self.cur_fs / game.get_game().player.get_screen_scale(), 5)
+            cpp = int(self.cur_fs * (1 + .2 * math.sin(game.get_game().player.tick / 30)))
+            pg.draw.circle(game.get_game().displayer.canvas, (100, 255, 100),
+                           position.displayed_position(self.sps), cpp / game.get_game().player.get_screen_scale(), 5)
             apx, apy = game.get_game().player.obj.pos[0] - self.sps[0], game.get_game().player.obj.pos[1] - self.sps[1]
-            if vector.distance(apx, apy) > self.cur_fs:
-                apx *= self.cur_fs / vector.distance(apx, apy)
-                apy *= self.cur_fs / vector.distance(apx, apy)
+            if vector.distance(apx, apy) > cpp:
+                apx *= cpp / vector.distance(apx, apy)
+                apy *= cpp / vector.distance(apx, apy)
                 game.get_game().player.obj.pos << (self.sps[0] + apx, self.sps[1] + apy)
+            dr = math.degrees(game.get_game().player.tick / 30)
+            for i in range(8):
+                draw.line(game.get_game().displayer.canvas, (150, 66, 83),
+                             position.displayed_position(self.obj.pos),
+                             position.displayed_position(vector.Vector2D(self.drr[i] + dr, cpp) + self.sps),
+                             int(50 / game.get_game().player.get_screen_scale()))
+                pg.draw.circle(game.get_game().displayer.canvas, (143, 222, 93),
+                               position.displayed_position(vector.Vector2D(self.drr[i] + dr, cpp) + self.sps),
+                               int(30 / game.get_game().player.get_screen_scale()))
             super().t_draw()
 
     class GhostFace(Entity):

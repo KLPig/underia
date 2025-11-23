@@ -115,6 +115,7 @@ else:
 try:
     if file is not None and os.path.exists(resources.get_save_path(file)):
         game = pickle.load(open(resources.get_save_path(file), "rb"))
+        underia.write_game(game)
         game.chunk_pos = (0, 0)
         game.player.obj = underia.PlayerObject((0, 0))
         game.displayer = visual.Displayer()
@@ -243,6 +244,10 @@ try:
         except AttributeError:
             game.furniture = []
             game.player.cc_t = 0
+        try:
+            game.npc_data
+        except AttributeError:
+            game.npc_data = {}
         while len(game.player.accessories) < 9:
             game.player.accessories.insert(0, 'null')
         while len(game.player.accessories) < 10:
@@ -252,6 +257,7 @@ try:
         game.player.tick = 0
         game.player.ui_recipe_view = False
         game.player.open_chest = None
+
     else:
         game = underia.Game()
 except Exception as e:
@@ -290,6 +296,9 @@ game.player.profile.point_magic = 0
 print('Presets...')
 
 game.world_events.clear()
+
+if 'guide' in game.npc_data:
+    game.furniture.append(underia.Entities.NPCGuide((0, 0)))
 
 if constants.APRIL_FOOL:
     nr = []

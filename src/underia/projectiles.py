@@ -527,6 +527,22 @@ class Projectiles:
             super().update()
             self.set_rotation(12 * self.tick)
 
+    class FireShine(PlatinumWand):
+        COL = (255, 150, 100)
+        DMG_RATE = 1.5
+        DEL = False
+        DECAY_RATE = .5
+        DURATION = 100
+        SPD = 500
+        DAMAGE_AS = 'fire_shine'
+        DMG_TYPE = damages.DamageTypes.PIERCING
+        WT = damages.DamageTypes.PIERCING
+        ENABLE_IMMUNE = 1.5
+
+        def draw(self):
+            pg.draw.circle(game.get_game().displayer.canvas, (255, 150, 100),
+                           position.displayed_position(self.obj.pos),
+                           int(60 / game.get_game().player.get_screen_scale()),)
 
     class Demolisher(PlatinumWand):
         COL = (255, 0, 0)
@@ -582,6 +598,37 @@ class Projectiles:
             super().update()
             pg.draw.circle(game.get_game().displayer.canvas, (0, 255, 255), position.displayed_position(self.obj.pos),
                            int(50 / game.get_game().player.get_screen_scale()), int(10 / game.get_game().player.get_screen_scale()))
+
+    class OceanicCurrent(PlatinumWand):
+        SPD = 30
+        DAMAGE_AS = 'oceanic_current'
+        IMG = 'projectiles_null'
+        COL = (0, 255, 255)
+        DEL = False
+        ENABLE_IMMUNE = .5
+        DECAY_RATE = 1.0
+        DURATION = 400
+
+        def damage(self):
+            dr = self.tick * 2
+            for e in game.get_game().entities:
+                if abs(e.obj.pos - self.obj.pos) < dr:
+                    ap = e.obj.pos - self.obj.pos
+                    e.obj.pos = ap / abs(ap) * (dr + 5) + self.obj.pos
+                    if not e.hp_sys.is_immune:
+                        e.hp_sys.damage(weapons.WEAPONS[self.DAMAGE_AS].damages[self.DMG_TYPE] * game.get_game().player.attack *
+                                        game.get_game().player.attacks[2] * self.DMG_RATE, self.DMG_TYPE, penetrate=100)
+                        self.DMG_RATE *= self.DECAY_RATE
+                        e.hp_sys.enable_immune(self.ENABLE_IMMUNE)
+                        self.damage_particle()
+                    break
+            self.dead = self.dead or self.tick > self.DURATION
+
+
+        def draw(self):
+            pg.draw.circle(game.get_game().displayer.canvas, (0, 255, 255), position.displayed_position(self.obj.pos),
+                           int(self.tick * 2 / game.get_game().player.get_screen_scale()), int(2 / game.get_game().player.get_screen_scale()))
+
 
     class Isobar(CopperWand):
         DAMAGE_AS = 'isobar'

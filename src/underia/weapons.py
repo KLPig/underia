@@ -1161,6 +1161,12 @@ class Valkyrien(Spear):
         super().on_attack()
         game.get_game().player.obj.apply_force(vector.Vector2D(self.sr, game.get_game().player.obj.SPEED * 3 * [-1, 1][self.ht]))
 
+class Wave(Spear):
+    def on_damage(self, target):
+        for e in game.get_game().entities:
+            if e != target and abs(target.obj.pos - e.obj.pos) < 1000:
+                e.obj.apply_force((target.obj.pos - e.obj.pos) / 5)
+
 class Poseidon(Spear):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -3977,6 +3983,11 @@ class Witness(Gun):
             self.sk_cd = self.sk_mcd
             game.get_game().projectiles.append(projectiles.Projectiles.Witness(game.get_game().player.obj.pos, self.rot))
 
+class FireShine(Gun):
+    def on_start_attack(self):
+        super().on_start_attack()
+        game.get_game().projectiles.append(projectiles.Projectiles.FireShine(game.get_game().player.obj.pos, self.rot + random.uniform(-self.precision, self.precision)))
+
 
 class Shotgun(Gun):
     def on_start_attack(self):
@@ -4427,9 +4438,11 @@ def set_weapons():
         'guardian': Guardian('guardian', {dmg.DamageTypes.PHYSICAL: 100}, 3,
                              'items_weapons_guardian',
                              4, 8, 30, 120,),
-        'remote_sword': RemoteWeapon('remote sword', {dmg.DamageTypes.PHYSICAL: 144}, 0.8,
+        'remote_sword': RemoteWeapon('remote sword', {dmg.DamageTypes.PHYSICAL: 150}, 0.8,
                                       'items_weapons_remote_sword',
                                       1, 5, 72, 180, auto_fire=True),
+        'wave': Wave('wave', {dmg.DamageTypes.PHYSICAL: 200}, 0,
+                     'items_weapons_wave', 2, 7, 30, 100, auto_fire=True),
         'gaia_paladin_spear': GaiaPaladinSpear('gaia paladin spear', {dmg.DamageTypes.PHYSICAL: 100}, .5,
                                                'items_weapons_gaia_paladin_spear',
                                                2, 8, 40, 250, auto_fire=True),
@@ -4655,14 +4668,16 @@ def set_weapons():
                          ammo_save_chance=1 / 4),
         'shadow': Shadow('shadow', {dmg.DamageTypes.PIERCING: 90}, 1.2, 'items_weapons_shadow',
                          2, 3, 200, auto_fire=True, precision=3, ammo_save_chance=1 / 4),
-        'palladium_gun': Gun('palladium gun', {dmg.DamageTypes.PIERCING: 60}, 0.2, 'items_weapons_palladium_gun',
+        'palladium_gun': Gun('palladium gun', {dmg.DamageTypes.PIERCING: 60}, 1, 'items_weapons_palladium_gun',
                              1, 2, 300, auto_fire=True, precision=3),
-        'mithrill_gun': Gun('mithrill gun', {dmg.DamageTypes.PIERCING: 140}, 0.3, 'items_weapons_mithrill_gun',
+        'mithrill_gun': Gun('mithrill gun', {dmg.DamageTypes.PIERCING: 140}, 1, 'items_weapons_mithrill_gun',
                             1, 5, 800, auto_fire=True, precision=1),
-        'titanium_gun': Gun('titanium gun', {dmg.DamageTypes.PIERCING: 300}, 0.4, 'items_weapons_titanium_gun',
+        'titanium_gun': Gun('titanium gun', {dmg.DamageTypes.PIERCING: 300}, 2, 'items_weapons_titanium_gun',
                             3, 10, 1500, auto_fire=True, precision=1),
-        'dark_exploder': DarkExploder('dark exploder', {dmg.DamageTypes.PIERCING: 200}, 0.5, 'items_weapons_dark_exploder',
-                                      6, 8, 100, auto_fire=True, precision=1),
+        'dark_exploder': DarkExploder('dark exploder', {dmg.DamageTypes.PIERCING: 200}, 2.5, 'items_weapons_dark_exploder',
+                                      9, 8, 100, auto_fire=True, precision=1),
+        'fire_shine': FireShine('fire shine', {dmg.DamageTypes.PIERCING: 120}, .5, 'items_weapons_fire_shine',
+                                      2, 3, 400, auto_fire=True, precision=1),
         'lavashark': Gun('lavashark', {dmg.DamageTypes.PIERCING: 65}, 0.5, 'items_weapons_lavashark',
                          2, 2, 800, auto_fire=True, precision=1, tail_col=(255, 0, 0),
                          ammo_save_chance=1 / 3),
@@ -4886,11 +4901,15 @@ def set_weapons():
                                         'Sealed Oath'),
         'midnights_wand': MidnightsWand('midnights wand', {dmg.DamageTypes.MAGICAL: 98}, 0.3,
                                         'items_weapons_midnights_wand', 2,
-                                        12, projectiles.Projectiles.MidnightsWand, 4, True,
+                                        12, projectiles.Projectiles.MidnightsWand, 15, True,
                                         80),
+        'oceanic_current': MagicWeapon('oceanic current', {dmg.DamageTypes.MAGICAL: 35}, 0,
+                                        'items_weapons_oceanic_current', 20,
+                                        30, projectiles.Projectiles.OceanicCurrent, 75, True,
+                                        'Ocean Current'),
         'spiritual_destroyer': MagicWeapon('spiritual destroyer', {dmg.DamageTypes.MAGICAL: 108}, 0.5,
                                            'items_weapons_spiritual_destroyer', 1,
-                                           5, projectiles.Projectiles.SpiritualDestroyer, 6,
+                                           5, projectiles.Projectiles.SpiritualDestroyer, 7,
                                            True, 'Energy Destroy'),
         'blood_sacrifice': EvilMagicWeapon('blood sacrifice', {dmg.DamageTypes.MAGICAL: 108}, 0.5,
                                             'items_weapons_blood_sacrifice', 3,

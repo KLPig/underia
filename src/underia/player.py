@@ -634,7 +634,7 @@ class Player:
         self.domain_size = self.calculate_data('domain_size', True, rate_multiply=True)
         mtp_regen = self.calculate_data('mentality_regen', False)
         self.REGENERATION = 0.015 + self.calculate_regeneration() + self.calculate_data('regen', rate_data=False) / 1000 * game.get_game().clock.last_tick
-        self.MAGIC_REGEN = self.calculate_magic_regeneration() * (0.04 + self.calculate_data('mana_regen', rate_data=False) / 120.0)
+        self.MAGIC_REGEN = 0.2 + self.calculate_magic_regeneration() * (0.04 + self.calculate_data('mana_regen', rate_data=False) / 120.0)
         if len([1 for ef in self.hp_sys.effects if type(ef) is WeakManaI]):
             self.MAGIC_REGEN *= 0.5
         if len([1 for ef in self.hp_sys.effects if type(ef) is ManaDrain]):
@@ -1650,6 +1650,10 @@ class Player:
                     styles.item_display(displayer.SCREEN_WIDTH - 300 - 80 * (lw - lx),
                                         ly * 80 + 200, ni, '', str(nn), 1,
                                         selected=chest.sel == jj)
+                for jj in range(chest.n):
+                    lx = jj % lw
+                    ly = jj // lw
+                    ni, nn = chest.items[jj]
                     styles.item_mouse(displayer.SCREEN_WIDTH - 300 - 80 * (lw - lx),
                                       ly * 80 + 200, ni, '', str(nn), 1)
                     rect = pg.Rect(displayer.SCREEN_WIDTH - 300 - 80 * (lw - lx), ly * 80 + 200, 80, 80)
@@ -1676,16 +1680,17 @@ class Player:
                     if rect.collidepoint(game.get_game().displayer.reflect(
                             *pg.mouse.get_pos())) and 1 in game.get_game().get_mouse_press():
                         if self.open_chest is not None:
-                            chest: inventory.Inventory.Chest = self.open_chest
-                            nt, ni = chest.items[chest.sel]
-                            self.inventory.add_item(inventory.ITEMS[nt], ni)
+                            if 'locked' not in dir(self.open_chest) or not self.open_chest.locked:
+                                chest: inventory.Inventory.Chest = self.open_chest
+                                nt, ni = chest.items[chest.sel]
+                                self.inventory.add_item(inventory.ITEMS[nt], ni)
 
-                            if i + j * lr < len(self.inventory.items):
-                                item, amount = list(self.inventory.items.items())[i + j * lr]
-                            else:
-                                item, amount = 'null', 1
-                            self.inventory.remove_item(inventory.ITEMS[item], amount)
-                            chest.items[chest.sel] = (item, amount)
+                                if i + j * lr < len(self.inventory.items):
+                                    item, amount = list(self.inventory.items.items())[i + j * lr]
+                                else:
+                                    item, amount = 'null', 1
+                                self.inventory.remove_item(inventory.ITEMS[item], amount)
+                                chest.items[chest.sel] = (item, amount)
                         elif inventory.TAGS['accessory'] in item.tags:
                             if self.tutorial_step == 4:
                                 self.tutorial_process += 15
@@ -1703,7 +1708,7 @@ class Player:
                             for ii, a in enumerate(self.accessories):
                                 if a == item.id:
                                     self.sel_accessory = ii
-                            tt = [['ring'], ['glove', 'gloves'], ['eye'], ['cross'], ['boots'], ['shield'], ['amulet', 'charm']]
+                            tt = [['ring'], ['glove', 'gloves'], ['eye'], ['cross'], ['boots'], ['shield', 'defense'], ['amulet', 'charm']]
                             for t in tt:
                                 f = 0
                                 for tf in t:
@@ -1714,7 +1719,7 @@ class Player:
                                     ct = 0
                                     for ii, a in enumerate(self.accessories):
                                         for tf in t:
-                                            if a.endswith(tf):
+                                            if a.endswith(tf) and not len([1 for tt in ['major_accessory', 'head', 'body', 'leg'] if inventory.TAGS[tt] in inventory.ITEMS[a].tags]):
                                                 ct += 1
                                                 if ct >= 1 + (tf == 'ring'):
                                                     self.sel_accessory = ii

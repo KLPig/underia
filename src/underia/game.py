@@ -5,6 +5,7 @@ import time
 import datetime
 from functools import lru_cache
 import asyncio
+import traceback
 
 import pygame as pg
 
@@ -109,6 +110,7 @@ class Game:
         self.map_ns = {}
         self.m_min = 0
         self.m_max = 0
+        self.npc_data: dict[str, dict] = {}
         self.sounds: dict[str, pg.mixer.Sound] = {}
         self.world_events = []
         self.dummy = None
@@ -997,6 +999,7 @@ class Game:
                                                         cmd = str(eval(cmd))
                                                     except Exception as e:
                                                         cmd = str(e)
+                                                        traceback.print_exc()
                                                 else:
                                                     cc = pg.key.name(ee.key)
                                                     if cc == 'space':
