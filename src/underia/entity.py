@@ -3,6 +3,7 @@ import math
 import random
 
 import pygame as pg
+from scipy.stats import alpha
 
 from physics import mover, vector
 from resources import position
@@ -1821,8 +1822,12 @@ class Entities:
 
             self.ii_set = False
 
-            self.ct1 = [('npc_gd_f', 1), ('npc_gd_p', 1)]
-            self.ct2 = [('npc_gd_home', 1), ('npc_gd_blood_ingot', 5), ('npc_gd_aimer', 1), ('npc_gd_watcher_wand', 1)]
+            self.ct1 = [('npc_gd_f', 1), ('npc_gd_p', 1), ('npc_gd_c', 1)]
+            self.ct2 = [('npc_gd_home', 1), ('npc_gd_blood_ingot', 5), ('npc_gd_aimer', 1),
+                        ('npc_gd_watcher_wand', 1), ('npc_gd_bloodstone_amulet', 1),
+                        ('npc_gd_traveller_boots', 1)]
+            self.ct3 =[('npc_gd_home', 1), ('npc_gd_c_1', 1), ('npc_gd_c_2', 1),
+                       ('npc_gd_c_3', 1)]
             self.state = 0
 
             self.chest.items = self.ct1
@@ -1856,35 +1861,77 @@ class Entities:
                 )
                 inventory.ITEMS['npc_gd_p'] = inventory.Inventory.Item(
                     'Purchase',
-                    'col00ffffPurchase?\n'
-                    'col00ffffAlright, these cell organisations looks good.',
+                    'col00ffffAlright, these cell organisations are reasonable...',
                     'npc_gd_p',
+                    0, [],
+                    specify_img='null'
+                )
+                inventory.ITEMS['npc_gd_c'] = inventory.Inventory.Item(
+                    'Chat',
+                    '',
+                    'npc_gd_c',
+                    0, [],
+                    specify_img='null'
+                )
+
+
+                inventory.ITEMS['npc_gd_c_1'] = inventory.Inventory.Item(
+                    'Who are you?',
+                    '',
+                    'npc_gd_c_1',
+                    0, [],
+                    specify_img='null'
+                )
+                inventory.ITEMS['npc_gd_c_2'] = inventory.Inventory.Item(
+                    'About this world',
+                    '',
+                    'npc_gd_c_2',
+                    0, [],
+                    specify_img='null'
+                )
+                inventory.ITEMS['npc_gd_c_3'] = inventory.Inventory.Item(
+                    'Angel?',
+                    '',
+                    'npc_gd_c_3',
                     0, [],
                     specify_img='null'
                 )
 
                 inventory.ITEMS['npc_gd_watcher_wand'] = inventory.Inventory.Item(
                     'Watcher Wand',
-                    'col00ffffSummon a sudden beam.\ncol00ff00Cost: 20 cell organisations.',
+                    'col00ffffSummon a sudden beam.\ncol00ff00Cost: 120 cell organisations.',
                     'npc_gd_watcher_wand',
                     2, [],
                     specify_img='watcher_wand'
                 )
                 inventory.ITEMS['npc_gd_blood_ingot'] = inventory.Inventory.Item(
                     'Blood Ingot',
-                    'col00ffffStrong condense of blood.\ncol00ff00Cost: 3 cell organisations each, ttl. 15.',
+                    'col00ffffStrong condense of blood.\ncol00ff00Cost: 12 cell organisations each, ttl. 60.',
                     'npc_gd_blood_ingot',
                     2, [],
                     specify_img='blood_ingot'
                 )
                 inventory.ITEMS['npc_gd_aimer'] = inventory.Inventory.Item(
                     'Aimer',
-                    'col00ffffIt targets to the bosses.\ncol00ff00Cost: 10 cell organisations.',
+                    'col00ffffIt targets to the bosses.\ncol00ff00Cost: 50 cell organisations.',
                     'npc_gd_aimer',
                     2, [],
                     specify_img='aimer'
                 )
-
+                inventory.ITEMS['npc_gd_bloodstone_amulet'] = inventory.Inventory.Item(
+                    'Bloodstone Amulet',
+                    'col00ffffBleeding is meaningless to you.\ncol00ff00Cost: 300 cell organisations.',
+                    'npc_gd_bloodstone_amulet',
+                    4, [],
+                    specify_img='bloodstone_amulet'
+                )
+                inventory.ITEMS['npc_gd_traveller_boots'] = inventory.Inventory.Item(
+                    'Traveller boots',
+                    'col00ffffSpeeds you up quickly.\ncol00ff00Cost: 300 cell organisations.',
+                    'npc_gd_traveller_boots',
+                    4, [],
+                    specify_img='traveller_boots'
+                )
             self.obj.pos << vector.Vector2D(game.get_game().player.tick / 8, 200)
             super().t_draw()
 
@@ -1894,26 +1941,70 @@ class Entities:
                 while player.inventory.is_enough(inventory.ITEMS['npc_gd_p']):
                     self.state = 1
                     player.inventory.remove_item(inventory.ITEMS['npc_gd_p'])
+                while player.inventory.is_enough(inventory.ITEMS['npc_gd_c']):
+                    self.state = 2
+                    player.inventory.remove_item(inventory.ITEMS['npc_gd_c'])
                 while player.inventory.is_enough(inventory.ITEMS['npc_gd_home']):
                     self.state = 0
                     player.inventory.remove_item(inventory.ITEMS['npc_gd_home'])
 
 
+                while player.inventory.is_enough(inventory.ITEMS['npc_gd_c_1']):
+                    self.state = 0
+                    game.get_game().dialog.dialog(self.name + ', \nthis is my name.', 'I\'m a "guidance"?\nI forgot.')
+                    player.inventory.remove_item(inventory.ITEMS['npc_gd_c_1'])
+                while player.inventory.is_enough(inventory.ITEMS['npc_gd_c_2']):
+                    self.state = 0
+                    words = [
+                        ['What, you\'re unhealthy?\n "go hell"!', 'I mean, \ngo hell...?'],
+                        ["Healthy enough?\nThe ancient desert may be useful..."],
+                        ["Heaven is a good place...", "But also dangerous..."],
+                        ["Rainforest?", "Is'nt it also a forest?"]
+                    ]
+                    game.get_game().dialog.dialog(*random.choice(words))
+                    player.inventory.remove_item(inventory.ITEMS['npc_gd_c_2'])
+                while player.inventory.is_enough(inventory.ITEMS['npc_gd_c_3']):
+                    self.state = 0
+                    game.get_game().dialog.dialog(
+                        'Angel?\nHa, that\'s a legend...',
+                        'In the myth, when the world is still in chaos...\n'
+                        'An angel saved us..?',
+                        'Ridiculous, \nright?'
+                    )
+                    if 'MS1' not in game.get_game().player.nts:
+                        game.get_game().player.nts.append('MS1')
+                        game.get_game().dialog.push_dialog(
+                            'Anyway, take this.',
+                            '[Notebook updated!]'
+                        )
+                    player.inventory.remove_item(inventory.ITEMS['npc_gd_c_3'])
+
+
                 while player.inventory.is_enough(inventory.ITEMS['npc_gd_watcher_wand']):
-                    if player.inventory.is_enough(inventory.ITEMS['cell_organization'], 20):
-                        player.inventory.remove_item(inventory.ITEMS['cell_organization'], 20)
+                    if player.inventory.is_enough(inventory.ITEMS['cell_organization'], 120):
+                        player.inventory.remove_item(inventory.ITEMS['cell_organization'], 120)
                         player.inventory.add_item(inventory.ITEMS['watcher_wand'])
                     player.inventory.remove_item(inventory.ITEMS['npc_gd_watcher_wand'])
                 while player.inventory.is_enough(inventory.ITEMS['npc_gd_blood_ingot']):
-                    if player.inventory.is_enough(inventory.ITEMS['cell_organization'], 3):
-                        player.inventory.remove_item(inventory.ITEMS['cell_organization'], 3)
+                    if player.inventory.is_enough(inventory.ITEMS['cell_organization'], 12):
+                        player.inventory.remove_item(inventory.ITEMS['cell_organization'], 12)
                         player.inventory.add_item(inventory.ITEMS['blood_ingot'])
                     player.inventory.remove_item(inventory.ITEMS['npc_gd_blood_ingot'])
                 while player.inventory.is_enough(inventory.ITEMS['npc_gd_aimer']):
-                    if player.inventory.is_enough(inventory.ITEMS['cell_organization'], 10):
-                        player.inventory.remove_item(inventory.ITEMS['cell_organization'], 10)
+                    if player.inventory.is_enough(inventory.ITEMS['cell_organization'], 50):
+                        player.inventory.remove_item(inventory.ITEMS['cell_organization'], 50)
                         player.inventory.add_item(inventory.ITEMS['aimer'])
                     player.inventory.remove_item(inventory.ITEMS['npc_gd_aimer'])
+                while player.inventory.is_enough(inventory.ITEMS['npc_gd_bloodstone_amulet']):
+                    if player.inventory.is_enough(inventory.ITEMS['cell_organization'], 300):
+                        player.inventory.remove_item(inventory.ITEMS['cell_organization'], 300)
+                        player.inventory.add_item(inventory.ITEMS['bloodstone_amulet'])
+                    player.inventory.remove_item(inventory.ITEMS['npc_gd_bloodstone_amulet'])
+                while player.inventory.is_enough(inventory.ITEMS['npc_gd_traveller_boots']):
+                    if player.inventory.is_enough(inventory.ITEMS['cell_organization'], 300):
+                        player.inventory.remove_item(inventory.ITEMS['cell_organization'], 300)
+                        player.inventory.add_item(inventory.ITEMS['traveller_boots'])
+                    player.inventory.remove_item(inventory.ITEMS['npc_gd_traveller_boots'])
 
                 if self.state == 0:
                     self.chest.items = copy.copy(self.ct1)
@@ -1921,6 +2012,159 @@ class Entities:
                 elif self.state == 1:
                     self.chest.items = copy.copy(self.ct2)
                     self.chest.n = len(self.ct2)
+                elif self.state == 2:
+                    self.chest.items = copy.copy(self.ct3)
+                    self.chest.n = len(self.ct3)
+
+
+    class NPCRay(Chest):
+
+        def __init__(self, pos):
+            if 'ray' not in game.get_game().npc_data:
+                self.name = 'Ray'
+                game.get_game().npc_data['ray'] = {'name': self.name, 'acc': 3 }
+            else:
+                self.name = game.get_game().npc_data['ray']['name']
+            self.datas = game.get_game().npc_data['ray']
+            super().__init__(pos)
+            self.tick = 0
+            self.img = copy.copy(game.get_game().graphics['entity_ray'])
+
+
+            self.ii_set = False
+
+            self.ct1 = [('npc_ray_f', 1), ('npc_ray_p', 1), ('npc_ray_c', 1)]
+            self.ct2 = [('npc_ray_home', 1), ('npc_ray_chaos_reap', 1), ('npc_ray_beyond_horizon', 1)]
+            self.state = 0
+
+            self.chest.items = self.ct1
+            self.chest.n = len(self.ct1)
+            self.chest.locked = True
+            self.sm = False
+
+        def get_shown_txt(self):
+            return self.name, 'Press [E] to talk'
+
+        def t_draw(self):
+
+            if not self.ii_set:
+                self.ii_set = True
+                inventory.ITEMS['npc_ray_home'] = inventory.Inventory.Item(
+                    'Back',
+                    '',
+                    'npc_ray_home',
+                    0, [],
+                    specify_img='null'
+                )
+                inventory.ITEMS['npc_ray_f'] = inventory.Inventory.Item(
+                    'Curse',
+                    'col600000You will never want this.',
+                    'npc_ray_f',
+                    0, [],
+                    specify_img='null'
+                )
+                inventory.ITEMS['npc_ray_p'] = inventory.Inventory.Item(
+                    'Purchase',
+                    '',
+                    'npc_ray_p',
+                    0, [],
+                    specify_img='null'
+                )
+                inventory.ITEMS['npc_ray_c'] = inventory.Inventory.Item(
+                    'Chat',
+                    '',
+                    'npc_ray_p',
+                    0, [],
+                    specify_img='null'
+                )
+
+
+                inventory.ITEMS['npc_ray_chaos_reap'] = inventory.Inventory.Item(
+                    'Chaos Reap',
+                    'rainbowThe reward you deserve.',
+                    'npc_ray_chaos_reap',
+                    0, [],
+                    specify_img='chaos_reap'
+                )
+                inventory.ITEMS['npc_ray_beyond_horizon'] = inventory.Inventory.Item(
+                    'Beyond Horizon',
+                    'rainbowAccelerate until nobody will ever faster than you.\nrainbowRequire: "Ultralightspeed"',
+                    'npc_ray_beyond_horizon',
+                    0, [],
+                    specify_img='beyond_horizon'
+                )
+
+            if len([1 for e in game.get_game().entities if issubclass(type(e), Entities.Ray)]):
+                return
+
+            player = game.get_game().player
+            self.set_rotation(self.rot)
+
+            if player.open_chest == self.chest:
+                while player.inventory.is_enough(inventory.ITEMS['npc_ray_f']):
+                    rs = Entities.Ray
+                    if game.get_game().stage in [0, 1]:
+                        rs = Entities.Ray1
+                    elif game.get_game().stage in [2, 3]:
+                        rs = Entities.Ray2
+                    elif game.get_game().stage == 4:
+                        rs = Entities.Ray3
+                    if game.get_game().stage <= 4:
+                        entity_spawn(rs, 1600, 1600, 0, 1145, 100000)
+                        self.datas['acc'] += 1
+                    player.inventory.remove_item(inventory.ITEMS['npc_ray_f'])
+                while player.inventory.is_enough(inventory.ITEMS['npc_ray_p']):
+                    self.state = 1
+                    player.inventory.remove_item(inventory.ITEMS['npc_ray_p'])
+                while player.inventory.is_enough(inventory.ITEMS['npc_ray_home']):
+                    self.state = 0
+                    player.inventory.remove_item(inventory.ITEMS['npc_ray_home'])
+
+
+                while player.inventory.is_enough(inventory.ITEMS['npc_ray_chaos_reap']):
+                    if self.datas['acc'] >= 3:
+                        self.datas['acc'] -= 3
+                        player.inventory.add_item(inventory.ITEMS['chaos_reap'])
+                    else:
+                        if constants.LANG == 'en':
+                            game.get_game().dialog.dialog('You are not satisfying than I expected.')
+                        else:
+                            game.get_game().dialog.dialog('你仍不符合我的预期。')
+                    player.inventory.remove_item(inventory.ITEMS['npc_ray_chaos_reap'])
+                while player.inventory.is_enough(inventory.ITEMS['npc_ray_beyond_horizon']):
+                    if player.inventory.is_enough(inventory.ITEMS['ultra_lightspeed']):
+                        player.inventory.remove_item(inventory.ITEMS['ultra_lightspeed'])
+                        if self.datas['acc'] >= 24:
+                            self.datas['acc'] -= 24
+                            player.inventory.add_item(inventory.ITEMS['beyond_horizon'])
+                        else:
+                            if constants.LANG == 'en':
+                                game.get_game().dialog.dialog('You are not satisfying than I expected.')
+                            else:
+                                game.get_game().dialog.dialog('你仍不符合我的预期。')
+                    player.inventory.remove_item(inventory.ITEMS['npc_ray_beyond_horizon'])
+
+                if self.state == 0:
+                    self.chest.items = copy.copy(self.ct1)
+                    self.chest.n = len(self.ct1)
+                if self.state == 1:
+                    self.chest.items = copy.copy(self.ct2)
+                    self.chest.n = len(self.ct2)
+
+            self.obj.pos << (0, min(0, max(-300, game.get_game().player.obj.pos[1] - 100)))
+            ap = max(0, 255 - int(abs(game.get_game().player.obj.pos - self.obj.pos) / 6))
+            self.img.set_alpha(ap)
+            ar = math.sin(self.tick / 60 * math.pi) * 20 + 20
+            iml = entity_get_surface(1, -ar, game.get_game().player.get_screen_scale(),
+                                     game.get_game().graphics['entity_ray_lwing'], alpha=ap)
+            imlr = iml.get_rect(center=position.displayed_position(self.obj.pos - vector.Vector2D(dx=50)))
+            game.get_game().displayer.canvas.blit(iml, imlr)
+            imr = entity_get_surface(1, ar, game.get_game().player.get_screen_scale(),
+                                     game.get_game().graphics['entity_ray_rwing'], alpha=ap)
+            imrr = imr.get_rect(center=position.displayed_position(self.obj.pos + vector.Vector2D(dx=50)))
+            game.get_game().displayer.canvas.blit(imr, imrr)
+            self.tick += 1
+            super().t_draw()
 
 
     class GreenChest(Chest):
@@ -2543,7 +2787,6 @@ class Entities:
             IndividualLoot('zirconium', 1, 20, 30),
             SelectionLoot([('orange_ring', 1, 1), ('blue_ring', 1, 1), ('green_ring', 1, 1)], 1, 1),
             SelectionLoot([('tearblade', 1, 1), ('gaze', 1, 1), ('blood_watcher_wand', 1, 1)], 1, 1),
-            IndividualLoot('aimer', 1, 1, 1),
         ])
         BOSS_NAME = 'The Watcher of Terror'
         IS_MENACE = True
@@ -4737,12 +4980,14 @@ class Entities:
         SOUND_SPAWN = 'boss'
         SOUND_HURT = 'crystal'
 
+        DR = 0
+
         def __init__(self, pos):
             super().__init__(pos, game.get_game().graphics['entity_ray'], BuildingAI, 500)
             self.dr = .7
             self.dl = 1
             self.lhp = self.hp_sys.hp
-            self.dhp = self.hp_sys.max_hp * 40
+            self.dhp = self.hp_sys.max_hp * (40 + self.DR * 120)
             self.hp_sys.IMMUNE = True
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 120
             self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 120
@@ -4752,8 +4997,9 @@ class Entities:
             self.projs = []
             self.dp = 0
             self.obj.MASS = 100
-            self.obj.TOUCHING_DAMAGE = 100
+            self.obj.TOUCHING_DAMAGE = 100 + self.DR * 400
             self.obj.FRICTION = .95
+            self.obj.SPEED *= 1 + self.DR * .8
             self.tr = 0
             game.get_game().dialog.dialog('I see...', 'It\'s you...')
 
@@ -4796,10 +5042,15 @@ class Entities:
 
             if self.hp_sys.hp <= 10:
                 if self.obj.MASS < 120000:
-                    game.get_game().drop_items.append(Entities.DropItem(self.obj.pos, 'soulfeather', 81))
-                    game.get_game().drop_items.append(Entities.DropItem(self.obj.pos, 'chaos_reap', 1))
-                    game.get_game().dialog.dialog('Great.', 'Results as expected.', 'And here, is your reward.')
-                    self.hp_sys.hp = 10
+                    if self.DR:
+                        game.get_game().dialog.dialog('Good.')
+                        if 'ray' in game.get_game().npc_data:
+                            game.get_game().npc_data['ray']['acc'] += self.DR * 3
+                    else:
+                        game.get_game().dialog.dialog('Great.', 'Results as expected.', 'And here, is your reward.')
+                    self.hp_sys.hp = 0
+                    if 'ray' not in game.get_game().npc_data:
+                        game.get_game().furniture.append(Entities.NPCRay((0,0)))
                 self.obj.MASS += 1500000
 
             elif self.tick < 0:
@@ -4823,7 +5074,7 @@ class Entities:
                     cw = 'items_weapons_fireball_magic'
                     if self.tick % 3 == 0:
                         fb = Entities.MagmaKingFireball(self.obj.pos, random.randint(0, 360))
-                        fb.DMG = 120
+                        fb.DMG = 120 + self.DR * 200
                         fb.show_bar = False
                         self.projs.append(fb)
                 self.dp = game.get_game().player.obj.pos.to_value()
@@ -4850,17 +5101,17 @@ class Entities:
                     elif self.tick % 60 < 40:
                         tp = game.get_game().player.obj.pos - vector.Vector2D(self.tr, 600)
                         self.obj.IS_OBJECT = False
-                        self.obj.TOUCHING_DAMAGE = 50
+                        self.obj.TOUCHING_DAMAGE = 50 + self.DR * 300
                         self.obj.apply_force((tp - self.obj.pos) / 3)
 
                         cw = 'items_weapons_fruit_wand'
                         if self.tick % 12 == 0:
                             fb = Entities.FallingApple(game.get_game().player.obj.pos + (random.randint(-1000, 1000), -1000), random.randint(0, 360))
-                            fb.DMG = 120
+                            fb.DMG = 120 + self.DR * 200
                             fb.show_bar = False
                             self.projs.append(fb)
                     else:
-                        self.obj.TOUCHING_DAMAGE = 150
+                        self.obj.TOUCHING_DAMAGE = 150 + self.DR * 400
                         cw = 'items_weapons_valkyrien'
                         self.obj.IS_OBJECT = True
                         self.obj.apply_force(vector.Vector(self.tr, 3000))
@@ -4883,7 +5134,7 @@ class Entities:
 
 
                 if self.tick % 70 <= 30:
-                    self.obj.TOUCHING_DAMAGE = 50
+                    self.obj.TOUCHING_DAMAGE = 50 + self.DR * 200
                     if self.tick % 200 < 66:
                         tp = game.get_game().player.obj.pos - vector.Vector2D(dx=500) * [-1, 1][l]
                     elif self.tick % 200 < 133:
@@ -4895,7 +5146,7 @@ class Entities:
                     if self.tick % 15 == 0:
                         for ar in range(0, 360, 60 - (constants.DIFFICULTY + 1) // 2 * 15):
                             fb = Entities.MagmaKingFireball(self.obj.pos, ar + self.tick // 2)
-                            fb.DMG = 100
+                            fb.DMG = 100 + self.DR * 200
                             fb.show_bar = False
                             self.projs.append(fb)
                 else:
@@ -4904,7 +5155,7 @@ class Entities:
                     self.obj.TOUCHING_DAMAGE = 150
                     if self.tick % 15 == 0:
                         fb = Entities.RStarfury(game.get_game().player.obj.pos, 0)
-                        fb.DMG = 160
+                        fb.DMG = 160 + self.DR * 200
                         fb.show_bar = False
                         self.projs.append(fb)
 
@@ -4923,7 +5174,7 @@ class Entities:
                         sr = dr + 20 - constants.DIFFICULTY * 5
                         for ar in range(0, 360, 90):
                             fb = Entities.MagmaKingFireball(self.obj.pos, ar + sr)
-                            fb.DMG = 100
+                            fb.DMG = 100 + self.DR * 200
                             fb.show_bar = False
                             self.projs.append(fb)
                 elif self.tick % 200 < 160:
@@ -4933,7 +5184,7 @@ class Entities:
                                  position.displayed_position(game.get_game().player.obj.pos),
                                  5)
                 else:
-                    self.obj.TOUCHING_DAMAGE = 150
+                    self.obj.TOUCHING_DAMAGE = 150 + self.DR * 400
                     cw = 'items_weapons_star_wrath'
                     pg.draw.line(game.get_game().displayer.canvas, (0, 0, 0),
                                  position.displayed_position(self.dp),
@@ -4943,7 +5194,7 @@ class Entities:
                         for ar in range(0, 360, 60 - (constants.DIFFICULTY + 1) // 2 * 15):
                             for dt in range(100, 1000, 150):
                                 fb = Entities.RStarfury(vector.Vector2D(ar + dr, dt) + self.dp, 0)
-                                fb.DMG = 120
+                                fb.DMG = 120 + self.DR * 200
                                 fb.show_bar = False
                                 self.projs.append(fb)
                     ap = self.obj.pos - game.get_game().player.obj.pos
@@ -4979,6 +5230,13 @@ class Entities:
             super().on_update()
             for p in self.projs:
                 p.on_update()
+
+    class Ray1(Ray):
+        DR = 1
+    class Ray2(Ray):
+        DR = 2.5
+    class Ray3(Ray):
+        DR = 5.5
 
     class GlimmerSkate(Entity):
         NAME = 'Glimmer Skate'

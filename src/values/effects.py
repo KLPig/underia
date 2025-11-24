@@ -10,6 +10,7 @@ class Effect:
     NAME = 'Effect'
     DESC = ''
     COMBINE = 'Duration'
+    IMMUNE = []
 
     def __init__(self, duration, level):
         self.timer = duration
@@ -41,10 +42,17 @@ class Aberration(Effect):
 
     def on_update(self, entity: hp_system.HPSystem):
         super().on_update(entity)
-        dmg = min(self.level + 2, max(entity.max_hp / 200, 200.0))
-        if (dmg * 3  > (1000 / game.get_game().clock.last_tick) or self.tick % 9 == 0) and self.tick % 3 == 0:
-            entity.damage(dmg / 1000 * game.get_game().clock.last_tick * (9 if dmg * 3 > (1000 / game.get_game().clock.last_tick) else 3),
-                          getattr(damages.DamageTypes, 'ELEMENT_' + elements.NAMES[self.CORRESPONDED_ELEMENT].upper()), sound=False)
+        f = 0
+        for i in self.IMMUNE:
+            if game.get_game().player.calculate_data(i, False):
+                f = 1
+                self.timer = 0
+                break
+        if not f:
+            dmg = min(self.level + 2, max(entity.max_hp / 200, 200.0))
+            if (dmg * 3  > (1000 / game.get_game().clock.last_tick) or self.tick % 9 == 0) and self.tick % 3 == 0:
+                entity.damage(dmg / 1000 * game.get_game().clock.last_tick * (9 if dmg * 3 > (1000 / game.get_game().clock.last_tick) else 3),
+                              getattr(damages.DamageTypes, 'ELEMENT_' + elements.NAMES[self.CORRESPONDED_ELEMENT].upper()), sound=False)
 
 
 class Burning(Aberration):
@@ -235,11 +243,13 @@ class Bleeding(Effect):
     IMG = 'bleeding'
     NAME = 'Bleeding'
     DESC = '-4/sec regeneration'
+    IMMUNE = ['bleeding']
 
 class BleedingR(Aberration):
     IMG = 'bleeding'
     NAME = 'Bleeding'
     DESC = 'Continuously dealing damage'
+    IMMUNE = ['bleeding']
 
 class FlashBack(Effect):
     IMG = 'flashback'

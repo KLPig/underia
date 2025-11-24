@@ -109,6 +109,8 @@ class Inventory:
                 cdata['tree_curse'] = 1
             elif desc.endswith('snowcurse'):
                 cdata['snow_curse'] = 1
+            elif desc.endswith('bleeding'):
+                cdata['bleeding'] = 1
 
             elif desc.endswith('biomefrictioneffect'):
                 cdata['bio_fric'] = int(desc.removesuffix('biomefrictioneffect'))
@@ -792,6 +794,7 @@ items_dict: dict[str, Inventory.Item] = {
                                        [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
     'lazer_rain': Inventory.Item('Lazer Rain', '', 'lazer_rain', 8, [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
     'chaos_abyss': Inventory.Item('Chaos Abyss', '', 'chaos_abyss', 8, [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
+    'milky_way': Inventory.Item('Milky Way', 'rainbowTry to use it.', 'milky_way', 10, [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
     'accelerationism': Inventory.Item('Accelerationism', 'Increase of speed.', 'accelerationism', 9,
                                        [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
     'resolution': Inventory.Item('Resolution', 'The bow is solved.', 'resolution', 11,
@@ -1602,12 +1605,16 @@ items_dict: dict[str, Inventory.Item] = {
     'aerialite_necklace': Inventory.Item('Aerialite Necklace', '-50% biome friction effect',
                                          'aerialite_necklace', 3, [TAGS['item'], TAGS['accessory']]),
     'wing_boots': Inventory.Item('Wing Boots', '20kg\n+100% speed\n-20% air resistance',
-                                 'wing_boots', 3, [TAGS['item'], TAGS['accessory']]),
+                                 'wing_boots', 2, [TAGS['item'], TAGS['accessory']]),
     'bloody_traveller_boots': Inventory.Item('Bloody Traveller Boots', '20kg\n+100% speed\n+12 touching defense',
-                                              'bloody_traveller_boots', 4, [TAGS['item'], TAGS['accessory']]),
+                                              'bloody_traveller_boots', 2, [TAGS['item'], TAGS['accessory']]),
+    'traveller_boots': Inventory.Item('Traveller Boots', '+75% speed\n-50% sprint cd\n20 sprint',
+                                      'traveller_boots', 4, [TAGS['item'], TAGS['accessory']]),
     'fire_eye': Inventory.Item('Fire Eye', '+10% ranged damage\n+5% critical', 'fire_eye', 2,
                                 [TAGS['item'], TAGS['accessory'], TAGS['light_source']]),
     'aimer': Inventory.Item('Aimer', 'Enables aiming to menaces.', 'aimer', 2,
+                            [TAGS['item'], TAGS['accessory'], TAGS['light_source'], TAGS['see']]),
+    'bloodstone_amulet': Inventory.Item('Bloodstone Amulet', 'Immune to bleeding\nWhen HP < 25%, +50% damage', 'bloodstone_amulet', 2,
                             [TAGS['item'], TAGS['accessory'], TAGS['light_source'], TAGS['see']]),
     'photon_aimer': Inventory.Item('Photon Aimer', 'Enables aiming to menaces.', 'photon_aimer', 5,
                                     [TAGS['item'], TAGS['accessory'], TAGS['light_source'], TAGS['see']]),
@@ -2517,7 +2524,7 @@ RECIPES = [
     Recipe({'soul_of_determination': 1, 'photon': 10}, 'legendary_hero', 36),
     Recipe({'soul_of_determination': 1, 'soul_of_coldness': 10}, 'snowman_piece', 50),
     Recipe({'chaos_ingot': 200, 'soul_of_determination': 12, 'origin': 1}, 'magisters_hat'),
-    Recipe({'origin': 1, 'chaos_ingot': 25}, 'chaos_heart'),
+    Recipe({'celestic': 1, 'true_worlds_bow': 1, 'chaos_abyss': 1, 'soul_of_determination': 36, 'origin': 1}, 'milky_way'),
     Recipe({'chaos_ingot': 240, 'red_spirit_ring': 1, 'soul_of_determination': 20}, 'determined_ring'),
     Recipe({'chaos_ingot': 500, 'soul_of_determination': 8, 'wierd_essence': 36}, 'uncanny_valley'),
     Recipe({'chaos_ingot': 300, 'soul_of_determination': 12, 'wierd_essence': 32}, 'death_note'),

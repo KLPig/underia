@@ -299,6 +299,8 @@ game.world_events.clear()
 
 if 'guide' in game.npc_data:
     game.furniture.append(underia.Entities.NPCGuide((0, 0)))
+if 'ray' in game.npc_data:
+    game.furniture.append(underia.Entities.NPCRay((0, 0)))
 
 if constants.APRIL_FOOL:
     nr = []

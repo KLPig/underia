@@ -3475,6 +3475,50 @@ class TrueWorldBow(Bow):
 
             game.get_game().projectiles.append(pj)
 
+class MilkyWay(Bow):
+    def update(self):
+        super().update()
+
+        tf = math.cos(math.pi * game.get_game().day_time) ** 2
+        tf2 = math.sin(math.pi * game.get_game().day_time) ** 2
+        self.damages[dmg.DamageTypes.PIERCING] = int(150 * (1 + tf * 2))
+        self.at_time = max(1, int(18 / (1 + tf2 * 2)))
+
+
+    def on_start_attack(self):
+        self.face_to(
+            *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+        if game.get_game().player.ammo[0] not in projectiles.AMMOS or not game.get_game().player.ammo[1]:
+            self.timer = 0
+            return
+        if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
+            game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
+        for ar in range(-2, 3, 4):
+            pj = projectiles.AMMOS[game.get_game().player.ammo[0]]((self.x + game.get_game().player.obj.pos[0],
+                                                                   self.y + game.get_game().player.obj.pos[1]),
+                                                                  self.rot + ar + random.uniform(-self.precision, self.precision), self.spd,
+                                                                  self.damages[dmg.DamageTypes.PIERCING])
+            b = game.get_game().get_biome()
+            if b.endswith('forest') or b in ['desert', 'hell']:
+                inventory.ITEMS['true_worlds_bow'].desc = 'col00ff00Forests/Desert/Hell: -20% damage, pierce, +100% speed'
+                pj.DAMAGES *= .8
+                pj.DELETE = False
+                pj.ENABLE_IMMUNE = .6
+                pj.obj.velocity *= 2
+            elif b in ['snowland', 'heaven', 'ocean', 'fallen_sea']:
+                inventory.ITEMS['true_worlds_bow'].desc = 'col00ff00Snow/Heaven/Sea/Ocean: -80% speed, 50% aim, +45% damage'
+                pj.obj.velocity *= .2
+                pj.AIMING = .5
+                pj.DAMAGES *= 1.45
+            elif b in ['hot_spring', 'inner']:
+                inventory.ITEMS['true_worlds_bow'].desc = 'col00ff00Abyss: +100% damage, +200% speed, unlimited pierce'
+                pj.DAMAGES *= 2
+                pj.obj.velocity *= 3
+                pj.DELETE = False
+                pj.ENABLE_IMMUNE = 0.2
+
+            game.get_game().projectiles.append(pj)
+
 class Aiolos(Bow):
     def on_start_attack(self):
         self.face_to(
@@ -4635,6 +4679,8 @@ def set_weapons():
                                         18, 16, 300, True, precision=2),
         'chaos_abyss': ChaosAbyss('chaos abyss', {dmg.DamageTypes.PIERCING: 150}, 1.5, 'items_weapons_chaos_abyss',
                                    6, 6, 500, precision=2, auto_fire=True),
+        'milky_way': MilkyWay('milky way', {dmg.DamageTypes.PIERCING: 450}, 4, 'items_weapons_milky_way',
+                              6, 6, 600, auto_fire=True, tail_col=(180, 100, 255), precision=1),
         'accelerationism': Accelerationism('accelerationism', {dmg.DamageTypes.PIERCING: 270}, 0.5,
                                            'items_weapons_accelerationism',
                                            0, 2, 320, True, ammo_save_chance=2 / 3),
