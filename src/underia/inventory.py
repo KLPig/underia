@@ -926,13 +926,13 @@ items_dict: dict[str, Inventory.Item] = {
     'platinum_bullet': Inventory.Item('Platinum Bullet', '', 'platinum_bullet', 1,
                                       [TAGS['item'], TAGS['ammo'], TAGS['ammo_bullet']]),
     'plasma': Inventory.Item('Plasma', '', 'plasma', 2, [TAGS['item'], TAGS['ammo'], TAGS['ammo_bullet']]),
-    'wavic': Inventory.Item('Wavic', '', 'wavic', 3, [TAGS['item'], TAGS['ammo'], TAGS['ammo_bullet']]),
+    'wavic': Inventory.Item('Wavic', '', 'wavic', 3, [TAGS['item'], TAGS['ammo'], TAGS['ammo_arrow']]),
     'rock_bullet': Inventory.Item('Rock Bullet', '', 'rock_bullet', 2,
                                   [TAGS['item'], TAGS['ammo'], TAGS['ammo_bullet']]),
     'shadow_bullet': Inventory.Item('Shadow Bullet', '', 'shadow_bullet', 4,
                                     [TAGS['item'], TAGS['ammo'], TAGS['ammo_bullet']]),
     'thermality': Inventory.Item('Thermality', '', 'thermality', 5, [TAGS['item'], TAGS['ammo'], TAGS['ammo_bullet']]),
-    'judgement': Inventory.Item('Judgement', '', 'judgement', 5, [TAGS['item'], TAGS['ammo'], TAGS['ammo_bullet']]),
+    'judgement': Inventory.Item('Judgement', '', 'judgement', 5, [TAGS['item'], TAGS['ammo'], TAGS['ammo_arrow']]),
     'quick_arrow': Inventory.Item('Quick Arrow', '', 'quick_arrow', 6,
                                   [TAGS['item'], TAGS['ammo'], TAGS['ammo_arrow']]),
     'quick_bullet': Inventory.Item('Quick Bullet', '', 'quick_bullet', 6,
@@ -1797,16 +1797,16 @@ items_dict: dict[str, Inventory.Item] = {
                                                          '-50% air resistance\n+100% wing control', 'ultra_lightspeed', 10, [TAGS['item'], TAGS['accessory'], TAGS['wings']]),
 
     'beyond_horizon': Inventory.Item('Beyond Horizon', 'rainbowAll entities\' speed to you is too slow.\n'
-                                                         '-50% air resistance\n+100% wing control', 'beyond_horizon', 10, [TAGS['item'], TAGS['accessory'], TAGS['wings']]),
+                                                         '-50% air resistance\n+100% wing control[cmd]\n-50% speed', 'beyond_horizon', 10, [TAGS['item'], TAGS['accessory'], TAGS['wings']]),
 
     'grasp_of_the_infinite_corridor': Inventory.Item('Grasp of the Infinite Corridor', 'A world, a planet, is all in my hand.\n+72% damage\n+180 touching defense\n+120 magic defense\n'
                                                                                        '+50/sec regeneration\n+500% domain size\n+10/sec mentality regeneration\n+80% speed\n+400 additional maximum mana\n'
-                                                                                       '+36% critical\nWhen using melee to hit enemy, deal additionally 1% thinking damage, 0.5% chance to kill it.', 'grasp_of_the_infinite_corridor',
+                                                                                       '+96% critical\nWhen using melee to hit enemy, deal additionally 1% thinking damage, 0.5% chance to kill it.', 'grasp_of_the_infinite_corridor',
                                                      10, [TAGS['item'], TAGS['accessory']]),
-    'karmic_trail_boots': Inventory.Item('Karmic Trail Boots', 'Prints down the path of karma.\n188kg\n-25% air resistance\n+450% speed\n+18% damage\n+32% critical\n+120 sprint\n-95% sprint cd\n'
+    'karmic_trail_boots': Inventory.Item('Karmic Trail Boots', 'Prints down the path of karma.\n488kg\n-25% air resistance\n+250% speed\n+50 sprint\n-95% sprint cd\n'
                                                                '+15/sec regeneration\nYour footprint will deal damage to enemies.',
                                           'karmic_trail_boots', 10, [TAGS['item'], TAGS['accessory']]),
-    'fate_alignment_amulet': Inventory.Item('Fate Alignment Amulet', 'The path of destiny.\n+50% speed\n+88% critical\n+80 touching defense\n120 magic defense\n'
+    'fate_alignment_amulet': Inventory.Item('Fate Alignment Amulet', 'The path of destiny.\n+50% speed\n+120% critical\n+80 touching defense\n120 magic defense\n'
                                                            '+40/sec regeneration\n+180/sec mana regeneration\nRevive after death.100CD',
                                              'fate_alignment_amulet', 10, [TAGS['item'], TAGS['accessory']]),
 

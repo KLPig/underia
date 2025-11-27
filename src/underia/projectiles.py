@@ -2408,30 +2408,33 @@ class Projectiles:
         DMG_TYPE = damages.DamageTypes.PHYSICAL
         DMG_RATE = .5
         DECAY_RATE = .9
+        COL = (255, 0, 0)
 
         def __init__(self, *args):
             super().__init__(*args)
             self.obj = WeakProjectileMotion(self.obj.pos, 0)
-            self.obj.MASS = 10
-            self.obj.FRICTION = 1.01
+            self.obj.MASS = 45
+            self.obj.FRICTION = .99
             self.obj.velocity.clear()
             self.obj.force.clear()
-            self.obj.apply_force(vector.Vector2D(self.rot, 400))
+            self.obj.apply_force(vector.Vector2D(self.rot, 2400))
             self.d_eno: list[tuple[int, int]] = []
             self.poss = []
             self.rt = 0
+            self.idr = game.get_game().get_biome() in ['desert', 'hell', 'hot_spring']
+            self.DMG_RATE += self.idr * .3
 
         def update(self):
             while len(self.d_eno) and self.tick - self.d_eno[0][0] > 20:
                 self.d_eno.pop(0)
 
             for j in range(len(self.poss) - 1):
-                draw.line(game.get_game().displayer.canvas, (255, j * 10, j * 10),
+                draw.line(game.get_game().displayer.canvas, (255, 110 - j * 10, 110 - j * 10),
                           position.displayed_position(self.poss[j]),
                           position.displayed_position(self.poss[j + 1]),
-                          int(j * 4 / game.get_game().player.get_screen_scale()))
+                          int((j * 4 + self.idr) / game.get_game().player.get_screen_scale()))
             pg.draw.circle(game.get_game().displayer.canvas, (255, 0, 0), position.displayed_position(self.obj.pos),
-                           int(23 / game.get_game().player.get_screen_scale()))
+                           int((23 + self.idr * 5) / game.get_game().player.get_screen_scale()))
             self.rt = (self.rt + self.obj.velocity.get_net_rotation()) / 2
             self.set_rotation(self.rt)
             super().update()
@@ -2440,8 +2443,58 @@ class Projectiles:
                 self.poss.pop(0)
             tar, _ = self.get_closest_entity()
             if tar is not None:
-                self.obj.apply_force(vector.Vector2D(vector.coordinate_rotation(*(tar.obj.pos - self.obj.pos)), 120))
+                self.obj.apply_force(vector.Vector2D(vector.coordinate_rotation(*(tar.obj.pos - self.obj.pos)), 400 + self.idr * 200))
 
+    class ArkWind(PlatinumWand):
+        IMG = 'projectiles_null'
+        DAMAGE_AS = 'ark_of_elements'
+        ENABLE_IMMUNE = 1
+        DEL = False
+        LIMIT_VEL = -1
+        DURATION = 400
+        DMG_TYPE = damages.DamageTypes.PHYSICAL
+        DMG_RATE = 1
+        DECAY_RATE = .9
+        SPD = 400
+        COL = (0, 255, 0)
+
+        def __init__(self, *args):
+            super().__init__(*args)
+            if game.get_game().get_biome() in ['heaven', 'forest', 'rainforest']:
+                self.ENABLE_IMMUNE -= .5
+                self.obj.velocity *= .6
+                self.DMG_RATE += .54
+                self.idr = 1
+            else:
+                self.idr = 0
+
+        def update(self):
+            super().update()
+            rt = self.tick * 7 + self.rot
+            cut_effects.cut_eff(game.get_game().displayer.canvas, int((50 + self.idr * 20) / game.get_game().player.get_screen_scale()),
+                                *position.displayed_position(self.obj.pos - vector.Vector2D(rt, 150 + self.idr * 100)),
+                                *position.displayed_position(self.obj.pos + vector.Vector2D(rt, 150 + self.idr * 100)),
+                                (0, 100, 50), dark=False)
+
+    class ArkIce(Beam):
+        DMG_TYPE = damages.DamageTypes.PHYSICAL
+        WIDTH = 60
+        LENGTH = 5000
+        DAMAGE_AS = 'ark_of_elements'
+        COLOR = (0, 255, 255)
+        DURATION = 15
+        FOLLOW_PLAYER = False
+        ENABLE_IMMUNE = 2
+        DMG_RATE = 1.5
+
+        def __init__(self, *args):
+            super().__init__(*args)
+            if game.get_game().get_biome() in ['snowland', 'fallen_sea', 'ocean', 'inner']:
+                self.ENABLE_IMMUNE -= .5
+                self.WIDTH *= 1.5
+                self.LENGTH *= 2
+                self.DURATION += 3
+                self.DMG_RATE += .9
 
     class FallingApple(Projectile):
         def __init__(self, pos, rotation, no=3):

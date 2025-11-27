@@ -1629,6 +1629,12 @@ class ArkOfElements(SweepWeapon):
         super().on_end_attack()
         self.cz = False
 
+    def on_damage(self, target):
+        super().on_damage(target)
+        target.hp_sys.effect(effects.Burning(10, 50))
+        target.hp_sys.effect(effects.Poison(25, 25))
+        target.hp_sys.effect(effects.Frozen(.2, 1))
+
     def on_attack(self):
         super().on_attack()
         if self.cz:
@@ -1640,11 +1646,39 @@ class ArkOfElements(SweepWeapon):
             self.cutting_effect(8, (100, 255, 100), (0, 100, 0))
         else:
             self.cutting_effect(8, (100, 100, 255), (0, 0, 100))
+        if not self.cz:
+            if self.ele == 0:
+                if self.timer in [1, 4, 5]:
+                    for i in range(3):
+                        game.get_game().projectiles.append(projectiles.Projectiles.ArkFire(game.get_game().player.obj.pos, self.rot + random.randint(-70, 70)))
+            elif self.ele == 1:
+                if self.timer == 3:
+                    game.get_game().projectiles.append(projectiles.Projectiles.ArkWind(game.get_game().player.obj.pos,
+                                                                                   vector.coordinate_rotation(*(-game.get_game().player.obj.pos - (self.x, self.y) +
+                                                                                                                position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))))
+            else:
+                ap = -int(1600 * game.get_game().player.get_screen_scale())
+                if self.timer == 3:
+                    for _ in range(5):
+                        ax, ay = random.randint(-200, 200), random.randint(-200, 200) + ap
+                        game.get_game().projectiles.append(projectiles.Projectiles.ArkIce(game.get_game().player.obj.pos + (self.x, self.y) + (ax, ay),
+                                                                                          vector.coordinate_rotation(*(-game.get_game().player.obj.pos - (self.x, self.y) - (ax, ay) +
+                                                                                                                         position.real_position(game.get_game().displayer.reflect(
+                                                                                                                             *pg.mouse.get_pos()
+                                                                                                                         ))))))
+        else:
+            if self.ele == 0:
+                if self.timer % 5 == 0:
+                    for i in range(2):
+                        game.get_game().projectiles.append(projectiles.Projectiles.ArkFire(game.get_game().player.obj.pos, self.rot + random.randint(-360, 360)))
+            elif self.ele == 1:
+                if self.timer % 10 == 0:
+                    for ar in range(-120, 121, 60):
+                        game.get_game().projectiles.append(projectiles.Projectiles.ArkWind(game.get_game().player.obj.pos, ar))
+            else:
+                if self.timer % 10 == 0:
+                    game.get_game().projectiles.append(projectiles.Projectiles.ArkIce(game.get_game().player.obj.pos, 0))
 
-        if self.ele == 0:
-            if self.timer in [1, 4, 5]:
-                for i in range(3):
-                    game.get_game().projectiles.append(projectiles.Projectiles.ArkFire(game.get_game().player.obj.pos, self.rot + random.randint(-30, 30)))
 
 class UncannyValley(Blade):
     def on_start_attack(self):
@@ -3528,8 +3562,8 @@ class MilkyWay(Bow):
 
         tf = math.cos(math.pi * game.get_game().day_time) ** 2
         tf2 = math.sin(math.pi * game.get_game().day_time) ** 2
-        self.damages[dmg.DamageTypes.PIERCING] = int(150 * (1 + tf * 2))
-        self.at_time = max(1, int(18 / (1 + tf2 * 2)))
+        self.damages[dmg.DamageTypes.PIERCING] = int(150 * (1 + tf * 4))
+        self.at_time = max(1, int(18 / (1 + tf2 * 4)))
 
 
     def on_start_attack(self):
@@ -3540,7 +3574,7 @@ class MilkyWay(Bow):
             return
         if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
             game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
-        for ar in range(-2, 3, 4):
+        for ar in range(-2, 3, 1):
             pj = projectiles.AMMOS[game.get_game().player.ammo[0]]((self.x + game.get_game().player.obj.pos[0],
                                                                    self.y + game.get_game().player.obj.pos[1]),
                                                                   self.rot + ar + random.uniform(-self.precision, self.precision), self.spd,
@@ -4729,8 +4763,8 @@ def set_weapons():
                                         18, 16, 300, True, precision=2),
         'chaos_abyss': ChaosAbyss('chaos abyss', {dmg.DamageTypes.PIERCING: 150}, 1.5, 'items_weapons_chaos_abyss',
                                    6, 6, 500, precision=2, auto_fire=True),
-        'milky_way': MilkyWay('milky way', {dmg.DamageTypes.PIERCING: 450}, 4, 'items_weapons_milky_way',
-                              6, 6, 600, auto_fire=True, tail_col=(180, 100, 255), precision=1),
+        'milky_way': MilkyWay('milky way', {dmg.DamageTypes.PIERCING: 600}, 4, 'items_weapons_milky_way',
+                              6, 4, 200, auto_fire=True, tail_col=(180, 100, 255), precision=1),
         'accelerationism': Accelerationism('accelerationism', {dmg.DamageTypes.PIERCING: 270}, 0.5,
                                            'items_weapons_accelerationism',
                                            0, 2, 320, True, ammo_save_chance=2 / 3),

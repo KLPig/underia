@@ -79,7 +79,7 @@ game.player.max_inspiration = constants.INFINITY
 game.player.talent = constants.INFINITY
 game.player.max_talent = constants.INFINITY
 
-for s in setups:
+for s in setups: 
     exec(s)
 
 fpss = []
