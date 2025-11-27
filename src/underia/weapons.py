@@ -901,6 +901,12 @@ class TearBlade(Blade):
     def on_damage(self, target: entity.Entities.Entity):
         target.hp_sys.effect(effects.BleedingR(2, 9))
 
+class BurningTears(Blade):
+    def on_damage(self, target: entity.Entities.Entity):
+        for e in game.get_game().entities:
+            if e != target:
+                e.hp_sys.damage(weapons.WEAPONS[''])
+
 class Sunrise(Blade):
     def on_start_attack(self):
         mr = vector.coordinate_rotation(*(-game.get_game().player.obj.pos + position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
@@ -1598,6 +1604,47 @@ class TheBlade(Blade):
                 p.rotate(2)
         self.wt += 1
         super().on_attack()
+
+class ArkOfElements(SweepWeapon):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.sk_mcd = 1000
+        self.sk_cd = 0
+        self.ele = 0
+        self.cz = False
+        self.auto_fire = True
+
+    def update(self):
+        super().update()
+        self.damages = {DamageTypes.PHYSICAL: 300 + min(self.sk_cd // 2, 300)}
+
+    def on_special_attack(self, strike: int):
+        super().on_special_attack(strike)
+        self.cz = True
+        self.ele = (self.ele + 1) % 3
+        self.timer = 50
+        self.sk_cd = 0
+
+    def on_end_attack(self):
+        super().on_end_attack()
+        self.cz = False
+
+    def on_attack(self):
+        super().on_attack()
+        if self.cz:
+            self.set_rotation(0)
+            self.sk_cd = min(self.sk_cd + 30, self.sk_mcd)
+        elif not self.ele:
+            self.cutting_effect(8, (255, 100, 100), (100, 0, 0))
+        elif self.ele == 1:
+            self.cutting_effect(8, (100, 255, 100), (0, 100, 0))
+        else:
+            self.cutting_effect(8, (100, 100, 255), (0, 0, 100))
+
+        if self.ele == 0:
+            if self.timer in [1, 4, 5]:
+                for i in range(3):
+                    game.get_game().projectiles.append(projectiles.Projectiles.ArkFire(game.get_game().player.obj.pos, self.rot + random.randint(-30, 30)))
 
 class UncannyValley(Blade):
     def on_start_attack(self):
@@ -4530,6 +4577,9 @@ def set_weapons():
         'demon_blade__muramasa': Muramasa('demon blade  muramasa', {dmg.DamageTypes.PHYSICAL: 350}, 12,
                                           'items_weapons_demon_blade__muramasa',
                                           0, 4, 110, 280, _type=1),
+        'ark_of_elements': ArkOfElements('ark of elements', {dmg.DamageTypes.PHYSICAL: 300}, 24,
+                                          'items_weapons_ark_of_elements',
+                                          4, 11, 40, 240),
 
         'uncanny_valley': UncannyValley('uncanny valley', {dmg.DamageTypes.PHYSICAL: 550}, 18, 'items_weapons__uncanny_valley',
                                          0, 10, 100, 110),

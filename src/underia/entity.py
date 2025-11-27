@@ -7943,8 +7943,8 @@ class Entities:
         NAME = 'Plantera'
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([
-            IndividualLoot('origin', 1, 1, 1),
-            IndividualLoot('willpower_shard', 1, 10, 30)
+            IndividualLoot('seed_of_origin', 1, 50, 250),
+            IndividualLoot('willpower_shard', 1, 15, 50)
         ])
         IS_MENACE = True
         BOSS_NAME = 'The Semi-god'

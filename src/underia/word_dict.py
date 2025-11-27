@@ -795,6 +795,8 @@ en_cn = {
     'instead': '代替之',
     'sandwich': '三明治',
     'origin': '本源',
+    'seed of origin': '本源之种',
+    'the memory from the old days starts to grow out new leaves': '旧日之回忆渐已长出新芽',
     'seed of laws': '法则之种',
     'inner': '内',
     'probably': '可能',
