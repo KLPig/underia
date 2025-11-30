@@ -12,6 +12,7 @@ import resources, underia, mods, constants
 from underia import good_words
 import underia3
 import modloader
+import packs
 
 pg.init()
 random.seed(time.time())

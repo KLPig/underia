@@ -1789,8 +1789,12 @@ class Player:
                                 self.max_mana = min(self.max_mana + 15, 180)
                                 self.inventory.remove_item(item)
                         elif item.id == 'regenerative_crystal':
-                            if self.max_mana < 320:
+                            if 120 <= self.max_mana < 320:
                                 self.max_mana = min(self.max_mana + 35, 320)
+                                self.inventory.remove_item(item)
+                        elif item.id == 'soul_prism':
+                            if 320 <= self.max_mana < 500:
+                                self.max_mana = min(self.max_mana + 30, 500)
                                 self.inventory.remove_item(item)
                         elif item.id == 'enchanted_book':
                             if self.max_mana < 300:
@@ -1829,11 +1833,12 @@ class Player:
                             if self.hp_sys.max_hp < 500:
                                 self.hp_sys.max_hp += 20
                                 self.inventory.remove_item(item)
-                        elif item.id == 'spiritual_heart':
-                            if self.hp_sys.max_hp >= 500 and self.max_mana >= 120:
-                                self.hp_sys.max_hp = 600
-                                self.max_mana = 300
+                        elif item.id == 'scarlett_pearl':
+                            if 500 <= self.hp_sys.max_hp < 640:
+                                self.hp_sys.max_hp += 20
                                 self.inventory.remove_item(item)
+                        elif item.id == 'spiritual_heart':
+                            self.inventory.remove_item(item)
                             self.profile.add_point(1)
                             self.profile.add_point(6)
                             b = 0
@@ -1841,13 +1846,18 @@ class Player:
                                 game.get_game().player.nts.append('L3')
                                 b = 1
                             if b:
-                                game.get_game().dialog.push_dialog('Notebook Updated!', "The otherworld invasion have stopped!")
+                                game.get_game().dialog.push_dialog('[Notebook Updated!]', "The otherworld invasion have stopped!")
                                 if game.get_game().player.inventory.is_enough(inventory.ITEMS['otherworld_stone']):
                                     game.get_game().player.inventory.items['otherworld_stone'] = 0
+                        elif item.id == 'glimmer_stone':
+                            if 500 <= self.max_mana < 800:
+                                self.max_mana = min(self.max_mana + 25, 800)
+                                self.inventory.remove_item(item)
                         elif item.id == 'life_fruit':
-                            if self.hp_sys.max_hp >= 600 and self.max_mana >= 300 and self.max_talent >= 10:
-                                self.hp_sys.max_hp = 1000
-                                self.max_mana = 800
+                            if 600 <= self.hp_sys.max_hp < 1000:
+                                self.hp_sys.max_hp = min(self.hp_sys.max_hp + 50, 1000)
+                                self.inventory.remove_item(item)
+                            elif self.hp_sys.max_hp >= 1000:
                                 self.max_talent = 50
                                 self.inventory.remove_item(item)
                                 self.profile.add_point(2)
@@ -1865,10 +1875,11 @@ class Player:
                                 self.inventory.remove_item(item)
                                 self.profile.add_point(8)
                         elif item.id == 'soul_of_determination':
-                            if self.hp_sys.max_hp == 1000 and self.max_mana == 800 and self.max_talent == 50 and \
+                            if self.hp_sys.max_hp >= 1000 and self.max_mana >= 800 and self.max_talent >= 50 and \
                                 random.randint(0, 4) == 0:
                                 self.hp_sys.max_hp = 1500
-                                self.max_talent = 1500
+                                self.max_talent = 500
+                                self.max_mana = 1000
                                 self.inventory.remove_item(item)
                                 self.profile.add_point(3)
                             else:

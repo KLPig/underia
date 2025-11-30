@@ -904,8 +904,10 @@ class TearBlade(Blade):
 class BurningTears(Blade):
     def on_damage(self, target: entity.Entities.Entity):
         for e in game.get_game().entities:
-            if e != target:
-                e.hp_sys.damage(weapons.WEAPONS[''])
+            if e != target and abs(e.obj.pos - target.obj.pos) < 500:
+                e.hp_sys.damage(WEAPONS['burning_tears'].damages[dmg.DamageTypes.PHYSICAL],
+                                dmg.DamageTypes.PHYSICAL)
+                e.hp_sys.enable_immune(.5)
 
 class Sunrise(Blade):
     def on_start_attack(self):
@@ -1659,13 +1661,14 @@ class ArkOfElements(SweepWeapon):
             else:
                 ap = -int(1600 * game.get_game().player.get_screen_scale())
                 if self.timer == 3:
-                    for _ in range(5):
-                        ax, ay = random.randint(-200, 200), random.randint(-200, 200) + ap
-                        game.get_game().projectiles.append(projectiles.Projectiles.ArkIce(game.get_game().player.obj.pos + (self.x, self.y) + (ax, ay),
-                                                                                          vector.coordinate_rotation(*(-game.get_game().player.obj.pos - (self.x, self.y) - (ax, ay) +
-                                                                                                                         position.real_position(game.get_game().displayer.reflect(
-                                                                                                                             *pg.mouse.get_pos()
-                                                                                                                         ))))))
+                    for dx in [-100, 0, 100]:
+                        for _ in range(5):
+                            ax, ay = random.randint(-200, 200), random.randint(-200, 200) + ap
+                            game.get_game().projectiles.append(projectiles.Projectiles.ArkIce(game.get_game().player.obj.pos + (self.x, self.y) + (ax, ay),
+                                                                                              vector.coordinate_rotation(*(-game.get_game().player.obj.pos - (self.x, self.y) - (ax, ay) + (dx, 0) +
+                                                                                                                             position.real_position(game.get_game().displayer.reflect(
+                                                                                                                                 *pg.mouse.get_pos()
+                                                                                                                             ))))))
         else:
             if self.ele == 0:
                 if self.timer % 5 == 0:
@@ -1679,6 +1682,13 @@ class ArkOfElements(SweepWeapon):
                 if self.timer % 10 == 0:
                     game.get_game().projectiles.append(projectiles.Projectiles.ArkIce(game.get_game().player.obj.pos, 0))
 
+class StarDefense(Blade):
+    def on_attack(self):
+        super().on_attack()
+        if self.timer % 3 == 0:
+            game.get_game().projectiles.append(projectiles.Projectiles.StarsDefense((self.x + game.get_game().player.obj.pos[0],
+                                                                                    self.y + game.get_game().player.obj.pos[1]),
+                                                                                   self.rot))
 
 class UncannyValley(Blade):
     def on_start_attack(self):
@@ -4611,9 +4621,11 @@ def set_weapons():
         'demon_blade__muramasa': Muramasa('demon blade  muramasa', {dmg.DamageTypes.PHYSICAL: 350}, 12,
                                           'items_weapons_demon_blade__muramasa',
                                           0, 4, 110, 280, _type=1),
-        'ark_of_elements': ArkOfElements('ark of elements', {dmg.DamageTypes.PHYSICAL: 300}, 24,
+        'ark_of_elements': ArkOfElements('ark of elements', {dmg.DamageTypes.PHYSICAL: 300}, 14,
                                           'items_weapons_ark_of_elements',
-                                          4, 11, 40, 240),
+                                          4, 11, 30, 180),
+        'star_defense': StarDefense('star defense', {dmg.DamageTypes.PHYSICAL: 450}, 7, 'items_weapons_star_defense',
+                                     2, 9, 30, 150),
 
         'uncanny_valley': UncannyValley('uncanny valley', {dmg.DamageTypes.PHYSICAL: 550}, 18, 'items_weapons__uncanny_valley',
                                          0, 10, 100, 110),
@@ -5089,6 +5101,10 @@ def set_weapons():
                                                     'items_weapons_forbidden_curse__time', 10,
                                                     50, projectiles.Projectiles.Projectile, 300, 5, True,
                                                     'Time Adjust'),
+        'fate': MagicWeapon('fate', {dmg.DamageTypes.MAGICAL: 150}, 0.8,
+                            'items_weapons_fate', 2,
+                            5, projectiles.Projectiles.Fate, 24, True,
+                            'Fate'),
         'time_lily': MagicWeapon('time lily', {dmg.DamageTypes.MAGICAL: 170}, 0.8,
                                    'items_weapons_time_lily', 15,
                                  20, projectiles.Projectiles.TimeLily, 90, True,

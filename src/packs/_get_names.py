@@ -1,7 +1,7 @@
-from xml.etree import ElementTree as etree
+from xml.etree import ElementTree as eTree
 import os
 
-ss = './ore_and_npc.py'
+ss = './biomes.py'
 ssr = ss + '.data.xml'
 
 xml = ''
@@ -10,9 +10,9 @@ if os.path.exists(ssr):
         xml = f.read()
 
 if xml:
-    root = etree.fromstring(xml)
+    root = eTree.fromstring(xml)
 else:
-    root = etree.fromstring('<classes></classes>')
+    root = eTree.fromstring('<classes></classes>')
 
 with open(ss, 'r') as f:
     lines = f.readlines()
@@ -32,7 +32,7 @@ print()
 print('# From pack:', ss)
 for a in ais:
     if root.find(f'ai[@name="{a}"]') is None:
-        root.append(etree.Element('ai', name=a))
+        root.append(eTree.Element('ai', name=a))
         print(f'class {a}(AIs.AIDefinition):\n\tpass')
 
 print()
@@ -40,9 +40,9 @@ print()
 print('# From pack:', ss)
 for c in classes:
     if root.find(f'class[@name="{c}"]') is None:
-        root.append(etree.Element('class', name=c))
+        root.append(eTree.Element('class', name=c))
         print(f'class {c}(EntityDefinition):\n\tpass')
 
 with open(ssr, 'w') as f:
-    f.write(etree.tostring(root, encoding='unicode'))
+    f.write(eTree.tostring(root, encoding='unicode'))
 

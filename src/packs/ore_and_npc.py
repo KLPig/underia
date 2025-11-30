@@ -1,4 +1,4 @@
-from underia import entity, game, inventory, player_profile
+from underia import entity, game, inventory, player_profile, notebook
 from values import damages, effects
 from resources import position
 from physics import vector
@@ -367,7 +367,7 @@ class NPCGuide(Chest):
                     game.get_game().player.nts.append('MS1')
                     game.get_game().dialog.push_dialog(
                         'Anyway, take this.',
-                        '[Notebook updated!]'
+                        '[Notebook Updated!]'
                     )
                 player.inventory.remove_item(inventory.ITEMS['npc_gd_c_3'])
 
@@ -490,6 +490,26 @@ class Ray(entity.Entities.Entity):
                 self.hp_sys.hp = 0
                 if 'ray' not in game.get_game().npc_data:
                     game.get_game().furniture.append(NPCRay((0,0)))
+                else:
+                    game.get_game().npc_data['ray']['acc'] = max(game.get_game().npc_data['ray']['acc'], 2)
+                sf = 0
+                if 'T1' not in game.get_game().player.nts:
+                    game.get_game().player.nts.append('T1')
+                    sf = 1
+                if 'T2' not in game.get_game().player.nts:
+                    game.get_game().player.nts.append('T2')
+                    sf = 1
+                if sf:
+                    notebook.start_write()
+                f = 0
+                if 'MD1' not in game.get_game().player.nts:
+                    game.get_game().player.nts.append('MD1')
+                    f = 1
+                if f and not sf:
+                    game.get_game().dialog.push_dialog(
+                        '[Notebook Updated!]'
+                    )
+
             self.obj.MASS += 1500000
 
         elif self.tick < 0:
@@ -686,6 +706,9 @@ class NPCRay(Chest):
             game.get_game().npc_data['ray'] = {'name': self.name, 'acc': 3}
         else:
             self.name = game.get_game().npc_data['ray']['name']
+        if not 'pc' in game.get_game().npc_data['ray']:
+            game.get_game().npc_data['ray']['pc'] = []
+        self.purchase = game.get_game().npc_data['ray']['pc']
         self.datas = game.get_game().npc_data['ray']
         super().__init__(pos)
         self.tick = 0
@@ -694,7 +717,8 @@ class NPCRay(Chest):
         self.ii_set = False
 
         self.ct1 = [('npc_ray_f', 1), ('npc_ray_p', 1), ('npc_ray_c', 1)]
-        self.ct2 = [('npc_ray_home', 1), ('npc_ray_chaos_reap', 1), ('npc_ray_beyond_horizon', 1)]
+        self.ct2 = [('npc_ray_home', 1), ('npc_ray_chaos_reap', 1), ('npc_ray_fate', 1), ('npc_ray_headgear', 1), ('npc_ray_crown', 1),
+                    ('npc_ray_beyond_horizon', 1)]
         self.state = 0
 
         self.chest.items = self.ct1
@@ -745,6 +769,27 @@ class NPCRay(Chest):
                 0, [],
                 specify_img='chaos_reap'
             )
+            inventory.ITEMS['npc_ray_fate'] = inventory.Inventory.Item(
+                'Fate',
+                'rainbowA quick time magic.',
+                'npc_ray_fate',
+                0, [],
+                specify_img='fate'
+            )
+            inventory.ITEMS['npc_ray_chaos_vocalist_headgear'] = inventory.Inventory.Item(
+                'Chaos Vocalist Armor Set',
+                'rainbowPerfect for all magisters.',
+                'npc_ray_chaos_vocalist_headgear',
+                0, [],
+                specify_img='chaos_vocalist_headgear'
+            )
+            inventory.ITEMS['npc_ray_chaos_vocalist_crown'] = inventory.Inventory.Item(
+                'Chaos Vocalist Armor Set',
+                'rainbowFor those who seek to overcome the darkness.',
+                'npc_ray_chaos_vocalist_crown',
+                0, [],
+                specify_img='chaos_vocalist_crown'
+            )
             inventory.ITEMS['npc_ray_beyond_horizon'] = inventory.Inventory.Item(
                 'Beyond Horizon',
                 'rainbowAccelerate until nobody will ever faster than you.\nrainbowRequire: "Ultralightspeed"',
@@ -762,15 +807,8 @@ class NPCRay(Chest):
         if player.open_chest == self.chest:
             while player.inventory.is_enough(inventory.ITEMS['npc_ray_f']):
                 rs = Ray
-                if game.get_game().stage in [0, 1]:
-                    rs = Ray1
-                elif game.get_game().stage in [2, 3]:
-                    rs = Ray2
-                elif game.get_game().stage == 4:
-                    rs = Ray3
-                if game.get_game().stage <= 4:
-                    entity.entity_spawn(rs, 1600, 1600, 0, 1145, 100000)
-                    self.datas['acc'] += 1
+                entity.entity_spawn(rs, 1600, 1600, 0, 1145, 100000)
+                self.datas['acc'] = max(self.datas['acc'], 1)
                 player.inventory.remove_item(inventory.ITEMS['npc_ray_f'])
             while player.inventory.is_enough(inventory.ITEMS['npc_ray_p']):
                 self.state = 1
@@ -780,8 +818,11 @@ class NPCRay(Chest):
                 player.inventory.remove_item(inventory.ITEMS['npc_ray_home'])
 
             while player.inventory.is_enough(inventory.ITEMS['npc_ray_chaos_reap']):
+                if 0 not in self.purchase:
+                    self.purchase.append(0)
+                else:
+                    break
                 if self.datas['acc'] >= 3:
-                    self.datas['acc'] -= 3
                     player.inventory.add_item(inventory.ITEMS['chaos_reap'])
                 else:
                     if constants.LANG == 'en':
@@ -789,6 +830,67 @@ class NPCRay(Chest):
                     else:
                         game.get_game().dialog.dialog('你仍不符合我的预期。')
                 player.inventory.remove_item(inventory.ITEMS['npc_ray_chaos_reap'])
+            while player.inventory.is_enough(inventory.ITEMS['npc_ray_fate']):
+                if 1 not in self.purchase:
+                    self.purchase.append(1)
+                else:
+                    break
+                if self.datas['acc'] >= 1:
+                    if game.get_game().stage == 0:
+                        if constants.LANG == 'en':
+                            game.get_game().dialog.dialog('It\'s not in this time.')
+                        else:
+                            game.get_game().dialog.dialog('不在此时。')
+                    else:
+                        player.inventory.add_item(inventory.ITEMS['fate'])
+                else:
+                    if constants.LANG == 'en':
+                        game.get_game().dialog.dialog('You are not satisfying than I expected.')
+                    else:
+                        game.get_game().dialog.dialog('你仍不符合我的预期。')
+                player.inventory.remove_item(inventory.ITEMS['npc_ray_fate'])
+            while player.inventory.is_enough(inventory.ITEMS['npc_ray_chaos_vocalist_headgear']):
+                if 2 not in self.purchase:
+                    self.purchase.append(2)
+                else:
+                    break
+                if self.datas['acc'] >= 2:
+                    if game.get_game().stage <= 1:
+                        if constants.LANG == 'en':
+                            game.get_game().dialog.dialog('It\'s not in this time.')
+                        else:
+                            game.get_game().dialog.dialog('不在此时。')
+                    else:
+                        player.inventory.add_item(inventory.ITEMS['chaos_vocalist_headgear'])
+                        player.inventory.add_item(inventory.ITEMS['chaos_vocalist_shabby_cloak'])
+                        player.inventory.add_item(inventory.ITEMS['chaos_vocalist_traveller_boots'])
+                else:
+                    if constants.LANG == 'en':
+                        game.get_game().dialog.dialog('You are not satisfying than I expected.')
+                    else:
+                        game.get_game().dialog.dialog('你仍不符合我的预期。')
+                player.inventory.remove_item(inventory.ITEMS['npc_ray_chaos_vocalist_headgear'])
+            while player.inventory.is_enough(inventory.ITEMS['npc_ray_chaos_vocalist_crown']):
+                if 3 not in self.purchase:
+                    self.purchase.append(3)
+                else:
+                    break
+                if self.datas['acc'] >= 2:
+                    if game.get_game().stage <= 1:
+                        if constants.LANG == 'en':
+                            game.get_game().dialog.dialog('It\'s not in this time.')
+                        else:
+                            game.get_game().dialog.dialog('不在此时。')
+                    else:
+                        player.inventory.add_item(inventory.ITEMS['chaos_vocalist_crown'])
+                        player.inventory.add_item(inventory.ITEMS['chaos_vocalist_shabby_cloak'])
+                        player.inventory.add_item(inventory.ITEMS['chaos_vocalist_traveller_boots'])
+                else:
+                    if constants.LANG == 'en':
+                        game.get_game().dialog.dialog('You are not satisfying than I expected.')
+                    else:
+                        game.get_game().dialog.dialog('你仍不符合我的预期。')
+                player.inventory.remove_item(inventory.ITEMS['npc_ray_chaos_vocalist_crown'])
             while player.inventory.is_enough(inventory.ITEMS['npc_ray_beyond_horizon']):
                 if player.inventory.is_enough(inventory.ITEMS['ultra_lightspeed']):
                     player.inventory.remove_item(inventory.ITEMS['ultra_lightspeed'])
@@ -823,6 +925,75 @@ class NPCRay(Chest):
         game.get_game().displayer.canvas.blit(imr, imrr)
         self.tick += 1
         super().t_draw()
+
+class NPCJevil(Chest):
+    def __init__(self, pos):
+        if 'ray' not in game.get_game().npc_data:
+            self.name = 'Jevil'
+            game.get_game().npc_data['jevil'] = {'name': self.name}
+        else:
+            self.name = game.get_game().npc_data['jevil']['name']
+        self.datas = game.get_game().npc_data['ray']
+        super().__init__(pos)
+        self.tick = 0
+        self.img = copy.copy(game.get_game().graphics['entity_jevil'])
+
+        self.ii_set = False
+
+        self.ct1 = [('npc_jevil_f', 1), ('npc_jevil_p', 1), ('npc_jevil_c', 1)]
+        self.ct2 = [('npc_jevil_home', 1), ('npc_ray_chaos_reap', 1), ('npc_ray_fate', 1), ('npc_ray_headgear', 1), ('npc_ray_crown', 1),
+                    ('npc_ray_beyond_horizon', 1)]
+        self.state = 0
+
+        self.chest.items = self.ct1
+        self.chest.n = len(self.ct1)
+        self.chest.locked = True
+        self.obj.pos = (math.sin(game.get_game().player.tick / 60 * math.pi) * 800, -400)
+        self.sm = False
+
+    def get_shown_txt(self):
+        return self.name, 'Press [E] to talk'
+
+    def t_draw(self):
+
+        if not self.ii_set:
+            self.ii_set = True
+            inventory.ITEMS['npc_jevil_home'] = inventory.Inventory.Item(
+                'Back',
+                '',
+                'npc_jevil_home',
+                0, [],
+                specify_img='null'
+            )
+            inventory.ITEMS['npc_jevil_f'] = inventory.Inventory.Item(
+                'Curse',
+                'SOME FUN, SOME FUN!',
+                'npc_jevil_f',
+                0, [],
+                specify_img='null'
+            )
+            inventory.ITEMS['npc_jevil_p'] = inventory.Inventory.Item(
+                'Purchase',
+                '',
+                'npc_jevil_p',
+                0, [],
+                specify_img='null'
+            )
+            inventory.ITEMS['npc_jevil_c'] = inventory.Inventory.Item(
+                'Chat',
+                '',
+                'npc_jevil_p',
+                0, [],
+                specify_img='null'
+            )
+
+            inventory.ITEMS['npc_jevil_chaos_artist'] = inventory.Inventory.Item(
+                'Chaos Artist Armor Set',
+                'THESE CURTAINS ARE REALLY ON FIRE!\nCost: 400 photon',
+                'npc_jevil_chaos_artist',
+                0, [],
+                specify_img='chaos_artist_helmet'
+            )
 
 @entity.Entities.entity_type
 class GreenChest(Chest):

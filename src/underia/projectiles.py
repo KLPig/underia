@@ -2398,6 +2398,97 @@ class Projectiles:
         DAMAGE_AS = 'evil_book'
         IMG = 'projectiles_evil_book'
 
+    class Fate(PlatinumWand):
+        IMG = 'projectiles_null'
+        DAMAGE_AS = 'fate'
+        ENABLE_IMMUNE = 0
+        DEL = True
+        LIMIT_VEL = 20
+        DURATION = 300
+        DMG_TYPE = damages.DamageTypes.MAGICAL
+        DMG_RATE = 1
+
+        def __init__(self, *args):
+            super().__init__(*args)
+            self.obj = WeakProjectileMotion(self.obj.pos, 0)
+            self.obj.MASS = 3.5
+            self.obj.FRICTION = .99
+            self.obj.velocity.clear()
+            self.obj.force.clear()
+            self.obj.apply_force(vector.Vector2D(self.rot, 1000))
+            self.d_eno: list[tuple[int, int]] = []
+            self.poss = []
+            self.rt = 0
+
+        def update(self):
+            while len(self.d_eno) and self.tick - self.d_eno[0][0] > 20:
+                self.d_eno.pop(0)
+            for i in range(len(self.poss) - 1):
+                draw.line(game.get_game().displayer.canvas,
+                          (0, 255 - 255 * i // len(self.poss), 255 - 155 * i // len(self.poss)),
+                          position.displayed_position(self.poss[i]),
+                          position.displayed_position(self.poss[i + 1]),
+                          int(40 * i / len(self.poss) / game.get_game().player.get_screen_scale()))
+            for j in range(10):
+                draw.line(game.get_game().displayer.canvas, (0, 0, 100),
+                          position.displayed_position(self.obj.pos + vector.Vector2D(self.rt, j * 10)),
+                          position.displayed_position(self.obj.pos + vector.Vector2D(self.rt, (j + 1) * 10)),
+                          int(max(0, 40 - j ** 2 / 2.5) / game.get_game().player.get_screen_scale()))
+            self.rt = (self.rt + self.obj.velocity.get_net_rotation()) / 2
+            self.set_rotation(self.rt)
+            super().update()
+            self.poss.append(self.obj.pos.to_value())
+            if len(self.poss) > 12:
+                self.poss.pop(0)
+
+
+    class StarsDefense(PlatinumWand):
+        IMG = 'projectiles_null'
+        DAMAGE_AS = 'star_defense'
+        ENABLE_IMMUNE = 0
+        DEL = True
+        LIMIT_VEL = -1
+        DURATION = 1000
+        DMG_TYPE = damages.DamageTypes.PHYSICAL
+        DMG_RATE = .5
+
+        def __init__(self, *args):
+            super().__init__(*args)
+            self.obj = WeakProjectileMotion(self.obj.pos, 0)
+            self.obj.MASS = 3.5
+            self.obj.FRICTION = .99
+            self.obj.velocity.clear()
+            self.obj.force.clear()
+            self.obj.apply_force(vector.Vector2D(self.rot, 1000))
+            self.d_eno: list[tuple[int, int]] = []
+            self.poss = []
+            self.rt = 0
+
+        def update(self):
+            while len(self.d_eno) and self.tick - self.d_eno[0][0] > 20:
+                self.d_eno.pop(0)
+            for i in range(len(self.poss) - 1):
+                draw.line(game.get_game().displayer.canvas,
+                          (0, 255 - 255 * i // len(self.poss), 255 - 155 * i // len(self.poss)),
+                          position.displayed_position(self.poss[i]),
+                          position.displayed_position(self.poss[i + 1]),
+                          int(40 * i / len(self.poss) / game.get_game().player.get_screen_scale()))
+            for j in range(10):
+                draw.line(game.get_game().displayer.canvas, (0, 0, 100),
+                          position.displayed_position(self.obj.pos + vector.Vector2D(self.rt, j * 10)),
+                          position.displayed_position(self.obj.pos + vector.Vector2D(self.rt, (j + 1) * 10)),
+                          int(max(0, 40 - j ** 2 / 2.5) / game.get_game().player.get_screen_scale()))
+            self.rt = (self.rt + self.obj.velocity.get_net_rotation()) / 2
+            self.set_rotation(self.rt)
+            super().update()
+            self.poss.append(self.obj.pos.to_value())
+            if len(self.poss) > 12:
+                self.poss.pop(0)
+            tar, _ = self.get_closest_entity()
+            if tar is not None:
+                self.obj.apply_force(vector.Vector2D(vector.coordinate_rotation(*(tar.obj.pos - self.obj.pos)), 120))
+
+
     class ArkFire(PlatinumWand):
         IMG = 'projectiles_null'
         DAMAGE_AS = 'ark_of_elements'

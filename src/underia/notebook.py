@@ -20,7 +20,13 @@ STORIES = [
          [["Magma King - The fire monster", "72AT 9/11/13/15 DF\nSeparative cubes.", "Decreasing defense to separate into 2/2/3/3 cubes.\nSummon: Fire Slime"]],
          [["Tornado and Car Park Destroy", "The desert is mystery!\nLet's go to play, shall we?"]],
          [["Sandstorm - The Ghost of Desert", "180 AT 10/12/14/16 DF\nSeveral sandstorms.", "Summon: Storm"]],
-         [["'Post-chaotic Angel'", "'The world is in chaos, \nuntil a angel appears.'", "We call it: 'The Spirit Angel'"]]
+         [["'Post-chaotic Angel'", "'The world is in chaos, \nuntil a angel appears.'", "We call it: 'The Spirit Angel'"]],
+         [["'Echo - Underia'", "He must be the most powerful one among those REALITYs.",
+           "His 6 sub-laws built up the bedrock.\nUnfortunately, he can't ever stay in a EXTENT.",
+           "For the 'plan', \nhe is an indispensable force."]],
+         [["Ray - Spirit Angel", '??AT ??DF\nHuman-like angel.', 'Able to use weapons to attack.\nChallenge him or finish his task may increase his acceptance to you.', 'Summon: Legend Soul or Curse Ray(NPC).']],
+         [["'Echo - Ray & KPui", "We should have already thought about it.\nChaos just attacked us.", 'Their only target is him, \nthe GOD of KARMA', 'Fortunately, he left his spirit.\nI put it in UNDERIA...',
+           'Our FATE is flowing...\nHow can we do?']]
       ],
 
      ),
@@ -48,13 +54,17 @@ CHAPTERS = [
     [('L1', 'Ore'), ('M1', 'Unknown Eye Organism'), ('D1', 'True Eye - The Watcher of Terror'), ('M1B', 'Spherical Icy Stuff'),
      ('D1B', 'Fluffff - The fluffy worm'), ('M1C', 'Everyday Apple'), ('D1C', 'Worlds Fruit - The Gods Heritage'), ('M2', 'Red Plant'),
      ('D2', 'Magma King - The fire monster'), ('M3', "Tornado and Car Park Destroy"), ("D3", "Sandstorm - The Ghost of Desert"),
-     ("MS1", "Post-chaotic Angel")],
+     ("MS1", "Post-chaotic Angel"), ("T1", "Echo - UNDERIA"), ("MD1", "The spirit angel - Ray"), ("T2", "Echo - RAY & KPUI")],
     [('Intro', 5), ('1.', 6), ('2.', 7), ('3.', 8), ('4.', 9)],
     [('Intro', 10), ('Kun Kun', 10), ('Chicken Soup', 10), ('Tung Tung', 10), ('Hadi', 10), ('Spiked Head', 10), ('Final', 11)],
 ]
 
 def guidance(md: str):
     pass
+
+def start_write():
+    story.show_story('note0tale',
+                     [["A mysterious pen starts to write through midair,\nwords flows into my notebook..."]])
 
 def show_notebook(chapter=0):
     pre_words, words = STORIES[chapter]

@@ -144,6 +144,7 @@ class Game:
         self.c_chest = inventory.Inventory.Chest(n=48)
         self.diff = 1
         self.diff2 = 1
+        self.msf = None
 
     def get_night_color(self, time_days: float):
         if len([1 for e in self.entities if type(e) is entity.Entities.AbyssEye]):
@@ -314,6 +315,7 @@ class Game:
         self.wm_max = 0
         self.gcnt = 0
         self.decors = []
+        self.msf = pg.Surface((800, 800), pg.SRCALPHA)
         if not 'diff' in dir(self):
             self.diff = constants.DIFFICULTY
             self.diff2 = constants.DIFFICULTY2
@@ -837,48 +839,24 @@ class Game:
                 self.displayer.canvas.blit(ft, ftr)
             y -= 140
         if self.map_open:
-            sf = pg.Surface((800, 800), pg.SRCALPHA)
             bg_size = 200 if self.dimension == 'overworld' else int(400 / self.player.get_screen_scale())
             chunk_size = 3
             bg_ax = int(self.player.ax / self.player.get_screen_scale()) % (bg_size * chunk_size)
             bg_ay = int(self.player.ay / self.player.get_screen_scale()) % (bg_size * chunk_size)
-            stt = {}
-            rf = []
-            for i in range(-20, 20):
-                for j in range(-20, 20):
-                    try:
-                        cx, cy = resources.real_position((i * 3 - bg_ax + bg_size // 2, j * 3 - bg_ay + bg_size // 2))
-                        ps = ((cx + i * 3 * bg_size * self.player.get_screen_scale()) // self.CHUNK_SIZE + 120,
-                              (cy + j * 3 * bg_size * self.player.get_screen_scale()) // self.CHUNK_SIZE + 120)
-                        if ps in self.map_ns:
-                            ll = self.get_biome(ps)
-                            col = Game.YCOLS[ll]
-                        elif i and not j and (i - 1, j) not in rf:
-                            col = stt[(i - 1, j)]
-                            rf.append((i, j))
-                        elif not i and j and (i, j - 1) not in rf:
-                            col = stt[(i, j - 1)]
-                            rf.append((i, j))
-                        elif i and j:
-                            s1 = stt[(i, j - 1)] if (i, j - 1) not in rf else (0, 0, 0)
-                            s2 = stt[(i - 1, j)] if (i - 1, j) not in rf else (0, 0, 0)
-                            if s1 == (0, 0, 0):
-                                rs = s2
-                            elif s2 == (0, 0, 0):
-                                rs = s1
-                            else:
-                                rs = random.choice([s1, s2])
-                            col = rs
-                            rf.append((i, j))
-                        else:
-                            col = (0, 0, 0)
-                    except KeyError:
-                        col = (0, 0, 0)
-                    pg.draw.rect(sf, col, (i * 40 + 400, j * 40 + 400, 40, 40))
-                    stt[(i, j)] = col
+            i = self.player.tick % 40 - 20
+            for j in range(-20, 20):
+                try:
+                    cx, cy = resources.real_position((i * 3 - bg_ax + bg_size // 2, j * 3 - bg_ay + bg_size // 2))
+                    ps = ((cx + i * 3 * bg_size * self.player.get_screen_scale()) // self.CHUNK_SIZE + 120,
+                          (cy + j * 3 * bg_size * self.player.get_screen_scale()) // self.CHUNK_SIZE + 120)
+                    ll = self.get_biome(ps)
+                    col = Game.YCOLS[ll]
+                except KeyError:
+                    col = (0, 0, 0)
+                pg.draw.rect(self.msf, col, (i * 40 + 400, j * 40 + 400, 40, 40))
             if constants.USE_ALPHA:
-                sf.set_alpha(200)
-            self.displayer.canvas.blit(sf, (self.displayer.SCREEN_WIDTH // 2 - 400, self.displayer.SCREEN_HEIGHT // 2 - 400))
+                self.msf.set_alpha(200)
+            self.displayer.canvas.blit(self.msf, (self.displayer.SCREEN_WIDTH // 2 - 400, self.displayer.SCREEN_HEIGHT // 2 - 400))
         if not self.player.in_ui:
             w = self.player.weapons[self.player.sel_weapon]
             im = self.graphics['items_' + inventory.ITEMS[w.name.replace(' ', '_')].img]
