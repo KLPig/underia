@@ -1692,7 +1692,7 @@ class Projectiles:
             self.tick += 1
             size = min(self.WIDTH, int(self.tick ** 3) if self.tick < self.DURATION // 2 else \
                 min(self.WIDTH, int((self.DURATION - self.tick) ** 3)))
-            size = int(size / game.get_game().player.get_screen_scale())
+            size = max(0, int(size / game.get_game().player.get_screen_scale()))
             pg.draw.circle(game.get_game().displayer.canvas, self.COLOR, position.displayed_position(self.start_pos),
                            size // 2)
             if self.CUT_EFFECT:
@@ -2178,6 +2178,18 @@ class Projectiles:
         ENABLE_IMMUNE = 3
         DMG_RATE = 2
         FACE_TO_MOUSE = True
+        DMG_TYPE = damages.DamageTypes.PIERCING
+
+    class Void(Beam):
+        WIDTH = 450
+        LENGTH = 15000
+        DAMAGE_AS = 'void'
+        COLOR = (0, 0, 0)
+        DURATION = 100
+        ENABLE_IMMUNE = 3
+        DMG_RATE = 2.5
+        FACE_TO_MOUSE = True
+        DMG_TYPE = damages.DamageTypes.PIERCING
 
     class LightsBeam(Beam):
         WIDTH = 30
@@ -2569,7 +2581,7 @@ class Projectiles:
 
     class ArkIce(Beam):
         DMG_TYPE = damages.DamageTypes.PHYSICAL
-        WIDTH = 60
+        WIDTH = 120
         LENGTH = 5000
         DAMAGE_AS = 'ark_of_elements'
         COLOR = (0, 255, 255)
@@ -2582,7 +2594,7 @@ class Projectiles:
             super().__init__(*args)
             if game.get_game().get_biome() in ['snowland', 'fallen_sea', 'ocean', 'inner']:
                 self.ENABLE_IMMUNE -= .5
-                self.WIDTH *= 1.5
+                self.WIDTH *= 2.5
                 self.LENGTH *= 2
                 self.DURATION += 3
                 self.DMG_RATE += .9

@@ -1024,7 +1024,7 @@ class Entities:
 
     @staticmethod
     def entity_type(e_type):
-        print(f'#{Entities.ET_NO}\t{Entities.__name__}')
+        print(f'#{Entities.ET_NO}\t{e_type.__name__}')
         setattr(Entities, e_type.__name__, e_type)
         setattr(e_type, 'ET_NO', Entities.ET_NO)
         Entities.ET_NO += 1
@@ -7018,12 +7018,21 @@ class Entities:
         PHASES = []
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_faith'], BuildingAI, 8000000)
+            super().__init__(pos, game.get_game().graphics['entity_faith'], BuildingAI, 6000000)
             self.obj.MASS = 1800
             self.obj.TOUCHING_DAMAGE = 2400
             self.state = 0
             self.tick = 0
             self.interval = 30
+            self.hp_sys.resistances[damages.DamageTypes.PHYSICAL] = 0.8
+            self.hp_sys.resistances[damages.DamageTypes.MAGICAL] = 0.8
+            self.hp_sys.resistances[damages.DamageTypes.ARCANE] = 0.8
+            self.hp_sys.resistances[damages.DamageTypes.PIERCING] = 0.8
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 400
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 400
+            self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 400
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 400
+            self.hp_sys.defenses[damages.DamageTypes.THINKING] = 200
 
         def on_update(self):
             if random.uniform(0, self.hp_sys.hp) < 80000:

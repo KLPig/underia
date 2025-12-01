@@ -17,6 +17,7 @@ import values
 from underia import good_words
 import underia3
 from resources import web_check
+import packs
 
 if not constants.WEB_DEPLOY:
     import saves_chooser, modloader

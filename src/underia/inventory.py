@@ -843,6 +843,7 @@ items_dict: dict[str, Inventory.Item] = {
                                          [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
     'chaos_assaulter': Inventory.Item('Chaos Assaulter', '', 'chaos_assaulter', 8,
                                          [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
+    'void': Inventory.Item('Void', 'Nothing...', 'void', 11, [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
     'climax': Inventory.Item('Climax', 'When it reaches the highest point, everyone is surprised! Everyone is dead.', 'climax', 11,
                              [TAGS['item'], TAGS['weapon'], TAGS['gun'], TAGS['ce_item']]),
 

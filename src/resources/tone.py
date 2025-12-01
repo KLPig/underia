@@ -1,11 +1,11 @@
 import constants
 import pygame
 import numpy as np
-from scipy.io import wavfile
 from resources import path
-from scipy.signal import resample
 
 if constants.TONE:
+    from scipy.io import wavfile
+    from scipy.signal import resample
 
     pygame.init()
     pygame.mixer.init(44100, -16, 2, 2048)

@@ -1,5 +1,5 @@
 <weapons>
-	<version>5</version>
+	<version>6</version>
 	<weapon id="null">
 		<speed>0</speed>
 		<at_time>2</at_time>
@@ -284,7 +284,7 @@
 		<speed>2</speed>
 		<at_time>10</at_time>
 		<damages>
-			<damage type="physical">144</damage>
+			<damage type="physical">150</damage>
 		</damages>
 	</weapon>
 	<weapon id="gaia_paladin_spear">
@@ -418,62 +418,62 @@
 		<speed>12</speed>
 		<at_time>12</at_time>
 		<damages>
-			<damage type="physical">888</damage>
+			<damage type="physical">444</damage>
 		</damages>
 	</weapon>
 	<weapon id="star_wrath">
 		<speed>0</speed>
 		<at_time>10</at_time>
 		<damages>
-			<damage type="physical">540</damage>
+			<damage type="physical">660</damage>
 		</damages>
 	</weapon>
 	<weapon id="galaxy_broadsword">
 		<speed>0</speed>
 		<at_time>16</at_time>
 		<damages>
-			<damage type="physical">4500</damage>
-			<damage type="thinking">3500</damage>
+			<damage type="physical">450</damage>
+			<damage type="thinking">650</damage>
 		</damages>
 	</weapon>
 	<weapon id="eternal_echo">
 		<speed>0</speed>
 		<at_time>80</at_time>
 		<damages>
-			<damage type="physical">4500</damage>
-			<damage type="thinking">4000</damage>
+			<damage type="physical">450</damage>
+			<damage type="thinking">700</damage>
 		</damages>
 	</weapon>
 	<weapon id="star_of_devotion">
 		<speed>0</speed>
 		<at_time>12</at_time>
 		<damages>
-			<damage type="physical">5500</damage>
-			<damage type="thinking">3500</damage>
+			<damage type="physical">650</damage>
+			<damage type="thinking">650</damage>
 		</damages>
 	</weapon>
 	<weapon id="quark_rusher">
 		<speed>10</speed>
 		<at_time>90</at_time>
 		<damages>
-			<damage type="physical">4800</damage>
-			<damage type="thinking">2400</damage>
+			<damage type="physical">400</damage>
+			<damage type="thinking">500</damage>
 		</damages>
 	</weapon>
 	<weapon id="highlight">
-		<speed>0</speed>
-		<at_time>6</at_time>
+		<speed>6</speed>
+		<at_time>16</at_time>
 		<damages>
-			<damage type="physical">800</damage>
-			<damage type="thinking">800</damage>
+			<damage type="physical">500</damage>
+			<damage type="thinking">500</damage>
 		</damages>
 	</weapon>
 	<weapon id="turning_point">
 		<speed>2</speed>
 		<at_time>6</at_time>
 		<damages>
-			<damage type="physical">1200</damage>
-			<damage type="thinking">2000</damage>
+			<damage type="physical">300</damage>
+			<damage type="thinking">750</damage>
 		</damages>
 	</weapon>
 	<weapon id="spikeflower">
@@ -847,7 +847,7 @@
 		<speed>4</speed>
 		<at_time>6</at_time>
 		<damages>
-			<damage type="piercing">550</damage>
+			<damage type="piercing">300</damage>
 		</damages>
 	</weapon>
 	<weapon id="pistol">
@@ -949,7 +949,7 @@
 		</damages>
 	</weapon>
 	<weapon id="dark_exploder">
-		<speed>12</speed>
+		<speed>18</speed>
 		<at_time>16</at_time>
 		<damages>
 			<damage type="piercing">200</damage>
@@ -1015,7 +1015,7 @@
 		<speed>0</speed>
 		<at_time>0</at_time>
 		<damages>
-			<damage type="piercing">240</damage>
+			<damage type="piercing">150</damage>
 		</damages>
 	</weapon>
 	<weapon id="lazer_gun">
@@ -1036,7 +1036,7 @@
 		<speed>6</speed>
 		<at_time>14</at_time>
 		<damages>
-			<damage type="piercing">450</damage>
+			<damage type="piercing">350</damage>
 		</damages>
 	</weapon>
 	<weapon id="rocket_launcher">
@@ -1085,14 +1085,14 @@
 		<speed>6</speed>
 		<at_time>16</at_time>
 		<damages>
-			<damage type="piercing">1024</damage>
+			<damage type="piercing">625</damage>
 		</damages>
 	</weapon>
 	<weapon id="rapid_rocket_launcher_max">
 		<speed>0</speed>
 		<at_time>2</at_time>
 		<damages>
-			<damage type="piercing">880</damage>
+			<damage type="piercing">480</damage>
 		</damages>
 	</weapon>
 	<weapon id="copper_knife">
@@ -1225,15 +1225,15 @@
 		<speed>0</speed>
 		<at_time>18</at_time>
 		<damages>
-			<damage type="piercing">1000</damage>
-			<damage type="thinking">2000</damage>
+			<damage type="piercing">300</damage>
+			<damage type="thinking">700</damage>
 		</damages>
 	</weapon>
 	<weapon id="generation_ii">
 		<speed>10</speed>
 		<at_time>50</at_time>
 		<damages>
-			<damage type="piercing">5000</damage>
+			<damage type="piercing">750</damage>
 		</damages>
 	</weapon>
 	<weapon id="shuriken">
@@ -1651,62 +1651,62 @@
 	</weapon>
 	<weapon id="storm">
 		<speed>0</speed>
-		<at_time>2</at_time>
+		<at_time>30</at_time>
 		<damages>
 			<damage type="magical">200</damage>
 		</damages>
 	</weapon>
 	<weapon id="earth_wall">
 		<speed>0</speed>
-		<at_time>2</at_time>
+		<at_time>120</at_time>
 		<damages />
 	</weapon>
 	<weapon id="lifebringer">
 		<speed>0</speed>
-		<at_time>20</at_time>
+		<at_time>220</at_time>
 		<damages />
 	</weapon>
 	<weapon id="target_dummy">
 		<speed>0</speed>
-		<at_time>20</at_time>
+		<at_time>80</at_time>
 		<damages />
 	</weapon>
 	<weapon id="judgement_light">
 		<speed>0</speed>
-		<at_time>20</at_time>
+		<at_time>440</at_time>
 		<damages>
 			<damage type="magical">350</damage>
 		</damages>
 	</weapon>
 	<weapon id="dark_restrict">
 		<speed>0</speed>
-		<at_time>28</at_time>
+		<at_time>50</at_time>
 		<damages />
 	</weapon>
 	<weapon id="death_note">
 		<speed>0</speed>
-		<at_time>20</at_time>
+		<at_time>140</at_time>
 		<damages>
 			<damage type="arcane">15</damage>
 		</damages>
 	</weapon>
 	<weapon id="great_forbidden_curse__dark">
 		<speed>0</speed>
-		<at_time>20</at_time>
+		<at_time>420</at_time>
 		<damages>
 			<damage type="arcane">7</damage>
 		</damages>
 	</weapon>
 	<weapon id="great_forbidden_curse__evil">
 		<speed>0</speed>
-		<at_time>20</at_time>
+		<at_time>620</at_time>
 		<damages>
 			<damage type="arcane">5</damage>
 		</damages>
 	</weapon>
 	<weapon id="stop">
 		<speed>0</speed>
-		<at_time>2</at_time>
+		<at_time>960</at_time>
 		<damages />
 	</weapon>
 	<weapon id="sun_pearl">
@@ -3059,4 +3059,4 @@
 			<damage type="physical">0</damage>
 		</damages>
 	</weapon>
-</weapons>
+<weapon id="wave"><speed>4</speed><at_time>14</at_time><damages><damage type="physical">200</damage></damages></weapon><weapon id="ark_of_elements"><speed>8</speed><at_time>22</at_time><damages><damage type="physical">300</damage></damages></weapon><weapon id="thermal_pike"><speed>4</speed><at_time>14</at_time><damages><damage type="physical">155</damage></damages></weapon><weapon id="milky_way"><speed>12</speed><at_time>8</at_time><damages><damage type="piercing">600</damage></damages></weapon><weapon id="fire_shine"><speed>4</speed><at_time>6</at_time><damages><damage type="piercing">120</damage></damages></weapon><weapon id="void"><speed>2</speed><at_time>4</at_time><damages><damage type="piercing">300</damage></damages></weapon><weapon id="oceanic_current"><speed>0</speed><at_time>60</at_time><damages><damage type="magical">35</damage></damages></weapon></weapons>
