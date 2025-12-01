@@ -1,7 +1,7 @@
 import requests
 import xml.etree.ElementTree as et
 import version
-from tkinter import messagebox
+import resources.log as log
 
 target = 'https://klpig.github.io/underia/data.xml'
 
@@ -20,46 +20,46 @@ def check(c_hash=None) -> tuple[bool, bool, str]:
         response = requests.get(target)
         if response.status_code == 200:
             root = et.fromstring(response.content)
-            print('Datas get from web, ', root)
+            log.info('Datas get from web, ' + str(root))
             name = root.find('name').text
-            print('Name:', name)
+            log.info('Name: '+ name)
             ff = root.find('content/hash[@version="%s.%s.%s"]' % version.VERSION)
             if ff is not None:
-                print('Content Hash', int(ff.text))
+                log.info('Content Hash ' + str(int(ff.text)))
                 if int(ff.text) == c_hash:
                     b = False
-                    print('Game not modified')
+                    log.info('Game not modified')
                 else:
                     b = True
-                    print('Game modified')
+                    log.warning('Game modified')
             else:
                 b = True
-                print('Typical version not found')
+                log.warning('Typical version not found')
             version_new = root.find('version[@id="newest"]')
             v1 = version_new.find('first').text
             v2 = version_new.find('second').text
             v3 = version_new.find('third').text
-            print('Newest version:', '%s.%s.%s' % (v1, v2, v3))
+            log.info('Newest version: %s.%s.%s' % (v1, v2, v3))
             version_sup = root.find('version[@id="supported"]')
             v1e = version_sup.find('first').text
             v2e = version_sup.find('second').text
             v3e = version_sup.find('third').text
-            print('Supported version:', '%s.%s.%s' % (v1e, v2e, v3e))
+            log.info('Supported version: %s.%s.%s' % (v1e, v2e, v3e))
             assert compare((v1, v2, v3), (v1e, v2e, v3e)) <= 0, 'Newest version is not supported'
             c1 = compare((v1e, v2e, v3e), version.VERSION)
             c2 = compare((v1, v2, v3), version.VERSION)
             print(c1, c2)
             if c1 < 0:
-                print('Version no longer supported!')
+                log.critical('Version no longer supported!')
                 return b, False, 'Your version is no longer supported!'
             elif c2 >= 0:
-                print('Newest version!')
+                log.info('Newest version!')
                 return b, True, 'Newest version!'
             elif c1 > 0:
-                print('New version available!')
+                log.info('New version available!')
                 return b, True, 'New version available!'
             else:
-                print('Version up-to-date')
+                log.warning('Version up-to-date')
                 return b, True, 'Version up-to-date!'
         else:
             return False, False, 'Error %s while connecting to internet' % response.status_code

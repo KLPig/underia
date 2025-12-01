@@ -6,7 +6,7 @@ import sys
 import pygame as pg
 
 from physics import mover, vector
-from resources import position
+from resources import position, log
 from underia import game, styles, inventory, player_profile, notebook
 from values import hp_system, damages, effects, elements
 import constants
@@ -78,7 +78,7 @@ class AIs:
 
     class AIDefinition:
         def __init__(self, *args, **kwargs):
-            print('A non further-defined AI was created, named', self.__class__.__name__)
+            log.error('A non further-defined AI was created, named ' +  self.__class__.__name__)
 
 class MonsterAI(mover.Mover):
     MASS = 120
@@ -494,11 +494,6 @@ class LifeWatcherAI(MonsterAI):
         else:
             self.state = 3
 
-
-class LeafAI(StarAI):
-    MASS = 320
-    TOUCHING_DAMAGE = 288
-    SPEED = 1.8
 
 
 class AbyssRuneAI(MonsterAI):
@@ -1024,7 +1019,7 @@ class Entities:
 
     @staticmethod
     def entity_type(e_type):
-        print(f'#{Entities.ET_NO}\t{e_type.__name__}')
+        log.debug(f'Register: #{Entities.ET_NO}\t{e_type.__name__}')
         setattr(Entities, e_type.__name__, e_type)
         setattr(e_type, 'ET_NO', Entities.ET_NO)
         Entities.ET_NO += 1
@@ -1313,7 +1308,7 @@ class Entities:
 
     class EntityDefinition(Entity):
         def __init__(self, *args, **kwargs):
-            print('A non further-defined entity is created, named', self.__class__.__name__)
+            log.error('A non further-defined entity is created, named ' + self.__class__.__name__)
 
     # From pack: ./basic.py
     class Eye(EntityDefinition):
@@ -2823,32 +2818,6 @@ class Entities:
 
     class Ore(EntityDefinition):
         pass
-
-    class SwordInTheStone(Ore):
-        NAME = 'Sword in the Stone'
-        DISPLAY_MODE = 3
-        LOOT_TABLE = LootTable([
-            SelectionLoot([('magic_sword', 1, 1), ('magic_blade', 1, 1)], 1, 1)
-        ])
-        IMG = 'entity_sword_in_the_stone'
-        TOUGHNESS = 2
-
-        def __init__(self, pos):
-            super().__init__(pos, 100)
-
-    class EvilMark(Ore):
-        NAME = 'Evil Mark'
-        DISPLAY_MODE = 3
-        LOOT_TABLE = LootTable([
-            IndividualLoot('soul', 0.9, 6, 7),
-            IndividualLoot('evil_ingot', 1, 10, 12),
-            SelectionLoot([('tip61', 1, 1), ('tip62', 1, 1), ('tip63', 1, 1)], 1, 1),
-        ])
-        TOUGHNESS = 50
-        IMG = 'entity_evil_mark'
-
-        def __init__(self, pos):
-            super().__init__(pos, 80)
 
     class SoulFlower(Entity):
         NAME = 'Soul Flower'
@@ -6039,9 +6008,6 @@ class Entities:
                     game.get_game().player.obj.pos << (self.obj.pos[0] + ap * px, self.obj.pos[1] + ap * py)
                     px *= ap
                     py *= ap
-                pg.draw.circle(game.get_game().displayer.canvas, (0, int(20 + math.sin(self.tick / 30 * math.pi) * 20),
-                                                                  int(20 + math.sin(self.tick / 30 * math.pi) * 20)), position.displayed_position(self.obj.pos),
-                               int(self.dt / game.get_game().player.get_screen_scale()))
                 pg.draw.circle(game.get_game().displayer.canvas, (0, 255, 255), position.displayed_position(self.obj.pos),
                                int(self.dt / game.get_game().player.get_screen_scale()), 15)
             elif 30 < self.tick < 60:
@@ -6202,8 +6168,6 @@ class Entities:
                     game.get_game().player.obj.pos << (self.obj.pos[0] + ap * px, self.obj.pos[1] + ap * py)
                     px *= ap
                     py *= ap
-            pg.draw.circle(game.get_game().displayer.canvas, (0, 0, 0),
-                           position.displayed_position(self.obj.pos), self.cdt / game.get_game().player.get_screen_scale())
             pg.draw.circle(game.get_game().displayer.canvas, (0, 0, 255),
                            position.displayed_position(self.obj.pos), self.cdt / game.get_game().player.get_screen_scale(),
                            15)
@@ -6792,7 +6756,7 @@ class Entities:
         PHASES = ['none', 'born', 'growth', 'huge', 'fruit', 'death', 'gone', 'recovery', 'rebirth']
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_reincarnation__the_worlds_tree_none'], WorldsTreeAI, 8000000)
+            super().__init__(pos, game.get_game().graphics['entity_reincarnation__the_worlds_tree_none'], WorldsTreeAI, 2000000)
             self.hp_sys.resistances[damages.DamageTypes.PHYSICAL] = 0.8
             self.hp_sys.resistances[damages.DamageTypes.MAGICAL] = 0.8
             self.hp_sys.resistances[damages.DamageTypes.ARCANE] = 0.8
@@ -7018,7 +6982,7 @@ class Entities:
         PHASES = []
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_faith'], BuildingAI, 6000000)
+            super().__init__(pos, game.get_game().graphics['entity_faith'], BuildingAI, 1400000)
             self.obj.MASS = 1800
             self.obj.TOUCHING_DAMAGE = 2400
             self.state = 0

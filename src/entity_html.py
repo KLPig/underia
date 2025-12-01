@@ -3,6 +3,7 @@ import pygame as pg
 import underia, values
 import underia3
 import constants
+import packs
 
 pg.init()
 pg.display.set_mode((800, 600))
@@ -18,7 +19,7 @@ f = "<!DOCTYPE html><html><head>\n<title>Underia Entities</title>\n" \
 
 f += "<h1>Underia Entities</h1>"
 
-f += open('./docs/header.html').read()
+f += open('../docs/header.html').read()
 
 f += "<table>"
 img_str = ("<td><div class='item %s drop' id='%s-%s' onclick='location.href=\"./items.html#%s-main\"'"

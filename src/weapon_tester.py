@@ -13,6 +13,7 @@ from underia import good_words
 import underia3
 import modloader
 import packs
+from resources import log
 
 pg.init()
 random.seed(time.time())
@@ -53,9 +54,7 @@ if constants.WEB_DEPLOY:
     sfd = ''
 else:
     sfd = game.save.replace('.pkl', '.data.pkl')
-print('Writing game...')
 underia.write_game(game)
-print('Setup game...')
 game.setup()
 pg.display.get_surface().fill((100, 100, 100))
 for m in load_mods:
@@ -66,7 +65,6 @@ game.map = pg.PixelArray(game.graphics['background_map'])
 underia.set_weapons()
 game.player.weapons = 4 * [underia.WEAPONS['null']]
 game.player.sel_weapon = 1
-print('Presets...')
 
 game.world_events.clear()
 
@@ -108,7 +106,7 @@ def update():
 
 start_time = datetime.datetime.now()
 try:
-    print('Running game...')
+    log.info('Running game...')
     asyncio.run(game.run())
 except Exception as err:
     raise err

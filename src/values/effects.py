@@ -1,5 +1,4 @@
-
-from resources import time
+import resources.log as log
 from values import hp_system, elements, damages
 from underia import game, inventory
 
@@ -23,7 +22,7 @@ class Effect:
             try:
                 self.datas.update(inventory.Inventory.Item.handle_data(desc))
             except ValueError:
-                print(f"Invalid accessory data: {desc}")
+                log.warning(f"Invalid effect data: {desc}")
 
     def on_update(self, entity: hp_system.HPSystem):
         self.tick += 1
@@ -232,12 +231,12 @@ class Weak(Effect):
 class MatterDomain(Aberration):
     IMG = 'matter_domain'
     NAME = 'Matter Domain'
-    DESC = 'Weights of matter press you down\nContinuously dealing damage\n-40% critical\n+300kg\n+100% air resistance'
+    DESC = 'Weights of matter press you down\n-80% speed\nContinuously dealing damage\n-40% critical\n+300kg\n+100% air resistance'
 
 class TimeDomain(Aberration):
     IMG = 'time_domain'
     NAME = 'Time Domain'
-    DESC = 'Time is slowing you down\nContinuously dealing damage\n-25% damage\n-100 magic defense\n+50% mana cost'
+    DESC = 'Time is slowing you down\n-80% speed\nContinuously dealing damage\n-25% damage\n-100 magic defense\n+50% mana cost'
 
 class Bleeding(Effect):
     IMG = 'bleeding'

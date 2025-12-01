@@ -2,11 +2,10 @@ import os
 
 
 import pygame as pg
-import assets.graphics.items.convert_weapon as convert_weapon
-import item_html, recipe_html, entity_html, magic_html
+import entity_html, item_html, recipe_html, magic_html
 
 pg.quit()
-print(f"Done. Modules {convert_weapon, item_html, recipe_html, entity_html, magic_html} updated.")
+print(f"Done. Modules {item_html, recipe_html, entity_html, magic_html} updated.")
 
 print('Removing old files from docs/assets')
 path = os.path.dirname(os.path.dirname(__file__))

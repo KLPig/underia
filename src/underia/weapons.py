@@ -1864,8 +1864,7 @@ class Highlight(Spear):
 class EGalaxyBroadsword(Blade):
     def on_attack(self):
         super().on_attack()
-        self.display = False
-        self.cutting_effect(16, (255, 191, 63), (255, 0, 0))
+        self.cutting_effect(8, (255, 191, 63), (255, 0, 0))
 
 class GalaxyBroadsword(Blade):
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, rot_speed: int,
@@ -1883,19 +1882,15 @@ class GalaxyBroadsword(Blade):
 
     def on_attack(self):
         super().on_attack()
-        self.cutting_effect(16, (255, 191, 63), (255, 0, 0))
+        self.cutting_effect(8, (255, 191, 63), (255, 0, 0))
 
     def on_end_attack(self):
-        if self.ci is None:
-            self.ci = copy.copy(self.img)
-            self.ci.set_alpha(100)
-            game.get_game().graphics['weff_' + self.name] = self.ci
         super().on_end_attack()
         mx, my = position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
         md = vector.distance(mx, my)
         weff = EGalaxyBroadsword(self.name, self.damages, self.knock_back * 2,
-                                'weff_' + self.name, 0, self.at_time,
-                                abs(self.rot_speed), abs(self.st_pos))
+                                'items_weapons_galaxy_broadsword_weff', 0, self.at_time,
+                                abs(self.rot_speed) * 3, abs(self.st_pos))
         weff.x = mx * game.get_game().player.get_screen_scale() - 50 * mx / md
         weff.y = my * game.get_game().player.get_screen_scale() - 50 * my / md
         weff.attack()
@@ -1906,7 +1901,7 @@ class EEternalEcho(Blade):
     def on_attack(self):
         super().on_attack()
         self.display = False
-        self.cutting_effect(16, (200, 255, 255), (255, 0, 0))
+        self.cutting_effect(8, (200, 255, 255), (255, 0, 0))
         if self.timer > self.at_time * 2 / 3:
             mx, my = position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
             mx *= game.get_game().player.get_screen_scale()
@@ -1916,30 +1911,6 @@ class EEternalEcho(Blade):
         else:
             self.x /= 2
             self.y /= 2
-
-    def damage(self):
-        for e in game.get_game().entities:
-            dps = e.obj.pos
-            px = dps[0] - self.x - game.get_game().player.obj.pos[0]
-            py = dps[1] - self.y - game.get_game().player.obj.pos[1]
-            if vector.distance(px, py) < self.img.get_width() + (
-            (e.img.get_width() + e.img.get_height()) // 2 if e.img is not None else 10):
-                for t, d in self.damages.items():
-                    e.hp_sys.damage(d * game.get_game().player.attack * game.get_game().player.attacks[self.DMG_AS_IDX], t)
-                if not e.hp_sys.is_immune:
-                    rf = vector.coordinate_rotation(px + self.x, py + self.y)
-                    e.obj.apply_force(vector.Vector(rf, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)))
-                if 'matters_touch' in game.get_game().player.accessories:
-                    e.obj.MASS *= 1.01
-                if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
-                    if not e.IS_MENACE:
-                        e.hp_sys.damage(e.hp_sys.max_hp / 10, dmg.DamageTypes.THINKING)
-                        if random.randint(0, 10) == 0:
-                            e.hp_sys.hp = 0
-                    else:
-                        e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), dmg.DamageTypes.THINKING)
-                if self.ENABLE_IMMUNE:
-                    e.hp_sys.enable_immune()
 
 class EternalEcho(Blade):
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, rot_speed: int,
@@ -1958,7 +1929,7 @@ class EternalEcho(Blade):
 
     def on_attack(self):
         super().on_attack()
-        self.cutting_effect(16, (200, 255, 255), (255, 0, 0))
+        self.cutting_effect(8, (200, 255, 255), (255, 0, 0))
 
     def on_end_attack(self):
         self.tt = (self.tt + 1) % 3
@@ -1970,7 +1941,7 @@ class EternalEcho(Blade):
         if self.tt == 1:
             weff = EEternalEcho(self.name, self.damages, self.knock_back * 2,
                                     'weff_' + self.name, 0, self.at_time * 2,
-                                    abs(self.rot_speed), abs(self.st_pos))
+                                    abs(self.rot_speed * 3), abs(self.st_pos))
             weff.attack()
             weff.keys = []
             self.effs.append(weff)
@@ -1979,7 +1950,9 @@ class EStarOfDevotion(Blade):
     def on_attack(self):
         super().on_attack()
         self.display = False
-        self.cutting_effect(16, (255, 255, 180), (255, 0, 0))
+        self.cutting_effect(8, (255, 255, 180), (255, 0, 0))
+        self.x += self.x / abs(self.x) * 3 * (self.timer - self.at_time / 2)
+        self.x += self.x / abs(self.x) * 3 * (self.timer - self.at_time / 2)
 
 class StarOfDevotion(Blade):
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, rot_speed: int,
@@ -1997,7 +1970,7 @@ class StarOfDevotion(Blade):
 
     def on_attack(self):
         super().on_attack()
-        self.cutting_effect(16, (255, 255, 180), (255, 0, 0))
+        self.cutting_effect(8, (255, 255, 180), (255, 0, 0))
 
     def on_end_attack(self):
         if self.ci is None:
@@ -2008,9 +1981,9 @@ class StarOfDevotion(Blade):
         mx, my = position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
         weff = EStarOfDevotion(self.name, self.damages, self.knock_back * 2,
                                 'weff_' + self.name, 0, self.at_time,
-                                abs(self.rot_speed), abs(self.st_pos))
-        weff.x = mx / (mx ** 2 + my ** 2) ** .5 * 480
-        weff.y = my / (mx ** 2 + my ** 2) ** .5 * 480
+                                abs(self.rot_speed * 2), abs(self.st_pos))
+        weff.x = mx / (mx ** 2 + my ** 2) ** .5
+        weff.y = my / (mx ** 2 + my ** 2) ** .5
         weff.attack()
         weff.keys = []
         self.effs.append(weff)
@@ -2149,9 +2122,9 @@ class Zenith(Blade):
     def on_start_attack(self):
         if self.sk_cd >= self.sk_mcd - self.at_time:
             self.timer = 0
-        if not game.get_game().graphics.is_loaded('items_weapons_' + EZenith.NAMES[0] + '_zenith'):
+        if not game.get_game().graphics.is_loaded('items_' + EZenith.NAMES[0] + '_zenith'):
             for n in EZenith.NAMES:
-                game.get_game().graphics['items_weapons_' + n + '_zenith'] = pg.transform.scale(game.get_game().graphics['items_weapons_' + n], (416, 203))
+                game.get_game().graphics['items_' + n + '_zenith'] = pg.transform.scale(game.get_game().graphics['items_' + n], (144, 144))
         super().on_start_attack()
 
     def on_attack(self):
@@ -4682,13 +4655,13 @@ def set_weapons():
                                 0, 5, 60, 120),
         'galaxy_broadsword': GalaxyBroadsword('galaxy broadsword', {dmg.DamageTypes.PHYSICAL: 450, dmg.DamageTypes.THINKING: 650}, 38,
                                                'items_weapons_galaxy_broadsword',
-                                               0, 8, 45, 200),
+                                               4, 11, 25, 150),
         'eternal_echo': EternalEcho('eternal echo', {dmg.DamageTypes.PHYSICAL: 450, dmg.DamageTypes.THINKING: 700}, 45,
                                                'items_weapons_eternal_echo',
-                                               0, 8, 45, 200),
+                                               4, 11, 25, 200),
         'star_of_devotion': StarOfDevotion('star of devotion', {dmg.DamageTypes.PHYSICAL: 650, dmg.DamageTypes.THINKING: 650}, 45,
                                              'items_weapons_star_of_devotion',
-                                             0, 6, 60, 200),
+                                             4, 11, 25, 200),
         'quark_rusher': QuarkRusher('quark rusher', {dmg.DamageTypes.PHYSICAL: 400, dmg.DamageTypes.THINKING: 500}, 15,
                                        'items_weapons_quark_rusher',
                                        5, 45, 30, 200),
@@ -4696,8 +4669,8 @@ def set_weapons():
         'highlight': Highlight('highlight', {dmg.DamageTypes.PHYSICAL: 500, dmg.DamageTypes.THINKING: 500}, 16, 'items_weapons_highlight',
                                3, 8, 10, 40, auto_fire=True),
         'turning_point': ComplexWeapon('turning point', {dmg.DamageTypes.PHYSICAL: 300, dmg.DamageTypes.THINKING: 750},
-                                       {dmg.DamageTypes.PHYSICAL: 5000}, 45, 'items_weapons_turning_point',
-                                       1, 3, 2, 130, 280, 400, 400,
+                                       {dmg.DamageTypes.THINKING: 800}, 45, 'items_weapons_turning_point',
+                                       1, 10, 5, 30, 150, 30, 100,
                                        True, [0, 0, 0, 0, 1, 1], TurningPointSweep, TurningPointSpear),
 
         'spikeflower': Spear('spikeflower', {dmg.DamageTypes.PHYSICAL: 5}, 1.8, 'items_weapons_spikeflower',

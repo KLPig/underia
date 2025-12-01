@@ -1,6 +1,7 @@
 from underia import weapons, projectiles, game
 from values import damages
 import constants
+import resources.log as log
 
 class Inventory:
     DEFAULT = 0
@@ -119,7 +120,7 @@ class Inventory:
                 cdata['dodge_rate'] = float(desc.removesuffix('%dodgerate')) / 100
 
             elif desc[0] in ['+', '-']:
-                print(f"Unknown accessory data: {desc}")
+                log.warning(f"Unknown accessory data: {desc}")
 
             return cdata
 
@@ -190,9 +191,9 @@ class Inventory:
                         else:
                             self.accessory_data.update(Inventory.Item.handle_data(desc))
                     except ValueError:
-                        print(f"Invalid accessory data: {desc}")
+                        log.warning(f"Invalid accessory data: {desc}")
                     except AssertionError:
-                        print(f"Invalid accessory data: {desc}")
+                        log.warning(f"Invalid accessory data: {desc}")
 
 
         def __str__(self):

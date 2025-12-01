@@ -2,7 +2,7 @@ import os
 import sys
 
 from constants import DEBUG, OS
-from tkinter import messagebox
+import resources.log as log
 
 if not DEBUG:
     if OS == 'Windows':
@@ -12,12 +12,11 @@ if not DEBUG:
 else:
     pt = os.path.dirname(sys.modules['__main__'].__file__)
 
-print("Discovering path...")
-print(pt)
+log.info("Discovering path...")
+log.info(pt)
 d = os.listdir(pt)
 if 'assets' not in d:
-    print('Assets not found.')
-    messagebox.showerror('Underia', 'Assets not found. Please reinstall the package.')
+    log.critical('Assets not found.')
     exit()
 
 

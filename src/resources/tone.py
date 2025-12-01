@@ -1,7 +1,7 @@
 import constants
 import pygame
 import numpy as np
-from resources import path
+from resources import path, log
 
 if constants.TONE:
     from scipy.io import wavfile
@@ -113,10 +113,10 @@ if constants.TONE:
                 tones[(instrument, new_frequency, )] = sound
                 return sound
             else:
-                print(f"Frequency for note C5 not found in the frequency mapping.")
+                log.error(f"Frequency for note C5 not found in the frequency mapping.")
                 return None
         else:
-            print(f"Instrument {instrument} not found in the file mapping.")
+            log.error(f"Instrument {instrument} not found in the file mapping.")
             return None
 
     def play_notes(instrument, data: tuple[str, float]):

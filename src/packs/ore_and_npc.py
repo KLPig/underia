@@ -1318,3 +1318,30 @@ class ChlorophyteOre(Ore):
     LOOT_TABLE = entity.LootTable([
         entity.IndividualLoot('chlorophyte_ingot', 1, 2, 3),
         ])
+
+@entity.Entities.entity_type
+class SwordInTheStone(Ore):
+    NAME = 'Sword in the Stone'
+    DISPLAY_MODE = 3
+    LOOT_TABLE = entity.LootTable([
+       entity.SelectionLoot([('magic_sword', 1, 1), ('magic_blade', 1, 1)], 1, 1)
+    ])
+    IMG = 'entity_sword_in_the_stone'
+    TOUGHNESS = 2
+
+    def __init__(self, pos):
+        super().__init__(pos, 100)
+
+@entity.Entities.entity_type
+class EvilMark(Ore):
+    NAME = 'Evil Mark'
+    DISPLAY_MODE = 3
+    LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('soul', 0.9, 6, 7),
+        entity.IndividualLoot('evil_ingot', 1, 10, 12),
+    ])
+    TOUGHNESS = 50
+    IMG = 'entity_evil_mark'
+
+    def __init__(self, pos):
+        super().__init__(pos, 80)

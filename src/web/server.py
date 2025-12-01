@@ -3,6 +3,7 @@ from underia import game
 import socket
 import pickle
 import asyncio
+import resources.log as log
 
 
 class SocketServer:
@@ -48,12 +49,12 @@ class SocketServer:
 
     async def start_server(self):
         loop = asyncio.get_event_loop()
-        print('Server started')
+        log.info('Server started')
         self.sock.bind((self.host, self.port))
         self.sock.setblocking(False)
         self.sock.listen(8)
 
-        print(f'Server started on {self.host}:{self.port}')
+        log.info(f'Server started on {self.host}:{self.port}')
         while True:
             client, _ = await loop.sock_accept(self.sock)
             loop.create_task(self.socket_handle(client))

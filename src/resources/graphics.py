@@ -1,7 +1,7 @@
 import pygame as pg
 
 from resources import path as pth
-from resources import strings
+from resources import strings, log
 
 noticed = []
 
@@ -24,7 +24,7 @@ class Graphics:
                 for key in self.graphics.keys():
                     if strings.similarity(key, index) >= strings.similarity(mean_str, index):
                         mean_str = key
-                print(f"Graphics with index {index} is not loaded, do you mean {mean_str}?")
+                log.warning(f"Graphics with index {index} is not loaded, do you mean {mean_str}?")
             return self.graphics['items_invalid']
 
     def is_loaded(self, index: str) -> bool:

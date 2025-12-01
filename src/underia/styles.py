@@ -2,6 +2,7 @@ import pygame as pg
 from underia import game, inventory, word_dict
 from values import hp_system
 import constants
+import resources.log as log
 
 
 def hp_bar(hp: hp_system.HPSystem, midtop: tuple, size: float):
@@ -84,7 +85,7 @@ def text(txt: str) -> str:
     if wc:
         df = 1
     if df:
-        print('Untranslated: ', txt, '-', s)
+        log.warning('Untranslated: ' + txt + '->' + s)
     if word not in Dictionary.keys() and len(word) < 50:
         Dictionary[word] = s
     return s

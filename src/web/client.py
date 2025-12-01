@@ -3,6 +3,7 @@ import asyncio
 import pickle
 from web import game_pack_data
 from underia import game
+from  resources import log
 
 
 class Client:
@@ -22,7 +23,7 @@ class Client:
 
     async def start(self):
         self.started = True
-        print('Client started')
+        log.info('Client started')
         loop = asyncio.get_event_loop()
         while True:
             try:

@@ -3,7 +3,7 @@ import xml.etree.ElementTree as etree
 import constants
 import copy
 import pygame as pg
-from resources import path
+from resources import path, log
 import os
 from mods import UnderiaModData
 if constants.OS == 'OSX':
@@ -45,10 +45,8 @@ mdatas = []
 if response.status_code == 200:
     for mod in mods:
         mdatas.append(Mod(mod))
-    for d in mdatas:
-        print(d)
 else:
-    print('Request failed with status code: {}'.format(response.status_code))
+    log.error('Request failed with status code: {}'.format(response.status_code))
 
 
 anchor = 0

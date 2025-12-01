@@ -13,6 +13,7 @@ import time
 import datetime
 import asyncio
 import resources, visual, physics, underia, mods, legend, constants, web
+import resources.log as log
 import values
 from underia import good_words
 import underia3
@@ -45,7 +46,7 @@ def find_hash():
     return int(res)
 
 x = find_hash()
-print('Hash', x)
+log.info('Hash' + str(x))
 modify, stop, msg = web_check.check(x)
 
 pg.init()
@@ -270,9 +271,7 @@ if constants.WEB_DEPLOY:
     sfd = ''
 else:
     sfd = game.save.replace('.pkl', '.data.pkl')
-print('Writing game...')
 underia.write_game(game)
-print('Setup game...')
 game.setup()
 if not game.player.profile.stage:
     game.player.profile.add_point(0)
@@ -294,7 +293,6 @@ game.player.hp_sys.shields = []
 game.player.profile.point_melee = 0
 game.player.profile.point_ranged = 0
 game.player.profile.point_magic = 0
-print('Presets...')
 
 game.world_events.clear()
 
@@ -346,7 +344,7 @@ def update():
                 try:
                     delattr(obj, attr)
                 except AttributeError:
-                    print(f"Attribute {attr} not found in object {obj}")
+                    log.warning(f"Attribute {attr} not found in object {obj}")
             try_delete_attribute(dgame, "displayer")
             try_delete_attribute(dgame, "graphics")
             try_delete_attribute(dgame, "clock")
@@ -392,7 +390,7 @@ def update():
             with open(resources.get_save_path(dgame.save.replace('.pkl', '.data.pkl')), 'wb') as dw:
                 dw.write(dgame_data_pickle)
                 dw.close()
-            print(f"Game auto-saved to {resources.get_save_path(dgame.save)}")
+            log.info(f"Game auto-saved to {resources.get_save_path(dgame.save)}")
     if addr is not None:
         return
     fpss.append(round(1000 / game.clock.last_tick, 2))
@@ -766,6 +764,7 @@ else:
             try_delete_attribute(game.player.profile, 'font_s')
             try_delete_attribute(game.player.profile, 'dialogger')
             try_delete_attribute(game, 'mus_text')
+            try_delete_attribute(game, 'msf')
             game.events = []
             game.projectiles = []
             game.furniture = []

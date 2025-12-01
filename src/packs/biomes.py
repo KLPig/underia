@@ -99,6 +99,12 @@ class StarAI(MonsterAI):
             self.idle()
 
 @entity.AIs.entity_ai
+class LeafAI(StarAI):
+    MASS = 320
+    TOUCHING_DAMAGE = 288
+    SPEED = 1.8
+
+@entity.AIs.entity_ai
 class WorldsFruitAI(MonsterAI):
     MASS = 5000
     FRICTION = 0.9
@@ -663,7 +669,7 @@ class MagmaKingCounter(Entity):
         self.hp_sys.hp = s
         self.hp_sys.max_hp = sm
 
-
+@entity.Entities.entity_type
 class SandStorm(Entity):
     NAME = 'Sandstorm'
     DISPLAY_MODE = 3
