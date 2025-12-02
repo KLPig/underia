@@ -300,7 +300,7 @@ class PlayerProfile:
                 game.get_game().player.inventory.items = {'platinum_mask': 1, 'platinum_chestplate': 1, 'platinum_greaves': 1,
                                                           'submachine_gun': 1, 'bullet': 200, 'hermes_boots': 1, 'recipe_book': 1}
             game.get_game().player.accessories = 10 * ['null']
-            game.get_game().player.weapons = 4 * [weapons.WEAPONS['null']]
+            game.get_game().player.weapons = 7 * [weapons.WEAPONS['null']]
             game.get_game().player.ammo = ('null', 0)
             game.get_game().player.ammo_bullet = ('null', 0)
             game.get_game().decors.clear()

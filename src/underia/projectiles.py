@@ -1816,6 +1816,29 @@ class Projectiles:
         FOLLOW_PLAYER = False
         ENABLE_IMMUNE = .5
 
+    class LilyOfTheValley(Beam):
+        WIDTH = 30
+        LENGTH = 2400
+        DAMAGE_AS = 'lily_of_the_valley'
+        DMG_TYPE = damages.DamageTypes.MAGICAL
+        COLOR = (100, 0, 255)
+        DURATION = 20
+        FOLLOW_PLAYER = True
+        FACE_TO_MOUSE = True
+
+    class DreamVioletB(Beam):
+        WIDTH = 20
+        LENGTH = 300
+        DAMAGE_AS = 'dream_violet'
+        DMG_RATE = .5
+        ENABLE_IMMUNE = .5
+        DMG_TYPE = damages.DamageTypes.MAGICAL
+        COLOR = (255, 100, 255)
+        DURATION = 20
+        FOLLOW_PLAYER = False
+        CUT_EFFECT = True
+
+
     class BeamPair(Projectile):
         def __init__(self, pos, rotation):
             super().__init__(pos, rotation, motion=mover.Mover)
@@ -2346,6 +2369,22 @@ class Projectiles:
                            radius=int(15 / game.get_game().player.get_screen_scale()))
             pg.draw.circle(game.get_game().displayer.canvas, (0, 100, 255), position.displayed_position(self.obj.pos),
                            radius=int(15 / game.get_game().player.get_screen_scale()), width=int(3 / game.get_game().player.get_screen_scale()))
+    class DreamVioletP(PlatinumWand):
+        DAMAGE_AS = 'dream_violet'
+        IMG = 'projectiles_dream_violet'
+        SPD = 100
+        LIMIT_VEL = 5
+        DURATION = 80
+        DEL = False
+        COL = (255, 100, 255)
+        ENABLE_IMMUNE = 0
+        DECAY_RATE = .5
+
+        def draw(self):
+            pg.draw.circle(game.get_game().displayer.canvas, self.COL, position.displayed_position(self.obj.pos),
+                           radius=int(15 / game.get_game().player.get_screen_scale()))
+            pg.draw.circle(game.get_game().displayer.canvas, (100, 0, 100), position.displayed_position(self.obj.pos),
+                           radius=int(15 / game.get_game().player.get_screen_scale()), width=int(3 / game.get_game().player.get_screen_scale()))
 
     class TimeLily(PlatinumWand):
         DAMAGE_AS = 'time_lily'
@@ -2364,6 +2403,27 @@ class Projectiles:
                 self.obj.velocity *= 0
                 if self.tick % 8 == 0:
                     game.get_game().projectiles.append(Projectiles.TimeLilyS(self.obj.pos, self.rot))
+            super().update()
+
+    class DreamViolet(PlatinumWand):
+        DAMAGE_AS = 'dream_violet'
+        IMG = 'projectiles_dream_violet'
+        SPD = 150
+        LIMIT_VEL = -1
+        DURATION = 300
+        DEL = False
+        COL = (0, 255, 255)
+        ENABLE_IMMUNE = 2
+        DECAY_RATE = 1.0
+
+        def update(self):
+            self.set_rotation((self.tick - 150) ** 2 // 20)
+            if self.tick % 8 == 0:
+                for i in range(0, 360, 120):
+                    game.get_game().projectiles.append(Projectiles.DreamVioletP(self.obj.pos, self.rot + i))
+            if self.tick % 16 == 0:
+                for i in range(0, 360, 45):
+                    game.get_game().projectiles.append(Projectiles.DreamVioletB(self.obj.pos, self.rot + i + 12))
             super().update()
 
     class GrowthS(PlatinumWand):

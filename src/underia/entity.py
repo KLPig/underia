@@ -1035,7 +1035,7 @@ class Entities:
     class Entity:
         NAME = 'Dummy'
         DIVERSITY = True
-        DISPLAY_MODE = 0
+        DISPLAY_MODE = 2
         LOOT_TABLE = LootTable([])
         ENTITY_TAGS = []
         IS_MENACE = False
@@ -1070,6 +1070,9 @@ class Entities:
             else:
                 self.hp_sys = hp_system.SubHPSystem(hp_sys)
                 self.show_bar = False
+            if self.hp_sys.hp == 100000000:
+                self.img = pg.Surface((100, 100))
+                pg.draw.circle(self.img, (255, 0, 0), (50, 50), 40)
             self.img: pg.Surface | None = img
             self.img_idx = [k for k, v in game.get_game().graphics.graphics.items() if k.startswith('entity') and v == self.img]
             if len(self.img_idx):

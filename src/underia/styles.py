@@ -84,10 +84,11 @@ def text(txt: str) -> str:
             wc = ''
     if wc:
         df = 1
-    if df:
-        log.warning('Untranslated: ' + txt + '->' + s)
     if word not in Dictionary.keys() and len(word) < 50:
         Dictionary[word] = s
+    if df:
+        log.warning('Untranslated: ' + txt + '->' + s)
+        return txt
     return s
 
 

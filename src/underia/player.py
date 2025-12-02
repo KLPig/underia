@@ -117,7 +117,7 @@ class Player:
         self.obj = PlayerObject((400, 300))
         self.hp_sys = hp_system.HPSystem(200)
         self.ax, self.ay = 0, 0
-        self.weapons = 4 * [weapons.WEAPONS['null']]
+        self.weapons = 7 * [weapons.WEAPONS['null']]
         self.sel_weapon = 0
         self.inventory = inventory.Inventory()
         self.accessories = 10 * ['null']
@@ -1022,7 +1022,8 @@ class Player:
             game.get_game().projectiles = []
             game.get_game().damage_texts = []
             self.obj.pos << (0, 0)
-        self.weapons[self.sel_weapon].update()
+        if not self.in_ui:
+            self.weapons[self.sel_weapon].update()
 
     def ui(self):
         self.in_ui = False
@@ -1709,20 +1710,21 @@ class Player:
                                 if a == item.id:
                                     self.sel_accessory = ii
                             tt = [['ring'], ['glove', 'gloves'], ['eye'], ['cross'], ['boots'], ['shield', 'defense'], ['amulet', 'charm']]
-                            for t in tt:
-                                f = 0
-                                for tf in t:
-                                    if item.id.endswith(tf):
-                                        f = 1
-                                        break
-                                if f:
-                                    ct = 0
-                                    for ii, a in enumerate(self.accessories):
-                                        for tf in t:
-                                            if a.endswith(tf) and not len([1 for tt in ['major_accessory', 'head', 'body', 'leg'] if inventory.TAGS[tt] in inventory.ITEMS[a].tags]):
-                                                ct += 1
-                                                if ct >= 1 + (tf == 'ring'):
-                                                    self.sel_accessory = ii
+                            if not len([1 for tt in ['major_accessory', 'head', 'body', 'leg'] if inventory.TAGS[tt] in item.tags]):
+                                for t in tt:
+                                    f = 0
+                                    for tf in t:
+                                        if item.id.endswith(tf):
+                                            f = 1
+                                            break
+                                    if f:
+                                        ct = 0
+                                        for ii, a in enumerate(self.accessories):
+                                            for tf in t:
+                                                if a.endswith(tf) and not len([1 for tt in ['major_accessory', 'head', 'body', 'leg'] if inventory.TAGS[tt] in inventory.ITEMS[a].tags]):
+                                                    ct += 1
+                                                    if ct >= 1 + (tf == 'ring'):
+                                                        self.sel_accessory = ii
                             if self.accessories[self.sel_accessory] != 'null':
                                 self.inventory.add_item(inventory.ITEMS[self.accessories[self.sel_accessory]])
                             self.sel_accessory = min(10, self.sel_accessory)
@@ -2663,6 +2665,12 @@ class Player:
             self.sel_weapon = 2
         if pg.K_4 in game.get_game().get_keys():
             self.sel_weapon = 3
+        if pg.K_5 in game.get_game().get_keys():
+            self.sel_weapon = 4
+        if pg.K_6 in game.get_game().get_keys():
+            self.sel_weapon = 5
+        if pg.K_7 in game.get_game().get_keys():
+            self.sel_weapon = 6
         if self.in_ui:
             pg.mouse.set_visible(not mouse_text)
         else:

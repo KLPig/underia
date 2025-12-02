@@ -1,5 +1,5 @@
 <weapons>
-	<version>6</version>
+	<version>7</version>
 	<weapon id="null">
 		<speed>0</speed>
 		<at_time>2</at_time>
@@ -429,24 +429,24 @@
 		</damages>
 	</weapon>
 	<weapon id="galaxy_broadsword">
-		<speed>0</speed>
-		<at_time>16</at_time>
+		<speed>8</speed>
+		<at_time>22</at_time>
 		<damages>
 			<damage type="physical">450</damage>
 			<damage type="thinking">650</damage>
 		</damages>
 	</weapon>
 	<weapon id="eternal_echo">
-		<speed>0</speed>
-		<at_time>80</at_time>
+		<speed>8</speed>
+		<at_time>110</at_time>
 		<damages>
 			<damage type="physical">450</damage>
 			<damage type="thinking">700</damage>
 		</damages>
 	</weapon>
 	<weapon id="star_of_devotion">
-		<speed>0</speed>
-		<at_time>12</at_time>
+		<speed>8</speed>
+		<at_time>22</at_time>
 		<damages>
 			<damage type="physical">650</damage>
 			<damage type="thinking">650</damage>
@@ -470,7 +470,7 @@
 	</weapon>
 	<weapon id="turning_point">
 		<speed>2</speed>
-		<at_time>6</at_time>
+		<at_time>20</at_time>
 		<damages>
 			<damage type="physical">300</damage>
 			<damage type="thinking">750</damage>
@@ -844,11 +844,11 @@
 		</damages>
 	</weapon>
 	<weapon id="resolution">
-		<speed>4</speed>
-		<at_time>6</at_time>
+		<speed>30</speed>
+		<at_time>50</at_time>
 		<damages>
-			<damage type="piercing">300</damage>
-		</damages>
+			<damage type="piercing">500</damage>
+		<damage type="thinking">500</damage></damages>
 	</weapon>
 	<weapon id="pistol">
 		<speed>6</speed>
@@ -3059,4 +3059,4 @@
 			<damage type="physical">0</damage>
 		</damages>
 	</weapon>
-<weapon id="wave"><speed>4</speed><at_time>14</at_time><damages><damage type="physical">200</damage></damages></weapon><weapon id="ark_of_elements"><speed>8</speed><at_time>22</at_time><damages><damage type="physical">300</damage></damages></weapon><weapon id="thermal_pike"><speed>4</speed><at_time>14</at_time><damages><damage type="physical">155</damage></damages></weapon><weapon id="milky_way"><speed>12</speed><at_time>8</at_time><damages><damage type="piercing">600</damage></damages></weapon><weapon id="fire_shine"><speed>4</speed><at_time>6</at_time><damages><damage type="piercing">120</damage></damages></weapon><weapon id="void"><speed>2</speed><at_time>4</at_time><damages><damage type="piercing">300</damage></damages></weapon><weapon id="oceanic_current"><speed>0</speed><at_time>60</at_time><damages><damage type="magical">35</damage></damages></weapon></weapons>
+<weapon id="wave"><speed>4</speed><at_time>14</at_time><damages><damage type="physical">200</damage></damages></weapon><weapon id="ark_of_elements"><speed>8</speed><at_time>22</at_time><damages><damage type="physical">300</damage></damages></weapon><weapon id="thermal_pike"><speed>4</speed><at_time>14</at_time><damages><damage type="physical">155</damage></damages></weapon><weapon id="milky_way"><speed>12</speed><at_time>8</at_time><damages><damage type="piercing">600</damage></damages></weapon><weapon id="fire_shine"><speed>4</speed><at_time>6</at_time><damages><damage type="piercing">120</damage></damages></weapon><weapon id="void"><speed>2</speed><at_time>4</at_time><damages><damage type="piercing">300</damage></damages></weapon><weapon id="oceanic_current"><speed>0</speed><at_time>60</at_time><damages><damage type="magical">35</damage></damages></weapon><weapon id="star_defense"><speed>4</speed><at_time>18</at_time><damages><damage type="physical">450</damage></damages></weapon><weapon id="lily_of_the_valley"><speed>0</speed><at_time>6</at_time><damages><damage type="magical">120</damage></damages></weapon><weapon id="fate"><speed>0</speed><at_time>10</at_time><damages><damage type="magical">150</damage></damages></weapon><weapon id="dream_violet"><speed>0</speed><at_time>40</at_time><damages><damage type="magical">550</damage></damages></weapon></weapons>

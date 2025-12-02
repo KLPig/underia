@@ -63,7 +63,7 @@ for m in load_mods:
                        cnt=game.cnt_graphics(os.path.join(mod_dir, m, 'assets/assets/graphics')))
 game.map = pg.PixelArray(game.graphics['background_map'])
 underia.set_weapons()
-game.player.weapons = 4 * [underia.WEAPONS['null']]
+game.player.weapons = 7 * [underia.WEAPONS['null']]
 game.player.sel_weapon = 1
 
 game.world_events.clear()
