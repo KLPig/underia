@@ -1152,7 +1152,18 @@ class Entities:
             return game.get_game().sounds[sound].get_num_channels() > 0
 
         def dump_display(self):
-            return {'pos': self.obj.pos, 'rot': self.rot, 'img_idx': self.img_idx, 'display_mode': self.DISPLAY_MODE, 'hp_sys': self.hp_sys}
+            return {'pos': self.obj.pos, 'rot': self.rot, 'img_idx': self.img_idx, 'display_mode': self.DISPLAY_MODE, 'hp_sys': self.hp_sys,
+                    'name': self.NAME, 'is_menace': self.IS_MENACE, 'adj': self.adj}
+
+        def load_display(self, data):
+            self.obj.pos = data['pos']
+            self.rot = data['rot']
+            self.img_idx = data['img_idx']
+            self.DISPLAY_MODE = data['display_mode']
+            self.hp_sys = data['hp_sys']
+            self.NAME = data['name']
+            self.IS_MENACE = data['is_menace']
+            self.adj = data['adj']
 
         @staticmethod
         def is_suitable(biome: str):
@@ -1309,6 +1320,18 @@ class Entities:
     class EntityDefinition(Entity):
         def __init__(self, *args, **kwargs):
             log.error('A non further-defined entity is created, named ' + self.__class__.__name__)
+
+    class ClientEntity(Entity):
+        DIVERSITY = False
+
+        def __init__(self, data):
+            super().__init__(data['pos'], game.get_game().graphics[data['img_idx']], BuildingAI,
+                             1)
+            self.DISPLAY_MODE = data['display_mode']
+            self.adj = data['adj']
+            self.NAME = data['name']
+            self.hp_sys = data['hp_sys']
+            self.IS_MENACE = data['is_menace']
 
     # From pack: ./basic.py
     class Eye(EntityDefinition):
@@ -6756,7 +6779,7 @@ class Entities:
         PHASES = ['none', 'born', 'growth', 'huge', 'fruit', 'death', 'gone', 'recovery', 'rebirth']
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_reincarnation__the_worlds_tree_none'], WorldsTreeAI, 2000000)
+            super().__init__(pos, game.get_game().graphics['entity_reincarnation__the_worlds_tree_none'], WorldsTreeAI, 12000000)
             self.hp_sys.resistances[damages.DamageTypes.PHYSICAL] = 0.8
             self.hp_sys.resistances[damages.DamageTypes.MAGICAL] = 0.8
             self.hp_sys.resistances[damages.DamageTypes.ARCANE] = 0.8
@@ -6982,7 +7005,7 @@ class Entities:
         PHASES = []
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_faith'], BuildingAI, 1400000)
+            super().__init__(pos, game.get_game().graphics['entity_faith'], BuildingAI, 6750000)
             self.obj.MASS = 1800
             self.obj.TOUCHING_DAMAGE = 2400
             self.state = 0

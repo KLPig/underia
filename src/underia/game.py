@@ -729,23 +729,6 @@ class Game:
                 styles.hp_bar(p_data.hp_sys, resources.displayed_position((p_data.pos[0], p_data.pos[1] - 30)), 40)
         if self.server is not None:
             self.server.update()
-        if self.client is not None:
-            for d in self.client.displays:
-                pos = d['pos']
-                dx, dy = resources.displayed_position(pos)
-                if not self.displayer.canvas.get_rect().collidepoint(dx, dy):
-                    continue
-                rot = d['rot']
-                img_idx = d['img_idx']
-                display_mode = d['display_mode']
-                if display_mode == entity.Entities.DisplayModes.NO_DIRECTION:
-                    rot = 0
-                else:
-                    rot = round(rot / 3) * 3
-                img = entity.entity_get_surface(display_mode, rot, 1 / self.player.get_screen_scale(),
-                                                self.graphics[img_idx])
-                imr = img.get_rect(center=resources.displayed_position(pos))
-                self.displayer.canvas.blit(img, imr)
         self.player.update()
         for drop_item in self.drop_items:
             drop_item.update()
@@ -762,6 +745,10 @@ class Game:
         dt = abs(cp.obj.pos - self.player.obj.pos)
         if dt > 500 or not self.can_in_home():
             for i, e in enumerate(self.entities):
+                e.t_draw()
+        if self.client is not None:
+            for d in self.client.displays:
+                e = entity.Entities.ClientEntity(d)
                 e.t_draw()
         for i, e in enumerate(self.furniture):
             e.t_draw()

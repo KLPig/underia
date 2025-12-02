@@ -3,6 +3,7 @@ from underia import game, player
 class FirstConnectData:
     def __init__(self, pid, profile):
         self.seed = game.get_game().seed
+        self.fun = game.get_game().fun
         self.hallow = game.get_game().hallow_points
         self.wither = game.get_game().wither_points
         self.pid = pid

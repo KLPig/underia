@@ -1825,18 +1825,13 @@ class QuarkRusher(Blade):
             game.get_game().player.obj.velocity.add(vector.Vector(vector.coordinate_rotation(mx, my), 20))
         self.st += 1
 
-class EHighlight(Spear):
-    ENABLE_IMMUNE = False
-
-    def on_start_attack(self):
-        self.img.set_alpha(120)
-        super().on_start_attack()
 
 class Highlight(Spear):
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, forward_speed: int,
                  st_pos: int, auto_fire: bool = False):
         super().__init__(name, damages, kb, img, speed, at_time, forward_speed, st_pos, auto_fire)
-        ss = [EHighlight(name, damages, kb, 'projectiles_highlight_' + c, speed, at_time, forward_speed * 2, 0, auto_fire)
+        self.iit = False
+        ss = [Spear(name, damages, kb, 'items_weapons_highlight_' + c, speed, at_time * 3, forward_speed // 2, 0, auto_fire)
                for c in ['r', 'o', 'y', 'g', 'c', 'b', 'p'] for _ in range(9)]
         self.es = ss
         for s in ss:
@@ -1847,15 +1842,30 @@ class Highlight(Spear):
         rot = vector.coordinate_rotation(mx, my)
         super().on_attack()
         self.set_rotation(rot + random.randint(-10, 10))
-        flow = random.randint(1, 3)
-        for c in self.es[:flow]:
-            c.attack()
-            c.forward(10)
-            c.set_rotation(rot + random.randint(-10, 10))
-        for _ in range(flow):
-            self.es.append(self.es.pop(0))
+        if self.timer % 3 == 0:
+            flow = random.randint(1, 3)
+            for c in self.es[:flow]:
+                c.attack()
+                c.forward(10)
+                c.set_rotation(rot + random.randint(-10, 10))
+            for _ in range(flow):
+                self.es.append(self.es.pop(0))
 
     def update(self):
+        if not self.iit:
+            self.iit = True
+            for r, c in [('r', (255, 0, 0)), ('o', (255, 127, 0)), ('y', (255, 255, 0)),
+                         ('g', (0, 255, 0)), ('c', (0, 255, 255)), ('b', (0, 0, 255)),
+                         ('p', (0, 255, 255))]:
+                dt = copy.copy(game.get_game().graphics['items_highlight'])
+                rt = pg.Surface(dt.get_size(), pg.SRCALPHA)
+                rt.fill(c)
+                rt.set_alpha(127)
+                rt.blit(dt, (0, 0), special_flags=pg.BLEND_RGBA_MULT)
+                rt.set_alpha(127)
+                game.get_game().graphics['items_highlight_' + r] = rt
+                if r == 'r':
+                    pg.image.save(rt, 'highlight_r.png')
         super().update()
         for c in self.es:
             c.update()
@@ -1991,7 +2001,7 @@ class StarOfDevotion(Blade):
 class TurningPointSweep(Blade):
     def on_attack(self):
         super().on_attack()
-        self.cutting_effect(16, (255, 191, 63), (255, 0, 0))
+        self.cutting_effect(8, (255, 191, 63), (255, 0, 0))
 
     def on_start_attack(self):
         super().on_start_attack()
@@ -3884,6 +3894,11 @@ class Resolution(Bow):
     def on_start_attack(self):
         self.face_to(
             *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+
+    def on_attack(self):
+        super().on_attack()
+        if self.timer % 3 != 0:
+            return
         if game.get_game().player.ammo[0] not in projectiles.AMMOS or not game.get_game().player.ammo[1]:
             self.timer = 0
             return
@@ -3893,23 +3908,28 @@ class Resolution(Bow):
         ppx, ppy = vector.rotation_coordinate(self.rot)
         aas = [-4, -3, -1, 1, 3, 4]
         cols = ((255, 255, 0), (255, 127, 0), (0, 255, 0), (0, 0, 255), (255, 0, 255), (0, 255, 255))
-        for i in range(6):
-            for j in range(0, 1 + 80 * (not self.sk_cd), 40):
-                x, y = (self.x + game.get_game().player.obj.pos[0] + sax * 20 * aas[i] - ppx * j,
-                        self.y + game.get_game().player.obj.pos[1] + say * 20 * aas[i] - ppy * j)
+        for i in ([self.timer // 3 % 6] if self.sk_cd else range(6)):
+            if i == (self.timer // 3 + 1) % 6:
+                continue
+            for j in range(0, 1, 40):
+                x, y = (self.x + game.get_game().player.obj.pos[0] + sax * 10 * aas[i] - ppx * j,
+                        self.y + game.get_game().player.obj.pos[1] + say * 10 * aas[i] - ppy * j)
                 p = projectiles.AMMOS[game.get_game().player.ammo[0]]((x, y), self.rot,
                                                             self.spd + projectiles.AMMOS[game.get_game().player.ammo[0]].SPEED,
                                                             self.damages[dmg.DamageTypes.PIERCING])
                 p.TAIL_COLOR = cols[i]
                 p.TAIL_SIZE = 2
                 p.TAIL_WIDTH = 6
+                p.obj.velocity *= .2
                 game.get_game().projectiles.append(p)
-        if not self.sk_cd:
-            self.sk_cd = self.sk_mcd
+
+    def on_end_attack(self):
+        super().on_end_attack()
+        self.sk_cd = self.sk_mcd
 
     def update(self):
+        self.sk_mcd = 300
         super().update()
-        self.sk_mcd = 40
 
 class GaiaPaladinSpear(Spear):
     def update(self):
@@ -4287,6 +4307,8 @@ class Climax(Gun):
         cols = [(255, 0, 0), (255, 127, 0), (255, 255, 0), (0, 255, 0), (0, 255, 255), (0, 0, 255), (255, 0, 255),
                 (255, 0, 0)]
         self.cols = []
+        self.sk_cd = 0
+        self.sk_mcd = 120
         for i in range(1, 8):
             s_c = cols[i - 1]
             e_c = cols[i]
@@ -4307,24 +4329,30 @@ class Climax(Gun):
         for i in range(3):
             super().on_start_attack()
         self.x, self.y = random.randint(-1000, 1000), random.randint(-1000, 1000)
-        sz = int(4 - math.floor(math.sqrt(random.randint(1, 9))))
-        game.get_game().displayer.effect(fc.p_fade_circle(*position.displayed_position((game.get_game().player.obj.pos[0] + self.x,
-                                                                                        game.get_game().player.obj.pos[1] + self.y)),
-                                                          col=self.cols[0], sp=sz * 10,
-                                                          t=6))
-        self.face_to(mx, my)
-        for i in range(sz):
-            pj = projectiles.AMMOS[game.get_game().player.ammo_bullet[0]]((self.x + game.get_game().player.obj.pos[0],
-                                                                           self.y + game.get_game().player.obj.pos[1]),
-                                                                          self.rot + random.randint(-self.precision,
-                                                                                                    self.precision),
-                                                                          0,
-                                                                          self.damages[dmg.DamageTypes.PIERCING])
-            if self.tail_col is not None:
-                pj.TAIL_COLOR = self.cols[0]
-                pj.TAIL_SIZE = max(pj.TAIL_SIZE, 3)
-                pj.TAIL_WIDTH = max(pj.TAIL_WIDTH, 6)
-            game.get_game().projectiles.append(pj)
+        for _ in range(1 + (not self.sk_cd) * 5):
+            if self.sk_cd:
+                sz = int(4 - math.floor(math.sqrt(random.randint(1, 9))))
+            else:
+                sz = int(7 - math.floor(math.sqrt(random.randint(1, 49))))
+            game.get_game().displayer.effect(fc.p_fade_circle(*position.displayed_position((game.get_game().player.obj.pos[0] + self.x,
+                                                                                            game.get_game().player.obj.pos[1] + self.y)),
+                                                              col=self.cols[0], sp=sz * 10,
+                                                              t=6))
+            self.face_to(mx, my)
+            for i in range(sz):
+                pj = projectiles.AMMOS[game.get_game().player.ammo_bullet[0]]((self.x + game.get_game().player.obj.pos[0],
+                                                                               self.y + game.get_game().player.obj.pos[1]),
+                                                                              self.rot + random.randint(-self.precision,
+                                                                                                        self.precision),
+                                                                              0,
+                                                                              self.damages[dmg.DamageTypes.PIERCING])
+                if self.tail_col is not None:
+                    pj.TAIL_COLOR = self.cols[0]
+                    pj.TAIL_SIZE = max(pj.TAIL_SIZE, 3)
+                    pj.TAIL_WIDTH = max(pj.TAIL_WIDTH, 6)
+                game.get_game().projectiles.append(pj)
+        if not self.sk_cd:
+            self.sk_cd = 120
         self.x, self.y = 0, 0
         self.face_to(mx, my)
         self.cols.append(self.cols.pop(0))
@@ -4793,9 +4821,9 @@ def set_weapons():
                               6, 4, 200, auto_fire=True, tail_col=(180, 100, 255), precision=1),
         'accelerationism': Accelerationism('accelerationism', {dmg.DamageTypes.PIERCING: 270}, 0.5,
                                            'items_weapons_accelerationism',
-                                           0, 2, 320, True, ammo_save_chance=2 / 3),
-        'resolution': Resolution('resolution', {dmg.DamageTypes.PIERCING: 300}, 0.5, 'items_weapons_resolution',
-                                  2, 3, 2200, True, ammo_save_chance=3 / 4),
+                                           0, 2, 320, True, ammo_save_chance=1 / 3),
+        'resolution': Resolution('resolution', {dmg.DamageTypes.PIERCING: 500, dmg.DamageTypes.THINKING: 500}, 0.5, 'items_weapons_resolution',
+                                  15, 25, 2200, True, ammo_save_chance=1 / 2),
 
         'pistol': Gun('pistol', {dmg.DamageTypes.PIERCING: 24}, 0.1, 'items_weapons_pistol',
                       3, 15, 15, precision=2),

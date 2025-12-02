@@ -1807,14 +1807,14 @@ class Projectiles:
         DURATION = 20
 
     class TurningPoint(Beam):
-        WIDTH = 150
+        WIDTH = 50
         LENGTH = 15000
         DAMAGE_AS = 'turning_point'
         DMG_TYPE = damages.DamageTypes.PHYSICAL
         COLOR = (255, 0, 0)
         DURATION = 18
         FOLLOW_PLAYER = False
-        CUT_EFFECT = True
+        ENABLE_IMMUNE = .5
 
     class BeamPair(Projectile):
         def __init__(self, pos, rotation):
