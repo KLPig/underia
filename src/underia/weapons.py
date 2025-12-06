@@ -2356,6 +2356,14 @@ class Cosmic(Blade):
         game.get_game().projectiles.append(projectiles.Projectiles.Cosmic(
             (self.x + game.get_game().player.obj.pos[0], self.y + game.get_game().player.obj.pos[1]), self.rot))
 
+class Diamond(Blade):
+    def on_end_attack(self):
+        super().on_end_attack()
+        self.face_to(
+            *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+        game.get_game().projectiles.append(projectiles.Projectiles.Diamond(
+            (self.x + game.get_game().player.obj.pos[0], self.y + game.get_game().player.obj.pos[1]), self.rot))
+
 
 class RuneBlade(AutoSweepWeapon):
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, rot_speed: int,
@@ -2819,7 +2827,7 @@ class ChaosKiller(MagicWeapon):
         game.get_game().player.mana -= round(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True),1)
         els = [e for e in game.get_game().entities if e.obj.IS_OBJECT]
         els.extend([e for e in game.get_game().entities if e.IS_MENACE])
-        el = len(els)
+        el = max(5, len(els))
         for e in els:
             e.hp_sys.damage(self.damages[dmg.DamageTypes.MAGICAL] * game.get_game().player.attack *
                             game.get_game().player.attacks[2] / el, dmg.DamageTypes.MAGICAL)
@@ -4202,6 +4210,9 @@ class PhoenixExploder(Gun):
                 pj.TAIL_WIDTH = max(pj.TAIL_WIDTH, 6)
             game.get_game().projectiles.append(pj)
 
+class Club(Bow):
+    TRANS_AMMO = projectiles.Projectiles.Club
+
 class ChaosAnnihilator(Gun):
     TRANS_AMMO = projectiles.Projectiles.ChaosAnnihilator
 
@@ -4658,6 +4669,8 @@ def set_weapons():
                                   2, 20, 30, 120),
         'cosmos': Cosmic('cosmos', {dmg.DamageTypes.PHYSICAL: 350}, 3, 'items_weapons_cosmos',
                           1, 6, 80, 240),
+        'diamond': Diamond('diamond', {dmg.DamageTypes.PHYSICAL: 250}, 3, 'items_weapons_diamond',
+                           2, 7, 40, 200),
         'the_blade': TheBlade('the blade', {dmg.DamageTypes.PHYSICAL: 300}, 7.2, 'items_weapons_the_blade',
                               6, 16, 30, 180),
         'demon_blade__muramasa': Muramasa('demon blade  muramasa', {dmg.DamageTypes.PHYSICAL: 350}, 12,
@@ -4812,7 +4825,9 @@ def set_weapons():
         'celestic': Celestic('celestic', {dmg.DamageTypes.PIERCING: 250}, 3, 'items_weapons_celestic',
                              5, 30, 500, auto_fire=True, tail_col=(255, 255, 100)),
         'lazer_rain': LazerRain('lazer rain', {dmg.DamageTypes.PIERCING: 160}, 0.5, 'items_weapons_lazer_rain',
-                                1, 3, 500, auto_fire=True, tail_col=(127, 127, 255), ammo_save_chance=1 / 2),
+                                1, 3, 500, auto_fire=True, tail_col=(127, 127, 255), ammo_save_chance=1 / 5),
+        'club': Club('club', {dmg.DamageTypes.PIERCING: 80}, 1, 'items_weapons_club',
+                     2, 3, 300, auto_fire=True, ammo_save_chance=1/5),
         'true_worlds_bow': TrueWorldBow('true worlds bow', {dmg.DamageTypes.PIERCING: 180}, 0.5, 'items_weapons_true_worlds_bow',
                                         18, 16, 300, True, precision=2),
         'chaos_abyss': ChaosAbyss('chaos abyss', {dmg.DamageTypes.PIERCING: 150}, 1.5, 'items_weapons_chaos_abyss',
@@ -4829,6 +4844,8 @@ def set_weapons():
                       3, 15, 15, precision=2),
         'rifle': Gun('rifle', {dmg.DamageTypes.PIERCING: 14}, 0.2, 'items_weapons_rifle',
                      6, 6, 20, auto_fire=True, precision=4),
+        'the_desert_eagle': Gun('the desert eagle', {dmg.DamageTypes.PIERCING: 55}, 5, 'items_weapons_the_desert_eagle',
+                      3, 7, 80, precision=1),
         'submachine_gun': Gun('submachine gun', {dmg.DamageTypes.PIERCING: 2}, 0.15, 'items_weapons_submachine_gun',
                               0, 2, 50, auto_fire=True, precision=3, ammo_save_chance=1 / 3),
         'magma_assaulter': MagmaAssaulter('magma assaulter', {dmg.DamageTypes.PIERCING: 30}, 0.5,
@@ -5004,6 +5021,10 @@ def set_weapons():
                                      'items_weapons_platinum_wand', 2,
                                      5, projectiles.Projectiles.PlatinumWand, 9, True,
                                      'Energy Bomb'),
+        'rock_ball': MagicWeapon('rock_ball', {dmg.DamageTypes.MAGICAL: 70}, 0.3,
+                                     'items_weapons_rock_ball', 8,
+                                     9, projectiles.Projectiles.RockBall, 22, True,
+                                     'Rock Ball'),
         'mana_wand': MagicWeapon('mana wand', {dmg.DamageTypes.MAGICAL: 66}, 0.2,
                                  'items_weapons_mana_wand', 3,
                                  7, projectiles.Projectiles.ManaWand, 14, True,
@@ -5129,6 +5150,10 @@ def set_weapons():
                                             'items_weapons_double_watcher_wand', 1,
                                             4, projectiles.Projectiles.BeamPair, 12, True,
                                             'Double Watch'),
+        'wildsands': MagicWeapon('wildsands', {dmg.DamageTypes.MAGICAL: 7}, 0.3,
+                                     'items_weapons_wildsands', 1,
+                                     2, projectiles.Projectiles.Wildsands, 5, True,
+                                     'Wildsands'),
         'karmic_fire': MagicWeapon('karmic fire', {dmg.DamageTypes.MAGICAL: 10}, 1,
                                     'items_weapons_karmic_fire', 2,
                                     5, projectiles.Projectiles.KarmicFire, 17, True,
@@ -5175,7 +5200,7 @@ def set_weapons():
                                35, projectiles.Projectiles.Growth, 220, True,
                                'Seed Growth'),
         'astigmatism': Astigmatism('astigmatism', {dmg.DamageTypes.MAGICAL: 240}, 0.1, 'items_weapons_astigmatism',
-                                   0, 1, 5, True,
+                                   0, 1, 6, True,
                                    'Energetic Light Focus'),
         'life_wand': LifeWand('life_wand', 'item_weapons_life_wand', 2, 8, True),
 
@@ -5186,9 +5211,11 @@ def set_weapons():
                                  lambda w: (inventory.TAGS['magic_element_energy'] in inventory.ITEMS[w.name.replace(' ', '_')].tags) and game.get_game().player.inventory.is_enough(inventory.ITEMS[w.name.replace(' ', '_')]),
                                  'Energy Pulse', 1),
         'chaos_teleporter': Teleporter('chaos_teleporter', {}, 1, 'items_weapons_chaos_teleporter',
-                                       19, 1, 1000, 300, False, 'Chaos Teleport'),
+                                       19, 11, 1000, 500, False, 'Chaos Teleport'),
         'chaos_killer': ChaosKiller('chaos_killer', {dmg.DamageTypes.MAGICAL: 3200}, 1, 'items_weapons_chaos_killer',
-                                     9, 1, projectiles.Projectiles.Projectile, 40, False, 'Chaos Kill'),
+                                     19, 11, projectiles.Projectiles.Projectile, 100, False, 'Chaos Kill'),
+        'spade': MagicWeapon('spade', {dmg.DamageTypes.MAGICAL: 400}, 1, 'items_weapons_spade',
+                              8, 12, projectiles.Projectiles.Spade, 90, True, 'Spade'),
         'skyfire__meteor': MagicWeapon('skyfire__meteor', {dmg.DamageTypes.MAGICAL: 350}, 1, 'items_weapons_skyfire__meteor',
                                        1, 2, projectiles.Projectiles.Meteor, 8, True, 'Skyfire Meteor'),
         'azure_guard': AzureGuard('azure_guard', {}, 1, 'items_weapons_azure_guard',
@@ -5236,8 +5263,8 @@ def set_weapons():
                                   8, 8, projectiles.Projectiles.SunPearl, 400, True, 'Sun Guard', 1),
         'falling_action': MagicWeapon('falling action', {dmg.DamageTypes.MAGICAL: 400, dmg.DamageTypes.THINKING: 400}, 1, 'items_weapons_falling_action',
                                        1, 1, projectiles.Projectiles.FallingAction, 65, True, 'Falling Action', 1),
-        'rising_action': MagicWeapon('rising action', {dmg.DamageTypes.MAGICAL: 400, dmg.DamageTypes.THINKING: 800}, 1, 'items_weapons_rising_action',
-                                       1, 8, projectiles.Projectiles.RisingAction, 248, True, 'Rising Action', 1),
+        'rising_action': MagicWeapon('rising action', {dmg.DamageTypes.MAGICAL: 800, dmg.DamageTypes.THINKING: 800}, 1, 'items_weapons_rising_action',
+                                       3, 9, projectiles.Projectiles.RisingAction, 288, True, 'Rising Action', 1),
         'relevation_of_cycles': MagicWeapon('relevation of cycles', {dmg.DamageTypes.MAGICAL: 100, dmg.DamageTypes.THINKING: 500}, 1, 'items_weapons_relevation_of_cycles',
                                              1, 2, projectiles.Projectiles.RelevationOfCycles, 88, True, 'Relevation of Cycles', 1),
 

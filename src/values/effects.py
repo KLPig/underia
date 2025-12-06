@@ -60,6 +60,12 @@ class Burning(Aberration):
     DESC = 'Continuously dealing damage'
     CORRESPONDED_ELEMENT = elements.ElementTypes.FIRE
 
+class Chaotic(Aberration):
+    IMG = 'burning'
+    NAME = 'Chaotic'
+    DESC = 'Continuously dealing damage'
+    CORRESPONDED_ELEMENT = elements.ElementTypes.NONE
+
 class Freezing(Effect):
     IMG = 'freezing'
     NAME = 'Freezing'

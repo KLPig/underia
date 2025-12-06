@@ -231,6 +231,8 @@ class Player:
             nf *= 3
         if b == 'hot_spring':
             nf *= 4
+        if b.startswith('chaos_abyss'):
+            nf *= 3
         if b == 'inner':
             nf *= 2.5
         if b in ['heaven', 'hell']:
@@ -545,6 +547,7 @@ class Player:
         b = game.get_game().get_biome()
         d_t = constants.DIFFICULTY * 2 + constants.DIFFICULTY2 * 3 - 3
         nk = 'naturalify_necklace' in self.accessories
+        bs = 'bloodstone_amulet' in self.accessories
         if b == 'inner':
             if not nk:
                 game.get_game().player.hp_sys.effect(effects.Wither(1, d_t * 3 + 5))
@@ -557,17 +560,19 @@ class Player:
             game.get_game().player.hp_sys.effect(effects.Burning(1, d_t * 2 + 5 - nk * (5 * d_t)))
             if not nk:
                 game.get_game().player.hp_sys.effect(effects.SDarkened(1, 1))
+        if b.startswith('chaos_abyss'):
+            game.get_game().player.hp_sys.effect(effects.Burning(1, d_t * 200 + 150 - nk * 100 * d_t))
         if not nk:
             if b == 'hell':
-                game.get_game().player.hp_sys.effect(effects.Burning(1, d_t + 1))
+                game.get_game().player.hp_sys.effect(effects.Burning(1, d_t // (1 + bs) + 1))
             if b == 'heaven':
                 if constants.DIFFICULTY >= 1:
                     game.get_game().player.hp_sys.effect(effects.SEnlightened(1, 1))
             if b == 'desert':
-                if constants.DIFFICULTY >= 2:
+                if constants.DIFFICULTY >= 2 + bs:
                     game.get_game().player.hp_sys.effect(effects.BleedingR(1, 1))
             if b == 'snow':
-                if constants.DIFFICULTY >= 2:
+                if constants.DIFFICULTY >= 2 + bs:
                     game.get_game().player.hp_sys.effect(effects.SFreezing(1, 1))
         self.obj.FRICTION = max(0, 1 - nf * 0.1 * self.calculate_data('air_res', rate_data=True, rate_multiply=True) * (20 ** self.z))
         self.obj.MASS = max(40, 80 + self.calculate_data('mass', False))
@@ -745,6 +750,26 @@ class Player:
                 self.mana -= round(7 * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True),1)
                 game.get_game().projectiles.append(projectiles.Projectiles.TwinGlasses(self.obj.pos + vector.Vector2D(rs, -200), rs))
                 game.get_game().projectiles.append(projectiles.Projectiles.TwinGlasses(self.obj.pos + vector.Vector2D(rs, 200), 180 + rs))
+
+        if 'mechanical_tentacle' in self.accessories:
+            img = entity.entity_get_surface(1, -self.obj.velocity.get_net_rotation(), 2 * self.get_screen_scale(),
+                                            game.get_game().graphics['entity_destroyer_head'])
+            img_r = img.get_rect(center=position.displayed_position(self.obj.pos + vector.Vector2D(self.obj.velocity.get_net_rotation(), 200 + 100 * math.cos(self.tick / 110)) +
+                                                                    vector.Vector2D(self.obj.velocity.get_net_rotation() + 90, 20 * math.sin(self.tick / 40))))
+            game.get_game().displayer.canvas.blit(img, img_r)
+            if pg.BUTTON_LEFT in game.get_game().get_pressed_mouse() and self.tick % 8 == 0:
+                rt = self.obj.velocity.get_net_rotation()
+                if game.get_game().player.ammo_bullet[0] in projectiles.AMMOS and game.get_game().player.ammo_bullet[1]:
+                    if game.get_game().player.ammo_bullet[
+                        1] < constants.ULTIMATE_AMMO_BONUS and random.random() < game.get_game().player.calculate_data(
+                            'ammo_save', False) / 100:
+                        game.get_game().player.ammo_bullet = (
+                            game.get_game().player.ammo_bullet[0], game.get_game().player.ammo_bullet[1] - 1)
+                    pt = projectiles.AMMOS[game.get_game().player.ammo_bullet[0]]
+                    pj = pt(game.get_game().player.obj.pos,
+                            rt + random.randint(-2, 2), 100,
+                            40)
+                    game.get_game().projectiles.append(pj)
 
 
         self.hp_sys.update()

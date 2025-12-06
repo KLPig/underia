@@ -157,6 +157,41 @@ class Chest(Ore):
         game.get_game().player.open_chest = None
 
 @entity.Entities.entity_type
+class HolyPillar(Ore):
+    NAME = 'Holy Pillar'
+    DISPLAY_MODE = 1
+    TOUGHNESS = 400
+    LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('result', 1, 10, 20),
+    ])
+    IMG = 'entity_holy_pillar'
+
+    def __init__(self, pos):
+        super().__init__(pos, 100)
+        self.hp_sys.resistances[damages.DamageTypes.PHYSICAL] = 0
+        self.hp_sys.resistances[damages.DamageTypes.MAGICAL] = 0
+        self.hp_sys.resistances[damages.DamageTypes.ARCANE] = 0
+        self.hp_sys.resistances[damages.DamageTypes.PIERCING] = 0
+        self.hp_sys(op='config', minimum_damage=0)
+
+@entity.Entities.entity_type
+class ScarlettPillar(Ore):
+    NAME = 'Scarlett Pillar'
+    DISPLAY_MODE = 1
+    TOUGHNESS = 400
+    LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('reason', 1, 10, 20),
+    ])
+    IMG = 'entity_scarlett_pillar'
+
+    def __init__(self, pos):
+        super().__init__(pos, 100)
+        self.hp_sys.resistances[damages.DamageTypes.PHYSICAL] = 0
+        self.hp_sys.resistances[damages.DamageTypes.MAGICAL] = 0
+        self.hp_sys.resistances[damages.DamageTypes.ARCANE] = 0
+        self.hp_sys.resistances[damages.DamageTypes.PIERCING] = 0
+        self.hp_sys(op='config', minimum_damage=0)
+@entity.Entities.entity_type
 class Checkpoint(Chest):
     IMG = 'entity_checkpoint'
     DISPLAY_MODE = 1
@@ -217,7 +252,9 @@ class NPCGuide(Chest):
         self.ct1 = [('npc_gd_f', 1), ('npc_gd_p', 1), ('npc_gd_c', 1)]
         self.ct2 = [('npc_gd_home', 1), ('npc_gd_blood_ingot', 5), ('npc_gd_aimer', 1),
                     ('npc_gd_watcher_wand', 1), ('npc_gd_bloodstone_amulet', 1),
-                    ('npc_gd_traveller_boots', 1)]
+                    ('npc_gd_traveller_boots', 1), ('npc_gd_the_desert_eagle', 1),
+                    ('npc_gd_rock_ball', 1)]
+        self.ct2_a = [('npc_gd_wildsands', 1), ('npc_gd_life_core', 10)]
         self.ct3 =[('npc_gd_home', 1), ('npc_gd_c_1', 1), ('npc_gd_c_2', 1),
                     ('npc_gd_c_3', 1)]
         self.state = 0
@@ -255,7 +292,7 @@ class NPCGuide(Chest):
             )
             inventory.ITEMS['npc_gd_p'] = inventory.Inventory.Item(
                 'Purchase',
-                'col00ffffAlright, these cell organisations are reasonable...',
+                '',
                 'npc_gd_p',
                 0, [],
                 specify_img='null'
@@ -292,38 +329,66 @@ class NPCGuide(Chest):
 
             inventory.ITEMS['npc_gd_watcher_wand'] = inventory.Inventory.Item(
                 'Watcher Wand',
-                'col00ffffSummon a sudden beam.\ncol00ff00Cost: 120 cell organisations.',
+                'col00ffffSummon a sudden beam.\ncol00ff00Cost: 300 NATURE.',
                 'npc_gd_watcher_wand',
                 2, [],
                 specify_img='watcher_wand'
             )
             inventory.ITEMS['npc_gd_blood_ingot'] = inventory.Inventory.Item(
                 'Blood Ingot',
-                'col00ffffStrong condense of blood.\ncol00ff00Cost: 12 cell organisations each, ttl. 60.',
+                'col00ffffStrong condense of blood.\ncol00ff00Cost: 450 NATURE.',
                 'npc_gd_blood_ingot',
                 2, [],
                 specify_img='blood_ingot'
             )
             inventory.ITEMS['npc_gd_aimer'] = inventory.Inventory.Item(
                 'Aimer',
-                'col00ffffIt targets to the bosses.\ncol00ff00Cost: 50 cell organisations.',
+                'col00ffffIt targets to the bosses.\ncol00ff00Cost: 500 NATURE.',
                 'npc_gd_aimer',
                 2, [],
                 specify_img='aimer'
             )
             inventory.ITEMS['npc_gd_bloodstone_amulet'] = inventory.Inventory.Item(
                 'Bloodstone Amulet',
-                'col00ffffBleeding is meaningless to you.\ncol00ff00Cost: 300 cell organisations.',
+                'col00ffffBleeding is meaningless to you.\ncol00ff00Cost: 1200 NATURE.',
                 'npc_gd_bloodstone_amulet',
                 4, [],
                 specify_img='bloodstone_amulet'
             )
             inventory.ITEMS['npc_gd_traveller_boots'] = inventory.Inventory.Item(
                 'Traveller boots',
-                'col00ffffSpeeds you up quickly.\ncol00ff00Cost: 300 cell organisations.',
+                'col00ffffSpeeds you up quickly.\ncol00ff00Cost: 1200 NATURE.',
                 'npc_gd_traveller_boots',
                 4, [],
                 specify_img='traveller_boots'
+            )
+            inventory.ITEMS['npc_gd_the_desert_eagle'] = inventory.Inventory.Item(
+                'The Desert Eagle',
+                'col00ffffBiu biu biu!\ncol00ff00Cost: 4000 NATURE.',
+                'npc_gd_the_desert_eagle',
+                4, [],
+                specify_img='the_desert_eagle'
+            )
+            inventory.ITEMS['npc_gd_rock_ball'] = inventory.Inventory.Item(
+                'Rock Ball',
+                'col00ffffA slow but strong magic!\ncol00ff00Cost: 4000 NATURE.',
+                'npc_gd_rock_ball',
+                4, [],
+                specify_img='rock_ball'
+            )
+            inventory.ITEMS['npc_gd_wildsands'] = inventory.Inventory.Item(
+                'Wildsands',
+                'col00ffffSummon more sands!\ncol00ff00Cost: 18000 NATURE.',
+                'npc_gd_wildsands',
+                7, [],
+                specify_img='wildsands',
+            )
+            inventory.ITEMS['npc_gd_life_core'] = inventory.Inventory.Item(
+                'Life core',
+                'col00ffffSo much life!\ncol00ff00Cost: 6000 NATURE.',
+                'npc_gd_life_core',
+                6, [],
+                specify_img='life_core',
             )
         self.obj.pos << vector.Vector2D(game.get_game().player.tick / 8, 200)
         super().t_draw()
@@ -371,31 +436,24 @@ class NPCGuide(Chest):
                     )
                 player.inventory.remove_item(inventory.ITEMS['npc_gd_c_3'])
 
-            while player.inventory.is_enough(inventory.ITEMS['npc_gd_watcher_wand']):
-                if player.inventory.is_enough(inventory.ITEMS['cell_organization'], 120):
-                    player.inventory.remove_item(inventory.ITEMS['cell_organization'], 120)
-                    player.inventory.add_item(inventory.ITEMS['watcher_wand'])
-                player.inventory.remove_item(inventory.ITEMS['npc_gd_watcher_wand'])
-            while player.inventory.is_enough(inventory.ITEMS['npc_gd_blood_ingot']):
-                if player.inventory.is_enough(inventory.ITEMS['cell_organization'], 12):
-                    player.inventory.remove_item(inventory.ITEMS['cell_organization'], 12)
-                    player.inventory.add_item(inventory.ITEMS['blood_ingot'])
-                player.inventory.remove_item(inventory.ITEMS['npc_gd_blood_ingot'])
-            while player.inventory.is_enough(inventory.ITEMS['npc_gd_aimer']):
-                if player.inventory.is_enough(inventory.ITEMS['cell_organization'], 50):
-                    player.inventory.remove_item(inventory.ITEMS['cell_organization'], 50)
-                    player.inventory.add_item(inventory.ITEMS['aimer'])
-                player.inventory.remove_item(inventory.ITEMS['npc_gd_aimer'])
-            while player.inventory.is_enough(inventory.ITEMS['npc_gd_bloodstone_amulet']):
-                if player.inventory.is_enough(inventory.ITEMS['cell_organization'], 300):
-                    player.inventory.remove_item(inventory.ITEMS['cell_organization'], 300)
-                    player.inventory.add_item(inventory.ITEMS['bloodstone_amulet'])
-                player.inventory.remove_item(inventory.ITEMS['npc_gd_bloodstone_amulet'])
-            while player.inventory.is_enough(inventory.ITEMS['npc_gd_traveller_boots']):
-                if player.inventory.is_enough(inventory.ITEMS['cell_organization'], 300):
-                    player.inventory.remove_item(inventory.ITEMS['cell_organization'], 300)
-                    player.inventory.add_item(inventory.ITEMS['traveller_boots'])
-                player.inventory.remove_item(inventory.ITEMS['npc_gd_traveller_boots'])
+            tars = [
+                ('npc_gd_watcher_wand', 'watcher_wand', 300),
+                ('npc_gd_blood_ingot', 'blood_ingot', 90),
+                ('npc_gd_aimer', 'aimer', 500),
+                ('npc_gd_bloodstone_amulet', 'bloodstone_amulet', 1200),
+                ('npc_gd_traveller_boots', 'traveller_boots', 1200),
+                ('npc_gd_the_desert_eagle', 'the_desert_eagle', 4000),
+                ('npc_gd_rock_ball', 'rock_ball', 4000)
+            ]
+
+            for it, tt, nn in tars:
+                while player.inventory.is_enough(inventory.ITEMS[it]):
+                    player.inventory.remove_item(inventory.ITEMS[it])
+                    if player.inventory.is_enough(inventory.ITEMS['nature'], nn):
+                        player.inventory.remove_item(inventory.ITEMS['nature'], nn)
+                        player.inventory.add_item(inventory.ITEMS[tt])
+                    else:
+                        break
 
             if self.state == 0:
                 self.chest.items = copy.copy(self.ct1)
@@ -403,6 +461,9 @@ class NPCGuide(Chest):
             elif self.state == 1:
                 self.chest.items = copy.copy(self.ct2)
                 self.chest.n = len(self.ct2)
+                if game.get_game().stage > 0:
+                    self.chest.items.extend(copy.copy(self.ct2_a))
+                    self.chest.n += len(self.ct2_a)
             elif self.state == 2:
                 self.chest.items = copy.copy(self.ct3)
                 self.chest.n = len(self.ct3)
@@ -717,8 +778,9 @@ class NPCRay(Chest):
         self.ii_set = False
 
         self.ct1 = [('npc_ray_f', 1), ('npc_ray_p', 1), ('npc_ray_c', 1)]
-        self.ct2 = [('npc_ray_home', 1), ('npc_ray_chaos_reap', 1), ('npc_ray_fate', 1), ('npc_ray_headgear', 1), ('npc_ray_crown', 1),
-                    ('npc_ray_beyond_horizon', 1)]
+        self.ct2 = [('npc_ray_home', 1), ('npc_ray_chaos_reap', 1), ('npc_ray_fate', 1), ('npc_ray_chaos_vocalist_headgear', 1), ('npc_ray_chaos_vocalist_crown', 1),
+                    ('npc_ray_chaos_vocalist_shabby_cloak', 1), ('npc_ray_chaos_vocalist_traveller_boots', 1),
+                    ('npc_ray_soulfeather', 81)]
         self.state = 0
 
         self.chest.items = self.ct1
@@ -764,38 +826,52 @@ class NPCRay(Chest):
 
             inventory.ITEMS['npc_ray_chaos_reap'] = inventory.Inventory.Item(
                 'Chaos Reap',
-                'rainbowThe reward you deserve.',
+                'rainbowThe reward you deserve.\ncol00ff00Cost: 0 NATURE',
                 'npc_ray_chaos_reap',
-                0, [],
+                12, [],
                 specify_img='chaos_reap'
             )
             inventory.ITEMS['npc_ray_fate'] = inventory.Inventory.Item(
                 'Fate',
-                'rainbowA quick time magic.',
+                'rainbowA quick time magic.\ncol00ff00Cost: 24000 NATURE',
                 'npc_ray_fate',
-                0, [],
+                6, [],
                 specify_img='fate'
             )
+            inventory.ITEMS['npc_ray_chaos_vocalist_shabby_cloak'] = inventory.Inventory.Item(
+                'Chaos Vocalist Shabby Cloak',
+                'rainbowPerfect for all magisters.\ncol00ff00Cost: 40000 NATURE',
+                'npc_ray_chaos_vocalist_shabby_cloak',
+                9, [],
+                specify_img='chaos_vocalist_shabby_cloak'
+            )
+            inventory.ITEMS['npc_ray_chaos_vocalist_traveller_boots'] = inventory.Inventory.Item(
+                'Chaos Vocalist Traveller Boots',
+                'rainbowPerfect for all magisters.\ncol00ff00Cost: 40000 NATURE',
+                'npc_ray_chaos_vocalist_traveller_boots',
+                9, [],
+                specify_img='chaos_vocalist_traveller_boots'
+            )
             inventory.ITEMS['npc_ray_chaos_vocalist_headgear'] = inventory.Inventory.Item(
-                'Chaos Vocalist Armor Set',
-                'rainbowPerfect for all magisters.',
+                'Chaos Vocalist Headgear',
+                'rainbowPerfect for all magisters.\ncol00ff00Cost: 40000 NATURE',
                 'npc_ray_chaos_vocalist_headgear',
-                0, [],
+                9, [],
                 specify_img='chaos_vocalist_headgear'
             )
             inventory.ITEMS['npc_ray_chaos_vocalist_crown'] = inventory.Inventory.Item(
-                'Chaos Vocalist Armor Set',
-                'rainbowFor those who seek to overcome the darkness.',
+                'Chaos Vocalist Crown',
+                'rainbowFor those who seek to overcome the darkness.\ncol00ff00Cost: 60000 NATURE',
                 'npc_ray_chaos_vocalist_crown',
-                0, [],
+                11, [],
                 specify_img='chaos_vocalist_crown'
             )
-            inventory.ITEMS['npc_ray_beyond_horizon'] = inventory.Inventory.Item(
-                'Beyond Horizon',
-                'rainbowAccelerate until nobody will ever faster than you.\nrainbowRequire: "Ultralightspeed"',
-                'npc_ray_beyond_horizon',
-                0, [],
-                specify_img='beyond_horizon'
+            inventory.ITEMS['npc_ray_soulfeather'] = inventory.Inventory.Item(
+                'Soulfeather',
+                'rainbowAccelerate until nobody will ever faster than you.\ncol00ff00Cost: 818181 NATURE',
+                'npc_ray_soulfeather',
+                13, [],
+                specify_img='soulfeather'
             )
 
         if len([1 for e in game.get_game().entities if issubclass(type(e), Ray)]):
@@ -817,92 +893,24 @@ class NPCRay(Chest):
                 self.state = 0
                 player.inventory.remove_item(inventory.ITEMS['npc_ray_home'])
 
-            while player.inventory.is_enough(inventory.ITEMS['npc_ray_chaos_reap']):
-                if 0 not in self.purchase:
-                    self.purchase.append(0)
-                else:
-                    break
-                if self.datas['acc'] >= 3:
-                    player.inventory.add_item(inventory.ITEMS['chaos_reap'])
-                else:
-                    if constants.LANG == 'en':
-                        game.get_game().dialog.dialog('You are not satisfying than I expected.')
+            ps = [
+                ('npc_ray_chaos_reap', 'chaos_reap', 0, 3),
+                ('npc_ray_fate', 'fate', 24000, 1),
+                ('npc_ray_chaos_vocalist_shabby_cloak', 'chaos_vocalist_shabby_cloak', 40000, 2),
+                ('npc_ray_chaos_vocalist_traveller_boots', 'chaos_vocalist_traveller_boots', 40000, 2),
+                ('npc_ray_chaos_vocalist_headgear', 'chaos_vocalist_headgear', 40000, 2),
+                ('npc_ray_chaos_vocalist_crown', 'chaos_vocalist_crown', 60000, 3),
+                ('npc_ray_soulfeather', 'soulfeather', 10101, 3),
+            ]
+
+            for it, tt, nn, rac in ps:
+                while player.inventory.is_enough(inventory.ITEMS[it]):
+                    player.inventory.remove_item(inventory.ITEMS[it])
+                    if player.inventory.is_enough(inventory.ITEMS['nature'], nn) and self.datas['acc'] >= rac:
+                        player.inventory.remove_item(inventory.ITEMS['nature'], nn)
+                        player.inventory.add_item(inventory.ITEMS[tt])
                     else:
-                        game.get_game().dialog.dialog('你仍不符合我的预期。')
-                player.inventory.remove_item(inventory.ITEMS['npc_ray_chaos_reap'])
-            while player.inventory.is_enough(inventory.ITEMS['npc_ray_fate']):
-                if 1 not in self.purchase:
-                    self.purchase.append(1)
-                else:
-                    break
-                if self.datas['acc'] >= 1:
-                    if game.get_game().stage == 0:
-                        if constants.LANG == 'en':
-                            game.get_game().dialog.dialog('It\'s not in this time.')
-                        else:
-                            game.get_game().dialog.dialog('不在此时。')
-                    else:
-                        player.inventory.add_item(inventory.ITEMS['fate'])
-                else:
-                    if constants.LANG == 'en':
-                        game.get_game().dialog.dialog('You are not satisfying than I expected.')
-                    else:
-                        game.get_game().dialog.dialog('你仍不符合我的预期。')
-                player.inventory.remove_item(inventory.ITEMS['npc_ray_fate'])
-            while player.inventory.is_enough(inventory.ITEMS['npc_ray_chaos_vocalist_headgear']):
-                if 2 not in self.purchase:
-                    self.purchase.append(2)
-                else:
-                    break
-                if self.datas['acc'] >= 2:
-                    if game.get_game().stage <= 1:
-                        if constants.LANG == 'en':
-                            game.get_game().dialog.dialog('It\'s not in this time.')
-                        else:
-                            game.get_game().dialog.dialog('不在此时。')
-                    else:
-                        player.inventory.add_item(inventory.ITEMS['chaos_vocalist_headgear'])
-                        player.inventory.add_item(inventory.ITEMS['chaos_vocalist_shabby_cloak'])
-                        player.inventory.add_item(inventory.ITEMS['chaos_vocalist_traveller_boots'])
-                else:
-                    if constants.LANG == 'en':
-                        game.get_game().dialog.dialog('You are not satisfying than I expected.')
-                    else:
-                        game.get_game().dialog.dialog('你仍不符合我的预期。')
-                player.inventory.remove_item(inventory.ITEMS['npc_ray_chaos_vocalist_headgear'])
-            while player.inventory.is_enough(inventory.ITEMS['npc_ray_chaos_vocalist_crown']):
-                if 3 not in self.purchase:
-                    self.purchase.append(3)
-                else:
-                    break
-                if self.datas['acc'] >= 2:
-                    if game.get_game().stage <= 1:
-                        if constants.LANG == 'en':
-                            game.get_game().dialog.dialog('It\'s not in this time.')
-                        else:
-                            game.get_game().dialog.dialog('不在此时。')
-                    else:
-                        player.inventory.add_item(inventory.ITEMS['chaos_vocalist_crown'])
-                        player.inventory.add_item(inventory.ITEMS['chaos_vocalist_shabby_cloak'])
-                        player.inventory.add_item(inventory.ITEMS['chaos_vocalist_traveller_boots'])
-                else:
-                    if constants.LANG == 'en':
-                        game.get_game().dialog.dialog('You are not satisfying than I expected.')
-                    else:
-                        game.get_game().dialog.dialog('你仍不符合我的预期。')
-                player.inventory.remove_item(inventory.ITEMS['npc_ray_chaos_vocalist_crown'])
-            while player.inventory.is_enough(inventory.ITEMS['npc_ray_beyond_horizon']):
-                if player.inventory.is_enough(inventory.ITEMS['ultra_lightspeed']):
-                    player.inventory.remove_item(inventory.ITEMS['ultra_lightspeed'])
-                    if self.datas['acc'] >= 24:
-                        self.datas['acc'] -= 24
-                        player.inventory.add_item(inventory.ITEMS['beyond_horizon'])
-                    else:
-                        if constants.LANG == 'en':
-                            game.get_game().dialog.dialog('You are not satisfying than I expected.')
-                        else:
-                            game.get_game().dialog.dialog('你仍不符合我的预期。')
-                player.inventory.remove_item(inventory.ITEMS['npc_ray_beyond_horizon'])
+                        break
 
             if self.state == 0:
                 self.chest.items = copy.copy(self.ct1)
@@ -926,6 +934,7 @@ class NPCRay(Chest):
         self.tick += 1
         super().t_draw()
 
+@entity.Entities.entity_type
 class NPCJevil(Chest):
     def __init__(self, pos):
         if 'ray' not in game.get_game().npc_data:
@@ -933,7 +942,7 @@ class NPCJevil(Chest):
             game.get_game().npc_data['jevil'] = {'name': self.name}
         else:
             self.name = game.get_game().npc_data['jevil']['name']
-        self.datas = game.get_game().npc_data['ray']
+        self.datas = game.get_game().npc_data['jevil']
         super().__init__(pos)
         self.tick = 0
         self.img = copy.copy(game.get_game().graphics['entity_jevil'])
@@ -941,20 +950,21 @@ class NPCJevil(Chest):
         self.ii_set = False
 
         self.ct1 = [('npc_jevil_f', 1), ('npc_jevil_p', 1), ('npc_jevil_c', 1)]
-        self.ct2 = [('npc_jevil_home', 1), ('npc_ray_chaos_reap', 1), ('npc_ray_fate', 1), ('npc_ray_headgear', 1), ('npc_ray_crown', 1),
-                    ('npc_ray_beyond_horizon', 1)]
+        self.ct2 = [('npc_jevil_home', 1), ('npc_jevil_chaos_chaos', 1), ]
         self.state = 0
 
         self.chest.items = self.ct1
         self.chest.n = len(self.ct1)
         self.chest.locked = True
-        self.obj.pos = (math.sin(game.get_game().player.tick / 60 * math.pi) * 800, -400)
+        self.obj.pos << (math.sin(game.get_game().player.tick / 60 * math.pi) * 800, -400)
         self.sm = False
 
     def get_shown_txt(self):
         return self.name, 'Press [E] to talk'
 
     def t_draw(self):
+        super().t_draw()
+        self.obj.pos << (math.sin(game.get_game().player.tick / 60 * math.pi) * 800, -400)
 
         if not self.ii_set:
             self.ii_set = True
@@ -987,13 +997,48 @@ class NPCJevil(Chest):
                 specify_img='null'
             )
 
-            inventory.ITEMS['npc_jevil_chaos_artist'] = inventory.Inventory.Item(
-                'Chaos Artist Armor Set',
+            inventory.ITEMS['npc_jevil_chaos_chaos'] = inventory.Inventory.Item(
+                'Chaos Chaos',
                 'THESE CURTAINS ARE REALLY ON FIRE!\nCost: 400 photon',
-                'npc_jevil_chaos_artist',
+                'npc_jevil_chaos_chaos',
                 0, [],
-                specify_img='chaos_artist_helmet'
+                specify_img='chaos_chaos'
             )
+
+
+        player = game.get_game().player
+        self.set_rotation(self.rot)
+
+        if player.open_chest == self.chest:
+            while player.inventory.is_enough(inventory.ITEMS['npc_jevil_f']):
+                entity.entity_spawn(entity.Entities.Jevil, 1600, 1600, 0, 1145, 100000)
+                player.inventory.remove_item(inventory.ITEMS['npc_jevil_f'])
+            while player.inventory.is_enough(inventory.ITEMS['npc_jevil_p']):
+                self.state = 1
+                player.inventory.remove_item(inventory.ITEMS['npc_jevil_p'])
+            while player.inventory.is_enough(inventory.ITEMS['npc_jevil_home']):
+                self.state = 0
+                player.inventory.remove_item(inventory.ITEMS['npc_jevil_home'])
+
+            while player.inventory.is_enough(inventory.ITEMS['npc_jevil_chaos_reap']):
+                if player.inventory.is_enough(inventory.ITEMS['photon'], 400):
+                    player.inventory.remove_item(inventory.ITEMS['photon'], 400)
+                    player.inventory.add_item(inventory.ITEMS['chaos_chaos'])
+                player.inventory.remove_item(inventory.ITEMS['npc_jevil_chaos_chaos'])
+            if self.state == 0:
+                self.chest.items = copy.copy(self.ct1)
+                self.chest.n = len(self.ct1)
+            if self.state == 1:
+                ni = 1
+                if game.get_game().stage > 4:
+                    ni = 8
+                elif game.get_game().stage > 1:
+                    ni = 6
+                elif game.get_game().stage > 0:
+                    ni = 2
+                self.chest.items = copy.copy(self.ct2[:ni + 1])
+                self.chest.n = ni + 1
+
 
 @entity.Entities.entity_type
 class GreenChest(Chest):

@@ -370,8 +370,35 @@ class BuildingAI(MonsterAI):
     FRICTION = 0.5
     TOUCHING_DAMAGE = 0
 
+class RavenAI(MonsterAI):
+    MASS = 200
+    FRICTION = .9
+    TOUCHING_DAMAGE = 750
+    SIGHT_DISTANCE = 9999
+    PREFER_DISTANCE = 2.5
 
+    IDLE_TIME = 50
+    IDLE_SPEED = 300
+    IDLE_CHANGER = 200
 
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.tick = 0
+        self.dr = 0
+
+    def on_update(self):
+        player = self.cur_target
+        if player is not None:
+            self.tick += 1
+            if self.tick % 800 < 200:
+                self.apply_force((player.pos - self.pos + (0, 1000)) / 5)
+            elif self.tick % 800 < 300:
+                self.dr = vector.coordinate_rotation(*(player.pos - self.pos))
+                self.apply_force(vector.Vector2D(self.dr, -150))
+            elif self.tick % 100 < 20:
+                self.dr = vector.coordinate_rotation(*(player.pos - self.pos))
+            else:
+                self.apply_force(vector.Vector2D(self.dr, 900))
 
 class AbyssEyeAI(BuildingAI):
     MASS = 6000
@@ -1382,6 +1409,9 @@ class Entities:
     class NPCRay(EntityDefinition):
         pass
 
+    class NPCJevil(EntityDefinition):
+        pass
+
     class RedChest(EntityDefinition):
         pass
 
@@ -2032,9 +2062,11 @@ class Entities:
     class BombBullet(Entity):
         NAME = 'Bomb Bullet'
         DISPLAY_MODE = 1
+        VITAL = True
+        DIVERSITY = False
 
         def __init__(self, pos, rot, mode, spd, r=1):
-            super().__init__(pos, game.get_game().graphics[f'entity_{mode}_bomb_bullet'], FastBulletAI, 50000000)
+            super().__init__(pos, game.get_game().graphics[f'entity_{mode}_bomb_bullet'], FastBulletAI, 50000)
             self.obj.rot = rot
             self.obj.speed = spd
             self.mode = mode
@@ -2050,11 +2082,11 @@ class Entities:
 
         def on_update(self):
             super().on_update()
-            self.hp_sys.hp -= 200000
+            self.hp_sys.hp -= 800
             self.damage()
             self.set_rotation(90 - self.obj.rot)
             if self.r and self.mode == 'heart':
-                self.rt += 5
+                self.rt += 15
                 for i in range(4):
                     rr = self.rt + i * 90
                     ax, ay = vector.rotation_coordinate(rr)
@@ -2124,18 +2156,21 @@ class Entities:
     class CardBomb(Entity):
         NAME = 'Card Bomb'
         DISPLAY_MODE = 1
+        VITAL = True
+        DIVERSITY = False
 
         SOUND_DEATH = 'card_bomb'
 
-        def __init__(self, pos, mode):
-            super().__init__(pos, game.get_game().graphics[f'entity_{mode}_bomb'], CardBombAI, 300000000)
+        def __init__(self, pos, mode, dp=1):
+            super().__init__(pos, game.get_game().graphics[f'entity_{mode}_bomb'], CardBombAI, 30000)
             self.obj.rot = 0
+            self.dp = dp
             self.mode = mode
 
-        def on_update(self):
-            super().on_update()
-            self.obj.pos << (self.obj.pos[0], self.obj.pos[1] + 75)
-            self.hp_sys.hp -= 75 * 10 ** 5
+        def t_draw(self):
+            super().t_draw()
+            self.obj.pos << (self.obj.pos[0], self.obj.pos[1] + 50)
+            self.hp_sys.hp -= 750
             if self.hp_sys.hp <= 0:
                 self.hp_sys.hp = 0
                 px, py = (game.get_game().player.obj.pos[0] - self.obj.pos[0],
@@ -2145,13 +2180,13 @@ class Entities:
                     game.get_game().entities.append(Entities.BombBullet(self.obj.pos, rot, 'heart', 120, 1))
                 elif self.mode == 'spade':
                     sr = random.randint(0, 18)
-                    for i in range(sr, sr + 360, 18):
+                    for i in range(sr, sr + 360, 40 - self.dp * 22):
                         game.get_game().entities.append(Entities.BombBullet(self.obj.pos, i, 'spade', 200, 1))
                 elif self.mode == 'diamond':
-                    for i in range(120, 360, 80):
+                    for i in range(120, 361, 120 - 40 * self.dp):
                         game.get_game().entities.append(Entities.BombBullet(self.obj.pos, rot, 'diamond', i, 1))
                 elif self.mode == 'club':
-                    for i in range(-60, 61, 30):
+                    for i in range(-60, 61, 45 - 15 * self.dp):
                         game.get_game().entities.append(Entities.BombBullet(self.obj.pos, rot + i, 'club', 300, 1))
 
     class Time(Entity):
@@ -3687,9 +3722,9 @@ class Entities:
         NAME = 'Heaven Goblin Fighter'
         DISPLAY_MODE = 2
         LOOT_TABLE = LootTable([
-            IndividualLoot('wooden_club', 0.09, 1, 1),
-            IndividualLoot('spikeball', 0.09, 1, 1),
-            IndividualLoot('heaven_shotgun', 0.12, 1, 1)
+            IndividualLoot('wooden_club', 0.009, 1, 1),
+            IndividualLoot('spikeball', 0.009, 1, 1),
+            IndividualLoot('sanctuary', 0.02, 1, 1)
             ])
 
         SOUND_HURT = 'goblin'
@@ -3713,8 +3748,9 @@ class Entities:
         NAME = 'Heaven Goblin Thief'
         DISPLAY_MODE = 2
         LOOT_TABLE = LootTable([
-            IndividualLoot('wooden_club', 0.09, 1, 1),
-            IndividualLoot('spikeball', 0.09, 1, 1),
+            IndividualLoot('wooden_club', 0.009, 1, 1),
+            IndividualLoot('spikeball', 0.009, 1, 1),
+            IndividualLoot('cloudy_heavyboots', 0.02, 1, 1),
             ])
 
         SOUND_HURT = 'goblin'
@@ -3738,9 +3774,9 @@ class Entities:
         NAME = 'Heaven Goblin Ranger'
         DISPLAY_MODE = 2
         LOOT_TABLE = LootTable([
-            IndividualLoot('wooden_club', 0.09, 1, 1),
-            IndividualLoot('spikeball', 0.09, 1, 1),
-            IndividualLoot('heaven_shotgun', 0.12, 1, 1)
+            IndividualLoot('wooden_club', 0.009, 1, 1),
+            IndividualLoot('spikeball', 0.009, 1, 1),
+            IndividualLoot('heaven_shotgun', 0.02, 1, 1)
             ])
 
         SOUND_HURT = 'goblin'
@@ -5103,7 +5139,7 @@ class Entities:
         SOUND_DEATH = 'monster'
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_leaf'], LeafAI, 6000)
+            super().__init__(pos, game.get_game().graphics['entity_leaf'], LeafAI, 13000)
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 65
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 65
             self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 60
@@ -5125,7 +5161,7 @@ class Entities:
         SOUND_DEATH = 'sticky'
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_life_tree'], LeafAI, 8800)
+            super().__init__(pos, game.get_game().graphics['entity_life_tree'], LeafAI, 18000)
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 95
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 114
             self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 128
@@ -5147,7 +5183,7 @@ class Entities:
         SOUND_DEATH = 'sticky'
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_life_tree'], LeafAI, 4800)
+            super().__init__(pos, game.get_game().graphics['entity_ice_thorn'], LeafAI, 6000)
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 195
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 188
             self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 188
@@ -5177,6 +5213,7 @@ class Entities:
         LOOT_TABLE = LootTable([
             IndividualLoot('chaos_ingot', 1, 50, 60),
             SelectionLoot([('jevil_knife', 1, 1), ('jevils_tail', 1, 1)], 1, 1),
+            SelectionLoot([('club', 1, 1), ('diamond', 1, 1),  ('spade', 1, 1)], 1, 1),
             ])
         IS_MENACE = True
         BOSS_NAME = 'The Chaos Laughter'
@@ -5202,6 +5239,8 @@ class Entities:
 
         def t_draw(self):
             super().t_draw()
+            if self.hp_sys.hp <= 1 and 'jevil' not in game.get_game().npc_data:
+                game.get_game().furniture.append(Entities.NPCJevil((0, 0)))
             if game.get_game().stage < 2:
                 if self.hp_sys.hp <= 1 and not self.end:
                     self.end = True
@@ -5368,7 +5407,7 @@ class Entities:
         PHASE_SEGMENTS = [0.6]
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_plantera'], PlanteraAI, 240000)
+            super().__init__(pos, game.get_game().graphics['entity_plantera'], PlanteraAI, 360000)
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 150
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 150
             self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 150
@@ -5465,7 +5504,7 @@ class Entities:
             ])
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_ghost_face'], GhostFaceAI, 7000)
+            super().__init__(pos, game.get_game().graphics['entity_ghost_face'], GhostFaceAI, 17000)
             for d in self.hp_sys.defenses:
                 self.hp_sys.defenses[d] += 150
 
@@ -5478,7 +5517,7 @@ class Entities:
             ])
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_sad_face'], GhostFaceAI, 7000)
+            super().__init__(pos, game.get_game().graphics['entity_sad_face'], GhostFaceAI, 17000)
             self.obj.appear_time = 80
             self.obj.appear_rate = 7
             self.obj.TOUCHING_DAMAGE = 560
@@ -5494,7 +5533,7 @@ class Entities:
             ])
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_angry_face'], GhostFaceAI, 4000)
+            super().__init__(pos, game.get_game().graphics['entity_angry_face'], GhostFaceAI, 14000)
             self.obj.appear_time = 30
             self.obj.appear_rate = 2
             self.obj.TOUCHING_DAMAGE = 450
@@ -5538,7 +5577,7 @@ class Entities:
             ])
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_timetrap'], BuildingAI, 9000)
+            super().__init__(pos, game.get_game().graphics['entity_timetrap'], BuildingAI, 19000)
             self.obj.TOUCHING_DAMAGE = 420
             for d in self.hp_sys.defenses:
                 self.hp_sys.defenses[d] += 350
@@ -5569,7 +5608,7 @@ class Entities:
             ])
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_timeflower'], SoulFlowerAI, 8000)
+            super().__init__(pos, game.get_game().graphics['entity_timeflower'], SoulFlowerAI, 18000)
             self.obj.TOUCHING_DAMAGE = 560
             for d in self.hp_sys.defenses:
                 self.hp_sys.defenses[d] += 350
@@ -5604,7 +5643,7 @@ class Entities:
 
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_ancient_debris'], BuildingAI, 15000)
+            super().__init__(pos, game.get_game().graphics['entity_ancient_debris'], BuildingAI, 25000)
             self.obj.TOUCHING_DAMAGE = 540
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 440
             self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 480
@@ -5629,7 +5668,7 @@ class Entities:
             ])
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_molecules'], CellsAI, 80)
+            super().__init__(pos, game.get_game().graphics['entity_molecules'], CellsAI, 180)
             self.obj.TOUCHING_DAMAGE = 640
             self.hp_sys.resistances[damages.DamageTypes.PHYSICAL] /= 100
             self.hp_sys.resistances[damages.DamageTypes.PIERCING] /= 100
@@ -5652,7 +5691,7 @@ class Entities:
             ])
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_titanium_ingot'], BuildingAI, 40)
+            super().__init__(pos, game.get_game().graphics['entity_titanium_ingot'], BuildingAI, 140)
             self.obj.TOUCHING_DAMAGE = 720
             self.hp_sys.resistances[damages.DamageTypes.PHYSICAL] /= 250
             self.hp_sys.resistances[damages.DamageTypes.PIERCING] /= 250
@@ -5671,12 +5710,49 @@ class Entities:
             ])
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_spark'], StarAI, 5000)
+            super().__init__(pos, game.get_game().graphics['entity_spark'], StarAI, 15000)
             self.obj.TOUCHING_DAMAGE = 640
-            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 600
-            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 720
-            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 700
-            self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 1200
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 300
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 320
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 300
+            self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 500
+
+    class Raven(Entity):
+        NAME = 'Raven'
+        DISPLAY_MODE = 2
+        LOOT_TABLE = LootTable([
+            IndividualLoot('chaos_ingot', 1, 50, 120),
+            ])
+
+        def __init__(self, pos):
+            super().__init__(pos, game.get_game().graphics['entity_raven'], RavenAI, 45000)
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 100
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 120
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 100
+            self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 200
+            self.dt = random.choice(['heart', 'diamond', 'spade', 'club'])
+            self.adj = self.dt
+            self.tick = 0
+
+        def t_draw(self):
+            self.set_rotation(-self.obj.velocity.get_net_rotation())
+            super().t_draw()
+            nt = self.obj.tick
+            self.tick += 1
+            if nt % 800 < 200:
+                if self.tick % 40 == 0:
+                    game.get_game().entities.append(Entities.CardBomb(game.get_game().player.obj.pos - (0, 2000), self.dt))
+            elif nt % 800 < 300:
+                if self.tick % 100 == 0:
+                    for _ in range(3):
+                        game.get_game().entities.append(Entities.CardBomb(game.get_game().player.obj.pos + vector.Vector2D(0, 0, random.randint(-2000, 2000),
+                                                                                                                           random.randint(-2500, -1500)),
+                                                                          self.dt, 0))
+            elif nt % 100 > 20:
+                if self.tick % 20 == 0:
+                    game.get_game().entities.append(Entities.CardBomb(self.obj.pos - (0, 2000),
+                                                                      self.dt, 0))
+
 
     class Holyfire(Entity):
         NAME = 'Holyfire'
@@ -5687,7 +5763,7 @@ class Entities:
             ])
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_holyfire'], StarAI, 5000)
+            super().__init__(pos, game.get_game().graphics['entity_holyfire'], StarAI, 15000)
             self.obj.TOUCHING_DAMAGE = 640
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 600
             self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 720
@@ -5701,7 +5777,7 @@ class Entities:
         VITAL = True
 
         def __init__(self, pos, rot):
-            super().__init__(pos, game.get_game().graphics['entity_times'], FastBulletAI, 10 ** 9)
+            super().__init__(pos, game.get_game().graphics['entity_times'], FastBulletAI, 10 ** 5)
             self.obj.MASS = 1000
             self.obj.rot = rot
             self.obj.speed = 5000
@@ -5712,8 +5788,6 @@ class Entities:
             if self.tick >= 10:
                 super().t_draw()
 
-        def on_update(self):
-            super().on_update()
             self.tick += 1
             if self.tick < 10:
                 ax, ay = vector.rotation_coordinate(self.obj.rot)
@@ -5723,7 +5797,7 @@ class Entities:
 
             else:
                 self.damage()
-                self.hp_sys.hp -= 25 * 10 ** 6
+                self.hp_sys.hp -= 25000
 
         def damage(self):
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
@@ -5895,7 +5969,7 @@ class Entities:
         PHASE_SEGMENTS = [i / 12 for i in range(1, 12)]
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_clock'], BuildingAI, 900000)
+            super().__init__(pos, game.get_game().graphics['entity_clock'], BuildingAI, 3600000)
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 250
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 250
             self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 250
@@ -6063,7 +6137,7 @@ class Entities:
         PHASE_SEGMENTS = [i / 9 for i in range(1, 9)]
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_matters'], BuildingAI, 7200)
+            super().__init__(pos, game.get_game().graphics['entity_matters'], BuildingAI, 27000)
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 50
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 50
             self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 50
@@ -6437,39 +6511,6 @@ class Entities:
                 self.moon_eye.action_state = 6
             self.obj.pos << self.sun_eye.obj.pos
 
-    class HolyPillar(Ore):
-        NAME = 'Holy Pillar'
-        DISPLAY_MODE = 1
-        TOUGHNESS = 400
-        LOOT_TABLE = LootTable([
-            IndividualLoot('result', 1, 10, 20),
-        ])
-        IMG = 'entity_holy_pillar'
-
-        def __init__(self, pos):
-            super().__init__(pos, 100)
-            self.hp_sys.resistances[damages.DamageTypes.PHYSICAL] = 0
-            self.hp_sys.resistances[damages.DamageTypes.MAGICAL] = 0
-            self.hp_sys.resistances[damages.DamageTypes.ARCANE] = 0
-            self.hp_sys.resistances[damages.DamageTypes.PIERCING] = 0
-            self.hp_sys(op='config', minimum_damage=0)
-
-    class ScarlettPillar(Ore):
-        NAME = 'Scarlett Pillar'
-        DISPLAY_MODE = 1
-        TOUGHNESS = 400
-        LOOT_TABLE = LootTable([
-            IndividualLoot('reason', 1, 10, 20),
-        ])
-        IMG = 'entity_scarlett_pillar'
-
-        def __init__(self, pos):
-            super().__init__(pos, 100)
-            self.hp_sys.resistances[damages.DamageTypes.PHYSICAL] = 0
-            self.hp_sys.resistances[damages.DamageTypes.MAGICAL] = 0
-            self.hp_sys.resistances[damages.DamageTypes.ARCANE] = 0
-            self.hp_sys.resistances[damages.DamageTypes.PIERCING] = 0
-            self.hp_sys(op='config', minimum_damage=0)
 
     class LifeFire(Entity):
         NAME = 'Life Fire'

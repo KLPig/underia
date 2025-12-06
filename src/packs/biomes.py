@@ -228,6 +228,7 @@ class MagmaKingFireball(Entity):
     NAME = 'Magma King Fireball'
     DISPLAY_MODE = 3
     DMG = 68
+    DIVERSITY = False
 
     def __init__(self, pos, rot):
         super().__init__(pos, game.get_game().graphics['entity_fireball'], MagmaKingFireballAI, 200)

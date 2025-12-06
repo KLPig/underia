@@ -33,7 +33,7 @@ class FadeCircle(effects.Effect):
         nsz = self.sz / scale
         sf = pg.Surface((nsz, nsz), pg.SRCALPHA)
         pg.draw.circle(sf, self.col, (nsz // 2, nsz // 2), nsz // 2)
-        sf.set_alpha(int(255 * (1 - self.sz / (self.time * self.decay_speed))))
+        sf.set_alpha(int(255 * (1 - self.sz / (1 + self.time * self.decay_speed))))
         window.blit(sf, (self.x - nsz // 2, self.y - nsz // 2))
         return self.sz <= self.time * self.decay_speed
 

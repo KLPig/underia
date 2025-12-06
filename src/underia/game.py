@@ -26,11 +26,15 @@ MUSICS = {
     'hesitation': ['fallen_sea0', 'fallen_sea1', 'heaven1', 'wither1', 'ocean1', 'ocean0'],
     'sanctuary': ['fallen_sea0', 'fallen_sea1', 'hell0', 'heaven0', 'heaven1', 'ocean1'],
     #'here_we_are': ['inner0', 'inner1'],
-    'amalgam': ['inner0', 'inner1', 'none0', 'none1', 'wither0', 'wither1'],
+    'amalgam': ['inner0', 'inner1', 'none0', 'none1', 'wither0', 'wither1', 'chaos_abyss_red0',
+                'chaos_abyss_red1', 'chaos_abyss_blue0', 'chaos_abyss_blue1'],
     'left_alone': ['hot_spring0', 'hot_spring1', 'hell0', 'hell1'],
     'hadopelagic_pressure': ['hot_spring0', 'hot_spring1', 'ocean0', 'ocean1', 'hell0', 'fallen_sea1'],
-    'hydrothermophobia': ['hot_spring0', 'hot_spring1', 'hell1', 'hell0', 'fallen_sea1', 'inner0', 'inner1'],
-    'rlyeh': ['hot_spring1', 'inner0', 'inner1'],
+    'hydrothermophobia': ['hot_spring0', 'hot_spring1', 'hell1', 'hell0', 'fallen_sea1', 'inner0', 'inner1',
+                          'chaos_abyss_red0', 'chaos_abyss_red1', 'chaos_abyss_blue0',
+                          'chaos_abyss_blue1'],
+    'rlyeh': ['hot_spring1', 'inner0', 'inner1', 'chaos_abyss_red0', 'chaos_abyss_red1', 'chaos_abyss_blue0',
+                          'chaos_abyss_blue1'],
     'null': [],
     'rude_buster': ['battle'],
     'worlds_revolving': ['battle'],
@@ -189,15 +193,20 @@ class Game:
             r = 50 if 'blood moon' not in self.world_events else 200
             g = 50
             b = 80
-        if self.get_biome() == 'fallen_sea':
+        bb = self.get_biome()
+        if bb == 'fallen_sea':
             r = 40
             g = 40
             b = 120
-        if self.get_biome() == 'hot_spring':
+        if bb == 'hot_spring':
             r = 60
             g = 20
             b = 20
-        if self.get_biome() == 'hell' and self.chapter == 2:
+        if bb.startswith('chaos_abyss'):
+            r = int(bb.endswith('red') * 50 * (1 + math.sin(time_days / 72 * 2 * math.pi)))
+            g = 0
+            b = int(bb.endswith('blue') * 50 * (1 + math.sin(time_days / 72 * 2 * math.pi)))
+        if bb == 'hell' and self.chapter == 2:
             r = 255
             g = 0
             b = 0
@@ -241,6 +250,11 @@ class Game:
             self.world_events.remove('solar eclipse')
         if random.random() < 0.03:
             self.world_events.append('blood moon')
+
+        if not len([1 for f in self.furniture if type(f) is entity.Entities.NPCGuide]) and not random.randint(0, 9):
+            gd = entity.Entities.NPCGuide((0, 0))
+            self.furniture.append(gd)
+            self.dialog.push_dialog(f'{gd.name} arrived!')
 
     def cnt_graphics(self, directory, index=''):
         cnt = 0
@@ -430,12 +444,6 @@ class Game:
             return 'desert'
 
 
-        if pos[1] > 3500 and self.stage >= 2:
-            return 'inner'
-        if pos[1] > 2500 and self.stage >= 1:
-            return 'hot_spring'
-        if (pos[0] - 120) ** 2 + (pos[1] - 120) ** 2 < 5000:
-            return 'forest'
 
 
         lvs = ['hell', 'desert', 'rainforest', 'forest', 'snowland', 'heaven', 'hallow', 'wither', 'ancient']
@@ -457,6 +465,17 @@ class Game:
             self.wm_min = min(self.m_min, w)
             self.wm_max = max(self.m_max, w)
         w = (w - self.wm_min) / (self.wm_max - self.wm_min + 0.01)
+
+
+        if pos[1] > 4500 and self.stage >= 4:
+            return 'chaos_abyss_' + ('red' if w > .5 else 'blue')
+        if pos[1] > 3500 and self.stage >= 2:
+            return 'inner'
+        if pos[1] > 2500 and self.stage >= 1:
+            return 'hot_spring'
+        if (pos[0] - 120) ** 2 + (pos[1] - 120) ** 2 < 5000:
+            return 'forest'
+
         if (pos[0] - 120) ** 2 + (pos[1] - 120) ** 2 * 4 > 12000000:
             dt = w * .5 + idx / 12
             if dt > .9:
@@ -516,7 +535,8 @@ class Game:
 
     YCOLS = {'hell': (255, 0, 0), 'desert': (255, 191, 63), 'forest': (0, 255, 0), 'rainforest': (127, 255, 0),
                 'snowland': (255, 255, 255), 'heaven': (127, 127, 255), 'inner': (0, 0, 0), 'none': (0, 0, 0),
-                'hallow': (0, 255, 255), 'fallen_sea': (0, 100, 255), 'hot_spring': (50, 0, 0), 'ocean': (0, 0, 255)}
+                'hallow': (0, 255, 255), 'fallen_sea': (0, 100, 255), 'hot_spring': (50, 0, 0), 'ocean': (0, 0, 255),
+             'chaos_abyss_red': (100, 0, 0), 'chaos_abyss_blue': (0, 0, 100)}
 
     @lru_cache(maxsize=int(constants.MEMORY_USE * .05))
     def get_chunked_images(self, biomes, bg_size):
@@ -548,7 +568,8 @@ class Game:
                 'snowland': (255, 255, 255), 'heaven': (127, 127, 255), 'inner': (0, 0, 0), 'none': (0, 0, 0),
                 'hallow': (0, 255, 255), 'wither': (50, 0, 0), 'life_forest': (50, 127, 0), 'ancient': (50, 0, 0),
                 'ancient_city': (255, 200, 128), 'ancient_wall': (100, 50, 0), 'ocean': (0, 0, 255),
-                'fallen_sea': (0, 100, 255), 'hot_spring': (50, 0, 0)}
+                'fallen_sea': (0, 100, 255), 'hot_spring': (50, 0, 0),
+                'chaos_abyss_red': (100, 0, 0), 'chaos_abyss_blue': (0, 100, 100)}
         if not self.graphics.is_loaded('nbackground_hell') or self.graphics['nbackground_hell'].get_width() != bg_size:
             for k in cols.keys():
                 self.graphics['nbackground_' + k] = pg.transform.scale(self.graphics['background_' + k],
@@ -714,6 +735,11 @@ class Game:
                         self.drop_items.append(entity.Entities.DropItem((e.obj.pos[0] + random.randint(-10, 10),
                                                                          e.obj.pos[1] + random.randint(-10, 10)),
                                                                         item, amount // k + (i < amount % k)))
+                rt = math.sqrt(e.hp_sys.max_hp) + (1 + 10 * e.IS_MENACE) * e.DIVERSITY
+                nm = int(rt ** random.uniform(.7, 1.3))
+                self.drop_items.append(entity.Entities.DropItem((e.obj.pos[0] + random.randint(-10, 10),
+                                                                 e.obj.pos[1] + random.randint(-10, 10)),
+                                                                'nature', nm))
         for e in self.furniture:
             if e.hp_sys.hp <= 0:
                 self.furniture.remove(e)
