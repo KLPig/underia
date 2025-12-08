@@ -176,8 +176,32 @@ class TreeMonsterAI(AIs.AIDefinition):
     pass
 class CactusAI(AIs.AIDefinition):
     pass
-class EyeAI(AIs.AIDefinition):
-	pass
+class EyeAI(MonsterAI):
+    MASS = 60
+    FRICTION = 0.96
+    TOUCHING_DAMAGE = 16
+    SIGHT_DISTANCE = 600
+
+    def __init__(self, pos):
+        super().__init__(pos)
+        self.timer = 0
+
+    def on_update(self):
+        self.timer = (self.timer + 1) % 240
+        player = self.cur_target
+        if player is not None:
+            px = player.pos[0] - self.pos[0]
+            py = player.pos[1] - self.pos[1]
+            if self.touched_player:
+                self.timer = -100
+            if self.timer < 110:
+                self.apply_force(vector.Vector(vector.coordinate_rotation(px, py) + 180, 10))
+            elif self.timer < 190:
+                self.apply_force(vector.Vector(vector.coordinate_rotation(px, py), 30))
+            elif self.timer < 195:
+                self.apply_force(vector.Vector(vector.coordinate_rotation(px, py), 300))
+        else:
+            self.idle()
 class MagmaCubeAI(AIs.AIDefinition):
 	pass
 class CloseBloodflowerAI(AIs.AIDefinition):
@@ -3710,6 +3734,7 @@ class Entities:
             IndividualLoot('soul_of_flying', 0.9, 5, 12),
             IndividualLoot('evil_ingot', 0.9, 2, 5),
             IndividualLoot('starlight_shard', 0.3, 1, 1),
+            IndividualLoot('aerialite_ingot', 0.5, 3, 10),
         ])
 
         SOUND_HURT = 'sticky'
@@ -5400,7 +5425,8 @@ class Entities:
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([
             IndividualLoot('seed_of_origin', 1, 50, 250),
-            IndividualLoot('willpower_shard', 1, 15, 50)
+            IndividualLoot('willpower_shard', 1, 15, 50),
+            SelectionLoot([('seedler', 1, 1), ('venus_magnum', 1, 1), ('forbidden_curse__fire', 1, 1)], 1, 1),
         ])
         IS_MENACE = True
         BOSS_NAME = 'The Semi-god'
@@ -5722,6 +5748,7 @@ class Entities:
         DISPLAY_MODE = 2
         LOOT_TABLE = LootTable([
             IndividualLoot('chaos_ingot', 1, 50, 120),
+            IndividualLoot('origin_feather', 1, 2, 4),
             ])
 
         def __init__(self, pos):

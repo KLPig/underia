@@ -3,6 +3,7 @@ from underia import game, inventory, word_dict
 from values import hp_system
 import constants
 import resources.log as log
+import math
 
 
 def hp_bar(hp: hp_system.HPSystem, midtop: tuple, size: float):
@@ -140,6 +141,19 @@ def item_mouse(x, y, name, no, amount, scale, anchor='left', _window=None, mp=No
                                        cols[i][2] + (cols[i + 1][2] - cols[i][2]) * jj // 17))
                 col = tcols[tt % (6 * 17)]
                 ds = ds[7:]
+
+            elif str.startswith(ds, 'bl_chaos'):
+                ar = int((1 + math.sin(game.get_game().day_time * 2000)) / 2 * 255)
+                col = (ar, ar, ar)
+                ds = ds[8:]
+
+
+            elif str.startswith(ds, 'br_chaos'):
+                ar = int((1 + math.sin(game.get_game().day_time * 1000)) / 2 * 255)
+                ar2 = int((1 + math.cos(game.get_game().day_time * 1000)) / 2 * 255)
+                col = (ar, 0, ar2)
+                ds = ds[8:]
+
             ft = game.get_game().displayer.font.render(text(ds), True,
                                                       col, (0, 0, 0))
             ts.append(ft)

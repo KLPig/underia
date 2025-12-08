@@ -541,41 +541,49 @@ class Player:
         self.p_data.append(f'{self.hp_sys.DODGE_RATE * 100:.2f}% dodge')
         self.p_data.append(f'->{int((1 + (1 + self.strike) ** 2) * 10000) / 100}% dmg.')
         self.p_data.append(f'{int(self.strike * 10000) / 100}% crit')
-        self.obj.SPEED = self.calculate_data('speed', rate_data=True, rate_multiply=True) * 80 * self.calculate_speed()
-        self.hp_sys.DODGE_RATE = max(0, 1 - 1 / (((self.calculate_speed() - 1) * 100) ** .7 / 100 + self.calculate_data('dodge_rate', rate_data=True, rate_multiply=True)) + bool(self.afterimage_shadow))
+        if not 'arrayed_amulet' in self.accessories:
+            self.obj.SPEED = self.calculate_data('speed', rate_data=True, rate_multiply=True) * 80 * self.calculate_speed()
+            self.hp_sys.DODGE_RATE = max(0, 1 - 1 / (((self.calculate_speed() - 1) * 100) ** .7 / 100 + self.calculate_data('dodge_rate', rate_data=True, rate_multiply=True)) + bool(self.afterimage_shadow))
+        else:
+            self.obj.SPEED = 150
+            self.hp_sys.DODGE_RATE = 0
         nf = self.friction_mult()
         b = game.get_game().get_biome()
         d_t = constants.DIFFICULTY * 2 + constants.DIFFICULTY2 * 3 - 3
         nk = 'naturalify_necklace' in self.accessories
         bs = 'bloodstone_amulet' in self.accessories
-        if b == 'inner':
+        if not 'arrayed_amulet' in self.accessories:
+            if b == 'inner':
+                if not nk:
+                    game.get_game().player.hp_sys.effect(effects.Wither(1, d_t * 3 + 5))
+                    game.get_game().player.hp_sys.effect(effects.Freezing(1, 1))
+                if nk:
+                    game.get_game().player.hp_sys.effect(effects.SDarkened(1, 1))
+                else:
+                    game.get_game().player.hp_sys.effect(effects.Darkened(1, 1))
+            if b == 'hot_spring':
+                game.get_game().player.hp_sys.effect(effects.Burning(1, d_t * 2 + 5 - nk * (5 * d_t)))
+                if not nk:
+                    game.get_game().player.hp_sys.effect(effects.SDarkened(1, 1))
+            if b.startswith('chaos_abyss'):
+                game.get_game().player.hp_sys.effect(effects.Chaotic(1, d_t * 1200 + 150 - nk * 300 * d_t))
             if not nk:
-                game.get_game().player.hp_sys.effect(effects.Wither(1, d_t * 3 + 5))
-                game.get_game().player.hp_sys.effect(effects.Freezing(1, 1))
-            if nk:
-                game.get_game().player.hp_sys.effect(effects.SDarkened(1, 1))
-            else:
-                game.get_game().player.hp_sys.effect(effects.Darkened(1, 1))
-        if b == 'hot_spring':
-            game.get_game().player.hp_sys.effect(effects.Burning(1, d_t * 2 + 5 - nk * (5 * d_t)))
-            if not nk:
-                game.get_game().player.hp_sys.effect(effects.SDarkened(1, 1))
-        if b.startswith('chaos_abyss'):
-            game.get_game().player.hp_sys.effect(effects.Burning(1, d_t * 200 + 150 - nk * 100 * d_t))
-        if not nk:
-            if b == 'hell':
-                game.get_game().player.hp_sys.effect(effects.Burning(1, d_t // (1 + bs) + 1))
-            if b == 'heaven':
-                if constants.DIFFICULTY >= 1:
-                    game.get_game().player.hp_sys.effect(effects.SEnlightened(1, 1))
-            if b == 'desert':
-                if constants.DIFFICULTY >= 2 + bs:
-                    game.get_game().player.hp_sys.effect(effects.BleedingR(1, 1))
-            if b == 'snow':
-                if constants.DIFFICULTY >= 2 + bs:
-                    game.get_game().player.hp_sys.effect(effects.SFreezing(1, 1))
-        self.obj.FRICTION = max(0, 1 - nf * 0.1 * self.calculate_data('air_res', rate_data=True, rate_multiply=True) * (20 ** self.z))
-        self.obj.MASS = max(40, 80 + self.calculate_data('mass', False))
+                if b == 'hell':
+                    game.get_game().player.hp_sys.effect(effects.Burning(1, d_t // (1 + bs) + 1))
+                if b == 'heaven':
+                    if constants.DIFFICULTY >= 1:
+                        game.get_game().player.hp_sys.effect(effects.SEnlightened(1, 1))
+                if b == 'desert':
+                    if constants.DIFFICULTY >= 2 + bs:
+                        game.get_game().player.hp_sys.effect(effects.BleedingR(1, 1))
+                if b == 'snow':
+                    if constants.DIFFICULTY >= 2 + bs:
+                        game.get_game().player.hp_sys.effect(effects.SFreezing(1, 1))
+            self.obj.FRICTION = max(0, 1 - nf * 0.1 * self.calculate_data('air_res', rate_data=True, rate_multiply=True) * (20 ** self.z))
+            self.obj.MASS = max(40, 80 + self.calculate_data('mass', False))
+        else:
+            self.obj.FRICTION = 0.95
+            self.obj.MASS = 80
         self.p_data.append(f'{int(self.obj.SPEED / 2) / 10} speed')
         if self.obj.velocity.get_net_value() / 20 > 500:
             entity.entity_spawn(entity.Entities.QuarkGhost, 2000, 2000, 0, 1145, 100000)
@@ -731,9 +739,17 @@ class Player:
         for e, im, imr, ax, az in effs:
             if az < 0:
                 game.get_game().displayer.canvas.blit(im, imr)
+
         displayer.canvas.blit(sf, (pos[0] - sz // 2, pos[1] - sz // 2))
+
+        if 'christmas_2025' in game.get_game().w_events:
+            ns = game.get_game().graphics['background_christmas_hat']
+            ns = pg.transform.scale_by(ns, 3 / self.get_screen_scale())
+            ns_r = ns.get_rect(center=position.displayed_position(self.obj.pos + (0, 30)))
+            game.get_game().displayer.canvas.blit(ns, ns_r)
+
         for e, im, imr, ax, az in effs:
-            if az > 0:
+            if az >= 0:
                 game.get_game().displayer.canvas.blit(im, imr)
 
         if 'twin_glasses' in self.accessories:
@@ -1888,6 +1904,10 @@ class Player:
                                 self.max_talent = 50
                                 self.inventory.remove_item(item)
                                 self.profile.add_point(2)
+                        elif item.id == 'candlefire_rune':
+                            if 1500 <= self.hp_sys.max_hp < 3000:
+                                self.hp_sys.max_hp = min(self.hp_sys.max_hp + 150, 3000)
+                                self.inventory.remove_item(item)
                         elif item.id == 'saint_apple':
                             if self.hp_sys.max_hp >= 600 and self.max_mana >= 300:
                                 self.hp_sys.max_hp = 1500
@@ -1914,6 +1934,16 @@ class Player:
 
                         elif item.id == 'nice_cream':
                             self.hp_sys.effect(effects.Agility(36, 1))
+                            self.inventory.remove_item(item)
+                        elif item.id == 'potion_of_memory':
+                            self.obj.pos = vector.Vector2D()
+                            self.inventory.remove_item(item)
+                        elif item.id == 'iron_donut':
+                            self.hp_sys.effect(effects.IronDonut(54, 1))
+                            self.inventory.remove_item(item)
+                        elif item.id == 'heart_pie':
+                            self.hp_sys.effect(effects.HeartPie(15, 1))
+                            self.inventory.remove_item(item)
 
                         elif item.id == 'note':
                             if self.max_inspiration < 2000:

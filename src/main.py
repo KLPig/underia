@@ -47,7 +47,7 @@ def find_hash():
 
 x = find_hash()
 log.info('Hash' + str(x))
-modify, stop, msg = web_check.check(x)
+modify, stop, msg, w_e = web_check.check(x)
 
 pg.init()
 random.seed(time.time())
@@ -285,10 +285,11 @@ underia.set_weapons()
 game.player.weapons = 7 * [underia.WEAPONS['null']]
 game.player.sel_weapon = 1
 game.player.inventory.sort()
-game.player.inventory.items['recipe_book'] = 1
-game.player.inventory.items['arrow_thrower'] = 1
+# game.player.inventory.items['recipe_book'] = 1
+# game.player.inventory.items['arrow_thrower'] = 1
 game.player.hp_sys(op='config', immune_time=10, true_drop_speed_max_value=1, immune=False)
-game.player.hp_sys.shields = []
+
+game.w_events = w_e
 
 game.player.profile.point_melee = 0
 game.player.profile.point_ranged = 0
@@ -591,7 +592,7 @@ def update():
         if game.stage > 5:
             underia.entity_spawn(underia.Entities.ScarlettAltar, target_number=3, to_player_max=2500, to_player_min=2000,
                                  rate=50, number_factor=3)
-        if game.get_biome() not in ['inner']:
+        if game.get_biome() not in ['inner', 'chaos_abyss_red', 'chaos_abyss_blue']:
             if 5 > game.stage > 0:
                 underia.entity_spawn(underia.Entities.EvilMark, target_number=3, to_player_max=2500, to_player_min=2000,
                                      rate=50, number_factor=1.9)
@@ -644,6 +645,9 @@ def update():
                                      rate=50,)
                 underia.entity_spawn(underia.Entities.ScarlettPillar, target_number=12, to_player_max=3000, to_player_min=1000,
                                      rate=50)
+        elif game.get_biome().startswith('chaos_abyss'):
+                underia.entity_spawn(underia.Entities.Raven, target_number=5, to_player_max=2500, to_player_min=2000, rate=15)
+
     elif game.chapter == 2:
         if game.get_biome().endswith('forest'):
             if not game.player.calculate_data('tree_curse', rate_data=False):

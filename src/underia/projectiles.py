@@ -505,8 +505,10 @@ class Projectiles:
         DAMAGE_AS = 'wildsands'
         IMG = 'projectiles_wildsands'
         SPD = 250
+        ENABLE_IMMUNE = .2
 
         def __init__(self, pos, rotation, t=1):
+            super().__init__(pos, rotation)
             if t:
                 for _ in range(3):
                     game.get_game().projectiles.append(Projectiles.Wildsands(pos, rotation + random.randint(-12, 12), t=0))
@@ -2517,6 +2519,96 @@ class Projectiles:
             if self.tick % 3 == 0:
                 game.get_game().projectiles.append(Projectiles.GrowthS(self.obj.pos, random.randint(0, 360)))
 
+    class ForbiddenCurseWater(PlatinumWand):
+        DAMAGE_AS = 'forbidden_curse__water'
+        IMG = 'projectiles_forbidden_curse__water'
+        DEL = False
+        SPD = 0
+        LIMIT_VEL = -1
+        DURATION = 200
+        COL = (0, 127, 255)
+        ENABLE_IMMUNE = 2
+        DECAY_RATE = 1
+        DMG_TYPE = damages.DamageTypes.ARCANE
+
+        def __init__(self, pos, rot, t=1):
+            self.dr = rot
+            super().__init__(pos, rot)
+            if t:
+                for ar in range(60, 360, 60):
+                    game.get_game().projectiles.append(Projectiles.ForbiddenCurseWater(pos, rot + ar, 0))
+
+        def update(self):
+            self.set_rotation(90)
+            self.obj.pos = game.get_game().player.obj.pos + vector.Vector2D(self.dr, min(self.tick ** 2 // 5, 600))
+            super().update()
+            self.dr += 9
+
+    class ForbiddenCurseFire(PlatinumWand):
+        DAMAGE_AS = 'forbidden_curse__fire'
+        IMG = 'projectiles_forbidden_curse__fire'
+        DEL = False
+        SPD = 0
+        LIMIT_VEL = -1
+        DURATION = 200
+        COL = (100, 255, 0)
+        ENABLE_IMMUNE = 2
+        DECAY_RATE = 1
+        DMG_TYPE = damages.DamageTypes.ARCANE
+
+        def __init__(self, pos, rot, rt=15):
+            super().__init__(pos, rot)
+            self.obj.SPEED = 0
+            self.rt = rt
+            self.rr = rot
+
+        def update(self):
+            self.set_rotation(self.rr)
+            super().update()
+            if self.rt and self.tick == 20:
+                game.get_game().projectiles.append(Projectiles.ForbiddenCurseFire(self.obj.pos + vector.Vector2D(self.rr, 70), self.rr, self.rt - 1))
+
+    class GaiaS(PlatinumWand):
+        DAMAGE_AS = 'forbidden_curse__life'
+        SPD = 140
+        LIMIT_VEL = 5
+        DURATION = 120
+        DEL = False
+        COL = (100, 255, 100)
+        ENABLE_IMMUNE = 1
+        DECAY_RATE = .5
+        DMG_RATE = 1.0
+        DMG_TYPE = damages.DamageTypes.ARCANE
+
+        def draw(self):
+            pg.draw.circle(game.get_game().displayer.canvas, self.COL, position.displayed_position(self.obj.pos),
+                           radius=int((15 - self.tick * 15 // self.DURATION) / game.get_game().player.get_screen_scale()))
+
+    class Gaia(PlatinumWand):
+        DAMAGE_AS = 'forbidden_curse__life'
+        SPD = 0
+        LIMIT_VEL = -1
+        DURATION = 150
+        DEL = False
+        COL = (100, 255, 100)
+        ENABLE_IMMUNE = 2
+        DECAY_RATE = 1.0
+        DMG_RATE = 1.5
+        DMG_TYPE = damages.DamageTypes.ARCANE
+
+        def draw(self):
+            pg.draw.circle(game.get_game().displayer.canvas, self.COL, position.displayed_position(self.obj.pos),
+                           radius=int((45 - self.tick * 45 // self.DURATION) / game.get_game().player.get_screen_scale()))
+
+        def update(self):
+            super().update()
+            if self.tick < 50:
+                self.obj.pos = (self.obj.pos + game.get_game().player.obj.pos - (0, 600)) / 2
+            elif self.tick % 3 == 0:
+                rt = vector.coordinate_rotation(*(-self.obj.pos + position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+                game.get_game().projectiles.append(Projectiles.GaiaS(self.obj.pos, rt + random.randint(-20, 20)))
+
+
     class MidnightsWand(BloodWand):
         DAMAGE_AS = 'midnights_wand'
         IMG = 'projectiles_midnights_wand'
@@ -3522,6 +3614,16 @@ class Projectiles:
         TAIL_WIDTH = 10
         TAIL_COLOR = (127, 255, 0)
 
+    class Eterrow(Bullet):
+        DAMAGES = 120
+        SPEED = 2000
+        IMG = 'null'
+        AIMING = .2
+        SPEED_RATE = .2
+        TAIL_SIZE = 5
+        TAIL_WIDTH = 10
+        TAIL_COLOR = (255, 255, 255)
+
     class ScorchingArrow(Bullet):
         DAMAGES = 80
         SPEED = 500
@@ -3530,7 +3632,7 @@ class Projectiles:
         TAIL_WIDTH = 12
         TAIL_COLOR = (255, 0, 0)
 
-        def __init__(self, pos, rotation, speed, damage):
+        def __init__(self, pos, rotation, speed, damage, kb=0):
             super().__init__(pos, rotation, speed, damage)
             self.obj.velocity.clear()
             self.spd = speed + self.SPEED
@@ -3563,7 +3665,7 @@ class Projectiles:
         TAIL_WIDTH = 10
         TAIL_COLOR = (0, 255, 255)
 
-        def __init__(self, pos, rotation, speed, damage):
+        def __init__(self, pos, rotation, speed, damage, kb=0):
             self.DAMAGES = damage * 5 + self.DAMAGES
             super().__init__(pos, rotation, speed, damage)
 
@@ -3593,7 +3695,7 @@ class Projectiles:
         TAIL_WIDTH = 15
         TAIL_COLOR = (0, 255, 255)
 
-        def __init__(self, pos, rotation, speed, damage):
+        def __init__(self, pos, rotation, speed, damage, kb=0):
             self.DAMAGES += damage
             super().__init__(pos, rotation, speed, damage)
 
@@ -4309,6 +4411,7 @@ AMMOS = {
     'chlorommo': Projectiles.Chlorommo,
     'space_jumper': Projectiles.SpaceJumper,
     'scorching_arrow': Projectiles.ScorchingArrow,
+    'eterrow': Projectiles.Eterrow,
     'seperator': Projectiles.Seperator,
     'energy_arrow': Projectiles.EnergyArrow,
     'eenergy_arrow': Projectiles.EEnergyArrow,

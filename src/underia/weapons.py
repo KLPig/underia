@@ -49,6 +49,7 @@ class Weapon:
         self.lx, self.ly = 0, 0
         self.strike = 0
         self.scale = 1.0
+        self.flip = False
 
     def re_init(self):
         pass
@@ -56,6 +57,9 @@ class Weapon:
     def attack(self):
         self.timer = self.at_time + 1
         self.on_start_attack()
+        px, py = position.relative_position(
+            position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
+        self.flip = px < 0
         if self.timer:
             if self.ATTACK_SOUND is not None:
                 d = vector.distance(self.x, self.y)
@@ -84,7 +88,8 @@ class Weapon:
     def set_rotation(self, angle: int):
         self.img = pg.transform.rotate(pg.transform.scale_by(game.get_game().graphics[self.img_index.replace('items_weapons_', 'items_')],
                                                              self.scale / game.get_game().player.get_screen_scale()), -45)
-
+        if self.flip:
+            self.img = pg.transform.flip(self.img, False, True)
         self.d_img = pg.Surface((2 * self.img.get_width(), self.img.get_height()), pg.SRCALPHA)
         self.d_img.blit(self.img, (self.img.get_width(), 0))
         self.d_img = pg.transform.rotate(self.d_img, 90 - angle)
@@ -255,6 +260,7 @@ class SweepWeapon(Weapon):
         else:
             mx = -1
         self.set_rotation(90 + mx * int(5 + self.img.get_width() / 20) + self.rot // 2)
+        self.flip = mx > 0
         self.display = True
 
     def on_special_attack(self, strike: int):
@@ -284,6 +290,7 @@ class SweepWeapon(Weapon):
         self.rotate(int(-(self.timer - self.at_time / 2) * abs(self.rot_speed) // self.rot_speed *
                         (25 + self.strike * 35) * (3 if constants.DIFFICULTY > 1 else 1) // self.at_time) if self.timer <= self.at_time else 0)
         super().on_attack()
+        self.flip = self.rot_speed < 0
         self.damage()
 
     def on_end_attack(self):
@@ -3330,7 +3337,7 @@ class LifeWand(MagicWeapon):
     def update(self):
         super().update()
         self.mana_cost = min(game.get_game().player.mana,
-                             int(game.get_game().player.hp_sys.max_hp - game.get_game().player.hp_sys.hp) * 2)
+                             int(game.get_game().player.hp_sys.max_hp - game.get_game().player.hp_sys.hp) * 4)
 
     def on_start_attack(self):
         game.get_game().player.hp_sys.effect(effects.WeakManaI([.5, 1, 3, 6][constants.DIFFICULTY], 1))
@@ -3338,8 +3345,8 @@ class LifeWand(MagicWeapon):
             game.get_game().player.hp_sys.effect(effects.ManaDrain([0, 3, 6, 10][constants.DIFFICULTY], 1))
         hp_lft = game.get_game().player.hp_sys.max_hp - game.get_game().player.hp_sys.hp
         mana_avail = game.get_game().player.mana
-        game.get_game().player.mana -= min(mana_avail // 2, hp_lft) * 2
-        game.get_game().player.hp_sys.heal(min(mana_avail // 2, hp_lft))
+        game.get_game().player.mana -= min(mana_avail // 4, hp_lft) * 4
+        game.get_game().player.hp_sys.heal(min(mana_avail // 4, hp_lft))
 
 class AzureGuard(MagicWeapon):
     def update(self):
@@ -3347,9 +3354,9 @@ class AzureGuard(MagicWeapon):
         aw = [v for n, v in game.get_game().player.hp_sys.shields if n == 'azure_guard']
         if len(aw):
             v = aw[0]
-            pg.draw.circle(game.get_game().displayer.canvas, (int(255 - v * 2), int(255 - v * 2), 255),
+            pg.draw.circle(game.get_game().displayer.canvas, (int(255 - v // 2), int(255 - v // 2), 255),
                            position.displayed_position(game.get_game().player.obj.pos),
-                           width=int(1 + v // 20), radius=240)
+                           width=int(1 + v // 50), radius=240)
 
     def on_start_attack(self):
         game.get_game().player.hp_sys.effect(effects.WeakManaI([.5, 1, 3, 6][constants.DIFFICULTY], 1))
@@ -3362,7 +3369,7 @@ class AzureGuard(MagicWeapon):
             self.timer = 0
             return
         game.get_game().player.mana -= round(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True),1)
-        game.get_game().player.hp_sys.shields.append(('azure_guard', 100))
+        game.get_game().player.hp_sys.shields.append(('azure_guard', 400))
 
 class EarthWall(MagicWeapon):
     def on_start_attack(self):
@@ -3897,6 +3904,25 @@ class TheFairyBow(Bow):
                       self.damages[dmg.DamageTypes.PIERCING] + projectiles.AMMOS[game.get_game().player.ammo[0]].DAMAGES)
             c = (c + 1) % 4
             game.get_game().projectiles.append(p)
+
+class Ember(Bow):
+    def on_start_attack(self):
+        self.face_to(
+            *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+        if game.get_game().player.ammo[0] not in projectiles.AMMOS or not game.get_game().player.ammo[1]:
+            self.timer = 0
+            return
+        if game.get_game().player.ammo[
+            1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data(
+                'ammo_save', False) / 100:
+            game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
+        for ap in range(5, 21, 5):
+            game.get_game().projectiles.append(
+                projectiles.AMMOS[game.get_game().player.ammo[0]]((self.x + game.get_game().player.obj.pos[0],
+                                                                   self.y + game.get_game().player.obj.pos[1]),
+                                                                  self.rot, self.spd * ap // 10,
+                                                                  self.damages[dmg.DamageTypes.PIERCING]))
+
 
 class Resolution(Bow):
     def on_start_attack(self):
@@ -4676,6 +4702,8 @@ def set_weapons():
         'demon_blade__muramasa': Muramasa('demon blade  muramasa', {dmg.DamageTypes.PHYSICAL: 350}, 12,
                                           'items_weapons_demon_blade__muramasa',
                                           0, 4, 110, 280, _type=1),
+        'seedler': Blade('seedler', {dmg.DamageTypes.PHYSICAL: 650}, 10, 'items_weapons_seedler',
+                         2, 5, 70, 200),
         'ark_of_elements': ArkOfElements('ark of elements', {dmg.DamageTypes.PHYSICAL: 300}, 14,
                                           'items_weapons_ark_of_elements',
                                           4, 11, 30, 180),
@@ -4834,9 +4862,11 @@ def set_weapons():
                                    6, 6, 500, precision=2, auto_fire=True),
         'milky_way': MilkyWay('milky way', {dmg.DamageTypes.PIERCING: 600}, 4, 'items_weapons_milky_way',
                               6, 4, 200, auto_fire=True, tail_col=(180, 100, 255), precision=1),
-        'accelerationism': Accelerationism('accelerationism', {dmg.DamageTypes.PIERCING: 270}, 0.5,
+        'accelerationism': Accelerationism('accelerationism', {dmg.DamageTypes.PIERCING: 270}, 2,
                                            'items_weapons_accelerationism',
                                            0, 2, 320, True, ammo_save_chance=1 / 3),
+        'ember': Ember('ember', {dmg.DamageTypes.PIERCING: 350}, 1, 'items_weapons_ember',
+                       3, 4, 500, True),
         'resolution': Resolution('resolution', {dmg.DamageTypes.PIERCING: 500, dmg.DamageTypes.THINKING: 500}, 0.5, 'items_weapons_resolution',
                                   15, 25, 2200, True, ammo_save_chance=1 / 2),
 
@@ -4899,6 +4929,8 @@ def set_weapons():
                                                3, 5, 1500, auto_fire=True, precision=1),
         'void': Void('void', {dmg.DamageTypes.PIERCING: 300}, 8, 'items_weapons_void',
                                                1, 2, 1800, auto_fire=True, precision=1),
+        'venus_magnum': Gun('venus magnum', {dmg.DamageTypes.PIERCING: 500}, 3, 'items_weapons_venus_magnum',
+                            2, 5, 1200, auto_fire=True),
         'climax': Climax('climax', {dmg.DamageTypes.PIERCING: 150}, 0.5, 'items_weapons_climax',
                       0, 0, 8000, auto_fire=True, precision=1, tail_col=(255, 0, 0), ammo_save_chance=4 / 5),
 
@@ -5150,7 +5182,7 @@ def set_weapons():
                                             'items_weapons_double_watcher_wand', 1,
                                             4, projectiles.Projectiles.BeamPair, 12, True,
                                             'Double Watch'),
-        'wildsands': MagicWeapon('wildsands', {dmg.DamageTypes.MAGICAL: 7}, 0.3,
+        'wildsands': MagicWeapon('wildsands', {dmg.DamageTypes.MAGICAL: 27}, 0.3,
                                      'items_weapons_wildsands', 1,
                                      2, projectiles.Projectiles.Wildsands, 5, True,
                                      'Wildsands'),
@@ -5202,6 +5234,18 @@ def set_weapons():
         'astigmatism': Astigmatism('astigmatism', {dmg.DamageTypes.MAGICAL: 240}, 0.1, 'items_weapons_astigmatism',
                                    0, 1, 6, True,
                                    'Energetic Light Focus'),
+        'forbidden_curse__water': ArcaneWeapon('forbidden curse  water', {dmg.DamageTypes.ARCANE: 8}, 1.0,
+                                              'items_weapons_forbidden_curse__water', 250,
+                                              50, projectiles.Projectiles.ForbiddenCurseWater, 350, 7, True,
+                                              spell_name='Ice Stele'),
+        'forbidden_curse__fire': ArcaneWeapon('forbidden curse  fire', {dmg.DamageTypes.ARCANE: 3}, 1.0,
+                                              'items_weapons_forbidden_curse__water', 30,
+                                              20, projectiles.Projectiles.ForbiddenCurseFire, 120, 2, True,
+                                              spell_name='Nettle Burst'),
+        'forbidden_curse__life': ArcaneWeapon('forbidden curse  life', {dmg.DamageTypes.ARCANE: 3}, 1.0,
+                                              'items_weapons_forbidden_curse__life', 100,
+                                              100, projectiles.Projectiles.Gaia, 350, 13, True,
+                                              spell_name='Gaia\'s Love'),
         'life_wand': LifeWand('life_wand', 'item_weapons_life_wand', 2, 8, True),
 
         'lights_bible': MagicSet('lights_bible', 'items_weapons_lights_bible',

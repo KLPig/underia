@@ -1,1 +1,1 @@
-VERSION = ('1', '5', '0c')
+VERSION = ('1', '5', '0d-pre')

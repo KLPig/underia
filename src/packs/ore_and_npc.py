@@ -250,11 +250,21 @@ class NPCGuide(Chest):
         self.ii_set = False
 
         self.ct1 = [('npc_gd_f', 1), ('npc_gd_p', 1), ('npc_gd_c', 1)]
-        self.ct2 = [('npc_gd_home', 1), ('npc_gd_blood_ingot', 5), ('npc_gd_aimer', 1),
-                    ('npc_gd_watcher_wand', 1), ('npc_gd_bloodstone_amulet', 1),
+        self.ct2 = [('npc_gd_home', 1),
+                    ('npc_gd_furnace', 1),
+                    ('npc_gd_anvil', 1),
+                    ('npc_gd_weak_healing_potion', 1),
+                    ('npc_gd_weak_magic_potion', 1),
+                    ('npc_gd_potion_of_memory', 1),
+                    ('npc_gd_watcher_wand', 1),
+                    ('npc_gd_cactus_wand', 1),
+                    ('npc_gd_blood_ingot', 5), ('npc_gd_aimer', 1),
+                    ('npc_gd_bloodstone_amulet', 1),
                     ('npc_gd_traveller_boots', 1), ('npc_gd_the_desert_eagle', 1),
                     ('npc_gd_rock_ball', 1)]
-        self.ct2_a = [('npc_gd_wildsands', 1), ('npc_gd_life_core', 10)]
+        self.ct2_a = [('npc_gd_mithrill_anvil', 1),
+                      ('npc_gd_life_core', 10), ('npc_gd_wildsands', 1), ('npc_gd_soul_resonancer', 1),
+                      ]
         self.ct3 =[('npc_gd_home', 1), ('npc_gd_c_1', 1), ('npc_gd_c_2', 1),
                     ('npc_gd_c_3', 1)]
         self.state = 0
@@ -275,7 +285,7 @@ class NPCGuide(Chest):
                 '',
                 'npc_gd_home',
                 0, [],
-                specify_img='null'
+                specify_img='checkpoint'
             )
             inventory.ITEMS['npc_gd_f'] = inventory.Inventory.Item(
                 'World Analyse',
@@ -288,21 +298,21 @@ class NPCGuide(Chest):
                 '\ncol00ffffWait, you know what these "compass bearing" means, don\'t you?',
                 'npc_gd_f',
                 0, [],
-                specify_img='null'
+                specify_img='wood'
             )
             inventory.ITEMS['npc_gd_p'] = inventory.Inventory.Item(
                 'Purchase',
                 '',
                 'npc_gd_p',
                 0, [],
-                specify_img='null'
+                specify_img='nature'
             )
             inventory.ITEMS['npc_gd_c'] = inventory.Inventory.Item(
                 'Chat',
                 '',
                 'npc_gd_c',
                 0, [],
-                specify_img='null'
+                specify_img='soul'
             )
 
             inventory.ITEMS['npc_gd_c_1'] = inventory.Inventory.Item(
@@ -327,6 +337,41 @@ class NPCGuide(Chest):
                 specify_img='null'
             )
 
+            inventory.ITEMS['npc_gd_furnace'] = inventory.Inventory.Item(
+                'Furnace',
+                'col00ff00Cost: 100 NATURE.',
+                'npc_gd_furnace',
+                1, [],
+                specify_img='furnace'
+            )
+            inventory.ITEMS['npc_gd_anvil'] = inventory.Inventory.Item(
+                'Anvil',
+                'col00ff00Cost: 100 NATURE.',
+                'npc_gd_anvil',
+                1, [],
+                specify_img='anvil'
+            )
+            inventory.ITEMS['npc_gd_weak_healing_potion'] = inventory.Inventory.Item(
+                'Weak Healing Potion',
+                'col00ff00Cost: 120 NATURE.',
+                'npc_gd_weak_healing_potion',
+                1, [],
+                specify_img='weak_healing_potion'
+            )
+            inventory.ITEMS['npc_gd_weak_magic_potion'] = inventory.Inventory.Item(
+                'Weak Magic Potion',
+                'col00ff00Cost: 80 NATURE.',
+                'npc_gd_weak_magic_potion',
+                1, [],
+                specify_img='weak_magic_potion'
+            )
+            inventory.ITEMS['npc_gd_potion_of_memory'] = inventory.Inventory.Item(
+                'Potion of Memory',
+                'col00ff00Cost: 250 NATURE.',
+                'npc_gd_potion_of_memory',
+                1, [],
+                specify_img='potion_of_memory'
+            )
             inventory.ITEMS['npc_gd_watcher_wand'] = inventory.Inventory.Item(
                 'Watcher Wand',
                 'col00ffffSummon a sudden beam.\ncol00ff00Cost: 300 NATURE.',
@@ -334,9 +379,16 @@ class NPCGuide(Chest):
                 2, [],
                 specify_img='watcher_wand'
             )
+            inventory.ITEMS['npc_gd_cactus_wand'] = inventory.Inventory.Item(
+                'Cactus Wand',
+                'col00ffffSummon a stationary cactus.\ncol00ff00Cost: 300 NATURE.',
+                'npc_gd_cactus_wand',
+                2, [],
+                specify_img='cactus_wand'
+            )
             inventory.ITEMS['npc_gd_blood_ingot'] = inventory.Inventory.Item(
                 'Blood Ingot',
-                'col00ffffStrong condense of blood.\ncol00ff00Cost: 450 NATURE.',
+                'col00ffffStrong condense of blood.\ncol00ff00Cost: 800 NATURE.',
                 'npc_gd_blood_ingot',
                 2, [],
                 specify_img='blood_ingot'
@@ -376,12 +428,12 @@ class NPCGuide(Chest):
                 4, [],
                 specify_img='rock_ball'
             )
-            inventory.ITEMS['npc_gd_wildsands'] = inventory.Inventory.Item(
-                'Wildsands',
-                'col00ffffSummon more sands!\ncol00ff00Cost: 18000 NATURE.',
-                'npc_gd_wildsands',
-                7, [],
-                specify_img='wildsands',
+            inventory.ITEMS['npc_gd_mithrill_anvil'] = inventory.Inventory.Item(
+                'Mithrill Anvil',
+                'col00ff00Cost: 1000 NATURE.',
+                'npc_gd_mithrill_anvil',
+                5, [],
+                specify_img='mithrill_anvil'
             )
             inventory.ITEMS['npc_gd_life_core'] = inventory.Inventory.Item(
                 'Life core',
@@ -389,6 +441,20 @@ class NPCGuide(Chest):
                 'npc_gd_life_core',
                 6, [],
                 specify_img='life_core',
+            )
+            inventory.ITEMS['npc_gd_wildsands'] = inventory.Inventory.Item(
+                'Wildsands',
+                'col00ffffSummon more sands!\ncol00ff00Cost: 18000 NATURE.',
+                'npc_gd_wildsands',
+                7, [],
+                specify_img='wildsands',
+            )
+            inventory.ITEMS['npc_gd_soul_resonancer'] = inventory.Inventory.Item(
+                'Soul Resonancer',
+                'col00ff00Cost: 12000 NATURE.',
+                'npc_gd_soul_resonancer',
+                7, [],
+                specify_img='soul_resonancer',
             )
         self.obj.pos << vector.Vector2D(game.get_game().player.tick / 8, 200)
         super().t_draw()
@@ -437,13 +503,23 @@ class NPCGuide(Chest):
                 player.inventory.remove_item(inventory.ITEMS['npc_gd_c_3'])
 
             tars = [
+                ('npc_gd_furnace', 'furnace', 100),
+                ('npc_gd_anvil', 'anvil', 100),
+                ('npc_gd_weak_healing_potion', 'weak_healing_potion', 120),
+                ('npc_gd_weak_magic_potion', 'weak_magic_potion', 80),
+                ('npc_gd_potion_of_memory', 'potion_of_memory', 250),
                 ('npc_gd_watcher_wand', 'watcher_wand', 300),
-                ('npc_gd_blood_ingot', 'blood_ingot', 90),
+                ('npc_gd_cactus_wand', 'cactus_wand', 300),
+                ('npc_gd_blood_ingot', 'blood_ingot', 160),
                 ('npc_gd_aimer', 'aimer', 500),
                 ('npc_gd_bloodstone_amulet', 'bloodstone_amulet', 1200),
                 ('npc_gd_traveller_boots', 'traveller_boots', 1200),
                 ('npc_gd_the_desert_eagle', 'the_desert_eagle', 4000),
-                ('npc_gd_rock_ball', 'rock_ball', 4000)
+                ('npc_gd_rock_ball', 'rock_ball', 4000),
+                ('npc_gd_mithrill_anvil', 'mithrill_anvil', 1000),
+                ('npc_gd_life_core', 'life_core', 600),
+                ('npc_gd_wildsands', 'wildsands', 18000),
+                ('npc_gd_soul_resonancer', 'soul_resonancer', 12000),
             ]
 
             for it, tt, nn in tars:
@@ -800,28 +876,28 @@ class NPCRay(Chest):
                 '',
                 'npc_ray_home',
                 0, [],
-                specify_img='null'
+                specify_img='checkpoint'
             )
             inventory.ITEMS['npc_ray_f'] = inventory.Inventory.Item(
                 'Curse',
                 'col600000You will never want this.',
                 'npc_ray_f',
                 0, [],
-                specify_img='null'
+                specify_img='platinum_sword'
             )
             inventory.ITEMS['npc_ray_p'] = inventory.Inventory.Item(
                 'Purchase',
                 '',
                 'npc_ray_p',
                 0, [],
-                specify_img='null'
+                specify_img='nature'
             )
             inventory.ITEMS['npc_ray_c'] = inventory.Inventory.Item(
                 'Chat',
                 '',
                 'npc_ray_p',
                 0, [],
-                specify_img='null'
+                specify_img='chaos_reap'
             )
 
             inventory.ITEMS['npc_ray_chaos_reap'] = inventory.Inventory.Item(
@@ -837,6 +913,13 @@ class NPCRay(Chest):
                 'npc_ray_fate',
                 6, [],
                 specify_img='fate'
+            )
+            inventory.ITEMS['npc_ray_forbidden_curse__water'] = inventory.Inventory.Item(
+                'Forbidden Curse: Water',
+                'rainbowPowerful magic.\ncol00ff00Cost: 35000 NATURE\ncol00ff00Require: 10 talent',
+                'npc_ray_forbidden_curse__water',
+                7, [],
+                specify_img='forbidden_curse__water'
             )
             inventory.ITEMS['npc_ray_chaos_vocalist_shabby_cloak'] = inventory.Inventory.Item(
                 'Chaos Vocalist Shabby Cloak',
@@ -894,23 +977,34 @@ class NPCRay(Chest):
                 player.inventory.remove_item(inventory.ITEMS['npc_ray_home'])
 
             ps = [
-                ('npc_ray_chaos_reap', 'chaos_reap', 0, 3),
-                ('npc_ray_fate', 'fate', 24000, 1),
-                ('npc_ray_chaos_vocalist_shabby_cloak', 'chaos_vocalist_shabby_cloak', 40000, 2),
-                ('npc_ray_chaos_vocalist_traveller_boots', 'chaos_vocalist_traveller_boots', 40000, 2),
-                ('npc_ray_chaos_vocalist_headgear', 'chaos_vocalist_headgear', 40000, 2),
-                ('npc_ray_chaos_vocalist_crown', 'chaos_vocalist_crown', 60000, 3),
-                ('npc_ray_soulfeather', 'soulfeather', 10101, 3),
+                ('npc_ray_chaos_reap', 'chaos_reap', 0, 3, None),
+                ('npc_ray_fate', 'fate', 24000, 1, None),
+                ('npc_ray_fate', 'forbidden_curse__water', 35000, 1, lambda: player.max_talent >= 10),
+                ('npc_ray_chaos_vocalist_shabby_cloak', 'chaos_vocalist_shabby_cloak', 40000, 2, None),
+                ('npc_ray_chaos_vocalist_traveller_boots', 'chaos_vocalist_traveller_boots', 40000, 2, None),
+                ('npc_ray_chaos_vocalist_headgear', 'chaos_vocalist_headgear', 40000, 2, None),
+                ('npc_ray_chaos_vocalist_crown', 'chaos_vocalist_crown', 60000, 3, None),
+                ('npc_ray_soulfeather', 'soulfeather', 10101, 3, None),
             ]
 
-            for it, tt, nn, rac in ps:
+            for it, tt, nn, rac, rq in ps:
                 while player.inventory.is_enough(inventory.ITEMS[it]):
                     player.inventory.remove_item(inventory.ITEMS[it])
+                    if rq is not None and not rq():
+                        continue
                     if player.inventory.is_enough(inventory.ITEMS['nature'], nn) and self.datas['acc'] >= rac:
                         player.inventory.remove_item(inventory.ITEMS['nature'], nn)
                         player.inventory.add_item(inventory.ITEMS[tt])
                     else:
                         break
+
+            ni = 1
+            if game.get_game().stage > 4:
+                ni = 9
+            elif game.get_game().stage > 1:
+                ni = 7
+            elif game.get_game().stage > 0:
+                ni = 3
 
             if self.state == 0:
                 self.chest.items = copy.copy(self.ct1)
@@ -937,7 +1031,7 @@ class NPCRay(Chest):
 @entity.Entities.entity_type
 class NPCJevil(Chest):
     def __init__(self, pos):
-        if 'ray' not in game.get_game().npc_data:
+        if 'jevil' not in game.get_game().npc_data:
             self.name = 'Jevil'
             game.get_game().npc_data['jevil'] = {'name': self.name}
         else:
@@ -949,8 +1043,12 @@ class NPCJevil(Chest):
 
         self.ii_set = False
 
-        self.ct1 = [('npc_jevil_f', 1), ('npc_jevil_p', 1), ('npc_jevil_c', 1)]
-        self.ct2 = [('npc_jevil_home', 1), ('npc_jevil_chaos_chaos', 1), ]
+        self.ct1 = [('npc_jevil_f', 1), ('npc_jevil_p', 1), ('npc_jevil_c', 1), ('npc_jevil_tp', 1)]
+        self.ct2 = [('npc_jevil_home', 1), ('npc_jevil_chaos_chaos', 1), ('npc_jevil_chaos_ingot', 200),
+                    ('npc_jevil_arrayed_amulet', 1)]
+        self.ct4 = [('npc_jevil_home', 1), ('npc_jevil_tp_0', 1),
+                    ('npc_jevil_tp_1', 1), ('npc_jevil_tp_2', 1),
+                    ('npc_jevil_tp_3', 1)]
         self.state = 0
 
         self.chest.items = self.ct1
@@ -973,36 +1071,85 @@ class NPCJevil(Chest):
                 '',
                 'npc_jevil_home',
                 0, [],
-                specify_img='null'
+                specify_img='checkpoint'
             )
             inventory.ITEMS['npc_jevil_f'] = inventory.Inventory.Item(
                 'Curse',
                 'SOME FUN, SOME FUN!',
                 'npc_jevil_f',
                 0, [],
-                specify_img='null'
+                specify_img='platinum_sword'
             )
             inventory.ITEMS['npc_jevil_p'] = inventory.Inventory.Item(
                 'Purchase',
                 '',
                 'npc_jevil_p',
                 0, [],
-                specify_img='null'
+                specify_img='nature'
             )
             inventory.ITEMS['npc_jevil_c'] = inventory.Inventory.Item(
                 'Chat',
                 '',
-                'npc_jevil_p',
+                'npc_jevil_c',
                 0, [],
-                specify_img='null'
+                specify_img='jevils_tail'
+            )
+            inventory.ITEMS['npc_jevil_tp'] = inventory.Inventory.Item(
+                'Teleport',
+                '',
+                'npc_jevil_tp',
+                0, [],
+                specify_img='chaos_teleporter'
+            )
+            inventory.ITEMS['npc_jevil_tp_0'] = inventory.Inventory.Item(
+                'Teleport: Ocean',
+                '4000 NATURE',
+                'npc_jevil_tp_0',
+                0, [],
+                specify_img='forgotten_shard'
+            )
+            inventory.ITEMS['npc_jevil_tp_1'] = inventory.Inventory.Item(
+                'Teleport: Shallow Abyss - Hot Spring',
+                '5000 NATURE',
+                'npc_jevil_tp_1',
+                0, [],
+                specify_img='thermal_ingot'
+            )
+            inventory.ITEMS['npc_jevil_tp_2'] = inventory.Inventory.Item(
+                'Teleport: Middle Abyss - Inner Chaos',
+                '8000 NATURE',
+                'npc_jevil_tp_2',
+                0, [],
+                specify_img='chaos_ingot'
+            )
+            inventory.ITEMS['npc_jevil_tp_3'] = inventory.Inventory.Item(
+                'Teleport: Abyss - True Chaos',
+                '12000 NATURE',
+                'npc_jevil_tp_3',
+                0, [],
+                specify_img='origin_feather'
             )
 
             inventory.ITEMS['npc_jevil_chaos_chaos'] = inventory.Inventory.Item(
                 'Chaos Chaos',
-                'THESE CURTAINS ARE REALLY ON FIRE!\nCost: 400 photon',
+                'THESE CURTAINS ARE REALLY ON FIRE!\nCost: 75000 NATURE',
                 'npc_jevil_chaos_chaos',
                 0, [],
                 specify_img='chaos_chaos'
+            )
+            inventory.ITEMS['npc_jevil_arrayed_amulet'] = inventory.Inventory.Item(
+                'Arrayed Amulet',
+                'VEE HEE HEE!\nCost: 100000 NATURE',
+                'npc_jevil_arrayed_amulet',
+                0, [],
+                specify_img='arrayed_amulet'
+            )
+            inventory.ITEMS['npc_jevil_chaos_ingot'] = inventory.Inventory.Item(
+                'Chaos Ingot',
+                'SO MUCH FUN, MUCH FUN!\nCost: 15000 NATURE',
+                'npc_jevil_chaos_ingot',
+                0, [],
+                specify_img='chaos_ingot'
             )
 
 
@@ -1016,28 +1163,56 @@ class NPCJevil(Chest):
             while player.inventory.is_enough(inventory.ITEMS['npc_jevil_p']):
                 self.state = 1
                 player.inventory.remove_item(inventory.ITEMS['npc_jevil_p'])
+            while player.inventory.is_enough(inventory.ITEMS['npc_jevil_tp']):
+                self.state = 3
+                player.inventory.remove_item(inventory.ITEMS['npc_jevil_tp'])
             while player.inventory.is_enough(inventory.ITEMS['npc_jevil_home']):
                 self.state = 0
                 player.inventory.remove_item(inventory.ITEMS['npc_jevil_home'])
 
-            while player.inventory.is_enough(inventory.ITEMS['npc_jevil_chaos_reap']):
-                if player.inventory.is_enough(inventory.ITEMS['photon'], 400):
-                    player.inventory.remove_item(inventory.ITEMS['photon'], 400)
-                    player.inventory.add_item(inventory.ITEMS['chaos_chaos'])
-                player.inventory.remove_item(inventory.ITEMS['npc_jevil_chaos_chaos'])
+            pcs = [
+                ('npc_jevil_chaos_chaos', 'chaos_chaos', 75000),
+                ('npc_jevil_arrayed_amulet', 'arrayed_amulet', 100000),
+                ('npc_jevil_chaos_ingot', 'chaos_ingot', 75)
+            ]
+
+
+            for it, tt, cs in pcs:
+                while player.inventory.is_enough(inventory.ITEMS[it]):
+                    player.inventory.remove_item(inventory.ITEMS[it])
+                    if player.inventory.is_enough(inventory.ITEMS['nature'], cs):
+                        player.inventory.remove_item(inventory.ITEMS['nature'], cs)
+                        player.inventory.add_item(inventory.ITEMS[tt])
+                    else:
+                        break
+
+
+            tps = [
+                ('npc_jevil_tp_0', (0, 180000), 4000),
+                ('npc_jevil_tp_1', (0, 270000), 5000),
+                ('npc_jevil_tp_2', (0, 360000), 8000),
+                ('npc_jevil_tp_3', (0, 500000), 12000),
+            ]
+
+            for it, tp, cs in tps:
+                while player.inventory.is_enough(inventory.ITEMS[it]):
+                    player.inventory.remove_item(inventory.ITEMS[it])
+                    if player.inventory.is_enough(inventory.ITEMS['nature'], cs):
+                        player.inventory.remove_item(inventory.ITEMS['nature'], cs)
+                        player.obj.pos = vector.Vector2D(0, 0, *tp)
+                        player.open_chest = None
+                    else:
+                        break
+
             if self.state == 0:
                 self.chest.items = copy.copy(self.ct1)
                 self.chest.n = len(self.ct1)
             if self.state == 1:
-                ni = 1
-                if game.get_game().stage > 4:
-                    ni = 8
-                elif game.get_game().stage > 1:
-                    ni = 6
-                elif game.get_game().stage > 0:
-                    ni = 2
-                self.chest.items = copy.copy(self.ct2[:ni + 1])
-                self.chest.n = ni + 1
+                self.chest.items = copy.copy(self.ct2)
+                self.chest.n = len(self.ct2)
+            if self.state == 3:
+                self.chest.items = copy.copy(self.ct4)
+                self.chest.n = len(self.ct4)
 
 
 @entity.Entities.entity_type
@@ -1051,6 +1226,7 @@ class GreenChest(Chest):
         entity.IndividualLoot('fairy_wings', 0.1, 1, 1),
         entity.SelectionLoot([('purple_ring', 0, 1), ('cyan_ring', 0, 1), ('yellow_ring', 0, 1),
                         ('green_ring', 0, 1), ('blue_ring', 0, 1), ('orange_ring', 0, 1)], 1, 3),
+        entity.IndividualLoot('potion_of_memory', .3, 1, 3),
     ])
     BIOMES = ['forest', 'rainforest']
 
@@ -1068,6 +1244,7 @@ class RedChest(Chest):
         entity.IndividualLoot('fireball_magic', 0.1, 1, 1),
         entity.SelectionLoot([('fire_gloves', 1, 1), ('quenched_cross', 1, 1), ('lava_walker', 1, 1)], 0, 2),
         entity.IndividualLoot('obsidian_ingot', 1, 22, 30),
+        entity.IndividualLoot('potion_of_memory', .3, 1, 3),
     ])
     BIOMES = ['hell']
     TOUGHNESS = 7
@@ -1086,6 +1263,7 @@ class WhiteChest(Chest):
         entity.SelectionLoot([('white_guard', 1, 2), ('snowstorm_bottle', 1, 1), ('snow_wings', 0, 1)], 1, 1),
         entity.SelectionLoot([('purple_ring', 0, 1), ('cyan_ring', 0, 1), ('yellow_ring', 0, 1),
                         ('green_ring', 0, 1), ('blue_ring', 0, 1), ('orange_ring', 0, 1)], 1, 3),
+        entity.IndividualLoot('potion_of_memory', .2, 1, 2),
     ])
     BIOMES = ['snowland']
     TOUGHNESS = 4
@@ -1104,6 +1282,7 @@ class OrangeChest(Chest):
         entity.IndividualLoot('mysterious_substance', 0.1, 10, 30),
         entity.SelectionLoot([('rune_cross', 1, 1), ('rune_eye', 1, 1), ('rune_gloves', 1, 1)], 0, 1),
         entity.IndividualLoot('nice_cream', 0.3, 5, 12),
+        entity.IndividualLoot('potion_of_memory', .2, 1, 2),
         ])
     BIOMES = ['desert']
     TOUGHNESS = 4
@@ -1118,8 +1297,9 @@ class BlueChest(Chest):
     IMG = 'entity_blue_chest'
     LOOT_TABLE = entity.LootTable([
         entity.SelectionLoot([('platinum', 20, 32), ('zirconium', 20, 32), ('magic_stone', 10, 12)], 1, 2),
-        # entity.SelectionLoot([('iron_donut', 1, 10), ('heart_pie', 1, 10)], 0, 1),
+        entity.SelectionLoot([('iron_donut', 1, 3), ('heart_pie', 1, 3)], 1, 1),
         entity.IndividualLoot('floatstone', 1, 12, 20),
+        entity.IndividualLoot('potion_of_memory', .3, 1, 3),
     ])
     BIOMES = ['heaven']
     TOUGHNESS = 7

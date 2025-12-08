@@ -15,7 +15,7 @@ def compare(x: tuple[str, str, str], y: tuple[str, str, str]):
     else:
         return 0
 
-def check(c_hash=None) -> tuple[bool, bool, str]:
+def check(c_hash=None) -> tuple[bool, bool, str, list[str]]:
     try:
         response = requests.get(target)
         if response.status_code == 200:
@@ -35,6 +35,15 @@ def check(c_hash=None) -> tuple[bool, bool, str]:
             else:
                 b = True
                 log.warning('Typical version not found')
+
+            evs = root.find('events')
+            ns = []
+            if evs is not None:
+                for e in evs.findall('event'):
+                    ns.append(e.text)
+                log.info('Events: ' + str(ns))
+
+
             version_new = root.find('version[@id="newest"]')
             v1 = version_new.find('first').text
             v2 = version_new.find('second').text
@@ -51,22 +60,22 @@ def check(c_hash=None) -> tuple[bool, bool, str]:
             print(c1, c2)
             if c1 < 0:
                 log.critical('Version no longer supported!')
-                return b, False, 'Your version is no longer supported!'
+                return b, False, 'Your version is no longer supported!', ns
             elif c2 >= 0:
                 log.info('Newest version!')
-                return b, True, 'Newest version!'
+                return b, True, 'Newest version!', ns
             elif c1 > 0:
                 log.info('New version available!')
-                return b, True, 'New version available!'
+                return b, True, 'New version available!', ns
             else:
                 log.warning('Version up-to-date')
-                return b, True, 'Version up-to-date!'
+                return b, True, 'Version up-to-date!', ns
         else:
             return False, False, 'Error %s while connecting to internet' % response.status_code
     except requests.exceptions.RequestException as e:
-        return False, False, 'Error while connecting to internet: %s' % e
+        return False, False, 'Error while connecting to internet: %s' % e, ns
     except Exception as e:
-        return False, False, 'Error while checking for updates: %s' % e
+        return False, False, 'Error while checking for updates: %s' % e, ns
 
 if __name__ == '__main__':
     print(check())

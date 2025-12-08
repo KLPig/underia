@@ -194,6 +194,16 @@ class Agility(Effect):
     NAME = 'Agility'
     DESC = '+100% speed'
 
+class IronDonut(Effect):
+    IMG = 'defended'
+    NAME = 'Defended'
+    DESC = '+32 touching defense'
+
+class HeartPie(Effect):
+    IMG = 'life'
+    NAME = 'Regenerating'
+    DESC = '+10/sec regeneration'
+
 class IronSkin(Effect):
     IMG = 'iron_skin'
     NAME = 'Iron Skin'

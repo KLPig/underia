@@ -8,7 +8,7 @@ import underia, mods
 MOD_NAME = 'Underia Texture Reworked'
 MOD_VERSION = (1, 0, 0)
 MOD_AUTHOR = 'KLpig'
-MOD_DESCRIPTION = 'Remake of original underia sb texture.'
+MOD_DESCRIPTION = 'Remake of original underia sb texture.(HQ4X!)'
 
 # Mod Contents
 ITEMS: dict[str, underia.Inventory.Item] = {

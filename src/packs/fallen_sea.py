@@ -271,7 +271,7 @@ class Urchin(Entity):
         super().on_update()
         self.rotate(abs(self.obj.velocity) / 20)
 
-
+@entity.Entities.entity_type
 class LazerFish(Entity):
     NAME = 'Lazer Fish'
     DISPLAY_MODE = 2
@@ -312,6 +312,7 @@ class LazerFish(Entity):
                 game.get_game().entities.append(entity.Entities.Lazer(self.obj.pos,
                                                                vector.coordinate_rotation(*(tar.pos - self.obj.pos))))
 
+@entity.Entities.entity_type
 class PressureEye(Entity):
     NAME = 'Pressure Eye'
     DISPLAY_MODE = 1

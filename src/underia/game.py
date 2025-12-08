@@ -1,3 +1,4 @@
+import copy
 import math
 import os
 import random
@@ -149,6 +150,7 @@ class Game:
         self.diff = 1
         self.diff2 = 1
         self.msf = None
+        self.w_events = []
 
     def get_night_color(self, time_days: float):
         if len([1 for e in self.entities if type(e) is entity.Entities.AbyssEye]):
@@ -350,6 +352,15 @@ class Game:
         self.channel = pg.mixer.Channel(0)
         self.load_graphics(resources.get_path('assets/graphics'),
                            cnt=self.cnt_graphics(resources.get_path('assets/graphics')))
+        ks = [k for k in self.graphics.graphics.keys() if k.startswith('items_')]
+        for nn in ks:
+            im = self.graphics[nn]
+            im = pg.transform.rotate(im, -45)
+            l = im.get_width() + 10
+            s = pg.Surface((l + im.get_width(), im.get_height()), pg.SRCALPHA)
+            imr = im.get_rect(midleft=(l, im.get_height() // 2))
+            s.blit(im, imr)
+            self.graphics[nn.replace('items_', 'items_weapons_')] = s
         weapons.set_weapons()
         self.map = pg.PixelArray(self.graphics['background_map'])
         cnt = 0
