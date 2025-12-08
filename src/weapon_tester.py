@@ -14,6 +14,7 @@ import underia3
 import modloader
 import packs
 from resources import log
+from resources import web_check
 
 pg.init()
 random.seed(time.time())
@@ -56,6 +57,8 @@ else:
     sfd = game.save.replace('.pkl', '.data.pkl')
 underia.write_game(game)
 game.setup()
+
+modify, stop, msg, w_e = web_check.check(0)
 pg.display.get_surface().fill((100, 100, 100))
 for m in load_mods:
     game.gcnt = 0
@@ -67,6 +70,8 @@ game.player.weapons = 7 * [underia.WEAPONS['null']]
 game.player.sel_weapon = 1
 
 game.world_events.clear()
+
+game.w_events = w_e
 
 game.entities.append(underia.Entities.Entity((100, 0)))
 game.player.hp_sys.max_hp = constants.INFINITY

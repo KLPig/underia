@@ -243,6 +243,26 @@ class MagmaKingAI(AIs.AIDefinition):
 class SandStormAI(AIs.AIDefinition):
 	pass
 
+# From pack: ./stage2.py
+class IceCapAI(AIs.AIDefinition):
+	pass
+class FaithlessEyeAI(AIs.AIDefinition):
+	pass
+class DestroyerAI(AIs.AIDefinition):
+	pass
+class SkyCubeFighterAI(AIs.AIDefinition):
+	pass
+class SkyCubeRangerAI(AIs.AIDefinition):
+	pass
+class SkyCubeBlockerAI(AIs.AIDefinition):
+	pass
+class TheCPUAI(AIs.AIDefinition):
+	pass
+class MechanicMedusaAI(AIs.AIDefinition):
+	pass
+
+
+
 class OrgeAI(SlowMoverAI):
     MASS = 6000
     FRICTION = 0.6
@@ -309,73 +329,12 @@ class CleverRangedAI(RangedAI):
             py = player.pos[1] - self.pos[1]
             self.apply_force(vector.Vector(vector.coordinate_rotation(px, py) + 90, self.spd / 2))
 
-class SkyCubeFighterAI(MonsterAI):
-    MASS = 2000
-    FRICTION = 0.9
-    TOUCHING_DAMAGE = 288
-
-    SIGHT_DISTANCE = 19999
-
-    def __init__(self, pos):
-        super().__init__(pos)
-        self.tick = 0
-        self.state = 0
-        self.rt = 0
-
-    def on_update(self):
-        player = self.cur_target
-        if player is not None:
-            px = player.pos[0] - self.pos[0]
-            py = player.pos[1] - self.pos[1]
-            if self.state == 0:
-                self.apply_force(vector.Vector(vector.coordinate_rotation(px, py),
-                                               vector.distance(px, py) * 12))
-            elif self.state == 1:
-                if self.tick % 80 < 5:
-                    self.apply_force(vector.Vector(vector.coordinate_rotation(px, py), 50))
-                    self.rt = vector.coordinate_rotation(px, py)
-                elif self.tick % 80 < 50:
-                    self.apply_force(vector.Vector(self.rt, 70000))
-                else:
-                    self.apply_force(vector.Vector(vector.coordinate_rotation(px, py), 6000))
-            if self.tick > 300:
-                self.state = (self.state + 1) % 2
-                self.tick = 0
-
-class SkyCubeRangerAI(SkyCubeFighterAI):
-    MASS = 2000
-    TOUCHING_DAMAGE = 180
-    SIGHT_DISTANCE = 19999
-
-    def on_update(self):
-        player = self.cur_target
-        if player is not None:
-            px = player.pos[0] - self.pos[0]
-            py = player.pos[1] - self.pos[1]
-            self.apply_force(vector.Vector(vector.coordinate_rotation(px, py), (vector.distance(px, py) - 1200) * 12))
-
-class SkyCubeBlockerAI(SkyCubeFighterAI):
-    MASS = 4000
-    TOUCHING_DAMAGE = 140
-    SIGHT_DISTANCE = 19999
-
-    def on_update(self):
-        player = self.cur_target
-        if player is not None:
-            px = player.pos[0] - self.pos[0]
-            py = player.pos[1] - self.pos[1]
-            self.apply_force(vector.Vector(vector.coordinate_rotation(px, py), 20000))
-
 
 class CellsAI(EyeAI):
     TOUCHING_DAMAGE = 128
     MASS = 720
     SPEED = 13.5
 
-class IceCapAI(SlowMoverAI):
-    MASS = 200
-    TOUCHING_DAMAGE = 188
-    SPEED = 1.5
 
 class MechanicEyeAI(CellsAI):
     MASS = 200
@@ -597,79 +556,6 @@ class FastBulletAI(MonsterAI):
         self.apply_force(vector.Vector(self.rot, self.speed))
 
 
-class FaithlessEyeAI(MonsterAI):
-    FRICTION = 0.9
-    MASS = 800
-    TOUCHING_DAMAGE = 360
-
-    PREFER_DISTANCE = 2
-    SIGHT_DISTANCE = 99999
-
-    def __init__(self, pos):
-        super().__init__(pos)
-        self.rot = 0
-        self.tick = 0
-        self.state = 0
-        self.ax = -1000
-        self.ay = 0
-        self.phase = 1
-        self.tr = 0
-
-    def on_update(self):
-        if self.tick > 320:
-            self.state = (self.state + 1) % 2
-            self.tick = 0
-        self.tick += 1
-        px, py = self.cur_target.pos if self.cur_target is not None else (0, 0)
-        if self.state == 0:
-            if self.tick % (100 - 20 * self.phase) < 30:
-                self.apply_force(vector.Vector(self.tr,
-                                               5000 + self.phase * (1000 + constants.DIFFICULTY * 400)))
-            else:
-                self.tr = (self.tr * 5 + vector.coordinate_rotation(px - self.pos[0], py - self.pos[1])) / 6
-        else:
-            tar_x, tar_y = px + self.ax, py + self.ay
-            self.apply_force(vector.Vector(vector.coordinate_rotation(tar_x - self.pos[0], tar_y - self.pos[1]),
-                                           vector.distance(tar_x - self.pos[0], tar_y - self.pos[1]) * 5))
-            self.rot = vector.coordinate_rotation(px - self.pos[0], py - self.pos[1])
-
-
-class DestroyerAI(SlowMoverAI):
-    MASS = 7200
-    FRICTION = 0.9
-    TOUCHING_DAMAGE = 440
-
-    PREFER_DISTANCE = 1
-    SIGHT_DISTANCE = 99999
-
-    def __init__(self, pos):
-        super().__init__(pos)
-        self.tick = 0
-        self.state = 0
-        self.tr = 0
-
-    def on_update(self):
-        player = self.cur_target.pos if self.cur_target is not None else (0, 0)
-        px = player[0] - self.pos[0]
-        py = player[1] - self.pos[1]
-        self.tick += 1
-        if self.tick > 700:
-            self.tick = 0
-            self.state = (self.state + 1) % constants.DIFFICULTY2
-        if self.state == 0:
-            if self.tick % 300 < 240:
-                self.apply_force(
-                    vector.Vector(vector.coordinate_rotation(px, py), 8000 + min(vector.distance(px, py) * 9, 22000)))
-                self.tr = self.velocity.get_net_rotation()
-            else:
-                self.apply_force(vector.Vector(self.tr, 40000))
-        elif self.state == 1:
-            self.apply_force(vector.Vector(self.tr, 2000))
-        else:
-            dr = vector.coordinate_rotation(px, py)
-            self.apply_force(vector.Vector2D(dr + 55, 35000))
-
-
 
 class DevilPythonAI(DestroyerAI):
     MASS = 18000
@@ -834,76 +720,6 @@ class JevilKnifeAI(SlowMoverAI):
         px = pos[0] - self.pos[0] + ((math.cos(self.d / 120 * math.pi) + 1) * 500 + 500) * math.cos(math.radians(self.r))
         py = pos[1] - self.pos[1] + ((math.cos(self.d / 120 * math.pi) + 1) * 500 + 500) * math.sin(math.radians(self.r))
         self.apply_force(vector.Vector(vector.coordinate_rotation(px, py), vector.distance(px, py) * 50))
-
-
-class TheCPUAI(SlowMoverAI):
-    MASS = 10000
-    FRICTION = 0.95
-    TOUCHING_DAMAGE = 180
-    SIGHT_DISTANCE = 99999
-
-    def __init__(self, pos):
-        super().__init__(pos)
-        self.tick = 0
-        self.state = 0
-        self.phase = 1
-
-    def on_update(self):
-        player = self.cur_target
-        if player is not None:
-            px = player.pos[0] - self.pos[0]
-            py = player.pos[1] - self.pos[1]
-            if self.tick < 0:
-                self.tick += 1
-                return
-            if self.tick > 100:
-                self.state = (self.state + 1) % 2
-                self.tick = 0
-                if random.randint(0, 1):
-                    px *= -1
-                if random.randint(0, 1):
-                    py *= -1
-                if self.phase == 2 and random.randint(0, 1):
-                    t = px
-                    px = py
-                    py = t
-                self.pos = vector.Vector2D(px + player.pos[0], py + player.pos[1])
-            self.tick += 1
-            if self.state == 0:
-                self.apply_force(vector.Vector(vector.coordinate_rotation(px, py), 15000))
-            else:
-                self.apply_force(vector.Vector(vector.coordinate_rotation(px, py), vector.distance(px, py) * 40))
-
-class MechanicMedusaAI(TheCPUAI):
-
-    def on_update(self):
-        player = self.cur_target
-        if player is not None:
-            px = player.pos[0] - self.pos[0]
-            py = player.pos[1] - self.pos[1]
-            if self.tick < 0:
-                self.tick += 1
-                return
-            if self.tick > 100:
-                self.state = (self.state + 1) % 3
-                self.tick = 0
-                if random.randint(0, 1):
-                    px *= -1
-                if random.randint(0, 1):
-                    py *= -1
-                if self.phase == 2 and random.randint(0, 1):
-                    t = px
-                    px = py
-                    py = t
-                self.pos = vector.Vector2D(px + player.pos[0], py + player.pos[1])
-            self.tick += 1
-            if self.state == 0:
-                self.apply_force(vector.Vector(vector.coordinate_rotation(px, py), 15000))
-            elif self.state == 1:
-                self.apply_force(vector.Vector(vector.coordinate_rotation(px, py), vector.distance(px, py) * 40))
-            else:
-                self.apply_force(vector.Vector(vector.coordinate_rotation(px, py - 1000),
-                                               vector.distance(px, py - 1000) * 80))
 
 
 class GreedAI(SlowMoverAI):
@@ -1561,6 +1377,43 @@ class Entities:
     class MagmaKingCounter(EntityDefinition):
         pass
 
+    # From pack: ./stage2.py
+    class TruthlessCurse(EntityDefinition):
+        pass
+
+    class FaithlessCurse(EntityDefinition):
+        pass
+
+    class SnowDrake(EntityDefinition):
+        pass
+
+    class IceCap(EntityDefinition):
+        pass
+
+    class MechanicEye(EntityDefinition):
+        pass
+
+    class FaithlessEye(EntityDefinition):
+        pass
+
+    class TruthlessEye(EntityDefinition):
+        pass
+
+    class SkyCubeFighter(EntityDefinition):
+        pass
+
+    class SkyCubeRanger(EntityDefinition):
+        pass
+
+    class SkyCubeBlocker(EntityDefinition):
+        pass
+
+    class Destroyer(EntityDefinition):
+        pass
+
+    class TheCPU(EntityDefinition):
+        pass
+
     class Dummy(Entity):
         NAME = 'Dummy'
         DISPLAY_MODE = 0
@@ -1988,54 +1841,6 @@ class Entities:
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 36:
                 game.get_game().player.hp_sys.damage(144, damages.DamageTypes.MAGICAL)
-                game.get_game().player.hp_sys.enable_immune()
-                self.hp_sys.hp = 0
-
-    class TruthlessCurse(Entity):
-        NAME = 'Truthless Curse'
-        DISPLAY_MODE = 3
-        DMG = 360
-
-        def __init__(self, pos, rot):
-            super().__init__(pos, game.get_game().graphics['entity_truthless_curse'], AbyssRuneShootAI, 1500)
-            self.obj.rot = rot
-            self.obj.SPEED *= 3
-
-        def on_update(self):
-            super().on_update()
-            self.set_rotation(self.rot)
-            self.hp_sys.hp -= 15
-            self.damage()
-
-        def damage(self):
-            if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
-                               self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 36:
-                game.get_game().player.hp_sys.damage(self.DMG, damages.DamageTypes.MAGICAL)
-                game.get_game().player.hp_sys.effect(effects.TruthlessCurse(2, 30))
-                game.get_game().player.hp_sys.enable_immune()
-                self.hp_sys.hp = 0
-
-    class FaithlessCurse(Entity):
-        NAME = 'Faithless Curse'
-        DISPLAY_MODE = 3
-        DMG = 280
-
-        def __init__(self, pos, rot):
-            super().__init__(pos, game.get_game().graphics['entity_faithless_curse'], AbyssRuneShootAI, 1500)
-            self.obj.rot = rot
-            self.obj.SPEED *= 3
-
-        def on_update(self):
-            super().on_update()
-            self.set_rotation(self.rot)
-            self.hp_sys.hp -= 15
-            self.damage()
-
-        def damage(self):
-            if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
-                               self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 36:
-                game.get_game().player.hp_sys.damage(self.DMG, damages.DamageTypes.MAGICAL)
-                game.get_game().player.hp_sys.effect(effects.FaithlessCurse(20, 1))
                 game.get_game().player.hp_sys.enable_immune()
                 self.hp_sys.hp = 0
 

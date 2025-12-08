@@ -26,7 +26,11 @@ STORIES = [
            "For the 'plan', \nhe is an indispensable force."]],
          [["Ray - Spirit Angel", '??AT ??DF\nHuman-like angel.', 'Able to use weapons to attack.\nChallenge him or finish his task may increase his acceptance to you.', 'Summon: Legend Soul or Curse Ray(NPC).']],
          [["'Echo - Ray & KPui", "We should have already thought about it.\nChaos just attacked us.", 'Their only target is him, \nthe GOD of KARMA', 'Fortunately, he left his spirit.\nI put it in UNDERIA...',
-           'Our FATE is flowing...\nHow can we do?']]
+           'Our FATE is flowing...\nHow can we do?']],
+         [["...", "Above the timeline, \n2,046,184AF, year 12", "...", "ETERNAL, what time is it now in REALITY?",
+           "25 DEC?\n that should be Christmas..."],
+          ["[ring... ring...]\nCall from REALITY..?", "...\n'UNDERIA! Merry christmas!'", "'We have to have some activities, shall me?'", "...What did you do to my world?"]],
+         [["'Christmas Tree'", '...No no no!\nNot this tree!', 'A pine tree,\nu\'know?', 'And should be decorated with bells...\nSomething like that...', 'How to summon: a present!']]
       ],
 
      ),
@@ -54,7 +58,8 @@ CHAPTERS = [
     [('L1', 'Ore'), ('M1', 'Unknown Eye Organism'), ('D1', 'True Eye - The Watcher of Terror'), ('M1B', 'Spherical Icy Stuff'),
      ('D1B', 'Fluffff - The fluffy worm'), ('M1C', 'Everyday Apple'), ('D1C', 'Worlds Fruit - The Gods Heritage'), ('M2', 'Red Plant'),
      ('D2', 'Magma King - The fire monster'), ('M3', "Tornado and Car Park Destroy"), ("D3", "Sandstorm - The Ghost of Desert"),
-     ("MS1", "Post-chaotic Angel"), ("T1", "Echo - UNDERIA"), ("MD1", "The spirit angel - Ray"), ("T2", "Echo - RAY & KPUI")],
+     ("MS1", "Post-chaotic Angel"), ("T1", "Echo - UNDERIA"), ("MD1", "The spirit angel - Ray"), ("T2", "Echo - RAY & KPUI"),
+     ('TS', 'Echo - ???Christmas???'), ("MSC1", "Christmas Tree!!")],
     [('Intro', 5), ('1.', 6), ('2.', 7), ('3.', 8), ('4.', 9)],
     [('Intro', 10), ('Kun Kun', 10), ('Chicken Soup', 10), ('Tung Tung', 10), ('Hadi', 10), ('Spiked Head', 10), ('Final', 11)],
 ]

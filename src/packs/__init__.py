@@ -2,6 +2,8 @@ from .basic import *
 from .ore_and_npc import *
 from .biomes import *
 from .fallen_sea import *
+from .stage2 import *
+from .christmas import *
 
 from resources import log
 log.info('Loaded packs')

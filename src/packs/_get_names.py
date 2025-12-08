@@ -1,7 +1,7 @@
 from xml.etree import ElementTree as eTree
 import os
 
-ss = './biomes.py'
+ss = './stage2.py'
 ssr = ss + '.data.xml'
 
 xml = ''

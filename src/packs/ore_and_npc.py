@@ -3,6 +3,7 @@ from values import damages, effects
 from resources import position
 from physics import vector
 import constants
+from underia import notebook
 
 import copy
 import random
@@ -265,8 +266,8 @@ class NPCGuide(Chest):
         self.ct2_a = [('npc_gd_mithrill_anvil', 1),
                       ('npc_gd_life_core', 10), ('npc_gd_wildsands', 1), ('npc_gd_soul_resonancer', 1),
                       ]
-        self.ct3 =[('npc_gd_home', 1), ('npc_gd_c_1', 1), ('npc_gd_c_2', 1),
-                    ('npc_gd_c_3', 1)]
+        self.ct3 =[('npc_gd_home', 1), ('npc_gd_c_1', 1), ('npc_gd_c_2', 1), ('npc_gd_c_4', 1),
+                    ('npc_gd_c_3', 1), ]
         self.state = 0
 
         self.chest.items = self.ct1
@@ -320,21 +321,42 @@ class NPCGuide(Chest):
                 '',
                 'npc_gd_c_1',
                 0, [],
-                specify_img='null'
+                specify_img='soul'
             )
             inventory.ITEMS['npc_gd_c_2'] = inventory.Inventory.Item(
                 'About this world',
                 '',
                 'npc_gd_c_2',
                 0, [],
-                specify_img='null'
+                specify_img='leaf'
+            )
+            inventory.ITEMS['npc_gd_c_4'] = inventory.Inventory.Item(
+                'Notebook',
+                '',
+                'npc_gd_c_4',
+                0, [],
+                specify_img='worn_notebook'
             )
             inventory.ITEMS['npc_gd_c_3'] = inventory.Inventory.Item(
                 'Angel?',
                 '',
                 'npc_gd_c_3',
                 0, [],
-                specify_img='null'
+                specify_img='chaos_reap'
+            )
+            inventory.ITEMS['npc_gd_c_5'] = inventory.Inventory.Item(
+                'Happiness',
+                '',
+                'npc_gd_c_5',
+                0, [],
+                specify_img='weak_healing_potion'
+            )
+            inventory.ITEMS['npc_gd_c_cm'] = inventory.Inventory.Item(
+                'Christmas!',
+                'cmMerry christmas!',
+                'npc_gd_c_cm',
+                0, [],
+                specify_img='snowball'
             )
 
             inventory.ITEMS['npc_gd_furnace'] = inventory.Inventory.Item(
@@ -494,6 +516,11 @@ class NPCGuide(Chest):
                     'An angel saved us..?',
                     'Ridiculous, \nright?'
                 )
+                if 'ray' in game.get_game().npc_data:
+                    game.get_game().dialog.push_dialog(
+                        'What?\nHe is right there?!!',
+                        'Where?\nYou must be kidding.'
+                    )
                 if 'MS1' not in game.get_game().player.nts:
                     game.get_game().player.nts.append('MS1')
                     game.get_game().dialog.push_dialog(
@@ -501,6 +528,42 @@ class NPCGuide(Chest):
                         '[Notebook Updated!]'
                     )
                 player.inventory.remove_item(inventory.ITEMS['npc_gd_c_3'])
+            while player.inventory.is_enough(inventory.ITEMS['npc_gd_c_4']):
+                self.state = 0
+                game.get_game().dialog.dialog(
+                    'Em....\nYour notebook seems mysterious...',
+                    'You have to check it rapidly, okay?'
+                )
+                player.inventory.remove_item(inventory.ITEMS['npc_gd_c_4'])
+            while player.inventory.is_enough(inventory.ITEMS['npc_gd_c_5']):
+                self.state = 0
+                game.get_game().dialog.dialog(
+                    'This place is great for me.'
+                )
+                if 'ray' in game.get_game().npc_data:
+                    game.get_game().dialog.push_dialog(
+                        'Ray?\nWho is he?'
+                    )
+                if 'jevil' in game.get_game().npc_data:
+                    game.get_game().dialog.push_dialog(
+                        '...and that crazy joker...\nCan you stop him from jumping around?',
+                        'He just messed all up...'
+                    )
+                player.inventory.remove_item(inventory.ITEMS['npc_gd_c_5'])
+            while player.inventory.is_enough(inventory.ITEMS['npc_gd_c_cm']):
+                self.state = 0
+
+                if not 'TS' in player.nts:
+                    player.nts.append('TS')
+                    player.nts.append('MSC1')
+                    notebook.start_write()
+                    game.get_game().dialog.push_dialog('...?', 'What happened to you?\nYou\'ve been staring at me for an hour!!', 'Anyway, ')
+                game.get_game().dialog.push_dialog(
+                    'Merry christmas!',
+                    'Em...\nIs the world a bit unusual now?'
+                )
+                player.inventory.remove_item(inventory.ITEMS['npc_gd_c_cm'])
+
 
             tars = [
                 ('npc_gd_furnace', 'furnace', 100),
@@ -964,6 +1027,7 @@ class NPCRay(Chest):
         self.set_rotation(self.rot)
 
         if player.open_chest == self.chest:
+
             while player.inventory.is_enough(inventory.ITEMS['npc_ray_f']):
                 rs = Ray
                 entity.entity_spawn(rs, 1600, 1600, 0, 1145, 100000)

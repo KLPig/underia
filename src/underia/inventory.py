@@ -273,8 +273,8 @@ class Inventory:
             elif TAGS['ammo'] in self.tags:
                 ammo = projectiles.AMMOS[self.id]
                 d = f"{ammo.DAMAGES} piercing damage\n" + d
-            d = f"{Inventory.Rarity_Names[self.rarity]}\n" + d
-            d = f"Mod:{self.mod}\n" + d
+            # d = f"{Inventory.Rarity_Names[self.rarity]}\n" + d
+            d = f"col7f7f7f{self.mod}\n" + d
             if TAGS['melee_weapon'] in self.tags:
                 d = 'col7f7fff<Melee>\n' + d
             elif TAGS['bow'] in self.tags or TAGS['gun'] in self.tags:
@@ -397,6 +397,8 @@ TAGS = {
     'head': Inventory.Item.Tag('head', 'head'),
     'body': Inventory.Item.Tag('body', 'body'),
     'leg': Inventory.Item.Tag('leg', 'leg'),
+
+    'cm': Inventory.Item.Tag('cm', 'Christmas'),
 
     'eternal': Inventory.Item.Tag('eternal', 'eternal'),
 
@@ -580,11 +582,16 @@ items_dict: dict[str, Inventory.Item] = {
     'destroy_shard': Inventory.Item('Destroy Shard', 'The crush and demolish in the world.', 'destroy_shard', 13, [TAGS['item']]),
 
     'chaos_reap': Inventory.Item('Chaos Reap',
-                                 'rainbowDamage and size increases within progress.\nrainbowChaoticly sacrifice enemies in freeze, wither and bleeding.\nrainbowStrike to throw it.',
+                                 'rainbowDamage and size increases within progress.\nbl_chaosChaoticly sacrifice enemies in freeze, wither and bleeding.\nbr_chaosStrike to throw it.',
                                  'chaos_reap', 12,
                                  [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
-    'abyss_sever': Inventory.Item('Abyss Sever', 'rainbowDamage increases within progress.\nrainbowEach 7 hit or strike will "cut" off enemies.\nrainbow"Cutting" enemies will freeze them and they will receive double damage.', 'abyss_sever', 12,
+    'abyss_sever': Inventory.Item('Abyss Sever', 'rainbowDamage increases within progress.\nbr_chaosEach 7 hit or strike will "cut" off enemies.\nbl_chaos"Cutting" enemies will freeze them and they will receive double damage.', 'abyss_sever', 12,
                                   [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
+
+    'candy_cane': Inventory.Item('Candy Cane', 'cmA powerful, eatable candy.\ncmMerry christmas!', 'candy_cane', 12,
+                                 [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon'], TAGS['cm']]),
+    'christmas_tree_sword': Inventory.Item('Christmas Tree Sword', 'cmMerry christmas!', 'christmas_tree_sword', 12,
+                                           [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon'], TAGS['cm']]),
 
     'wooden_pickaxe': Inventory.Item('Wooden Pickaxe', 'Able to mine a few ore.', 'wooden_pickaxe', 1, [TAGS['item'], TAGS['weapon'], TAGS['pickaxe']]),
     'copper_pickaxe': Inventory.Item('Copper Pickaxe', 'Able to mine metal ores.', 'copper_pickaxe', 1, [TAGS['item'], TAGS['weapon'], TAGS['pickaxe']]),
@@ -2119,6 +2126,7 @@ items_dict: dict[str, Inventory.Item] = {
     'blood_substance': Inventory.Item('Blood Substance', 'Summon the Abyss Eye', 'blood_substance', 0, [TAGS['item']]),
     'sky_painting': Inventory.Item('Sky Painting', 'Summon the sky tri-kubes', 'sky_painting', 0, [TAGS['item']]),
     'green_thing': Inventory.Item('Green Thing', 'Summon the heaven goblins.', 'green_thing', 0, [TAGS['item']]),
+    'cold_present': Inventory.Item('Cold Present', 'Summon the "Everscream".', 'cold_present', 12, [TAGS['item']]),
     'mechanic_eye': Inventory.Item('Mechanic Eye', 'Summon the twin eyes', 'mechanic_eye', 0, [TAGS['item']]),
     'mechanic_worm': Inventory.Item('Mechanic Worm', 'Summon the destroyer', 'mechanic_worm', 0, [TAGS['item']]),
     'electric_unit': Inventory.Item('Electric Unit', 'Summon the CPU', 'electric_unit', 0, [TAGS['item']]),
@@ -3014,6 +3022,7 @@ RECIPES = [
     Recipe({'palladium_ingot': 5, 'mithrill_ingot': 5, 'titanium_ingot': 5, 'soul_of_flying': 5}, 'sky_painting'),
     Recipe({'saint_steel_ingot': 15, 'soul_of_integrity': 15, 'soul_of_flying': 5}, 'green_thing'),
     Recipe({'palladium_ingot': 5, 'mithrill_ingot': 5, 'titanium_ingot': 5, 'bible': 1}, 'green_thing'),
+    Recipe({'wood': 150, 'leaf': 50, 'soul_of_coldness': 50}, 'cold_present'),
     Recipe({'palladium_ingot': 5, 'mithrill_ingot': 5, 'titanium_ingot': 5, 'soul': 10}, 'mechanic_eye'),
     Recipe({'mithrill_ingot': 5, 'titanium_ingot': 5, 'palladium_ingot': 5, 'soul': 10}, 'mechanic_worm'),
     Recipe({'titanium_ingot': 5, 'palladium_ingot': 5, 'mithrill_ingot': 5, 'soul': 10}, 'electric_unit'),

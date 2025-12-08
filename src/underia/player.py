@@ -742,10 +742,10 @@ class Player:
 
         displayer.canvas.blit(sf, (pos[0] - sz // 2, pos[1] - sz // 2))
 
-        if 'christmas_2025' in game.get_game().w_events:
+        if 'christmas-2025' in game.get_game().w_events:
             ns = game.get_game().graphics['background_christmas_hat']
-            ns = pg.transform.scale_by(ns, 3 / self.get_screen_scale())
-            ns_r = ns.get_rect(center=position.displayed_position(self.obj.pos + (0, 30)))
+            ns = pg.transform.scale_by(ns, 2.5 / self.get_screen_scale())
+            ns_r = ns.get_rect(center=position.displayed_position(self.obj.pos - (0, 30)))
             game.get_game().displayer.canvas.blit(ns, ns_r)
 
         for e, im, imr, ax, az in effs:
@@ -2051,6 +2051,9 @@ class Player:
                                 entity.entity_spawn(entity.Entities.GoblinWaveEP2, 2000, 2000, 0, 1145, 100000)
                             else:
                                 entity.entity_spawn(entity.Entities.GoblinWave, 2000, 2000, 0, 1145, 100000)
+                        elif item.id == 'cold_present':
+                            entity.entity_spawn(entity.Entities.EverScream, 2000, 2000, 0, 1145, 100000)
+                            self.inventory.remove_item(item)
                         elif item.id == 'mechanic_eye':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.MetalAltar]):

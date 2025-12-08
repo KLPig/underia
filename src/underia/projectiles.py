@@ -628,6 +628,66 @@ class Projectiles:
             pg.draw.circle(game.get_game().displayer.canvas, (0, 255, 255), position.displayed_position(self.obj.pos),
                            int(50 / game.get_game().player.get_screen_scale()), int(10 / game.get_game().player.get_screen_scale()))
 
+
+
+    class ChristmasTreeSword(PlatinumWand):
+        SPD = 40
+        DAMAGE_AS = 'christmas_tree_sword'
+        IMG = 'projectiles_null'
+        COL = (255, 255, 0)
+        DEL = False
+        ENABLE_IMMUNE = 1
+        DURATION = 300
+        DMG_TYPE = damages.DamageTypes.PHYSICAL
+        WT = damages.DamageTypes.PHYSICAL
+
+        def update(self):
+            super().update()
+            self.obj.pos += (0, -25 + self.tick % 50)
+            pg.draw.circle(game.get_game().displayer.canvas, (255, 255, 0), position.displayed_position(self.obj.pos),
+                           int(30 / game.get_game().player.get_screen_scale()))
+            pg.draw.circle(game.get_game().displayer.canvas, (150, 150, 0), position.displayed_position(self.obj.pos),
+                           int(30 / game.get_game().player.get_screen_scale()), int(8 / game.get_game().player.get_screen_scale()))
+
+    class ChristmasTreeSword2(PlatinumWand):
+        SPD = 60
+        DAMAGE_AS = 'christmas_tree_sword'
+        IMG = 'projectiles_null'
+        COL = (255, 255, 0)
+        DEL = False
+        ENABLE_IMMUNE = 1
+        DURATION = 300
+        DMG_TYPE = damages.DamageTypes.PIERCING
+        WT = damages.DamageTypes.PIERCING
+
+        def update(self):
+            super().update()
+            self.obj.pos += (0, -35 + self.tick % 70)
+            pg.draw.circle(game.get_game().displayer.canvas, (0, 255, 255), position.displayed_position(self.obj.pos),
+                           int(30 / game.get_game().player.get_screen_scale()))
+            pg.draw.circle(game.get_game().displayer.canvas, (0, 150, 150), position.displayed_position(self.obj.pos),
+                           int(30 / game.get_game().player.get_screen_scale()), int(8 / game.get_game().player.get_screen_scale()))
+
+    class ChristmasTreeSword3(PlatinumWand):
+        SPD = 20
+        DAMAGE_AS = 'christmas_tree_sword'
+        IMG = 'projectiles_null'
+        COL = (255, 255, 0)
+        DEL = False
+        ENABLE_IMMUNE = 1
+        DURATION = 300
+        DMG_TYPE = damages.DamageTypes.MAGICAL
+        WT = damages.DamageTypes.MAGICAL
+
+        def update(self):
+            super().update()
+            self.obj.pos += (0, -30 + self.tick % 30 * 2)
+            pg.draw.circle(game.get_game().displayer.canvas, (255, 0, 0), position.displayed_position(self.obj.pos),
+                           int(30 / game.get_game().player.get_screen_scale()))
+            pg.draw.circle(game.get_game().displayer.canvas, (150, 0, 0), position.displayed_position(self.obj.pos),
+                           int(30 / game.get_game().player.get_screen_scale()), int(8 / game.get_game().player.get_screen_scale()))
+
+
     class Spade(PlatinumWand):
         SPD = 100
         DAMAGE_AS = 'spade'

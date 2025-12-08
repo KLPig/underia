@@ -154,6 +154,13 @@ def item_mouse(x, y, name, no, amount, scale, anchor='left', _window=None, mp=No
                 col = (ar, 0, ar2)
                 ds = ds[8:]
 
+
+            elif str.startswith(ds, 'cm'):
+                ar = int((1 - math.sin(game.get_game().day_time * 1000)) / 2 * 155)
+                ar2 = int((1 - math.cos(game.get_game().day_time * 1000)) / 2 * 155)
+                col = (ar + 100, ar2 + 100, 100)
+                ds = ds[2:]
+
             ft = game.get_game().displayer.font.render(text(ds), True,
                                                       col, (0, 0, 0))
             ts.append(ft)

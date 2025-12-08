@@ -1280,6 +1280,34 @@ class DoctorExpeller(Blade):
         super().on_attack()
         self.cutting_effect(8, (255, 0, 0), (0, 127, 0))
 
+class ChristmasTreeSword(Blade):
+    def update(self):
+        super().update()
+        for k in self.damages.keys():
+            self.damages[k] = game.get_game().player.hp_sys.max_hp // 5
+
+    def on_end_attack(self):
+        super().on_end_attack()
+        self.set_rotation(vector.coordinate_rotation(*(-game.get_game().player.obj.pos + position.real_position(
+            game.get_game().displayer.reflect(*pg.mouse.get_pos())
+        ))))
+        if random.random() < .3:
+            game.get_game().projectiles.append(projectiles.Projectiles.ChristmasTreeSword(game.get_game().player.obj.pos, self.rot))
+        if random.random() < .3:
+            game.get_game().projectiles.append(projectiles.Projectiles.ChristmasTreeSword2(game.get_game().player.obj.pos, self.rot))
+        if random.random() < .3:
+            game.get_game().projectiles.append(projectiles.Projectiles.ChristmasTreeSword3(game.get_game().player.obj.pos, self.rot))
+
+class CandyCane(Blade):
+    def update(self):
+        super().update()
+        for k in self.damages.keys():
+            self.damages[k] = game.get_game().player.hp_sys.max_hp * 2 // 9
+
+    def on_special_attack(self, strike: int):
+        st = (1 - math.e ** (-strike / 100)) * game.get_game().player.hp_sys.max_hp / 10
+        game.get_game().player.hp_sys.heal(st)
+
 class VirusDefeater(Blade):
     def on_start_attack(self):
         super().on_start_attack()
@@ -4652,6 +4680,11 @@ def set_weapons():
         'guardian': Guardian('guardian', {dmg.DamageTypes.PHYSICAL: 100}, 3,
                              'items_weapons_guardian',
                              4, 8, 30, 120,),
+        'christmas_tree_sword': ChristmasTreeSword('christmas tree sword', {dmg.DamageTypes.PHYSICAL: 0, dmg.DamageTypes.PIERCING: 0, dmg.DamageTypes.MAGICAL: 0}, 2,
+                                                   'items_weapons_christmas_tree_sword', 2, 7, 40, 120,),
+        'candy_cane': CandyCane('candy cane',
+                                {dmg.DamageTypes.PHYSICAL: 0, dmg.DamageTypes.PIERCING: 0,  dmg.DamageTypes.MAGICAL: 0}, 3,
+                                'items_weapons_christmas_tree_sword', 3, 8, 40, 160, ),
         'remote_sword': RemoteWeapon('remote sword', {dmg.DamageTypes.PHYSICAL: 150}, 0.8,
                                       'items_weapons_remote_sword',
                                       1, 5, 72, 180, auto_fire=True),

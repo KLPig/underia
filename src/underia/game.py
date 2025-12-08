@@ -583,7 +583,9 @@ class Game:
                 'chaos_abyss_red': (100, 0, 0), 'chaos_abyss_blue': (0, 100, 100)}
         if not self.graphics.is_loaded('nbackground_hell') or self.graphics['nbackground_hell'].get_width() != bg_size:
             for k in cols.keys():
-                self.graphics['nbackground_' + k] = pg.transform.scale(self.graphics['background_' + k],
+                self.graphics['nbackground_' + k] = pg.transform.scale(self.graphics['background_' + k]
+                                                                       if 'background_' + k + '_cm' not in self.graphics.graphics or 'christmas-2025' not in self.w_events else
+                                                                       self.graphics['background_' + k + '_cm'],
                                                                        (bg_size, bg_size))
         if pg.K_TAB in self.get_keys():
             self.map_open = not self.map_open
