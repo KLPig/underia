@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Underia - Item - $name</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../styles.css" type='text/css'>
+    <link rel="icon" href="../assets/graphics/items/$id.png">
+</head>
+<body>
+<div id='item-container'>
+    <table class="header">
+        <tr>
+            <th class="header-class" onclick="location.href='../entities.html'">Entities</th>
+            <th class="header-class" onclick="location.href='../items.html'">Items</th>
+            <th class="header-class" onclick="location.href='../recipes.html'">Recipes</th>
+            <th class="header-class" onclick="location.href='../magic.html'">Magics</th>
+        </tr>
+    </table>
+    <h1 style="color: $col">$name</h1>
+    <img src="../assets/graphics/items/$id.png" alt="$name" style="width: 100%; max-width: 500px;">
+    <table id='item-table' class="spes-table">
+        <tr class='item-row' id='$id-filter'>
+            <td>
+                <div class='item $id' id='$id-table'> <img src='../assets/graphics/items/$id.png'/></div>
+            </td>
+            <td>
+                <h2 style='color: $col'>$name</h2>
+                <p class='desc' style='color: $col'>$desc</p>
+            </td>
+        </tr>
+    </table>
+    <div class="h">
+        <p class="h">
+            $init_desc
+        </p>
+        <span id="wtw">
+            $ap
+        </span>
+    </div>
+    $rf
+</div>
+</body>
+</html>

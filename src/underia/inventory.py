@@ -445,45 +445,6 @@ items_dict: dict[str, Inventory.Item] = {
 
     'star': Inventory.Item('Star', 'It suppose to recover you 40 mp.', 'star', 0, [TAGS['item']]),
 
-'''
-    'tip0': Inventory.Item('Paper tip', 'Trap a star-shaped monster, '
-                                        'it\'ll help you to enhance your intelligence.',
-                           'tip0', 0, [TAGS['item']]),
-    'tip1': Inventory.Item('Paper tip', 'Get bloods from sanguinary creatures,\n'
-                                        'and attract a dreadfully huge one.', 'tip1', 0, [TAGS['item']]),
-    'tip2': Inventory.Item('Paper tip', 'Go to the hell, use scorching lava to attract their king.\n'
-                                        'They contain a good to make you stronger.', 'tip2', 0, [TAGS['item']]),
-    'tip3': Inventory.Item('Paper tip', 'When you\'re strong enough, a mystery rock will appear.\n'
-                                        'Their smell may attract a sandstorm.', 'tip3', 0,
-                           [TAGS['item']]),
-    'tip4': Inventory.Item('Paper tip', 'Sandstorms have cores, use them also for combining several '
-                                        'weapons to one.\nThey can be also used for summon an otherworldly being.', 'tip4', 0, [TAGS['item']]),
-    'tip5': Inventory.Item('Paper tip', 'Use your strength to break a evil mark.\nUse some souls to '
-                                        'make a heart...\nIt will expose another world for you.', 'tip5', 0,
-                           [TAGS['item']]),
-    'tip61': Inventory.Item('Paper tip', '(This tip is teared at the bottom)\nStrong flying creatures '
-                                         'helps you to go to the sky.', 'tip61', 0, [TAGS['item']]),
-    'tip62': Inventory.Item('Paper tip', '(This tip is teared both at the top and at the bottom)\n'
-                                         'Get strongest materials from the new world.\nDefeat:\n-A twin of \'untrustworthy\''
-                                         ' metal eyes\n-A \'terrified\' worm.\n-A \'unkind\' metal brain.',
-                            'tip62', 0, [TAGS['item']]),
-    'tip63': Inventory.Item('Paper tip', '(This tip is teared at the top)\nFrozen souls are good materials.',
-                            'tip63', 0, [TAGS['item']]),
-    'tip71': Inventory.Item('Paper tip', 'Use your honest, summon a existence who overwatch the river of time.\n'
-                                         'Use three sou...(The rest of the tip is missing)',
-                            'tip71', 0, [TAGS['item']]),
-    'tip72': Inventory.Item('Paper tip', 'Use your kindness, summon a group of existences.\n'
-                                         '...ls and the the strongest weapon you\'ve made to en...(The beginning and the'
-                                         'rest of the tip are missing)\n',
-                            'tip72', 0, [TAGS['item']]),
-    'tip73': Inventory.Item('Paper tip', 'Use your courage, summon a existence who eat people for food.\n'
-                                         '...hance it to a unbelievable weapon.(The beginning of the tip is missing)',
-                            'tip73', 0, [TAGS['item']]),
-    'tip8': Inventory.Item('Paper tip', 'Use photosynthesis, create photon, plant plants, open a new age.',
-                            'tip8', 0, [TAGS['item']]),
-    'tip9': Inventory.Item('Paper tip', 'Use light to summon a dangerous devil of joker.\n',
-                           'tip9', 0, [TAGS['item']]),
-'''
     'floatstone': Inventory.Item('Floatstone', 'A stone that floats.', 'floatstone', 2, [TAGS['item']]),
     'obsidian_ingot': Inventory.Item('Obsidian Ingot', 'Unbelievable toughness.', 'obsidian_ingot', 2, [TAGS['item']]),
     'coral_reef': Inventory.Item('Coral Reef', 'A reef of coral.', 'coral_reef', 3, [TAGS['item']]),
@@ -2305,7 +2266,7 @@ RECIPES = [
     Recipe({'bullet': 100, 'platinum_ingot': 1, 'anvil': 1}, 'platinum_bullet', 100),
     Recipe({'magic_stone': 10, 'zirconium': 2}, 'mana_crystal'),
     Recipe({'magic_stone': 10, 'platinum': 2}, 'mana_crystal'),
-    Recipe({'magic_stone': 15, 'wood': 10, 'anvil': 1, 'wooden_arrow': 100}, 'magic_arrow', 100),
+    Recipe({'magic_stone': 15, 'wood': 10, 'anvil': 1, 'arrow': 100}, 'magic_arrow', 100),
     Recipe({'magic_stone': 25, 'platinum_ingot': 16}, 'talent_book'),
     Recipe({'magic_stone': 25, 'zirconium_ingot': 16}, 'talent_book'),
     Recipe({'magic_stone': 5, 'platinum_ingot': 6}, 'magic_anklet'),

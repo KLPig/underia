@@ -148,7 +148,7 @@ padding: 20px;
 
 
 tr.item-row {
-  height: 100px;
+  height: 50px;
   width: 1000px;
   overflow: auto;
   border-radius: 6px;
@@ -172,4 +172,23 @@ th.header-class:hover {
 tr {
 border: 2px white solid;
 border-width: 2px;
+}
+
+.spes-table {
+  border: 5px #ffff00 solid;
+  border-radius: 2px;
+  padding: 10px;
+  margin: 20px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+div.h {
+  padding: 10px;
+  margin: 15px;
+}
+
+p.h {
+  font-size: 1.2em;
+  font-weight: 600;
 }

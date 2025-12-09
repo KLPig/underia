@@ -2,7 +2,7 @@ import os
 
 
 import pygame as pg
-import entity_html, item_html, recipe_html, magic_html
+import item_html, entity_html, recipe_html, magic_html
 
 pg.quit()
 print(f"Done. Modules {item_html, recipe_html, entity_html, magic_html} updated.")

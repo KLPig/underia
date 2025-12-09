@@ -1438,6 +1438,8 @@ class Entities:
         IS_MENACE = False
         PHASE_SEGMENTS = []
 
+        DIVERSITY = True
+
         SOUND_SPAWN = None
         SOUND_HURT = None
         SOUND_DEATH = None
