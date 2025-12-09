@@ -285,10 +285,57 @@ class Game:
         window.fill((0,0,0))
         font = self.displayer.font
         words = [
-            'ALRIGHT, EVERYTHING, NOW, HAS ALREADY BEEN PREPARED FOR \'ME\'......',
-            'FOR THIS WHOLE "UNDERIA"... AND THE OTHER WORLDS......',
-            'LET\'S JUST WAIT FOR ALL THAT TO BE DONE, SHALL WE?........'
-        ]
+            [
+                'ALRIGHT, EVERYTHING, NOW, HAS ALREADY BEEN PREPARED FOR \'ME\'......',
+                'FOR THIS WHOLE "UNDERIA"..., WELL, SO......',
+                'LET\'S JUST WAIT FOR THAT ALL TO BE DONE, SHALL WE.......?'
+            ],
+            [
+                'I COME FROM THE DARK, I COME FROM THE DESPAIR......',
+                'BUT, THERE\'S STILL SOMETHING WAITING FOR US......',
+                'I SEE THE NIGHT, I SEE THE LIGHT, I SEE THE DREAM......'
+            ],
+            [
+                'SAMSARA - THE NIRVANA IN SHADOWS, THE REVIVAL IN THE OBSTACLES...',
+                'THE DAWN FADES, THE LIFE IS ABOUT TO BEGIN......',
+                'I TOOK OVER HIM, I AM HIM......',
+            ],
+            [
+                'EXTENT - THE EVER SPACE OF LAWS......',
+                'IT\'S HIS PRIMARY WORLD TO FIND THE HOPE......',
+                'WHENEVER I SEE, IS HIM......'
+            ],
+            [
+                'KARMA - WHAT YOU DID RETRIBUTES YOUR FUTURE......',
+                'LOST, LOST, LOST......IS THIS THE FATE?...',
+                'A FORTUNATE, SHE CREATED HIM......'
+            ],
+            [
+                'EXISTENCE - IT EXISTS IN PAST, NOW OR FUTURE......',
+                'HE IS HERE, HE IS ALWAYS HERE, HE WILL BE HERE......',
+                'BUT WHY, I CAN\'T SEE IT?......'
+            ],
+            [
+                'ETERNAL - ONCE IT STARTS, IT NEVER ENDS......',
+                'THE LIGHT IN WHICH APPEARS TO BE THE EVER CENTRE OF THE WORLD.....',
+                'IS BEYOND THE GRAND RIVER OF TIME, ...OUTSIDE THE TIME, ...GAZING FOR THE FUTURE......'
+            ],
+            [
+                'INFINITESIMAL - ALL THAT GOD-POWERS MIXED TO A POINT......',
+                'TIME CAN\'T STUCK HIM, .... SPACE CAN\'T STUCK HIM, ......',
+                'GODS ARE FORMLESS......IT SHOULD NEVER BE SEEN'
+            ],
+            [
+                'INFINITY - THE EVER HUGE, THE EVER POWER......',
+                'MILLIONS, TRILLIONS...... THEY ARE NOT EVEN ENOUGH......',
+                'THATS WHAT GODS SHOULD BE...... IS\'T IT?......'
+            ],
+            [
+                'DURING THE ETERNAL COLDNESS, WILL YOU AFRAID?.....',
+                'NO. I WON\'T....',
+                'ABOVE THE ICE THE AND SNOWS, THE POWER OF RAVEN WILL BLESS US......'
+            ],
+        ][(self.fun * 4 + self.stage * 3) % 9]
         for i in range(stt - 1):
             txt = font.render(words[i], True, (255, 255, 255))
             window.blit(txt, (100, 100 + i * 100))

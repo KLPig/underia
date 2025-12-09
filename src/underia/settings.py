@@ -2,7 +2,6 @@ import constants
 import pygame as pg
 from resources import path
 from underia import game
-from tkinter import messagebox
 
 SETTINGS = [
     ('Graphics', [

@@ -53,7 +53,7 @@ pg.init()
 random.seed(time.time())
 pg.display.set_mode((1600, 900), constants.FLAGS)
 pg.display.set_caption(f'Underia - {random.choice(good_words.WORDS)}')
-pg.display.set_icon(pg.image.load(resources.get_path('assets/graphics/entity/chicken.png')))
+pg.display.set_icon(pg.image.load(resources.get_path('assets/graphics/entity/glimmer_skate.png')))
 
 if not constants.WEB_DEPLOY:
     legend.show_legend()

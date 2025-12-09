@@ -920,6 +920,7 @@ class NPCRay(Chest):
         self.ct2 = [('npc_ray_home', 1), ('npc_ray_chaos_reap', 1), ('npc_ray_fate', 1), ('npc_ray_chaos_vocalist_headgear', 1), ('npc_ray_chaos_vocalist_crown', 1),
                     ('npc_ray_chaos_vocalist_shabby_cloak', 1), ('npc_ray_chaos_vocalist_traveller_boots', 1),
                     ('npc_ray_soulfeather', 81)]
+        self.ct3 = [('npc_ray_c_1', 1), ('npc_ray_c_2')]
         self.state = 0
 
         self.chest.items = self.ct1
@@ -1018,6 +1019,13 @@ class NPCRay(Chest):
                 'npc_ray_soulfeather',
                 13, [],
                 specify_img='soulfeather'
+            )
+            inventory.ITEMS['npc_ray_c_1'] = inventory.Inventory.Item(
+                'Who are you?',
+                'rainbowWho am I?',
+                'npc_ray_c_1',
+                0, [],
+                specify_img='null'
             )
 
         if len([1 for e in game.get_game().entities if issubclass(type(e), Ray)]):

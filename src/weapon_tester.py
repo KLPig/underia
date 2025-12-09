@@ -20,7 +20,7 @@ pg.init()
 random.seed(time.time())
 pg.display.set_mode((1600, 900), constants.FLAGS)
 pg.display.set_caption(f'Underia - {random.choice(good_words.WORDS)}')
-pg.display.set_icon(pg.image.load(resources.get_path('assets/graphics/entity/chicken.png')))
+pg.display.set_icon(pg.image.load(resources.get_path('assets/graphics/entity/glimmer_skate.png')))
 
 tt_dmg = []
 
@@ -50,7 +50,7 @@ game = underia.Game()
 game.seed = 0
 
 pg.display.set_caption('Underia')
-game.save = 'none.sb'''
+game.save = 'none.sb'
 if constants.WEB_DEPLOY:
     sfd = ''
 else:
