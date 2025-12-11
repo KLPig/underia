@@ -1663,10 +1663,16 @@ class Player:
 
         if self.open_inventory or self.open_chest is not None or self.inv_pos < 1500:
             if self.open_inventory:
-                for i in range(len(self.accessories)):
-                    styles.item_display(10 + i * 90 - self.inv_pos, game.get_game().displayer.SCREEN_HEIGHT - 90,
-                                        self.accessories[i].replace(' ', '_'), str(i), '1', 1,
-                                        selected=i == self.sel_accessory)
+                if not self.ui_recipes:
+                    for i in range(len(self.accessories) - 4):
+                        styles.item_display(game.get_game().displayer.SCREEN_WIDTH - 90 + self.inv_pos - (i + 1) * 90, game.get_game().displayer.SCREEN_HEIGHT - 90,
+                                            self.accessories[i + 4].replace(' ', '_'), str(i + 1), '1', 1,
+                                            selected=i + 4 == self.sel_accessory)
+                    for i in range(4):
+                        styles.item_display(game.get_game().displayer.SCREEN_WIDTH - 90 + self.inv_pos, game.get_game().displayer.SCREEN_HEIGHT - 90 - 3 * 90 + i * 90,
+                                            self.accessories[i].replace(' ', '_'), 'HBLA'[i], '1', 1,
+                                            selected=i == self.sel_accessory)
+
             l = 12
             lr = 4 + {0: 0, 1: 1, 2: 2, 3: 4, 4: 6, 5: 1, 6: 2, 7: 3, 8: 4, 9: 4, 10: 6}[game.get_game().stage]
             while lr * l > len(self.inventory.items) + 2 * lr:
@@ -1747,6 +1753,8 @@ class Player:
                                 self.sel_accessory = 2
                             elif inventory.TAGS['wings'] in item.tags:
                                 self.sel_accessory = 4
+                            else:
+                                self.sel_accessory = max(self.sel_accessory, 4)
                             for ii, a in enumerate(self.accessories):
                                 if a == item.id:
                                     self.sel_accessory = ii
@@ -2392,13 +2400,23 @@ class Player:
                                 constants.FPS = min(30, constants.FPS - 6)
                                 status.append('crash')
                         self.in_ui = True
-            for i in range(len(self.accessories)):
-                styles.item_mouse(10 + i * 90 - self.inv_pos, game.get_game().displayer.SCREEN_HEIGHT - 90,
-                                  self.accessories[i].replace(' ', '_'), str(i), '1', 1)
-                rect = pg.Rect(10 + i * 90 - self.inv_pos, game.get_game().displayer.SCREEN_HEIGHT - 90, 90, 90)
-                if rect.collidepoint(game.get_game().displayer.reflect(
-                        *pg.mouse.get_pos())) and 1 in game.get_game().get_mouse_press():
-                    self.sel_accessory = i
+                if not self.ui_recipes:
+                    for i in range(len(self.accessories) - 4):
+                        styles.item_mouse(game.get_game().displayer.SCREEN_WIDTH - 90 + self.inv_pos - (i + 1) * 90, game.get_game().displayer.SCREEN_HEIGHT - 90,
+                                            self.accessories[i + 4].replace(' ', '_'), str(i + 1), '1', 1,
+                                            anchor='right')
+                        rect = pg.Rect(game.get_game().displayer.SCREEN_WIDTH - 90 + self.inv_pos - (i + 1) * 90, game.get_game().displayer.SCREEN_HEIGHT - 90, 90, 90)
+                        if rect.collidepoint(game.get_game().displayer.reflect(
+                                *pg.mouse.get_pos())) and 1 in game.get_game().get_mouse_press():
+                            self.sel_accessory = i + 4
+                    for i in range(4):
+                        styles.item_mouse(game.get_game().displayer.SCREEN_WIDTH - 90 + self.inv_pos, game.get_game().displayer.SCREEN_HEIGHT - 90 - 3 * 90 + i * 90,
+                                            self.accessories[i].replace(' ', '_'), 'HBLA'[i], '1', 1,
+                                            anchor='right')
+                        rect = pg.Rect(game.get_game().displayer.SCREEN_WIDTH - 90 + self.inv_pos, game.get_game().displayer.SCREEN_HEIGHT - 90 - 3 * 90 + i * 90, 90, 90)
+                        if rect.collidepoint(game.get_game().displayer.reflect(
+                                *pg.mouse.get_pos())) and 1 in game.get_game().get_mouse_press():
+                            self.sel_accessory = i
 
 
             nx = displayer.canvas.get_width() - 180
@@ -2587,13 +2605,12 @@ class Player:
                             *pg.mouse.get_pos())) and 1 in game.get_game().get_mouse_press():
                         self.sel_recipe = i + (self.ui_recipe_overlook - 1) * 256
                         self.ui_recipe_overlook = False
-            if pg.K_i in game.get_game().get_pressed_keys():
-                ammo, amount = self.ammo
-                styles.item_display(10, 10, ammo, '', str(amount), 2)
-                styles.item_mouse(10, 10, ammo, '', str(amount), 2)
-                ammo, amount = self.ammo_bullet
-                styles.item_display(10, 170, ammo, '', str(amount), 2)
-                styles.item_mouse(10, 170, ammo, '', str(amount), 2)
+            ammo, amount = self.ammo
+            styles.item_display(10, displayer.SCREEN_HEIGHT - 90, ammo, 'AR', str(amount), 1)
+            styles.item_mouse(10, displayer.SCREEN_HEIGHT - 90, ammo, 'AR', str(amount), 1)
+            ammo, amount = self.ammo_bullet
+            styles.item_display(100, displayer.SCREEN_HEIGHT - 90, ammo, 'AB', str(amount), 1)
+            styles.item_mouse(100, displayer.SCREEN_HEIGHT - 90, ammo, 'AB', str(amount), 1)
         else:
             t = (game.get_game().day_time % 1 * 24 * 60)
             for e in game.get_game().world_events:

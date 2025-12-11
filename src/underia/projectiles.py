@@ -732,7 +732,7 @@ class Projectiles:
         def damage(self):
             dr = self.tick * 2
             for e in game.get_game().entities:
-                if abs(e.obj.pos - self.obj.pos) < dr:
+                if abs(e.obj.pos - self.obj.pos) < dr and e.obj.SPEED and e.obj.FRICTION != 1 and e.obj.MASS < 10 ** 6:
                     ap = e.obj.pos - self.obj.pos
                     e.obj.pos = ap / abs(ap) * (dr + 5) + self.obj.pos
                     if not e.hp_sys.is_immune:
@@ -994,6 +994,18 @@ class Projectiles:
             self.tick += 1
             if self.tick > self.DURATION or abs(self.obj.velocity) < 1:
                 self.dead = True
+
+
+    class VortexSpike(PlatinumWand):
+        DAMAGE_AS = 'vortex_spike'
+        IMG = 'projectiles_vortex_spike'
+        WT = damages.DamageTypes.PHYSICAL
+        DMG_TYPE = damages.DamageTypes.PHYSICAL
+        COL = (0, 255, 255)
+        DMG_RATE = 1
+        SPD = 150
+        ENABLE_IMMUNE = 3
+        DEL = False
 
     class AirFloat(PlatinumWand):
         def __init__(self, pos, rotation):

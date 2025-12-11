@@ -1160,6 +1160,11 @@ class NightsEdge(Blade):
         super().on_attack()
         self.cutting_effect(4, (100, 0, 100), (255, 100, 255))
 
+class VortexSpike(Spear):
+    def on_start_attack(self):
+        super().on_start_attack()
+        game.get_game().projectiles.append(projectiles.Projectiles.VortexSpike(game.get_game().player.obj.pos, self.rot))
+
 class Valkyrien(Spear):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -3734,10 +3739,10 @@ class WSky(Bow):
         tf = math.cos(2 * math.pi * game.get_game().day_time) ** 2
         if .25 < game.get_game().day_time < .75:
             self.at_time = 40
-            self.damages[dmg.DamageTypes.PIERCING] = int(80 * (1 + tf))
+            self.damages[dmg.DamageTypes.PIERCING] = int(150 * (1 + tf))
         else:
             self.at_time = max(1, int(40 / (1 + tf)))
-            self.damages[dmg.DamageTypes.PIERCING] = 80
+            self.damages[dmg.DamageTypes.PIERCING] = 150
 
 class Celestic(Bow):
     def update(self):
@@ -4801,6 +4806,8 @@ def set_weapons():
                              2, 6, 50, 160, auto_fire=True),
         'poseidon': Poseidon('poseidon', {dmg.DamageTypes.PHYSICAL: 95}, 3, 'items_weapons_poseidon',
                                5, 11, 30, 240, auto_fire=True),
+        'vortex_spike': VortexSpike('vortex spike', {dmg.DamageTypes.PHYSICAL: 120}, 2.5, 'items_weapons_vortex_spike',
+                                    4, 7, 50, 200, auto_fire=True),
         'nights_pike': Spear('nights pike', {dmg.DamageTypes.PHYSICAL: 125}, 1.8, 'items_weapons_nights_pike',
                              2, 5, 60, 160, auto_fire=True),
         'thermal_pike': Spear('thermal pike', {dmg.DamageTypes.PHYSICAL: 155}, 2.5, 'items_weapons_thermal_pike',
@@ -4855,7 +4862,7 @@ def set_weapons():
                                3, 4, 400, auto_fire=True, precision=2),
         'forget': WForget('forget', {dmg.DamageTypes.PIERCING: 35}, 3, 'items_weapons_forget',
                           0, 10, 400, auto_fire=True),
-        'sky': WSky('sky', {dmg.DamageTypes.PIERCING: 80}, 3, 'items_null',
+        'sky': WSky('sky', {dmg.DamageTypes.PIERCING: 150}, 3, 'items_null',
                     0, 40, 600, auto_fire=True, tail_col=(255, 255, 0), tw=5),
         'heavybow': HeavyBow('heavybow', {dmg.DamageTypes.PIERCING: 70}, 2, 'items_weapons_heavybow',
                              10, 5, 0, auto_fire=True),

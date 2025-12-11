@@ -214,7 +214,7 @@ for _, item in kw:
                                                                 f'{underia.ITEMS[it].name} {t}*{amount}'))
                 j += 1
             rf += "</tr>\n"
-        rf += "</table>\n<script src='recipe_js.js'></script>\n</body></html>"
+        rf += "</table>"
 
     if not os.path.exists(f'./docs/items/{item.id}.html'):
         ap = ''
