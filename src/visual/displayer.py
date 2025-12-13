@@ -5,6 +5,8 @@ from underia import game
 from visual import effects, lighting
 import constants
 
+import random
+import perlin_noise
 
 class Displayer:
     SCREEN_WIDTH = 2400
@@ -22,6 +24,9 @@ class Displayer:
         self.canvas.fill((255, 255, 255, 255))
         self.alpha_masks: list[tuple[int, int, int, int]] = []
         self.shake_x, self.shake_y = 0, 0
+        self.shake_amp = 0
+        self.shake_nx = perlin_noise.PerlinNoise(octaves=.4, seed=random.randint(0, 1000000))
+        self.shake_ny = perlin_noise.PerlinNoise(octaves=.4, seed=random.randint(0, 1000000))
         self.effects: list[effects.Effect] = []
         font = path.get_path('assets/dtm-sans.otf' if constants.LANG != 'zh' else 'assets/fz-pixel.ttf')
         self.font = pg.font.Font(font, 32)
@@ -54,12 +59,13 @@ class Displayer:
         self.alpha_masks.clear()
         blit_surface = pg.transform.scale(self.canvas,
                                           (int(self.SCREEN_WIDTH * scale), int(self.SCREEN_HEIGHT * scale)))
-        rect = blit_surface.get_rect(center=(window.get_width() // 2, window.get_height() // 2))
-        self.blit_pos = rect.topleft
-        rect.x += self.shake_x
-        rect.y += self.shake_y
-        self.shake_x, self.shake_y = 0, 0
+        self.shake_amp /= 1.03
+        self.shake_x = self.shake_amp * self.shake_nx(game.get_game().player.tick)
+        self.shake_y = self.shake_amp * self.shake_ny(game.get_game().player.tick)
         window.fill((0, 0, 0))
+        rect = blit_surface.get_rect(center=(window.get_width() // 2 + self.shake_x,
+                                             window.get_height() // 2 + self.shake_y))
+        self.blit_pos = rect.topleft
         window.blit(blit_surface, rect)
         self.canvas.fill((255, 255, 255))
         if self.lsw != self.SCREEN_WIDTH or self.lsh != self.SCREEN_HEIGHT:

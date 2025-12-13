@@ -496,6 +496,18 @@ class Projectiles:
                 self.dead = True
             super().update()
 
+    class SnowStorm(PlatinumWand):
+        DAMAGE_AS = 'snowstorm'
+        IMG = 'projectiles_snowstorm'
+        SPD = 250
+        ENABLE_IMMUNE = 1
+        DEL = False
+
+        def __init__(self, pos, rot):
+            ap = game.get_game().player.obj.pos + (0, 1000)
+            ar = vector.coordinate_rotation(*(-pos + game.get_game().displayer.reflect(*pg.mouse.get_pos())))
+            super().__init__(ap, ar + random.randint(-10, 10))
+
     class RockBall(PlatinumWand):
         DAMAGE_AS = 'rock_ball'
         IMG = 'projectiles_rock_ball'
@@ -628,6 +640,17 @@ class Projectiles:
             pg.draw.circle(game.get_game().displayer.canvas, (0, 255, 255), position.displayed_position(self.obj.pos),
                            int(50 / game.get_game().player.get_screen_scale()), int(10 / game.get_game().player.get_screen_scale()))
 
+    class DemonShard(PlatinumWand):
+        SPD = 150
+        DAMAGE_AS = 'demon_wand'
+        IMG = 'projectiles_null'
+        COL = (0, 255, 255)
+
+        def update(self):
+            super().update()
+            pg.draw.circle(game.get_game().displayer.canvas, (0, 100, 0), position.displayed_position(self.obj.pos),
+                           int(20 / game.get_game().player.get_screen_scale()), int(15 / game.get_game().player.get_screen_scale()))
+
 
 
     class ChristmasTreeSword(PlatinumWand):
@@ -657,8 +680,8 @@ class Projectiles:
         DEL = False
         ENABLE_IMMUNE = 1
         DURATION = 300
-        DMG_TYPE = damages.DamageTypes.PIERCING
-        WT = damages.DamageTypes.PIERCING
+        DMG_TYPE = damages.DamageTypes.PHYSICAL
+        WT = damages.DamageTypes.PHYSICAL
 
         def update(self):
             super().update()
@@ -676,8 +699,8 @@ class Projectiles:
         DEL = False
         ENABLE_IMMUNE = 1
         DURATION = 300
-        DMG_TYPE = damages.DamageTypes.MAGICAL
-        WT = damages.DamageTypes.MAGICAL
+        DMG_TYPE = damages.DamageTypes.PHYSICAL
+        WT = damages.DamageTypes.PHYSICAL
 
         def update(self):
             super().update()
@@ -2283,6 +2306,7 @@ class Projectiles:
         N_DST = 80
 
         def __init__(self, pos, rotation):
+            game.get_game().displayer.shake_amp += 1
             super().__init__(pos, rotation, motion=mover.Mover)
             self.img = game.get_game().graphics['projectiles_starfury']
             self.tx, self.ty = position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
@@ -3802,6 +3826,7 @@ class Projectiles:
                 b = True
             if b:
                 self.dead = True
+                game.get_game().displayer.shake_amp += 15
                 for d in range(10, 40):
                     game.get_game().displayer.effect(particle_effects.p_particle_effects(*position.displayed_position(self.obj.pos),
                                                                                 col=self.COL, t=25, n=d * 4 * self.r // 600 // 71, r=10,
@@ -4430,6 +4455,7 @@ class Projectiles:
                 Projectiles.TimeFlies.STEP -= 1
                 if Projectiles.TimeFlies.STEP <= 0:
                     self.dead = True
+            game.get_game().displayer.shake_amp = max(game.get_game().displayer.shake_amp, Projectiles.TimeFlies.STEP * 3 // 8)
             self.obj.pos << position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
             self.ar += 8
             self.ar %= 360

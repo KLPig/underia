@@ -633,6 +633,7 @@ class TrueEye(entity.Entities.Entity):
                 self.img = game.get_game().graphics['entity_true_eye_phase2']
             self.set_rotation(self.rot)
             self.play_sound('spawn_boss')
+            game.get_game().displayer.shake_amp += 20
         if self.hp_sys.hp <= self.hp_sys.max_hp * 0.3 and self.phase == 1:
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] -= 5
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] -= 5
@@ -645,6 +646,7 @@ class TrueEye(entity.Entities.Entity):
                 self.img = game.get_game().graphics['entity_true_eye_phase3']
             self.set_rotation(self.rot)
             self.play_sound('spawn_boss')
+            game.get_game().displayer.shake_amp += 20
         if self.hp_sys.hp <= self.hp_sys.max_hp * 0.002 and self.phase == 2 and constants.DIFFICULTY > 1:
             self.hp_sys.hp = self.hp_sys.max_hp * .002 - .1
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] += 100
@@ -657,6 +659,7 @@ class TrueEye(entity.Entities.Entity):
             self.img.set_alpha(100)
             self.set_rotation(self.rot)
             self.play_sound('spawn_boss')
+            game.get_game().displayer.shake_amp += 20
         if self.hp_sys.hp <= 3 and self.phase == 3 and constants.DIFFICULTY > 2:
             self.hp_sys.IMMUNE = True
             self.obj.phase = 4
@@ -664,6 +667,7 @@ class TrueEye(entity.Entities.Entity):
             self.obj.timer = -50
             self.img.set_alpha(30)
             self.play_sound('spawn_boss')
+            game.get_game().displayer.shake_amp += 20
         if self.phase == 4:
             self.hp_sys.hp -= .002
             self.hp_sys.IMMUNE = True
