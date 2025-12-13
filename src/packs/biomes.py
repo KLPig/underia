@@ -222,6 +222,35 @@ class SandStormAI(MonsterAI):
         px, py = pos[0] + ax * self.d, pos[1] + ay * self.d
         self.pos << ((self.pos[0] + px * 6) / 7, (self.pos[1] + py * 6) / 7)
 
+@entity.AIs.entity_ai
+class PythonAI(MonsterAI):
+    FRICTION = .7
+    MASS = 200
+    TOUCHING_DAMAGE = 90
+    SIGHT_DISTANCE = 99999
+
+    def __init__(self, pos):
+        super().__init__(pos)
+        self.tick = 0
+        self.dr = 0
+
+    def on_update(self):
+        super().on_update()
+        player = self.cur_target
+        if player is not None:
+            if self.tick % 900 < 700:
+                self.dr += .3 * constants.DIFFICULTY + .6
+                self.apply_force((self.cur_target.pos + vector.Vector2D(self.dr, 600) - self.pos) / 2.5)
+            elif self.tick % 900 == 700:
+                self.dr = vector.coordinate_rotation(*(-game.get_game().player.obj.pos + self.pos))
+            else:
+                self.apply_force(vector.Vector2D(self.dr, 1200))
+        else:
+            pass
+
+
+
+
 
 @entity.Entities.entity_type
 class MagmaKingFireball(Entity):
@@ -745,4 +774,36 @@ class SandStorm(Entity):
             if b:
                 game.get_game().dialog.push_dialog('[Notebook Updated!]', 'Looks like the world have changed...')
 
+@entity.Entities.entity_type
+class Python(WormEntity):
+    NAME = 'Python'
+    DISPLAY_MODE = 3
+    IS_MENACE = True
+    BOSS_NAME = 'Hidden Violence'
+    VITAL = True
+    SOUND_SPAWN = 'boss'
+    SOUND_HURT = 'skeleton'
+    SOUND_DEATH = 'huge_monster'
+
+    LOOT_TABLE = [
+        SelectionLoot([('viper_spiker', 1, 1), ('vipers_breath', 1, 1), ('demon_shard', 1, 1)], 1, 1),
+        SelectionLoot([('scale_headgear', 1, 1), ('scale_chestplate', 1, 1), ('scale_boots', 1, 1)], 1, 2),
+    ]
+
+    def __init__(self, pos):
+        super().__init__(pos, 16, game.get_game().graphics['entity_python_head'],
+                         game.get_game().graphics['entity_python_body'], PythonAI, 3200,
+                         90, 60)
+
+        for b in self.body:
+            if b != self.body[-1]:
+                b.hp_sys.defenses[damages.DamageTypes.PHYSICAL] += 250
+                b.hp_sys.defenses[damages.DamageTypes.MAGICAL] += 250
+                b.hp_sys.defenses[damages.DamageTypes.PIERCING] += 250
+            else:
+                b.hp_sys.defenses[damages.DamageTypes.PHYSICAL] += 25
+                b.hp_sys.defenses[damages.DamageTypes.MAGICAL] += 25
+                b.hp_sys.defenses[damages.DamageTypes.PIERCING] += 25
+                b.obj.TOUCHING_DAMAGE += 30
+                b.img = game.get_game().graphics['entity_python_tail']
 

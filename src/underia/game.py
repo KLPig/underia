@@ -1031,7 +1031,7 @@ class Game:
                                         loop.create_task(self.server.start_server())
                                 elif ev.key == pg.K_s:
                                     settings.set_settings()
-                                elif ev.key == pg.K_t:
+                                elif ev.key == pg.K_t and constants.DEBUG:
                                     cmd = ''
                                     qt = False
                                     shift = False
@@ -1076,6 +1076,7 @@ class Game:
                         pg.display.update()
                     self.pressed_mouse = []
                     self.pressed_keys = []
+                    self.clock.update(constants.INFINITY)
                 elif event.key == pg.K_F4:
                     constants.FULLSCREEN = not constants.FULLSCREEN
                     pg.display.set_mode(pg.display.get_window_size(), (pg.FULLSCREEN if constants.FULLSCREEN else 0) | constants.FLAGS)

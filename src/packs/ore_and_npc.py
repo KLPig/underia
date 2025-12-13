@@ -646,6 +646,7 @@ class Ray(entity.Entities.Entity):
         if self.hp_sys.IMMUNE:
             if game.get_game().dialog.is_done():
                 self.hp_sys.IMMUNE = False
+                game.get_game().displayer.shake_amp += 50
             return
         cw = ''
         self.hp_sys.heal(.08)

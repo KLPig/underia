@@ -910,6 +910,11 @@ class TearBlade(Blade):
     def on_damage(self, target: entity.Entities.Entity):
         target.hp_sys.effect(effects.BleedingR(2, 9))
 
+class ViperSpiker(Spear):
+    def on_damage(self, target: entity.Entities.Entity):
+        target.hp_sys.effect(effects.Poison(3, 5))
+
+
 class BurningTears(Blade):
     def on_damage(self, target: entity.Entities.Entity):
         for e in game.get_game().entities:
@@ -1289,7 +1294,7 @@ class ChristmasTreeSword(Blade):
     def update(self):
         super().update()
         for k in self.damages.keys():
-            self.damages[k] = game.get_game().player.hp_sys.max_hp // 5
+            self.damages[k] = game.get_game().player.hp_sys.max_hp * 2 // 5
 
     def on_end_attack(self):
         super().on_end_attack()
@@ -1307,7 +1312,7 @@ class CandyCane(Blade):
     def update(self):
         super().update()
         for k in self.damages.keys():
-            self.damages[k] = game.get_game().player.hp_sys.max_hp * 2 // 9
+            self.damages[k] = game.get_game().player.hp_sys.max_hp * 4 // 9
 
     def on_special_attack(self, strike: int):
         st = (1 - math.e ** (-strike / 100)) * game.get_game().player.hp_sys.max_hp / 10
@@ -2880,19 +2885,19 @@ class EvilMagicWeapon(MagicWeapon):
         self.hp_cost = hp_cost
 
     def on_start_attack(self):
+        if game.get_game().player.mana < round(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True),1):
+            self.timer = 0
+            return
+        if self.sk_cd:
+            self.timer = 0
+            return
+        game.get_game().player.hp_sys.hp -= self.hp_cost
+        self.face_to(
+            *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+        game.get_game().player.mana -= round(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True),1)
         game.get_game().player.hp_sys.effect(effects.WeakManaI([.5, 1, 3, 6][constants.DIFFICULTY], 1))
         if constants.DIFFICULTY:
             game.get_game().player.hp_sys.effect(effects.ManaDrain([0, 3, 6, 10][constants.DIFFICULTY], 1))
-        if game.get_game().player.mana < round(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True),1) or game.get_game().player.hp_sys.hp <= self.hp_cost or self.sk_cd:
-            self.timer = 0
-            return
-        self.sk_cd = self.sk_mcd
-        game.get_game().player.hp_sys.hp -= self.hp_cost
-        game.get_game().player.mana -= round(self.mana_cost * game.get_game().player.calculate_data('mana_cost', rate_data=True, rate_multiply=True),1)
-        self.face_to(*position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
-        game.get_game().projectiles.append(
-            self.projectile((self.x + game.get_game().player.obj.pos[0], self.y + game.get_game().player.obj.pos[1]),
-                            self.rot))
 
 class Tornado(MagicWeapon):
     def on_start_attack(self):
@@ -3026,6 +3031,7 @@ class ArcaneWeapon(MagicWeapon):
     def on_attack(self):
         super().on_attack()
         game.get_game().player.talent -= self.talent_cost / self.at_time
+        game.get_game().displayer.shake_amp = max(10, game.get_game().displayer.shake_amp)
         if game.get_game().player.talent < 0:
             self.timer = 0
             game.get_game().player.talent = 0
@@ -3977,6 +3983,7 @@ class Resolution(Bow):
         cols = ((255, 255, 0), (255, 127, 0), (0, 255, 0), (0, 0, 255), (255, 0, 255), (0, 255, 255))
         for i in ([self.timer // 3 % 6] if self.sk_cd else range(6)):
             if i == (self.timer // 3 + 1) % 6:
+                game.get_game().displayer.shake_amp += 2
                 continue
             for j in range(0, 1, 40):
                 x, y = (self.x + game.get_game().player.obj.pos[0] + sax * 10 * aas[i] - ppx * j,
@@ -4011,6 +4018,7 @@ class DaedelusStormbow(Bow):
         if game.get_game().player.ammo[0] not in projectiles.AMMOS or not game.get_game().player.ammo[1]:
             self.timer = 0
             return
+        game.get_game().displayer.shake_amp += 2
         if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
             game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
         mx, my = position.relative_position(
@@ -4034,6 +4042,7 @@ class TrueDaedalusStormbow(Bow):
         if game.get_game().player.ammo[0] not in projectiles.AMMOS or not game.get_game().player.ammo[1]:
             self.timer = 0
             return
+        game.get_game().displayer.shake_amp += 3
         if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
             game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
         mx, my = position.relative_position(
@@ -4114,6 +4123,7 @@ class Gun(Bow):
             pj.TAIL_SIZE = max(pj.TAIL_SIZE, 3)
             pj.TAIL_WIDTH = max(pj.TAIL_WIDTH, 6)
         game.get_game().projectiles.append(pj)
+        game.get_game().displayer.shake_amp += .5
 
 class RocketLauncher(Gun):
     def __init__(self, name, damages: dict[int, float], kb: float, img, speed: int, at_time: int, projectile_speed: int,
@@ -4150,6 +4160,7 @@ class RocketLauncher(Gun):
                       self.damages[dmg.DamageTypes.PIERCING], self.mr)
             pj.TAIL_COLOR = pj.COL
             game.get_game().projectiles.append(pj)
+        game.get_game().displayer.shake_amp += 10
 
 class DarkExploder(Gun):
     def on_start_attack(self):
@@ -4225,6 +4236,7 @@ class LazerGun(Gun):
         b.DMG_TYPE = dmg.DamageTypes.PIERCING
         b.FACE_TO_MOUSE = True
         game.get_game().projectiles.append(b)
+        game.get_game().displayer.shake_amp += .7
 
     def update(self):
         super().update()
@@ -4299,6 +4311,7 @@ class ChaosAnnihilator(Gun):
             pt = int(255 * (1 + math.sin(self.timer / 20 * math.pi)) / 2)
             self.ppjs.COLOR = (pt, pt, pt)
             self.d_count = self.timer
+            game.get_game().displayer.shake_amp = max(80, game.get_game().displayer.shake_amp)
         super().on_attack()
 
     def on_end_attack(self):
@@ -4336,6 +4349,7 @@ class Void(Gun):
             pt2 = int(255 * (math.cos(self.timer / 50 * math.pi) + 1) / 2)
             self.ppjs.COLOR = (pt, 0, pt2)
             self.sk_cd = 1600
+            game.get_game().displayer.shake_amp = max(100, game.get_game().displayer.shake_amp)
         super().on_attack()
 
     def on_end_attack(self):
@@ -4685,10 +4699,10 @@ def set_weapons():
         'guardian': Guardian('guardian', {dmg.DamageTypes.PHYSICAL: 100}, 3,
                              'items_weapons_guardian',
                              4, 8, 30, 120,),
-        'christmas_tree_sword': ChristmasTreeSword('christmas tree sword', {dmg.DamageTypes.PHYSICAL: 0, dmg.DamageTypes.PIERCING: 0, dmg.DamageTypes.MAGICAL: 0}, 2,
+        'christmas_tree_sword': ChristmasTreeSword('christmas tree sword', {dmg.DamageTypes.PHYSICAL: 0}, 2,
                                                    'items_weapons_christmas_tree_sword', 2, 7, 40, 120,),
         'candy_cane': CandyCane('candy cane',
-                                {dmg.DamageTypes.PHYSICAL: 0, dmg.DamageTypes.PIERCING: 0,  dmg.DamageTypes.MAGICAL: 0}, 3,
+                                {dmg.DamageTypes.PHYSICAL: 0}, 3,
                                 'items_weapons_christmas_tree_sword', 3, 8, 40, 160, ),
         'remote_sword': RemoteWeapon('remote sword', {dmg.DamageTypes.PHYSICAL: 150}, 0.8,
                                       'items_weapons_remote_sword',
@@ -4790,6 +4804,8 @@ def set_weapons():
                                 2, 4, 30, 80, auto_fire=True),
         'zirconium_spear': Spear('zirconium spear', {dmg.DamageTypes.PHYSICAL: 45}, 5, 'items_weapons_zirconium_spear',
                                   3, 5, 30, 90, auto_fire=True),
+        'viper_spiker': ViperSpiker('viper spiker', {dmg.DamageTypes.PHYSICAL: 40}, 2.5, 'items_weapons_viper_spiker',
+                                    0, 6, 30, 100, auto_fire=True),
         'blood_pike': BloodPike('blood pike', {dmg.DamageTypes.PHYSICAL: 60}, 5.4, 'items_weapons_blood_pike',
                                 1, 5, 50, 150, auto_fire=True),
         'fur_spear': FurSpear('fur spear', {dmg.DamageTypes.PHYSICAL: 55}, 1.7, 'items_weapons_fur_spear',
@@ -4852,6 +4868,8 @@ def set_weapons():
                             2, 6, 50, auto_fire=True),
         'bloody_bow': Bow('bloody bow', {dmg.DamageTypes.PIERCING: 45}, 0.5, 'items_weapons_bloody_bow',
                           5, 9, 120, auto_fire=True),
+        'vipers_breath': Bow('vipers breath', {dmg.DamageTypes.PIERCING: 85}, 2, 'items_weapons_vipers_breath',
+                             7, 17, 250, auto_fire=True),
         'aerialite_bow': Bow('aerialite bow', {dmg.DamageTypes.PIERCING: 35}, 0.3, 'items_weapons_aerialite_bow',
                              3, 8, 300, auto_fire=True),
         'forgotten_bow': Bow('forgotten bow', {dmg.DamageTypes.PIERCING: 70}, 0.4, 'items_weapons_forgotten_bow',
@@ -5101,6 +5119,9 @@ def set_weapons():
                                  'items_weapons_mana_wand', 3,
                                  7, projectiles.Projectiles.ManaWand, 14, True,
                                   'Mana Erupt'),
+        'demon_shard': EvilMagicWeapon('demon shard', {dmg.DamageTypes.MAGICAL: 50}, 2,
+                                       'items_weapons_demon_shard', 2, 5, projectiles.Projectiles.DemonShard,
+                                       12, 6, True, 'Evil Shard'),
 
         'life_wooden_wand': MagicWeapon('life wooden wand', {dmg.DamageTypes.MAGICAL: 28}, 0.4,
                                         'items_weapons_life_wooden_wand', 1,

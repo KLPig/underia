@@ -2570,6 +2570,7 @@ class Entities:
         DMG = 150
 
         def __init__(self, pos, rotation):
+            game.get_game().displayer.shake_amp += 1
             super().__init__(pos, game.get_game().graphics['projectiles_starfury'], MonsterAI, 10)
             self.tx, self.ty = pos
             dx = random.randint(-100, 100)
@@ -5823,6 +5824,7 @@ class Entities:
                     game.get_game().entities.append(e)
             super().on_update()
             self.tick += 1
+            game.get_game().displayer.shake_amp = max(game.get_game().displayer.shake_amp, int(self.phase ** 1.5 * .8))
             if self.phase == 0:
                 self.rt += 3
                 if self.tick < 30:
@@ -6085,6 +6087,7 @@ class Entities:
             if game.get_game().player.open_inventory:
                 game.get_game().player.open_inventory = False
                 game.get_game().dialog.dialog('You are too afraid to open your inventory.')
+            game.get_game().displayer.shake_amp = max(game.get_game().displayer.shake_amp, int(self.phase ** 1.5))
             if self.hp_sys.hp <= 1 and self.cdt != 0:
                 self.dt = 0
                 self.obj.IS_OBJECT = False
@@ -6263,6 +6266,7 @@ class Entities:
                     game.get_game().entities.remove(self.moon_eye)
                     del self.moon_eye
                 game.get_game().entities.remove(self)
+            game.get_game().displayer.shake_amp = max(game.get_game().displayer.shake_amp, int(self.phase ** 1.5 * .7))
             if self.phase == 0:
                 self.sun_eye.action_state = 1
                 self.moon_eye.action_state = 2
