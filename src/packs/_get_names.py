@@ -1,7 +1,7 @@
 from xml.etree import ElementTree as eTree
 import os
 
-ss = './stage2.py'
+ss = './ore_and_npc.py'
 ssr = ss + '.data.xml'
 
 xml = ''

@@ -1447,6 +1447,38 @@ class CopperOre(Ore):
         ])
 
 @entity.Entities.entity_type
+class Crysanths(Ore):
+    IMG = 'items_crysanths'
+    NAME = 'Mysterious Herb'
+    TOUGHNESS = 1
+    HP = 40
+    LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('crysanths', .8, 1, 3),
+        ])
+
+@entity.Entities.entity_type
+class Winteraceae(Ore):
+    IMG = 'items_winteraceae'
+    NAME = 'Mysterious Herb'
+    TOUGHNESS = 2
+    HP = 60
+
+    LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('winteraceae', .8, 1, 3),
+        ])
+
+@entity.Entities.entity_type
+class Dendrobium(Ore):
+    IMG = 'items_dendrobium'
+    NAME = 'Mysterious Herb'
+    TOUGHNESS = 3
+    HP = 60
+
+    LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('dendrobium', .8, 1, 3),
+        ])
+
+@entity.Entities.entity_type
 class IronOre(Ore):
     IMG = 'entity_iron_ore'
     NAME = 'Iron Ore'
@@ -1496,6 +1528,26 @@ class PlatinumOre(Ore):
             self.LOOT_TABLE = entity.LootTable([
                 entity.IndividualLoot('zirconium', 1, 28, 36),
             ])
+
+@entity.Entities.entity_type
+class Flamaureus(Ore):
+    IMG = 'items_flamaureus'
+    NAME = 'Mysterious Herb'
+    TOUGHNESS = 5
+    HP = 80
+    LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('flamaureus', .8, 1, 3),
+        ])
+
+@entity.Entities.entity_type
+class Gypsophila(Ore):
+    IMG = 'items_gypsophila'
+    NAME = 'Mysterious Herb'
+    TOUGHNESS = 6
+    HP = 80
+    LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('gypsophila', .8, 1, 3),
+        ])
 
 @entity.Entities.entity_type
 class MagicOre(Ore):

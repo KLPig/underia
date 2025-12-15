@@ -795,11 +795,18 @@ class Game:
                         self.drop_items.append(entity.Entities.DropItem((e.obj.pos[0] + random.randint(-10, 10),
                                                                          e.obj.pos[1] + random.randint(-10, 10)),
                                                                         item, amount // k + (i < amount % k)))
-                rt = math.sqrt(e.hp_sys.max_hp) + (1 + 10 * e.IS_MENACE) * e.DIVERSITY
-                nm = int(rt ** random.uniform(.7, 1.3))
-                self.drop_items.append(entity.Entities.DropItem((e.obj.pos[0] + random.randint(-10, 10),
-                                                                 e.obj.pos[1] + random.randint(-10, 10)),
-                                                                'nature', nm))
+                if len(loots) and (e.DIVERSITY or e.IS_MENACE):
+                    rt = math.sqrt(e.hp_sys.max_hp) + (1 + 10 * e.IS_MENACE) * e.DIVERSITY
+                    nm = int(rt ** random.uniform(.7, 1.3))
+                    self.drop_items.append(entity.Entities.DropItem((e.obj.pos[0] + random.randint(-10, 10),
+                                                                     e.obj.pos[1] + random.randint(-10, 10)),
+                                                                    'nature', nm))
+
+                    if 'star_supporter' in self.player.profile.select_skill and random.randint(0, 10) < 2:
+                        self.drop_items.append(entity.Entities.DropItem((e.obj.pos[0] + random.randint(-10, 10),
+                                                                         e.obj.pos[1] + random.randint(-10, 10)),
+                                                                        'star', 1))
+
         for e in self.furniture:
             if e.hp_sys.hp <= 0:
                 self.furniture.remove(e)

@@ -1946,6 +1946,9 @@ class Player:
                         elif item.id == 'potion_of_memory':
                             self.obj.pos = vector.Vector2D()
                             self.inventory.remove_item(item)
+                        elif item.id == 'potion_of_teleport':
+                            self.obj.pos = vector.Vector2D(random.randint(0, 360), math.sqrt(random.randint(0, 5000 ** 2)))
+                            self.inventory.remove_item(item)
                         elif item.id == 'iron_donut':
                             self.hp_sys.effect(effects.IronDonut(54, 1))
                             self.inventory.remove_item(item)

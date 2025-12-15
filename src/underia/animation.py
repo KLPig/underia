@@ -50,6 +50,9 @@ class SoulAnimation:
 
 
 ANIMATIONS = [
+    Animation("entity_balrog", [1, 2], 45),
+    Animation("entity_balrog_p2", [0, 1], 25),
+
     Animation("items_spot", [1, 2, 3, 4], 15),
     Animation("items_dark_matter", [1, 2], 30),
     Animation("items_stone_of_faith", [1, 2, 3], 20),

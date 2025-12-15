@@ -1,7 +1,8 @@
-from underia import entity, game, inventory, player_profile
+from underia import entity, game, inventory, player_profile, BuildingAI
 from values import damages, effects
-from resources import position
+from visual import draw
 from physics import vector
+from resources import position
 import constants
 
 import copy
@@ -792,7 +793,7 @@ class Python(WormEntity):
 
     def __init__(self, pos):
         super().__init__(pos, 16, game.get_game().graphics['entity_python_head'],
-                         game.get_game().graphics['entity_python_body'], PythonAI, 3200,
+                         game.get_game().graphics['entity_python_body'], PythonAI, 5000,
                          90, 60)
 
         for b in self.body:
@@ -806,4 +807,231 @@ class Python(WormEntity):
                 b.hp_sys.defenses[damages.DamageTypes.PIERCING] += 25
                 b.obj.TOUCHING_DAMAGE += 30
                 b.img = game.get_game().graphics['entity_python_tail']
+
+@entity.Entities.entity_type
+class OriginBulb(Entity):
+    NAME = 'Origin Bulb'
+    DISPLAY_MODE = 3
+    IS_MENACE = True
+    BOSS_NAME = 'When it Starts'
+    VITAL = True
+    SOUND_SPAWN = 'boss'
+    SOUND_HURT = 'skeleton'
+    SOUND_DEATH = 'huge_monster'
+
+    PHASE_SEGMENTS = [.8]
+
+    def __init__(self, pos):
+        super().__init__(pos, game.get_game().graphics['entity_origin_bulb'], BuildingAI, 14000)
+        self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] += 45
+        self.hp_sys.defenses[damages.DamageTypes.MAGICAL] += 45
+        self.hp_sys.defenses[damages.DamageTypes.PIERCING] += 45
+
+        self.phase = 0
+        self.obj.TOUCHING_DAMAGE = 130
+
+        self.tick = 0
+
+        self.fw = []
+
+    def t_draw(self):
+        super().t_draw()
+        self.tick += 1
+        if self.hp_sys.hp <= self.hp_sys.max_hp * .8 and self.phase == 0:
+            self.phase = 1
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 0
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 0
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 0
+            game.get_game().displayer.shake_amp += 30
+            self.img = game.get_game().graphics['entity_origin_flower']
+            self.NAME = 'Origin Flower'
+        if self.hp_sys.hp <= 0:
+            for f in self.fw:
+                f.hp_sys.hp = 0
+        if self.tick % (120 - constants.DIFFICULTY * 10 - self.phase * 20) == 0:
+            rt = random.randint(0, 360)
+            for ar in range(0, 360, 90 - self.phase * 30):
+                bt = entity.Entities.Bloodflower(self.obj.pos) if self.phase else entity.Entities.ClosedBloodflower(self.obj.pos)
+                bt.obj.apply_force(vector.Vector2D(rt + ar, 40000))
+                bt.LOOT_TABLE = entity.LootTable([])
+                bt.hp_sys.max_hp *= 5
+                bt.hp_sys.hp *= 5
+                game.get_game().entities.append(bt)
+                self.fw.append(bt)
+
+        for f in self.fw:
+            f.hp_sys.hp -= f.hp_sys.max_hp * 0.00333
+            if f.hp_sys.hp <= 0:
+                self.fw.remove(f)
+
+        tn = 10 + constants.DIFFICULTY * 5 + self.phase * 15
+
+        while len(self.fw) > tn:
+            p = self.fw.pop(0)
+            p.hp_sys.hp = 0
+
+
+@entity.Entities.entity_type
+class BurningFireball(Entity):
+    NAME = 'Burning Fireball'
+    DISPLAY_MODE = 3
+    DMG = 90
+    DIVERSITY = False
+
+    def __init__(self, pos, rot, tp=0):
+        super().__init__(pos, game.get_game().graphics['entity_null'], MagmaKingFireballAI, 500)
+        self.obj.rot = rot
+        self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = -30
+        self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 0
+        self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = -80
+        self.obj.SPEED *= 5 + tp * 5
+
+        self.poss = []
+
+        self.tp = tp
+
+    def on_update(self):
+        super().on_update()
+        self.set_rotation(self.rot)
+        self.hp_sys.hp -= 10
+
+    def t_draw(self):
+        super().t_draw()
+        self.damage()
+
+        self.poss.append(self.obj.pos.to_value())
+
+        while len(self.poss) > 10:
+            self.poss.pop(0)
+
+        for i in range(len(self.poss) - 1):
+            draw.line(game.get_game().displayer.canvas,  (0, 255, 255) if self.tp else (255, 0, 0),
+                      position.displayed_position(self.poss[i]),
+                      position.displayed_position(self.poss[i + 1]), i * 5 / game.get_game().player.get_screen_scale())
+
+        draw.line(game.get_game().displayer.canvas,  (0, 255, 255) if self.tp else (255, 0, 0),
+                  position.displayed_position(self.poss[-1]),
+                  position.displayed_position(self.poss[-1]), len(self.poss) * 5 / game.get_game().player.get_screen_scale())
+
+    def damage(self):
+        if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
+                           self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 36:
+            game.get_game().player.hp_sys.damage(self.DMG, damages.DamageTypes.MAGICAL)
+            game.get_game().player.hp_sys.effect(effects.Burning(4, 12))
+            game.get_game().player.hp_sys.enable_immune()
+            self.hp_sys.hp = 0
+
+
+@entity.Entities.entity_type
+class Balrog(Entity):
+    NAME = 'Balrog'
+    DISPLAY_MODE = 3
+    IS_MENACE = True
+    BOSS_NAME = 'Burning Resentment'
+    VITAL = True
+    SOUND_SPAWN = 'boss'
+    SOUND_HURT = 'corrupt'
+    SOUND_DEATH = 'huge_monster'
+
+    PHASE_SEGMENTS = [.6]
+
+    def __init__(self, pos):
+        super().__init__(pos, game.get_game().graphics['entity_balrog'], BuildingAI, 32000)
+        self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] += 75
+        self.hp_sys.defenses[damages.DamageTypes.MAGICAL] += 75
+        self.hp_sys.defenses[damages.DamageTypes.PIERCING] += 75
+
+        self.obj.MASS = 300
+        self.obj.FRICTION = .9
+
+        self.phase = 0
+        self.obj.TOUCHING_DAMAGE = 140
+
+        self.tick = 0
+
+        self.fb = []
+
+        self.tr = 0
+        self.a_aim = 0
+
+        game.get_game().displayer.shake_amp += 30
+
+    def t_draw(self):
+        super().t_draw()
+        self.tick += 1
+        if not self.phase:
+            self.img = game.get_game().graphics['entity_balrog']
+        elif self.phase == 1:
+            self.img = game.get_game().graphics['entity_balrog_p2']
+        if self.phase == 0 and self.hp_sys.hp <= self.hp_sys.max_hp * .6:
+            game.get_game().displayer.shake_amp += 40
+            self.obj.TOUCHING_DAMAGE += 70
+            self.phase = 1
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 0
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 0
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 0
+
+        self.a_aim = 0
+
+        if self.tick % 2000 < 600:
+            if self.tick % 120 < 40:
+                self.obj.apply_force((game.get_game().player.obj.pos - (0, 1200) - self.obj.pos) * 5)
+                self.a_aim = 1
+                self.tr = 180
+            elif self.tick % 120 == 40:
+                rt = random.randint(0, 360)
+                for ar in range(0, 360, 45 - self.phase * 5):
+                    game.get_game().entities.append(BurningFireball(self.obj.pos, rt + ar, self.phase))
+            elif self.tick % 10 == 0:
+                rt = self.tick * 3 * (1 + constants.DIFFICULTY * .4)
+                for ar in range(0, 360, 180 - self.phase * 60):
+                    self.fb.append(BurningFireball(self.obj.pos, rt + ar, self.phase))
+                self.obj.apply_force(vector.Vector2D(self.tr, 5000))
+            else:
+                self.obj.apply_force(vector.Vector2D(self.tr, 5000))
+        elif self.tick % 2000 < 900:
+            if self.tick % 60 <= 45:
+                self.tr = vector.coordinate_rotation(*(game.get_game().player.obj.pos - self.obj.pos))
+                self.a_aim = 1
+                if self.tick % (10 - 5 * self.phase) == 0:
+                    self.fb.append(BurningFireball(self.obj.pos, self.tr, self.phase))
+            else:
+                self.obj.apply_force(vector.Vector2D(self.tr, 6000))
+        elif self.tick % 2000 < 1700:
+            if self.tick % (40 - self.phase * 10) == 0:
+                rt = random.randint(0, 360)
+                for ar in range(0, 360, 20):
+                    self.fb.append(BurningFireball(self.obj.pos, rt + ar, self.phase))
+                self.obj.apply_force((game.get_game().player.obj.pos - self.obj.pos) * 1.5)
+        else:
+            if self.tick % 30 <= 20:
+                self.tr = vector.coordinate_rotation(*(game.get_game().player.obj.pos - self.obj.pos))
+                self.a_aim = 1
+            else:
+                self.obj.apply_force(vector.Vector2D(self.tr, 12000))
+
+
+
+        if self.a_aim:
+            draw.line(game.get_game().displayer.canvas, (255, 127, 0) if not self.phase else (0, 0, 255),
+                      position.displayed_position(self.obj.pos),
+                      vector.Vector2D(self.tr, 10000) + position.displayed_position(self.obj.pos),
+                      int(100 / game.get_game().player.get_screen_scale()))
+            draw.line(game.get_game().displayer.canvas, (255, 177, 100) if not self.phase else (100, 100, 255),
+                      position.displayed_position(self.obj.pos),
+                      vector.Vector2D(self.tr, 10000) + position.displayed_position(self.obj.pos),
+                      int(70 / game.get_game().player.get_screen_scale()))
+
+        for f in self.fb:
+            f.t_draw()
+            if f.hp_sys.hp <= 0:
+                self.fb.remove(f)
+
+    def on_update(self):
+        super().on_update()
+        for f in self.fb:
+            f.on_update()
+
+
+
 

@@ -642,7 +642,7 @@ class Projectiles:
 
     class DemonShard(PlatinumWand):
         SPD = 150
-        DAMAGE_AS = 'demon_wand'
+        DAMAGE_AS = 'demon_shard'
         IMG = 'projectiles_null'
         COL = (0, 255, 255)
 

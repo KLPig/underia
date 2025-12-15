@@ -53,7 +53,7 @@ class Vector2D:
             raise IndexError("Index out of range")
 
     def __eq__(self, other):
-        return self.x == other.x and self.y == other.y
+        return self.x == other[0] and self.y == other[1]
 
     def __add__(self, other):
         return Vector2D(dx=self.x + other[0], dy=self.y + other[1])

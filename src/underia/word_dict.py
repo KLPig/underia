@@ -77,6 +77,14 @@ en_cn = {
     'weak': '弱',
     'healing potion': '治疗药水',
     'magic potion': '魔法药水',
+
+    'crysanths': '草兰菊',
+    'winteraceae': '寒冬青',
+    'dendrobium': '砂岩斛',
+    'flamaureus': '耀斑花',
+    'gypsophila': '天蓝草',
+    'vitaflora': '涅槃蕨',
+
     'firy plant': '火焰植物',
     'suspicious eye': '可疑眼睛',
     'fire slime': '火焰史莱姆',

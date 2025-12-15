@@ -5149,7 +5149,7 @@ def set_weapons():
                                   'items_weapons_air_float', 0,
                                   1, projectiles.Projectiles.AirFloat, 3, True,
                                   'Float'),
-        'lily_of_the_valley': MagicWeapon('lily of the valley', {dmg.DamageTypes.MAGICAL: 120}, 0.2,
+        'lily_of_the_valley': MagicWeapon('lily of the valley', {dmg.DamageTypes.MAGICAL: 70}, 0.2,
                                            'items_weapons_lily_of_the_valley', 1,
                                            3, projectiles.Projectiles.LilyOfTheValley, 21, True,
                                            'Water\'s Breath'),

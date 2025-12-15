@@ -1060,9 +1060,6 @@ class Entities:
         def t_update(self):
             if not self.add_star:
                 self.add_star = True
-                if 'star_supporter' in game.get_game().player.profile.select_skill and type(self) is not Entities.DropItem and self.obj.IS_OBJECT and \
-                    not len([1 for l in self.LOOT_TABLE.loot_list if type(l) is IndividualLoot and l.item == 'star']):
-                    self.LOOT_TABLE.loot_list.append(IndividualLoot('star', 0.2, 1, 1))
             if not self.show_boss and self.IS_MENACE and len(self.BOSS_NAME):
                 self.show_boss = True
                 window = pg.display.get_surface()
@@ -1322,6 +1319,36 @@ class Entities:
         pass
 
     class GreenChest(EntityDefinition):
+        pass
+
+    class HolyPillar(EntityDefinition):
+        pass
+
+    class ScarlettPillar(EntityDefinition):
+        pass
+
+    class NPCJevil(EntityDefinition):
+        pass
+
+    class Crysanths(EntityDefinition):
+        pass
+
+    class Winteraceae(EntityDefinition):
+        pass
+
+    class Dendrobium(EntityDefinition):
+        pass
+
+    class Flamaureus(EntityDefinition):
+        pass
+
+    class Gypsophila(EntityDefinition):
+        pass
+
+    class SwordInTheStone(EntityDefinition):
+        pass
+
+    class EvilMark(EntityDefinition):
         pass
 
     # From pack: ./fallen_sea.py
