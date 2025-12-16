@@ -1985,6 +1985,11 @@ class Player:
                             ee = entity.Entities.Chest(self.obj.pos, 1)
                             ee.sm = False
                             # game.get_game().furniture.append(ee)
+                        elif item.id == 'delicious_seedling':
+                            if not len([1 for e in game.get_game().player.hp_sys.effects if type(e) is effects.StoneAltar]):
+                                game.get_game().dialog.dialog('Unable to summon Python.', 'There is no Stone Altar nearby.')
+                            else:
+                                entity.entity_spawn(entity.Entities.Python, 2000, 2000, 0, 1145, 100000)
                         elif item.id == 'suspicious_eye':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if type(e) is effects.StoneAltar]):
                                 game.get_game().dialog.dialog('Unable to summon True Eye.', 'There is no Stone Altar nearby.')
