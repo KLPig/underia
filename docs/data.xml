@@ -4,8 +4,8 @@
     <author>KLpig</author>
     <version id="newest">
         <first>1</first>
-        <second>5</second>
-        <third>0d-pre</third>
+        <second>6</second>
+        <third>0</third>
     </version>
     <version id="supported">
         <first>1</first>
@@ -17,6 +17,7 @@
         <hash version="1.5.0b">321141689</hash>
         <hash version="1.5.0c">356054969</hash>
         <hash version="1.5.0d-pre">412863936</hash>
+        <hash version="1.6.0">649103808</hash>
     </content>
     <events>
         <event>christmas-2025</event>

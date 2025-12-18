@@ -1287,6 +1287,62 @@ class NPCJevil(Chest):
                 self.chest.items = copy.copy(self.ct4)
                 self.chest.n = len(self.ct4)
 
+@entity.Entities.entity_type
+class ChristmasTree(Chest):
+    def __init__(self, pos):
+        if 'cm_tree' not in game.get_game().npc_data:
+            self.name = 'Christmas Tree'
+            game.get_game().npc_data['cm_tree'] = {'name': self.name, 'cm': -1}
+        else:
+            self.name = game.get_game().npc_data['cm_tree']['name']
+        self.data = game.get_game().npc_data['cm_tree']
+        super().__init__(pos)
+        self.tick = 0
+        self.img = game.get_game().graphics['entity_christmas_tree']
+
+        self.ii_set = False
+
+        self.chest.items = []
+        self.chest.n = 0
+        self.chest.locked = True
+        self.obj.pos = vector.Vector2D(0, 0, 120, 0)
+        self.sm = False
+
+    def get_shown_txt(self):
+        return self.name, 'Press [E] to talk'
+
+    def t_draw(self):
+        super().t_draw()
+
+        if game.get_game().player.open_chest == self.chest:
+            game.get_game().player.open_chest = None
+
+            dialogs = [
+                ['Why staring at me?', 'Haven\'t you seen Christmas before?'],
+                ['Merry Christmas!', 'No gift for you.'],
+                ['You don\'t have to sincerely give me a gift.', 'Me, the supreme christmas tree won\'t be using that.'],
+                ['Huff...', 'So cold...'],
+                ['Don\'t touch my supreme leaf!', 'You so bad bad.'],
+                ['Why a tree can speak...', 'You have already seen one.', '...well, it\'s me.']
+            ]
+
+            if 'guide' in game.get_game().npc_data:
+                dialogs.append(['That flowing "heart" shape stuff seem annoying...'])
+                dialogs.append(['Darn....', 'Why a "heart" can speak?!'])
+
+            if 'ray' in game.get_game().npc_data:
+                dialogs.append(['What is that blue stuff...'])
+                dialogs.append(['I said a kind hello to that blue guy,\n and he kindly replied me by huge amount of kinetic energy.',
+                                'Haha, you guys are all so friendly!'])
+
+            if 'jevil' in game.get_game().npc_data:
+                dialogs.append(['What is the thing jumping around then?'])
+                dialogs.append(['Chaos, chaos...', 'O, o, o, o, o, o, o, o, o, o, o ,o , o',
+                                'These courtain are rilly on fier!'])
+
+            self.data['cm'] = (self.data['cm'] + 1) % len(dialogs)
+            game.get_game().dialog.dialog(*dialogs[self.data['cm']])
+
 
 @entity.Entities.entity_type
 class GreenChest(Chest):

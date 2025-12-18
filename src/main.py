@@ -303,6 +303,8 @@ if 'ray' in game.npc_data:
     game.furniture.append(underia.Entities.NPCRay((0, 0)))
 if 'jevil' in game.npc_data:
     game.furniture.append(underia.Entities.NPCJevil((0, 0)))
+if 'cm_tree' in game.npc_data:
+    game.furniture.append(underia.Entities.ChristmasTree((0, 0)))
 
 if constants.APRIL_FOOL:
     nr = []

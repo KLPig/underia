@@ -15,7 +15,7 @@ APRIL_FOOL = False
 
 LANG = 'zh'
 
-DEBUG = True
+DEBUG = False
 
 OS = "OSX"
 TONE = True

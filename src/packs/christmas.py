@@ -72,6 +72,11 @@ class EverScream(Entity):
                 game.get_game().player.obj.apply_force(-ap / 15)
 
 
+        if self.hp_sys.hp <= 1:
+            if 'cm_tree' not in game.get_game().npc_data:
+                game.get_game().furniture.append(entity.Entities.ChristmasTree((0, 0)))
+                game.get_game().dialog.dialog('Christmas Tree arrived!')
+
         if self.phase <= 1:
             if self.state % 5 == 0:
                 if self.tick % 60 == 0:
