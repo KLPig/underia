@@ -8,7 +8,7 @@ SETTINGS = [
         ['BLADE_EFFECT_QUALITY', 'Blade Cutting Effect', (1, 'High'), (2, 'Low'), (3, 'Fast')],
         ['PARTICLES', 'Particles', (0, 'Least'), (1, 'Less'), (2, 'Normal')],
         ['EASY_BACKGROUND', 'Background', (0, 'Graphic'), (1, 'Easy')],
-        ['HEART_BAR', 'Heart Status Bars', (0, 'Off'), (1, 'On')],
+        ['HEART_BAR', 'Status Display', (0, 'Bar'), (1, 'Heart'), (2, 'New')],
         ['FADING_PARTICLE', 'Fading Particles', (0, 'Off'), (1, 'On')],
         ['USE_ALPHA', 'Enable Transparent', (0, 'Off'), (1, 'On')],
         ['LIGHTING', 'Lighting', (0, 'Off'), (1, 'On')]

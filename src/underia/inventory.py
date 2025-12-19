@@ -110,11 +110,16 @@ class Inventory:
                 cdata['tree_curse'] = 1
             elif desc.endswith('snowcurse'):
                 cdata['snow_curse'] = 1
+
             elif desc.endswith('bleeding'):
                 cdata['bleeding'] = 1
+            elif desc.endswith('weak darken'):
+                cdata['darken'] = 1
+            elif desc.endswith('weak enlighten'):
+                cdata['enlighten'] = 1
 
-            elif desc.endswith('biomefrictioneffect'):
-                cdata['bio_fric'] = int(desc.removesuffix('biomefrictioneffect'))
+            elif desc.endswith('%biomefrictioneffect'):
+                cdata['bio_fric'] = int(desc.removesuffix('biomefrictioneffect%')) / 100
 
             elif desc.endswith('dodgerate'):
                 cdata['dodge_rate'] = float(desc.removesuffix('%dodgerate')) / 100
@@ -781,7 +786,11 @@ items_dict: dict[str, Inventory.Item] = {
     'milky_way': Inventory.Item('Milky Way', 'rainbowTry to use it.', 'milky_way', 10, [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
     'accelerationism': Inventory.Item('Accelerationism', 'Increase of speed.', 'accelerationism', 9,
                                        [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
-    'resolution': Inventory.Item('Resolution', 'Until everything\'s solved, the hidden one appears.', 'resolution', 11,
+    'ember': Inventory.Item('Ember', 'br_chaosAfter all that are burnt.\nShoots 4 arrows with different speeds.', 'ember', 9,
+                             [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
+    'retribution': Inventory.Item('Retribution', 'Summon arrows from the sky.', 'retribution', 9,
+                                  [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
+    'resolution': Inventory.Item('Resolution', 'rainbowUntil everything\'s solved, the hidden one appears.', 'resolution', 11,
                                   [TAGS['item'], TAGS['weapon'], TAGS['bow'], TAGS['ce_item']]),
 
     'pistol': Inventory.Item('pistol', '', 'pistol', 0, [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
@@ -1591,6 +1600,8 @@ items_dict: dict[str, Inventory.Item] = {
                                    [TAGS['item'], TAGS['accessory']]),
     'gorgeous_ring': Inventory.Item('Gorgeous Ring', '+22% damage\n+12% critical',
                                      'gorgeous_ring', 1, [TAGS['item'], TAGS['accessory']]),
+    'clear_ring': Inventory.Item('Clear Ring', 'Immune to effect of weak darken\nImmune to effect of weak enlighten\nReduce effect from mana drain, but increase its time.', 'clear_ring', 1,
+                                  [TAGS['item'], TAGS['accessory']]),
     'hermes_boots': Inventory.Item('Herme\'s Boots', '+30% speed', 'hermes_boots', 2,
                                    [TAGS['item'], TAGS['accessory']]),
     'lucky_clover': Inventory.Item('Lucky Clover', '+12% critical', 'lucky_clover', 2,
@@ -2104,6 +2115,7 @@ items_dict: dict[str, Inventory.Item] = {
     'fire_slime': Inventory.Item('Fire Slime', 'Summon the magma king', 'fire_slime', 0, [TAGS['item'], TAGS['sacred']]),
     'red_apple': Inventory.Item('Red Apple', 'Summon the world\'s fruit', 'red_apple', 0, [TAGS['item'], TAGS['sacred']]),
     'monument': Inventory.Item('Monument', 'Summon the azure stele','monument', 0, [TAGS['item'], TAGS['sacred']]),
+    'magic_bulb': Inventory.Item('Magic Bulb', 'Summon the origin bulb', 'magic_bulb', 0, [TAGS['item'], TAGS['sacred']]),
     'wind': Inventory.Item('Wind', 'Summon the sandstorm', 'wind', 0, [TAGS['item'], TAGS['sacred']]),
     'legend_soul': Inventory.Item('Legend Soul', 'rainbow"Is this, the god?"', 'legend_soul', 5, [TAGS['item'], TAGS['sacred']]),
     'blood_substance': Inventory.Item('Blood Substance', 'Summon the Abyss Eye', 'blood_substance', 0, [TAGS['item'], TAGS['sacred']]),

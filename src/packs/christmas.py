@@ -126,11 +126,6 @@ class EverScream(Entity):
                     for ar in range(0, 360, 15):
                         self.pjs.append(PineNeedles(self.obj.pos, ar + rt))
 
-
-
-
-
-
         if self.phase == 0 and self.hp_sys.hp < .8 * self.hp_sys.max_hp:
             self.phase = 1
         if self.phase == 1 and self.hp_sys.hp < .5 * self.hp_sys.max_hp:

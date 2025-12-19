@@ -651,7 +651,7 @@ class Player:
         if len([1 for ef in self.hp_sys.effects if type(ef) is WeakManaI]):
             self.MAGIC_REGEN *= 0.5
         if len([1 for ef in self.hp_sys.effects if type(ef) is ManaDrain]):
-            self.MAGIC_REGEN *= 0.5
+            self.MAGIC_REGEN *= 0.5 + .3 * ('clear_ring' in self.accessories)
         mn = self.mana / self.max_mana
         if mn <= 1:
             self.MAGIC_REGEN *= mn
@@ -1078,7 +1078,62 @@ class Player:
             v = min(self.max_mana - self.mana, self.talent * 8)
             self.mana += v
             self.talent -= v / 8
-        if constants.HEART_BAR:
+        if constants.HEART_BAR == 2:
+            at_l = min(10, self.max_mana // 30) * 50 - 200
+            hp_p = self.hp_sys.hp / self.hp_sys.max_hp
+            mp_p = min(1.0, self.mana / self.max_mana)
+            sd_p = min(1, sum([v for n, v in game.get_game().player.hp_sys.shields]) / game.get_game().player.hp_sys.max_hp)
+            tp_p = self.talent / self.max_talent if self.max_talent else 0
+
+
+            wc = self.profile.get_color()
+            aw = (127 + wc[0] // 2, 127 + wc[1] // 2, 127 + wc[2] // 2)
+            bc = (wc[0] // 2, wc[1] // 2, wc[2] // 2)
+            bcc = (wc[0] // 3, wc[1] // 3, wc[2] // 3)
+
+            pg.draw.polygon(game.get_game().displayer.canvas, wc,
+                            [(150, 180), (650 + at_l, 180), (700 + at_l, 80), (150, 80)])
+            pg.draw.polygon(game.get_game().displayer.canvas, bc,
+                            [(150, 180), (650 + at_l, 180), (700 + at_l, 80), (150, 80)],
+                            width=10)
+
+            pg.draw.rect(game.get_game().displayer.canvas, (0, 50, 50),
+                         (150, 40, 600 + at_l, 80))
+            pg.draw.rect(game.get_game().displayer.canvas, (0, 255, 255),
+                         (750 + at_l - int((600 + at_l) * mp_p), 40, int(int(at_l + 600) * mp_p), 80))
+            at = (600 + at_l) * 100 // self.max_mana
+            at = max(at, 50)
+            for ax in range(at, 600 + at_l, at):
+                pg.draw.rect(game.get_game().displayer.canvas, bc,
+                             (150, 40, ax, 80), width=6)
+            pg.draw.rect(game.get_game().displayer.canvas, bcc,
+                         (150, 40, 600 + at_l, 80), width=10)
+
+
+            if self.max_talent:
+                pg.draw.circle(game.get_game().displayer.canvas, (0, 50, 0),
+                               (750 + at_l, 80), 45)
+                pg.draw.circle(game.get_game().displayer.canvas, (0, 255, 0),
+                               (750 + at_l, 80), int(45 * tp_p))
+                pg.draw.circle(game.get_game().displayer.canvas, bcc,
+                               (750 + at_l, 80), 45, width=10)
+
+
+            pg.draw.circle(game.get_game().displayer.canvas, bc, (150, 140), 120)
+            pg.draw.circle(game.get_game().displayer.canvas, aw, (150, 140), int(120 - self.shield_break / 5))
+            pg.draw.circle(game.get_game().displayer.canvas, wc, (150, 140), int(100 * hp_p))
+            pg.draw.circle(game.get_game().displayer.canvas, (255, 255, 0), (150, 140), int(100 * sd_p))
+            at = 120 * 250 // self.hp_sys.max_hp
+            at = int(max(at, 20))
+            for ax in range(at, 120 + 1, at):
+                pg.draw.circle(game.get_game().displayer.canvas, bcc, (150, 140), ax, width=2)
+            pg.draw.circle(game.get_game().displayer.canvas, bcc, (150, 140), 120, width=10)
+
+
+            rc = pg.Rect(270, 20, 480 + at_l, 80)
+            ic = pg.Rect(game.get_game().displayer.SCREEN_WIDTH - 70, 20, 40, 1000)
+            sc = pg.Rect(30, 20, 240, 240)
+        elif constants.HEART_BAR:
             hp_p = self.hp_sys.hp / self.hp_sys.max_hp
             mp_p = self.mana / self.max_mana
             tp_p = self.talent / self.max_talent if self.max_talent else 0
@@ -1296,25 +1351,25 @@ class Player:
             self.obj.object_gravitational(_entity.obj)
             _entity.obj.object_gravitational(self.obj)
         nx = 10 + 30 + 10
-        tsk_rect = pg.Rect(nx - 30, 140, 60, 60)
+        tsk_rect = pg.Rect(nx - 30, 270, 60, 60)
         im = game.get_game().graphics['background_ui_tasks']
         if not tsk_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
             im = pg.transform.scale(im, (54, 54))
-        imr = im.get_rect(center=(nx, 170))
+        imr = im.get_rect(center=(nx, 300))
         displayer.canvas.blit(im, imr)
         nx = 10 + 30 + 10 + 60
-        att_rect = pg.Rect(nx - 30, 140, 60, 60)
+        att_rect = pg.Rect(nx - 30, 270, 60, 60)
         im = game.get_game().graphics['background_ui_attributes']
         if not att_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
             im = pg.transform.scale(im, (54, 54))
-        imr = im.get_rect(center=(nx, 170))
+        imr = im.get_rect(center=(nx, 300))
         displayer.canvas.blit(im, imr)
         nx = 10 + 30 + 10 + 60 * 2
-        inv_rect = pg.Rect(nx - 30, 140, 60, 60)
+        inv_rect = pg.Rect(nx - 30, 270, 60, 60)
         im = game.get_game().graphics['background_ui_inventory']
         if not inv_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
             im = pg.transform.scale(im, (54, 54))
-        imr = im.get_rect(center=(nx, 170))
+        imr = im.get_rect(center=(nx, 300))
         displayer.canvas.blit(im, imr)
         if tsk_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
             self.in_ui = True
@@ -1390,13 +1445,13 @@ class Player:
                 am = f'{self.weapons[i].amount}/{self.weapons[i].stack_size}'
             except AttributeError:
                 am = '1'
-            styles.item_display(10 + i * 60, 80,
+            styles.item_display(game.get_game().displayer.SCREEN_WIDTH - 90, 20 + i * 60,
                                 self.weapons[i].name.replace(' ', '_'), str(i + 1),
                                 am, 0.75, selected=i == self.sel_weapon)
             if self.weapons[i].sk_mcd:
-                pg.draw.rect(displayer.canvas, (255, 0, 0), (10 + i * 60, 140, 60, 10))
-                pg.draw.rect(displayer.canvas, (255, 255, 0), (10 + i * 60, 140,
-                                                               60 * self.weapons[i].sk_cd // self.weapons[i].sk_mcd, 10))
+                pg.draw.rect(displayer.canvas, (255, 0, 0), (game.get_game().displayer.SCREEN_WIDTH - 30, 20 + i * 60, 10, 60))
+                pg.draw.rect(displayer.canvas, (255, 255, 0), (game.get_game().displayer.SCREEN_WIDTH - 30, 20 + i * 60,
+                                                               10, 60 * self.weapons[i].sk_cd // self.weapons[i].sk_mcd))
                 if self.weapons[i].sk_cd:
                     self.weapons[i].sk_cd -= 1
         w = self.weapons[self.sel_weapon]
@@ -1441,36 +1496,36 @@ class Player:
             cdd = 0, 0, 0
             rc = (255, 255, 255)
         if sk_z is not None:
-            ps = (250, 80)
+            ps = (280, 120)
             self.profile.skill_display(ps, sk_z, select=True, window=game.get_game().displayer.canvas)
             sf = pg.Surface((60, 60 * self.cd_z // cdd[0]), pg.SRCALPHA)
             sf.fill((0, 0, 0, 255))
             sf.set_alpha(64)
             game.get_game().displayer.canvas.blit(sf, ps)
         if sk_x is not None:
-            ps = (310, 80)
+            ps = (350, 120)
             self.profile.skill_display(ps, sk_x, select=True, window=game.get_game().displayer.canvas)
             sf = pg.Surface((60, 60 * self.cd_x // cdd[1]), pg.SRCALPHA)
             sf.fill((0, 0, 0, 255))
             sf.set_alpha(64)
             game.get_game().displayer.canvas.blit(sf, ps)
         if sk_c is not None:
-            ps = (370, 80)
+            ps = (420, 120)
             self.profile.skill_display(ps, sk_c, select=True, window=game.get_game().displayer.canvas)
             sf = pg.Surface((60, 60 * self.cd_c // cdd[2]), pg.SRCALPHA)
             sf.fill((0, 0, 0, 255))
             sf.set_alpha(64)
             game.get_game().displayer.canvas.blit(sf, ps)
         if sk_z is not None:
-            ps = (250, 80)
+            ps = (280, 120)
             self.profile.skill_mouse(ps, sk_z, rc=rc, window=game.get_game().displayer.canvas,
                                      mps=game.get_game().displayer.reflect(*pg.mouse.get_pos()))
         if sk_x is not None:
-            ps = (310, 80)
+            ps = (350, 120)
             self.profile.skill_mouse(ps, sk_x, rc=rc, window=game.get_game().displayer.canvas,
                                      mps=game.get_game().displayer.reflect(*pg.mouse.get_pos()))
         if sk_c is not None:
-            ps = (370, 80)
+            ps = (420, 120)
             self.profile.skill_mouse(ps, sk_c, rc=rc, window=game.get_game().displayer.canvas,
                                      mps=game.get_game().displayer.reflect(*pg.mouse.get_pos()))
         if 'direct_bullet' in self.profile.select_skill:
@@ -1646,10 +1701,10 @@ class Player:
         for i in range(len(self.weapons)):
             if i % len(self.weapons) == 0 and i:
                 break
-            styles.item_mouse(10 + i * 60, 80,
+            styles.item_mouse(game.get_game().displayer.SCREEN_WIDTH - 90, 20 + i * 60,
                               self.weapons[i % len(self.weapons)].name.replace(' ', '_'), str(i),
                               '1', 0.75)
-            rect = pg.Rect(10 + i * 60, 80, 60, 60)
+            rect = pg.Rect(game.get_game().displayer.SCREEN_WIDTH - 90, 20 + i * 60, 60, 60)
             if rect.collidepoint(
                     game.get_game().displayer.reflect(*pg.mouse.get_pos())) and 1 in game.get_game().get_mouse_press():
                 self.sel_weapon = i % len(self.weapons)
@@ -2020,6 +2075,14 @@ class Player:
                                                               'There is no Stone Altar nearby.')
                             else:
                                 entity.entity_spawn(entity.Entities.AzureStele, 2000, 2000, 0, 1145, 100000)
+                                self.inventory.remove_item(item)
+                        elif item.id == 'magic_bulb':
+                            if not len([1 for e in game.get_game().player.hp_sys.effects if
+                                        type(e) is effects.StoneAltar]):
+                                game.get_game().dialog.dialog('Unable to summon Origin Bulb.',
+                                                              'There is no Stone Altar nearby.')
+                            else:
+                                entity.entity_spawn(entity.Entities.OriginBulb, 2000, 2000, 0, 1145, 100000)
                                 self.inventory.remove_item(item)
                         elif item.id == 'red_apple':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if

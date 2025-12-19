@@ -3615,6 +3615,8 @@ class MilkyWay(Bow):
         self.damages[dmg.DamageTypes.PIERCING] = int(150 * (1 + tf * 4))
         self.at_time = max(1, int(18 / (1 + tf2 * 4)))
 
+        self.sk_mcd = 200
+
 
     def on_start_attack(self):
         self.face_to(
@@ -3624,29 +3626,31 @@ class MilkyWay(Bow):
             return
         if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
             game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
-        for ar in range(-2, 3, 1):
+        ap = not self.sk_cd
+        for ar in range(-2 - ap * 2, 3 + ap * 2, 1):
             pj = projectiles.AMMOS[game.get_game().player.ammo[0]]((self.x + game.get_game().player.obj.pos[0],
                                                                    self.y + game.get_game().player.obj.pos[1]),
-                                                                  self.rot + ar + random.uniform(-self.precision, self.precision), self.spd,
+                                                                  self.rot + ar / (ap * 2 + 1) + random.uniform(-self.precision, self.precision), self.spd * (ar % 2 * 2 + 1),
                                                                   self.damages[dmg.DamageTypes.PIERCING])
             b = game.get_game().get_biome()
             if b.endswith('forest') or b in ['desert', 'hell']:
-                inventory.ITEMS['true_worlds_bow'].desc = 'col00ff00Forests/Desert/Hell: -20% damage, pierce, +100% speed'
+                inventory.ITEMS['milky_way'].desc = 'col00ff00Forests/Desert/Hell: -20% damage, pierce, +100% speed'
                 pj.DAMAGES *= .8
                 pj.DELETE = False
                 pj.ENABLE_IMMUNE = .6
                 pj.obj.velocity *= 2
             elif b in ['snowland', 'heaven', 'ocean', 'fallen_sea']:
-                inventory.ITEMS['true_worlds_bow'].desc = 'col00ff00Snow/Heaven/Sea/Ocean: -80% speed, 50% aim, +45% damage'
+                inventory.ITEMS['milky_way'].desc = 'col00ff00Snow/Heaven/Sea/Ocean: -80% speed, 50% aim, +45% damage'
                 pj.obj.velocity *= .2
                 pj.AIMING = .5
                 pj.DAMAGES *= 1.45
             elif b in ['hot_spring', 'inner']:
-                inventory.ITEMS['true_worlds_bow'].desc = 'col00ff00Abyss: +100% damage, +200% speed, unlimited pierce'
+                inventory.ITEMS['milky_way'].desc = 'col00ff00Abyss: +100% damage, +200% speed, unlimited pierce'
                 pj.DAMAGES *= 2
                 pj.obj.velocity *= 3
                 pj.DELETE = False
                 pj.ENABLE_IMMUNE = 0.2
+            self.sk_cd = self.sk_mcd
 
             game.get_game().projectiles.append(pj)
 
@@ -3962,6 +3966,27 @@ class Ember(Bow):
                                                                   self.rot, self.spd * ap // 10,
                                                                   self.damages[dmg.DamageTypes.PIERCING]))
 
+class Retribution(Bow):
+    def on_attack(self):
+        self.face_to(
+            *position.relative_position(position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+        if game.get_game().player.ammo[0] not in projectiles.AMMOS or not game.get_game().player.ammo[1]:
+            self.timer = 0
+            return
+        game.get_game().displayer.shake_amp += 1
+        if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
+            game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
+        mx, my = position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))
+        for i in range(random.randint(1, 2)):
+            x, y = mx + random.randint(-800, 800), -game.get_game().displayer.SCREEN_HEIGHT // 2 * game.get_game().player.get_screen_scale() - 200
+            p = projectiles.AMMOS[game.get_game().player.ammo[0]]((x, y),
+                                                                  vector.coordinate_rotation(mx - x,
+                                                                                             my - y) + random.uniform(-self.precision, self.precision), self.spd,
+                                                                  self.damages[dmg.DamageTypes.PIERCING])
+            p.obj.velocity *= .3
+            game.get_game().projectiles.append(p)
+        self.face_to(mx, -1200)
+
 
 class Resolution(Bow):
     def on_start_attack(self):
@@ -4018,11 +4043,11 @@ class DaedelusStormbow(Bow):
         if game.get_game().player.ammo[0] not in projectiles.AMMOS or not game.get_game().player.ammo[1]:
             self.timer = 0
             return
-        game.get_game().displayer.shake_amp += 2
+        game.get_game().displayer.shake_amp += .5
         if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
             game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
-        mx, my = position.relative_position(
-            position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
+        mx, my = (-game.get_game().player.obj.pos +
+                  position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
         for i in range(random.randint(0, 2)):
             x, y = mx + random.randint(-500, 500), -game.get_game().displayer.SCREEN_HEIGHT // 2 - 200
             p = projectiles.AMMOS[game.get_game().player.ammo[0]]((x + game.get_game().player.obj.pos[0],
@@ -4042,11 +4067,11 @@ class TrueDaedalusStormbow(Bow):
         if game.get_game().player.ammo[0] not in projectiles.AMMOS or not game.get_game().player.ammo[1]:
             self.timer = 0
             return
-        game.get_game().displayer.shake_amp += 3
+        game.get_game().displayer.shake_amp += 1
         if game.get_game().player.ammo[1] < constants.ULTIMATE_AMMO_BONUS and random.random() < self.ammo_save_chance + game.get_game().player.calculate_data('ammo_save', False) / 100:
             game.get_game().player.ammo = (game.get_game().player.ammo[0], game.get_game().player.ammo[1] - 1)
-        mx, my = position.relative_position(
-            position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
+        mx, my = (-game.get_game().player.obj.pos +
+                  position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))
         for i in range(random.randint(0, 2)):
             x, y = mx + random.randint(-800, 800), -game.get_game().displayer.SCREEN_HEIGHT // 2 - 200
             p = projectiles.AMMOS[game.get_game().player.ammo[0]]((x + game.get_game().player.obj.pos[0],
@@ -4923,8 +4948,10 @@ def set_weapons():
         'accelerationism': Accelerationism('accelerationism', {dmg.DamageTypes.PIERCING: 270}, 2,
                                            'items_weapons_accelerationism',
                                            0, 2, 320, True, ammo_save_chance=1 / 3),
-        'ember': Ember('ember', {dmg.DamageTypes.PIERCING: 350}, 1, 'items_weapons_ember',
+        'ember': Ember('ember', {dmg.DamageTypes.PIERCING: 270}, 1, 'items_weapons_ember',
                        3, 4, 500, True),
+        'retribution': Retribution('retribution', {dmg.DamageTypes.PIERCING: 120}, 2, 'items_weapons_retribution',
+                                   2, 3, 1000, True, ammo_save_chance=1 / 3, precision=5),
         'resolution': Resolution('resolution', {dmg.DamageTypes.PIERCING: 500, dmg.DamageTypes.THINKING: 500}, 0.5, 'items_weapons_resolution',
                                   15, 25, 2200, True, ammo_save_chance=1 / 2),
 

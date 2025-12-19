@@ -77,7 +77,7 @@ for _, item in kw:
     elif underia.TAGS['knife'] in item.tags:
         tp = 'assassin ranged weapon'
     elif underia.TAGS['pickaxe'] in item.tags:
-        tp = 'assassin melee weapon'
+        tp = 'pickaxe'
     elif underia.TAGS['head'] in item.tags:
         tp = 'head-positioned armor'
     elif underia.TAGS['body'] in item.tags:

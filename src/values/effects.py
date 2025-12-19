@@ -42,11 +42,12 @@ class Aberration(Effect):
     def on_update(self, entity: hp_system.HPSystem):
         super().on_update(entity)
         f = 0
-        for i in self.IMMUNE:
-            if game.get_game().player.calculate_data(i, False):
-                f = 1
-                self.timer = 0
-                break
+        if self in game.get_game().player.hp_sys.effects:
+            for i in self.IMMUNE:
+                if game.get_game().player.calculate_data(i, False):
+                    f = 1
+                    self.timer = 0
+                    break
         if not f:
             dmg = min(self.level + 2, max(entity.max_hp / 200, 200.0))
             if (dmg * 3  > (1000 / game.get_game().clock.last_tick) or self.tick % 9 == 0) and self.tick % 3 == 0:
@@ -95,6 +96,7 @@ class SDarkened(Effect):
     NAME = 'Darkened'
     DESC = '-20% damage'
     CORRESPONDED_ELEMENT = elements.ElementTypes.DARK
+    IMMUNE = ['darken']
 
 class Enlightened(Effect):
     IMG = 'enlightened'
@@ -107,6 +109,7 @@ class SEnlightened(Effect):
     NAME = 'Enlightened'
     DESC = '-20 touching defense\n-20 magic defense'
     CORRESPONDED_ELEMENT = elements.ElementTypes.LIGHT
+    IMMUNE = ['enlighten']
 
 class Frozen(Effect):
     IMG = 'freezing'
@@ -553,3 +556,9 @@ class ManaDrain(Effect):
     IMG = 'weak_mana'
     DESC = 'Decreased mana regeneration'
     COMBINE = None
+
+    def __init__(self, *args):
+        super().__init__(*args)
+
+        if 'clear_ring' in game.get_game().player.accessories:
+            self.timer *= 3
