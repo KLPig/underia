@@ -1445,16 +1445,41 @@ class Player:
                 am = f'{self.weapons[i].amount}/{self.weapons[i].stack_size}'
             except AttributeError:
                 am = '1'
-            styles.item_display(game.get_game().displayer.SCREEN_WIDTH - 90, 20 + i * 60,
+            styles.item_display(game.get_game().displayer.SCREEN_WIDTH - 190 + self.inv_pos // 20, 20 + i * 60,
                                 self.weapons[i].name.replace(' ', '_'), str(i + 1),
                                 am, 0.75, selected=i == self.sel_weapon)
             if self.weapons[i].sk_mcd:
-                pg.draw.rect(displayer.canvas, (255, 0, 0), (game.get_game().displayer.SCREEN_WIDTH - 30, 20 + i * 60, 10, 60))
-                pg.draw.rect(displayer.canvas, (255, 255, 0), (game.get_game().displayer.SCREEN_WIDTH - 30, 20 + i * 60,
+                pg.draw.rect(displayer.canvas, (255, 0, 0), (game.get_game().displayer.SCREEN_WIDTH - 130 + self.inv_pos // 20, 20 + i * 60, 10, 60))
+                pg.draw.rect(displayer.canvas, (255, 255, 0), (game.get_game().displayer.SCREEN_WIDTH - 130 + self.inv_pos // 20, 20 + i * 60,
                                                                10, 60 * self.weapons[i].sk_cd // self.weapons[i].sk_mcd))
                 if self.weapons[i].sk_cd:
                     self.weapons[i].sk_cd -= 1
+
+
         w = self.weapons[self.sel_weapon]
+
+        if w.sk_mcd:
+            pg.draw.polygon(displayer.canvas, (200, 50, 0), [(game.get_game().displayer.SCREEN_WIDTH - 260 + self.inv_pos // 20, 20),
+                                                             (game.get_game().displayer.SCREEN_WIDTH - 220 + self.inv_pos // 20, 40),
+                                                             (game.get_game().displayer.SCREEN_WIDTH - 220 + self.inv_pos // 20, 480),
+                                                             (game.get_game().displayer.SCREEN_WIDTH - 260 + self.inv_pos // 20, 460)])
+
+            pg.draw.polygon(displayer.canvas, (255, 200, 0), [(game.get_game().displayer.SCREEN_WIDTH - 260 + self.inv_pos // 20, 20),
+                                                             (game.get_game().displayer.SCREEN_WIDTH - 220 + self.inv_pos // 20, 40),
+                                                             (game.get_game().displayer.SCREEN_WIDTH - 220 + self.inv_pos // 20, 40 + int(440 * w.sk_cd / w.sk_mcd)),
+                                                             (game.get_game().displayer.SCREEN_WIDTH - 260 + self.inv_pos // 20, 20 + int(440 * w.sk_cd / w.sk_mcd))])
+            pg.draw.polygon(displayer.canvas, (255, 255, 255), [(game.get_game().displayer.SCREEN_WIDTH - 260 + self.inv_pos // 20, 20),
+                                                             (game.get_game().displayer.SCREEN_WIDTH - 220 + self.inv_pos // 20, 40),
+                                                             (game.get_game().displayer.SCREEN_WIDTH - 220 + self.inv_pos // 20, 480),
+                                                             (game.get_game().displayer.SCREEN_WIDTH - 260 + self.inv_pos // 20, 460)], width=5)
+            tx = f"{int(w.sk_cd / w.sk_mcd * 100)}%" if w.sk_cd != w.sk_mcd else "MAX"
+            tr = displayer.ffont.render(tx, True, (0, 0, 0))
+            trr = tr.get_rect(center=(game.get_game().displayer.SCREEN_WIDTH - 240 + self.inv_pos // 20 - 5, 60 - 5))
+            displayer.canvas.blit(tr, trr)
+            tr = displayer.ffont.render(tx, True, (255, 255, 255))
+            trr = tr.get_rect(center=(game.get_game().displayer.SCREEN_WIDTH - 240 + self.inv_pos // 20, 60))
+            displayer.canvas.blit(tr, trr)
+
         if len([1 for e in self.hp_sys.effects if type(e) is effects.RuneAltar]):
             if not game.get_game().player.inventory.is_enough(inventory.ITEMS['thaumaturgy']):
                 game.get_game().player.inventory.add_item(inventory.ITEMS['thaumaturgy'])
@@ -1701,10 +1726,10 @@ class Player:
         for i in range(len(self.weapons)):
             if i % len(self.weapons) == 0 and i:
                 break
-            styles.item_mouse(game.get_game().displayer.SCREEN_WIDTH - 90, 20 + i * 60,
+            styles.item_mouse(game.get_game().displayer.SCREEN_WIDTH - 190 + self.inv_pos // 20, 20 + i * 60,
                               self.weapons[i % len(self.weapons)].name.replace(' ', '_'), str(i),
-                              '1', 0.75)
-            rect = pg.Rect(game.get_game().displayer.SCREEN_WIDTH - 90, 20 + i * 60, 60, 60)
+                              '1', 0.75, anchor='right')
+            rect = pg.Rect(game.get_game().displayer.SCREEN_WIDTH - 190 + self.inv_pos // 20, 20 + i * 60, 60, 60)
             if rect.collidepoint(
                     game.get_game().displayer.reflect(*pg.mouse.get_pos())) and 1 in game.get_game().get_mouse_press():
                 self.sel_weapon = i % len(self.weapons)
@@ -2003,6 +2028,28 @@ class Player:
                             self.inventory.remove_item(item)
                         elif item.id == 'potion_of_teleport':
                             self.obj.pos = vector.Vector2D(random.randint(0, 360), math.sqrt(random.randint(0, 5000 ** 2)))
+                            self.inventory.remove_item(item)
+                        elif item.id == 'wrath_potion':
+                            ce = 0
+                            for e in game.get_game().entities:
+                                if abs(e.obj.pos - self.obj.pos) < 500:
+                                    if 'w_p' in dir(e):
+                                        im = getattr(self, 'w_p')
+                                    else:
+                                        setattr(self, 'w_p', 0)
+                                        im = 0
+                                    e.hp_sys.damage(150 * math.e ** (-im), damages.DamageTypes.TRUE)
+                                    setattr(e, 'w_p', im + 1)
+                                    ce += 1
+                            self.hp_sys.damage(ce * 7, damages.DamageTypes.TRUE)
+                            self.inventory.remove_item(item)
+                        elif item.id == 'immune_potion':
+                            self.hp_sys.is_immune = 150
+                            self.hp_sys.damage(self.hp_sys.max_hp * .1, damages.DamageTypes.TRUE)
+                            self.inventory.remove_item(item)
+                        elif item.id == 'shield_potion':
+                            self.shield_break = 0
+                            self.mana = max(0, self.mana - 50)
                             self.inventory.remove_item(item)
                         elif item.id == 'iron_donut':
                             self.hp_sys.effect(effects.IronDonut(54, 1))
@@ -2677,11 +2724,11 @@ class Player:
                         self.sel_recipe = i + (self.ui_recipe_overlook - 1) * 256
                         self.ui_recipe_overlook = False
             ammo, amount = self.ammo
-            styles.item_display(10, displayer.SCREEN_HEIGHT - 90, ammo, 'AR', str(amount), 1)
-            styles.item_mouse(10, displayer.SCREEN_HEIGHT - 90, ammo, 'AR', str(amount), 1)
+            styles.item_display(10, displayer.SCREEN_HEIGHT - 90 + max(self.inv_pos // 2 - 500, 0), ammo, 'AR', str(amount), 1)
+            styles.item_mouse(10, displayer.SCREEN_HEIGHT - 90 + max(self.inv_pos // 2 - 500, 0), ammo, 'AR', str(amount), 1)
             ammo, amount = self.ammo_bullet
-            styles.item_display(100, displayer.SCREEN_HEIGHT - 90, ammo, 'AB', str(amount), 1)
-            styles.item_mouse(100, displayer.SCREEN_HEIGHT - 90, ammo, 'AB', str(amount), 1)
+            styles.item_display(100, displayer.SCREEN_HEIGHT - 90 + max(self.inv_pos // 2 - 500, 0), ammo, 'AB', str(amount), 1)
+            styles.item_mouse(100, displayer.SCREEN_HEIGHT - 90 + max(self.inv_pos // 2 - 500, 0), ammo, 'AB', str(amount), 1)
         else:
             t = (game.get_game().day_time % 1 * 24 * 60)
             for e in game.get_game().world_events:

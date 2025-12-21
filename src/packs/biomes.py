@@ -786,10 +786,10 @@ class Python(WormEntity):
     SOUND_HURT = 'skeleton'
     SOUND_DEATH = 'huge_monster'
 
-    LOOT_TABLE = [
+    LOOT_TABLE = entity.LootTable([
         SelectionLoot([('viper_spiker', 1, 1), ('vipers_breath', 1, 1), ('demon_shard', 1, 1)], 1, 1),
         SelectionLoot([('scale_headgear', 1, 1), ('scale_chestplate', 1, 1), ('scale_boots', 1, 1)], 1, 2),
-    ]
+    ])
 
     def __init__(self, pos):
         super().__init__(pos, 16, game.get_game().graphics['entity_python_head'],

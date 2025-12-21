@@ -386,8 +386,10 @@ class Game:
             constants.DIFFICULTY = self.diff
             constants.DIFFICULTY2 = self.diff2
         self.get_chunked_images.cache_clear()
-        self.dialog = dialog.Dialogger(32, pg.Rect(0, pg.display.get_surface().get_height() * 3 // 4, pg.display.get_surface().get_width(), pg.display.get_surface().get_height() // 4), with_border=True, speed=1.6,
-                                       target_surface=pg.display.get_surface())
+        self.dialog = dialog.Dialogger(32, pg.Rect(0, pg.display.get_surface().get_height() * 3 // 4,
+                                                   pg.display.get_surface().get_width(), pg.display.get_surface().get_height() // 4), with_border=True, speed=1.6,
+                                       target_surface=pg.display.get_surface(), idle_pos=pg.Rect(pg.display.get_surface().get_width() // 2,
+                                                                                          pg.display.get_surface().get_height(), 0, 0))
         self.noise = perlin_noise.PerlinNoise(1.2, self.seed)
         self.weather_noise = perlin_noise.PerlinNoise(1.2, self.seed + 1)
         window = pg.display.get_surface()
@@ -860,9 +862,10 @@ class Game:
             self.displayer.canvas.blit(f, fr)
         self.player.ui()
         menaces = [ee for ee in self.entities if ee.IS_MENACE]
+        sorted(menaces, key=lambda e: e.hp_sys.hp / e.hp_sys.max_hp + e.hp_sys.hp / 100000000)
         y = self.displayer.SCREEN_HEIGHT - 80
         x = self.displayer.SCREEN_WIDTH // 2
-        for menace in menaces:
+        for menace in menaces[:4]:
             c_phase = len(menace.PHASE_SEGMENTS)
             for j, i in enumerate(menace.PHASE_SEGMENTS):
                 if menace.hp_sys.hp >= menace.hp_sys.max_hp * i:
@@ -907,17 +910,18 @@ class Game:
                 tf = self.displayer.ffont.render(str(int(t_p * 100)) + '%', True, (255, 255, 255))
                 tfr = tf.get_rect(midright=(x + 600 - 15, y - 105))
                 self.displayer.canvas.blit(tf, tfr)
-                pg.draw.rect(self.displayer.canvas, fill_uncoloured,
-                             (x - 600, y - 50, 1200, 60))
-                pg.draw.rect(self.displayer.canvas, fill_coloured,
-                             (x - 600, y - 50, int(1200 * r_p), 60))
-                pg.draw.rect(self.displayer.canvas, border,
-                             (x - 600, y - 50, 1200, 60), width=8, border_radius=3)
-                ft = self.displayer.font.render(f'{styles.text(menace.NAME)}' + (f'({int(menace.hp_sys.hp)}/{int(menace.hp_sys.max_hp)})' if not menace.hp_sys.IMMUNE else ''),
-                                                True, (0, 0, 0))
-                ftr = ft.get_rect(midright=(x + 560, y - 20))
-                self.displayer.canvas.blit(ft, ftr)
-            y -= 140
+                if menace == menaces[0] and y > self.displayer.SCREEN_HEIGHT * .8:
+                    pg.draw.rect(self.displayer.canvas, fill_uncoloured,
+                                 (x - 600, y - 50, 1200, 60))
+                    pg.draw.rect(self.displayer.canvas, fill_coloured,
+                                 (x - 600, y - 50, int(1200 * r_p), 60))
+                    pg.draw.rect(self.displayer.canvas, border,
+                                 (x - 600, y - 50, 1200, 60), width=8, border_radius=3)
+                    ft = self.displayer.font.render(f'{styles.text(menace.NAME)}' + (f'({int(menace.hp_sys.hp)}/{int(menace.hp_sys.max_hp)})' if not menace.hp_sys.IMMUNE else ''),
+                                                    True, (0, 0, 0))
+                    ftr = ft.get_rect(midright=(x + 560, y - 20))
+                    self.displayer.canvas.blit(ft, ftr)
+            y -= 60
         if self.map_open:
             bg_size = 200 if self.dimension == 'overworld' else int(400 / self.player.get_screen_scale())
             chunk_size = 3

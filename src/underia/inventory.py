@@ -399,6 +399,7 @@ TAGS = {
     'see': Inventory.Item.Tag('see', 'see'),
     'see2': Inventory.Item.Tag('see2', 'see2'),
     'herb': Inventory.Item.Tag('herb', 'herb'),
+    'herb_seed': Inventory.Item.Tag('herb_seed', 'herb_seed'),
     'sacred': Inventory.Item.Tag('sacred', 'sacred'),
 
     'head': Inventory.Item.Tag('head', 'head'),
@@ -2057,7 +2058,7 @@ items_dict: dict[str, Inventory.Item] = {
 
     'nice_cream': Inventory.Item('Nice Cream', 'Increase your speed.\nDuration: 36s', 'nice_cream', 4, [TAGS['item']]),
     'potion_of_memory': Inventory.Item('Potion of Memory', 'Teleports you back home.', 'potion_of_memory', 4, [TAGS['item']]),
-    'potion_of_teleport': Inventory.Item('Potion_of_teleport', 'Teleports to a random place within a region.', 'potion_of_teleport', 4, [TAGS['item']]),
+    'potion_of_teleport': Inventory.Item('Potion of Teleport', 'Teleports to a random place within a region.', 'potion_of_teleport', 4, [TAGS['item']]),
     'iron_donut': Inventory.Item('Iron Donut', 'Increase your defense by 32.\nDuration: 54s', 'iron_donut', 4, [TAGS['item']]),
     'heart_pie': Inventory.Item('Heart Pie', 'Increase regeneration by 10/sec.\nDuration: 15s', 'heart_pie', 4, [TAGS['item']]),
 
@@ -2065,7 +2066,12 @@ items_dict: dict[str, Inventory.Item] = {
                                           'weak_healing_potion', 0, [TAGS['item'], TAGS['healing_potion']]),
     'weak_magic_potion': Inventory.Item('Weak Magic Potion', 'Recover 60 MP\nCausing potion sickness.',
                                         'weak_magic_potion', 0, [TAGS['item'], TAGS['magic_potion']]),
+    'wrath_potion': Inventory.Item('Wrath Potion', 'Deal damages to you and nearby enemies.', 'wrath_potion', 2,
+                                   [TAGS['item'], ]),
+    'shield_potion': Inventory.Item('Shield Potion', 'Uses 50 mana.\nMend players defense immediately.', 'shield_potion', 2,
+                                    [TAGS['item']]),
     'crabapple': Inventory.Item('Crabapple', 'Heals 120 HP', 'crabapple', 2, [TAGS['item'], TAGS['healing_potion']]),
+    'immune_potion': Inventory.Item('Immune Potion', 'Provides a about 2s immune time, but damage were dealt.', 'immune_potion', 1, [TAGS['item'], ]),
     'butterscotch_pie': Inventory.Item('Butterscotch Pie', 'Heals 240 HP', 'butterscotch_pie', 4,
                                        [TAGS['item'], TAGS['healing_potion']]),
     'seatea': Inventory.Item('Seatea', 'Recovers 150 MP', 'seatea', 4, [TAGS['item'], TAGS['magic_potion']]),
@@ -2073,6 +2079,13 @@ items_dict: dict[str, Inventory.Item] = {
     'snowman_piece': Inventory.Item('Snowman Piece', 'Recover all MP', 'snowman_piece', 6, [TAGS['item'], TAGS['healing_potion']]),
     'toilet_paper': Inventory.Item('Toilet Paper', 'Recover all TP', 'toilet_paper', 7, [TAGS['item'], TAGS['healing_potion']]),
     'legendary_hero': Inventory.Item('Legendary Hero', 'Hero shaped sandwich.\nRecover 500 HP and adds a 800 HP shield', 'legendary_hero', 8, [TAGS['item'], TAGS['healing_potion']]),
+
+    'crysanths_seed': Inventory.Item('Crysanths Seed', '', 'crysanths_seed', 1, [TAGS['item'], TAGS['herb_seed']]),
+    'winteraceae_seed': Inventory.Item('Winteraceae Seed', '', 'winteraceae_seed', 1, [TAGS['item'], TAGS['herb_seed']]),
+    'dendrobium_seed': Inventory.Item('Dendrobium Seed', '', 'dendrobium_seed', 1, [TAGS['item'], TAGS['herb_seed']]),
+    'gypsophila_seed': Inventory.Item('Gypsophila Seed', '', 'gypsophila_seed', 1, [TAGS['item'], TAGS['herb_seed']]),
+    'flamaureus_seed': Inventory.Item('Flamaureus Seed', '', 'flamaureus_seed', 1, [TAGS['item'], TAGS['herb_seed']]),
+    'vitaflora_seed': Inventory.Item('Vitaflora Seed', '', 'vitaflora_seed', 1, [TAGS['item'], TAGS['herb_seed']]),
 
     'crysanths': Inventory.Item('Crysanths', '', 'crysanths', 1, [TAGS['item'], TAGS['herb']]),
     'winteraceae': Inventory.Item('Winteraceae', '', 'winteraceae', 2, [TAGS['item'], TAGS['herb']]),
@@ -2220,7 +2233,7 @@ RECIPES = [
     Recipe({'wooden_hammer': 1,'copper_ingot': 8}, 'anvil'),
     Recipe({'wooden_hammer': 1,'copper_ingot': 20, 'mana_crystal': 1}, 'cauldron'),
     Recipe({'cauldron': 1, 'crysanths': 1, 'winteraceae': 2, 'snowball': 10}, 'potion_of_memory'),
-    Recipe({'cauldron': 1, 'dendrobium': 3, 'gyposophila': 2, 'flamaureus': 2, 'floatstone': 1}, 'potion_of_teleport'),
+    Recipe({'cauldron': 1, 'dendrobium': 3, 'gypsophila': 2, 'flamaureus': 2, 'floatstone': 1}, 'potion_of_teleport'),
     Recipe({'copper_ingot': 16, 'anvil': 1}, 'copper_traveller_boots'),
     Recipe({'copper_ingot': 12, 'wood': 10, 'anvil': 1}, 'copper_sword'),
     Recipe({'copper_ingot': 15, 'anvil': 1}, 'copper_wand'),
@@ -3007,6 +3020,13 @@ RECIPES = [
     Recipe({'dragon_scale_green': 16}, 'dragon_helmet_green'),
     Recipe({'dragon_scale_green': 24}, 'dragon_chestplate_green'),
     Recipe({'dragon_scale_green': 8}, 'dragon_leggings_green'),
+
+    Recipe({'cauldron': 1, 'crysanths': 1}, 'crysanths_seed', 2),
+    Recipe({'cauldron': 1, 'dendrobium': 1}, 'dendrobium_seed', 2),
+    Recipe({'cauldron': 1, 'winteraceae': 1}, 'winteraceae_seed', 2),
+    Recipe({'cauldron': 1, 'gypsophila': 1}, 'gypsophila_seed', 2),
+    Recipe({'cauldron': 1, 'flamaureus': 1}, 'flamaureus_seed', 2),
+    Recipe({'cauldron': 1, 'firy_plant': 1}, 'vitaflora_seed', 2),
 
     Recipe({'leaf': 20, 'wood': 30, 'magic_stone': 1}, 'delicious_seedling'),
     Recipe({'cell_organization': 20}, 'suspicious_eye'),

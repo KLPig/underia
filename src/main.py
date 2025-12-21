@@ -481,7 +481,7 @@ def update():
             underia.entity_spawn(underia.Entities.GreenChest, target_number=1, to_player_max=2500, to_player_min=1000,
                                  rate=50, number_factor=4)
         elif game.get_biome() == 'rainforest':
-            underia.entity_spawn(underia.Entities.Crysanths, target_number=3, to_player_max=2500, to_player_min=1000, rate=30)
+            underia.entity_spawn(underia.Entities.Crysanths, target_number=3, to_player_max=2500, to_player_min=1000, rate=60)
             if 5 > game.stage > 1:
                 underia.entity_spawn(underia.Entities.Tree, target_number=5, to_player_max=2500, to_player_min=1000, rate=25)
                 underia.entity_spawn(underia.Entities.HugeTree, target_number=20, to_player_max=2500, to_player_min=1000,
@@ -509,7 +509,7 @@ def update():
         elif game.get_biome() == 'life_forest':
             pass
         elif game.get_biome() == 'desert':
-            underia.entity_spawn(underia.Entities.Dendrobium, target_number=3, to_player_max=2500, to_player_min=1000, rate=30)
+            underia.entity_spawn(underia.Entities.Dendrobium, target_number=3, to_player_max=2500, to_player_min=1000, rate=60)
             underia.entity_spawn(underia.Entities.Cactus, target_number=25, to_player_max=2500, to_player_min=1000, rate=25)
             if game.player.hp_sys.max_hp >= 500:
                 underia.entity_spawn(underia.Entities.RuneRock, target_number=10, to_player_max=2000, to_player_min=1000,
@@ -530,7 +530,7 @@ def update():
             underia.entity_spawn(underia.Entities.GreenChest, target_number=1, to_player_max=2500, to_player_min=2000,
                                  rate=50, number_factor=3.5)
         elif game.get_biome() == 'hell':
-            underia.entity_spawn(underia.Entities.Flamaureus, target_number=3, to_player_max=2500, to_player_min=1000, rate=30)
+            underia.entity_spawn(underia.Entities.Flamaureus, target_number=3, to_player_max=2500, to_player_min=1000, rate=60)
             underia.entity_spawn(underia.Entities.MagmaCube, target_number=15, to_player_max=2000, to_player_min=1000,
                                  rate=30)
             underia.entity_spawn(underia.Entities.RedChest, target_number=1, to_player_max=2500, to_player_min=1000,
@@ -539,7 +539,7 @@ def update():
                 underia.entity_spawn(underia.Entities.ScarlettPillar, target_number=12, to_player_max=2500, to_player_min=2000,
                                      rate=50)
         elif game.get_biome() == 'heaven':
-            underia.entity_spawn(underia.Entities.Gypsophila, target_number=3, to_player_max=2500, to_player_min=1000, rate=30)
+            underia.entity_spawn(underia.Entities.Gypsophila, target_number=3, to_player_max=2500, to_player_min=1000, rate=60)
             underia.entity_spawn(underia.Entities.HeavenGuard, target_number=9 + bm * 24, to_player_max=2000, to_player_min=1000,
                                  rate=2 + bm * 2)
             if 5 != game.stage > 0:
@@ -551,7 +551,7 @@ def update():
                 underia.entity_spawn(underia.Entities.HolyPillar, target_number=12, to_player_max=2500, to_player_min=2000,
                                      rate=50)
         elif game.get_biome() == 'snowland':
-            underia.entity_spawn(underia.Entities.Winteraceae, target_number=3, to_player_max=2500, to_player_min=1000, rate=30)
+            underia.entity_spawn(underia.Entities.Winteraceae, target_number=3, to_player_max=2500, to_player_min=1000, rate=60)
             underia.entity_spawn(underia.Entities.ConiferousTree, target_number=25, to_player_max=2500, to_player_min=1000, rate=25)
             underia.entity_spawn(underia.Entities.FluffBall, target_number=15, to_player_max=2500, to_player_min=1000, rate=12)
             if 5 != game.stage > 0:

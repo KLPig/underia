@@ -192,3 +192,13 @@ p.h {
   font-size: 1.2em;
   font-weight: 600;
 }
+
+.p-old {
+
+  color: #808080;
+  border-radius: 2px;
+ }
+
+.p-old:hover {
+  text-decoration: line-through;
+}

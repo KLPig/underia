@@ -192,6 +192,7 @@ class ScarlettPillar(Ore):
         self.hp_sys.resistances[damages.DamageTypes.ARCANE] = 0
         self.hp_sys.resistances[damages.DamageTypes.PIERCING] = 0
         self.hp_sys(op='config', minimum_damage=0)
+
 @entity.Entities.entity_type
 class Checkpoint(Chest):
     IMG = 'entity_checkpoint'
@@ -219,6 +220,9 @@ class Checkpoint(Chest):
     def t_draw(self):
         game.get_game().displayer.point_light((255, 255, 150), position.displayed_position(self.obj.pos), 2.5,
                                               80 / game.get_game().player.get_screen_scale())
+        if game.get_game().can_in_home():
+            pg.draw.circle(game.get_game().displayer.canvas, (0, 255, 255), position.displayed_position(self.obj.pos),
+                           int(500 / game.get_game().player.get_screen_scale()), 1)
         super().t_draw()
 
 @entity.Entities.entity_type
@@ -239,6 +243,9 @@ class NPCGuide(Chest):
             game.get_game().npc_data['guide'] = {'name': self.name }
         else:
             self.name = game.get_game().npc_data['guide']['name']
+        self.data = game.get_game().npc_data['guide']
+        if 'pp' not in self.data:
+            self.data['pp'] = 0
         super().__init__(pos)
         nh = 0
         for c in self.name:
@@ -250,7 +257,7 @@ class NPCGuide(Chest):
 
         self.ii_set = False
 
-        self.ct1 = [('npc_gd_f', 1), ('npc_gd_p', 1), ('npc_gd_c', 1)]
+        self.ct1 = [('npc_gd_f', 1), ('npc_gd_p', 1), ('npc_gd_c', 1), ('npc_gd_pp', 1)]
         self.ct2 = [('npc_gd_home', 1),
                     ('npc_gd_furnace', 1),
                     ('npc_gd_anvil', 1),
@@ -274,6 +281,9 @@ class NPCGuide(Chest):
         self.chest.n = len(self.ct1)
         self.chest.locked = True
         self.sm = False
+
+        for i in range(self.data['pp']):
+            game.get_game().furniture.append(entity.Entities.PlantingPot((0, 0), i + 1))
 
     def get_shown_txt(self):
         return self.name, 'Press [E] to talk'
@@ -314,6 +324,13 @@ class NPCGuide(Chest):
                 'npc_gd_c',
                 0, [],
                 specify_img='soul'
+            )
+            inventory.ITEMS['npc_gd_pp'] = inventory.Inventory.Item(
+                'Planting Pot',
+                f'Place a planting pot to plant seeds!\nCost: {800 * 5 ** (self.data['pp'] // 4)}',
+                'npc_gd_pp',
+                0, [],
+                specify_img='planting_pot'
             )
 
             inventory.ITEMS['npc_gd_c_1'] = inventory.Inventory.Item(
@@ -490,6 +507,13 @@ class NPCGuide(Chest):
             while player.inventory.is_enough(inventory.ITEMS['npc_gd_c']):
                 self.state = 2
                 player.inventory.remove_item(inventory.ITEMS['npc_gd_c'])
+            while player.inventory.is_enough(inventory.ITEMS['npc_gd_pp']):
+                ct = 800 * 5 ** (self.data['pp'] // 4)
+                if game.get_game().player.inventory.is_enough(inventory.ITEMS['nature'], ct):
+                    game.get_game().player.inventory.remove_item(inventory.ITEMS['nature'], ct)
+                    self.data['pp'] += 1
+                    game.get_game().furniture.append(entity.Entities.PlantingPot((0, 0), self.data['pp']))
+                player.inventory.remove_item(inventory.ITEMS['npc_gd_pp'])
             while player.inventory.is_enough(inventory.ITEMS['npc_gd_home']):
                 self.state = 0
                 player.inventory.remove_item(inventory.ITEMS['npc_gd_home'])
@@ -1127,7 +1151,7 @@ class NPCJevil(Chest):
         self.chest.items = self.ct1
         self.chest.n = len(self.ct1)
         self.chest.locked = True
-        self.obj.pos << (math.sin(game.get_game().player.tick / 60 * math.pi) * 800, -400)
+        self.obj.pos << (math.sin(game.get_game().player.tick / 60 * math.pi) * 400, -300)
         self.sm = False
 
     def get_shown_txt(self):
@@ -1135,7 +1159,7 @@ class NPCJevil(Chest):
 
     def t_draw(self):
         super().t_draw()
-        self.obj.pos << (math.sin(game.get_game().player.tick / 60 * math.pi) * 800, -400)
+        self.obj.pos << (math.sin(game.get_game().player.tick / 60 * math.pi) * 400, -300)
 
         if not self.ii_set:
             self.ii_set = True
@@ -1286,6 +1310,88 @@ class NPCJevil(Chest):
             if self.state == 3:
                 self.chest.items = copy.copy(self.ct4)
                 self.chest.n = len(self.ct4)
+
+@entity.Entities.entity_type
+class PlantingPot(Chest):
+    TARGET = {
+        'crysanths_seed': ('crysanths_seedling', 1.0),
+        'dendrobium_seed': ('dendrobium_seedling', 1.5),
+        'winteraceae_seed': ('winteraceae_seedling', 1.5),
+        'gypsophila_seed': ('gypsophila_seedling', 1.8),
+        'flamaureus_seed': ('flamaureus_seedling', 1.8),
+        'vitaflora_seed': ('vitaflora_seedling', 2.5),
+
+        'crysanths_seedling': ('crysanths', 3.0),
+        'dendrobium_seedling': ('dendrobium', 3.5),
+        'winteraceae_seedling': ('winteraceae', 3.6),
+        'gypsophila_seedling': ('gypsophila', 4.5),
+        'flamaureus_seedling': ('flamaureus', 4.3),
+        'vitaflora_seedling': ('firy_plant', 5.4),
+    }
+    TIME_CONST = 2400
+
+    IMG = 'entity_planting_pot'
+
+    def __init__(self, pos, pno=1):
+        self._id = 'ppot' + str(pno)
+        if self._id not in game.get_game().npc_data:
+            game.get_game().npc_data[self._id] = {'cycle': 0, 'current': 'null'}
+        self.data = game.get_game().npc_data[self._id]
+        super().__init__(pos)
+        self.chest.items = [
+            ('_' + self._id + '_desc', 1),
+            (self.data['current'], 1)
+        ]
+        self.chest.n = 2
+
+        rt = pno * 90 + pno // 4 * 15
+
+        self.obj.pos = vector.Vector2D(rt, 450)
+
+        for t in self.TARGET:
+            if t.endswith('_seed'):
+                it: inventory.Inventory.Item = copy.copy(inventory.ITEMS[t])
+                it.img = 'seedling'
+                it.name += 'ling'
+                it.id += 'ling'
+                inventory.ITEMS[t.replace('_seed', '_seedling')] = it
+
+        PlantingPot.TIME_CONST = 2000 + int(19 * game.get_game().fun ** 1.76) % 800
+
+
+    def t_draw(self):
+        dr = 'Not working...'
+
+        if self.data['current'] in PlantingPot.TARGET:
+            tg, mt = PlantingPot.TARGET[self.data['current']]
+            dr = f'Progress: {100 * self.data["cycle"] / PlantingPot.TIME_CONST / mt:.2f}%'
+            self.data['cycle'] += 1
+            if self.data['cycle'] >= PlantingPot.TIME_CONST * mt:
+                self.chest.items[1] = (tg, 1)
+                self.data['cycle'] = 0
+
+        inventory.ITEMS['_' + self._id + '_desc'] = inventory.Inventory.Item(
+            'Planting Pot',
+            dr,
+            '_' + self._id + '_desc',
+            0, [],
+            specify_img='planting_pot'
+        )
+
+        if self.chest.items[1] != (self.data['current'], 1):
+            self.data['cycle'] = 0
+            if self.chest.items[1][1] == 1:
+                self.data['current'] = self.chest.items[1][0]
+            else:
+                game.get_game().player.inventory.add_item(inventory.ITEMS[self.chest.items[1][0]], self.chest.items[1][1] - 1)
+                self.chest.items[1] = (self.chest.items[1][0], 1)
+                self.data['current'] = self.chest.items[1][0]
+        else:
+            self.chest.items = [('_' + self._id + '_desc', 1),
+                                (self.data['current'], 1)]
+            self.chest.n = 2
+
+        super().t_draw()
 
 @entity.Entities.entity_type
 class ChristmasTree(Chest):
