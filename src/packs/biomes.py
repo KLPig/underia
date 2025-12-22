@@ -787,6 +787,8 @@ class Python(WormEntity):
     SOUND_DEATH = 'huge_monster'
 
     LOOT_TABLE = entity.LootTable([
+        IndividualLoot('life_core', 1, 2, 3),
+
         SelectionLoot([('viper_spiker', 1, 1), ('vipers_breath', 1, 1), ('demon_shard', 1, 1)], 1, 1),
         SelectionLoot([('scale_headgear', 1, 1), ('scale_chestplate', 1, 1), ('scale_boots', 1, 1)], 1, 2),
     ])
@@ -818,6 +820,13 @@ class OriginBulb(Entity):
     SOUND_SPAWN = 'boss'
     SOUND_HURT = 'skeleton'
     SOUND_DEATH = 'huge_monster'
+
+    LOOT_TABLE = entity.LootTable([
+        IndividualLoot('mana_crystal', 1, 2, 5),
+        IndividualLoot('magic_stone', 1, 12, 18),
+        IndividualLoot('leaf', .5, 12, 25),
+        IndividualLoot('life_core', 1, 4, 8),
+    ])
 
     PHASE_SEGMENTS = [.8]
 

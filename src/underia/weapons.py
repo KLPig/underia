@@ -1011,11 +1011,13 @@ class AbyssSever(Blade):
     def on_attack(self):
         if self.at_t:
             super().on_attack()
+            self.rot_speed = 15
             self.adr = -int(math.sin(self.timer / self.at_time * math.pi) * 15)
         else:
             self.forward(5)
+            self.rot_speed = 60
             self.adr = -int(math.sin(self.timer / self.at_time * math.pi) * 45)
-            self.damage()
+            self.damage_spear()
 
     def draw(self):
         super().draw()
@@ -1023,11 +1025,32 @@ class AbyssSever(Blade):
             (self.x + game.get_game().player.obj.pos[0], self.y + game.get_game().player.obj.pos[1])))
         game.get_game().displayer.canvas.blit(self.n_d, imr)
 
+    def damage_spear(self):
+
+        self.rot %= 360
+        rot_range = range(int(self.rot - 15), int(self.rot + 16))
+        for e in game.get_game().entities:
+            dps = e.obj.pos
+            px = dps[0] - game.get_game().player.obj.pos[0]
+            py = dps[1] - game.get_game().player.obj.pos[1]
+            r = int(vector.coordinate_rotation(px, py)) % 360
+            if r in rot_range or r + 360 in rot_range:
+                if vector.distance(px, py) < self.img.get_width() + (
+                        (e.img.get_width() + e.img.get_height()) // 2 if e.img is not None else 10):
+                    for t, d in self.damages.items():
+                        e.hp_sys.damage(d * game.get_game().player.attack * game.get_game().player.attacks[0], t)
+                    self.on_damage(e)
+                    if not e.hp_sys.is_immune:
+                        e.obj.apply_force(
+                            vector.Vector(r, min(self.knock_back * 120000 / e.obj.MASS, e.obj.MASS * 24)))
+                    if self.ENABLE_IMMUNE:
+                        e.hp_sys.enable_immune()
+
     def on_damage(self, target):
         super().on_damage(target)
         if self.at_t == 0:
             target.hp_sys.effect(effects.Frozen([.1, .15, .2, .23, .25][min(4, game.get_game().stage)] * 7, 1))
-            target.hp_sys.enable_immune(3)
+            target.hp_sys.enable_immune(1)
         if target not in self.r_des and self.at_t == 0:
             self.r_des.append(target)
             for r in target.hp_sys.resistances:
@@ -4678,6 +4701,8 @@ def set_weapons():
         'mantle': Mantle('mantle', {dmg.DamageTypes.PHYSICAL: 45}, 0.2,
                          'items_weapons_mantle', 1,
                          9, 25, 150),
+        'magic_defense': Blade('magic defense', {dmg.DamageTypes.PHYSICAL: 95}, 0.7,
+                               'items_weapons_magic_defense', 2, 7, 50, 250),
         'obsidian_sword': Blade('obsidian sword', {dmg.DamageTypes.PHYSICAL: 40}, 0.3,
                                 'items_weapons_obsidian_sword', 2, 8, 40, 180),
         'swwwword': Swwwword('swwwword', {dmg.DamageTypes.PHYSICAL: 60}, 0.4,
@@ -4894,7 +4919,9 @@ def set_weapons():
         'bloody_bow': Bow('bloody bow', {dmg.DamageTypes.PIERCING: 45}, 0.5, 'items_weapons_bloody_bow',
                           5, 9, 120, auto_fire=True),
         'vipers_breath': Bow('vipers breath', {dmg.DamageTypes.PIERCING: 85}, 2, 'items_weapons_vipers_breath',
-                             7, 17, 250, auto_fire=True),
+                             7, 17, 1200, auto_fire=True),
+        'leading_ray': Bow('leading ray', {dmg.DamageTypes.PIERCING: 25}, .3, 'items_weapons_leading_ray',
+                             2, 2, 400, auto_fire=True),
         'aerialite_bow': Bow('aerialite bow', {dmg.DamageTypes.PIERCING: 35}, 0.3, 'items_weapons_aerialite_bow',
                              3, 8, 300, auto_fire=True),
         'forgotten_bow': Bow('forgotten bow', {dmg.DamageTypes.PIERCING: 70}, 0.4, 'items_weapons_forgotten_bow',

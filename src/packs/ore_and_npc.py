@@ -1327,6 +1327,9 @@ class PlantingPot(Chest):
         'gypsophila_seedling': ('gypsophila', 4.5),
         'flamaureus_seedling': ('flamaureus', 4.3),
         'vitaflora_seedling': ('firy_plant', 5.4),
+
+        'magic_seed': ('magic_seedling', 17.0),
+        'magic_seedling': ('magic_bulb', 54.0),
     }
     TIME_CONST = 2400
 
