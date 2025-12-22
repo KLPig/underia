@@ -272,6 +272,44 @@ class Urchin(Entity):
         self.rotate(abs(self.obj.velocity) / 20)
 
 @entity.Entities.entity_type
+class SilentCactus(Entity):
+    NAME = 'Silent Cactus'
+    DISPLAY_MODE = 3
+    LOOT_TABLE = LootTable([
+        IndividualLoot('forgotten_shard', 1, 5, 8),
+        IndividualLoot('cell_organization', .7, 10, 20),
+        IndividualLoot('coral_reef', .5, 10, 20),
+        IndividualLoot('seaprick', .03, 1, 1),
+        IndividualLoot('dim_heavysword', .03, 1, 1),
+        IndividualLoot('azure_amulet', .03, 1, 1),
+        IndividualLoot('tsunamic_bottle', .03, 1, 1),
+    ])
+
+
+    SOUND_HURT = 'corrupt'
+    SOUND_DEATH = 'sticky'
+
+    def __init__(self, pos):
+        if game.get_game().stage > 0:
+            super().__init__(pos, copy.copy(game.get_game().graphics['entity_silent_cactus']), entity.CactusAI, 4000)
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 185
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 185
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 185
+            self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 235
+            self.obj.TOUCHING_DAMAGE = 280
+            self.NAME = 'Cactus of Ever Silence'
+        else:
+            super().__init__(pos, copy.copy(game.get_game().graphics['entity_silent_cactus']), entity.CactusAI, 1200)
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 55
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 55
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 55
+            self.NAME = 'Silent Cactus'
+        self.obj.TOUCHING_DAMAGE = 160
+        self.obj.SPEED *= 3
+        self.obj.SIGHT_DISTANCE *= 3
+        self.dr = 0
+
+@entity.Entities.entity_type
 class LazerFish(Entity):
     NAME = 'Lazer Fish'
     DISPLAY_MODE = 2

@@ -1,3 +1,5 @@
+from scipy.stats import energy_distance
+
 from underia import entity, game, inventory, player_profile, BuildingAI
 from values import damages, effects
 from visual import draw
@@ -427,6 +429,33 @@ class Fluffff(WormEntity):
                 b = 1
             if b:
                 game.get_game().dialog.push_dialog('[Notebook Updated!]')
+
+@entity.Entities.entity_type
+class AiolianEye(Entity):
+    NAME = 'Aiolian Eye'
+    DISPLAY_MODE = 1
+    LOOT_TABLE = LootTable([
+        IndividualLoot('mysterious_substance', .5, 10, 15),
+        IndividualLoot('cell_organization', .5, 5, 15),
+        IndividualLoot('watcher_wand', .03, 1, 1),
+        IndividualLoot('angels_tears', .03, 1, 1),
+    ])
+
+    SOUND_HURT = 'sticky'
+    SOUND_DEATH = 'sticky'
+
+    def __init__(self, pos):
+        super().__init__(pos, game.get_game().graphics['entity_aiolian_eye'], entity.EyeAI, 800)
+        self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 40
+        self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 20
+        self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 30
+        self.obj.TOUCHING_DAMAGE = 150
+        self.obj.SPEED *= 2
+        self.obj.SIGHT_DISTANCE *= 2
+
+    def t_draw(self):
+        self.set_rotation(-self.obj.velocity.get_net_rotation())
+        super().t_draw()
 
 @entity.Entities.entity_type
 class HeavenGuard(Entity):

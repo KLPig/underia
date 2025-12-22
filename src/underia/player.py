@@ -2044,8 +2044,8 @@ class Player:
                             self.hp_sys.damage(ce * 7, damages.DamageTypes.TRUE)
                             self.inventory.remove_item(item)
                         elif item.id == 'immune_potion':
-                            self.hp_sys.is_immune = 150
                             self.hp_sys.damage(self.hp_sys.max_hp * .1, damages.DamageTypes.TRUE)
+                            self.hp_sys.is_immune = 150
                             self.inventory.remove_item(item)
                         elif item.id == 'shield_potion':
                             self.shield_break = 0
@@ -2818,14 +2818,16 @@ class Player:
                                    max(30, int(300 - dis // 30)) // 15)
         if pg.K_h in game.get_game().get_keys():
             potions = [inventory.ITEMS['legendary_hero'],
-                       inventory.ITEMS['butterscotch_pie'], inventory.ITEMS['crabapple'],
+                       inventory.ITEMS['butterscotch_pie'], inventory.ITEMS['healing_potion'],
+                       inventory.ITEMS['crabapple'],
                        inventory.ITEMS['weak_healing_potion']]
             for p in potions:
                 if p.id in self.inventory.items:
                     if not len([1 for eff in self.hp_sys.effects if eff.NAME == 'Potion Sickness']):
                         self.inventory.remove_item(p)
-                        self.hp_sys.heal({'legendary_hero': 500, 'weak_healing_potion': 50,
-                                          'crabapple': 120, 'butterscotch_pie': 240}[p.id])
+                        self.hp_sys.heal({'legendary_hero': 500,
+                                          'crabapple': 120, 'butterscotch_pie': 240, 'healing_potion': 150,
+                                          'weak_healing_potion': 50,}[p.id])
                         if p.id == 'legendary_hero':
                             if not len([1 for s, i in self.hp_sys.shields if s == 'l.hero']):
                                 self.hp_sys.shields.append(('l.hero', 800))
@@ -2843,7 +2845,7 @@ class Player:
                 if p.id in self.inventory.items:
                     if not len([1 for eff in self.hp_sys.effects if eff.NAME == 'Mana Sickness']):
                         self.inventory.remove_item(p)
-                        self.mana = min(self.mana + {'weak_magic_potion': 80, 'seatea': 150,
+                        self.mana = min(self.mana + {'weak_magic_potion': 80, 'magic_potion': 120, 'seatea': 180,
                                                      'tension_bit': 400, 'snowman_piece': 10000}[p.id], self.max_mana)
                         self.hp_sys.effect(effects.ManaSickness(3, 1))
                         game.get_game().play_sound('mana')

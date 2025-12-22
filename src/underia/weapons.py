@@ -1188,6 +1188,13 @@ class NightsEdge(Blade):
         super().on_attack()
         self.cutting_effect(4, (100, 0, 100), (255, 100, 255))
 
+class AngelsTears(Blade):
+    def on_end_attack(self):
+        super().on_end_attack()
+        rt = vector.coordinate_rotation(*(-game.get_game().player.obj.pos +
+                                          position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+        game.get_game().projectiles.append(projectiles.Projectiles.AngelsTears(game.get_game().player.obj.pos, rt))
+
 class VortexSpike(Spear):
     def on_start_attack(self):
         super().on_start_attack()
@@ -4718,6 +4725,9 @@ def set_weapons():
         'sand_sword': SandSword('sand_sword', {dmg.DamageTypes.PHYSICAL: 110}, 0.3,
                                 'items_weapons_sand_sword', 0,
                                 6, 50, 120, auto_fire=True),
+        'angels_tears': AngelsTears('angels tears', {dmg.DamageTypes.PHYSICAL: 80}, 0.5,
+                                     'items_weapons_angels_tears', 2,
+                                     6, 50, 180),
         'dim_heavysword': Blade('dim heavysword', {dmg.DamageTypes.PHYSICAL: 180}, 4,
                                 'items_weapons_dim_heavysword', 7, 12, 30, 250),
         'nights_edge': NightsEdge('nights edge', {dmg.DamageTypes.PHYSICAL: 90}, 0.6,

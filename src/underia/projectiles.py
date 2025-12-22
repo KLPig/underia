@@ -1030,6 +1030,17 @@ class Projectiles:
         ENABLE_IMMUNE = 3
         DEL = False
 
+    class AngelsTears(PlatinumWand):
+        DAMAGE_AS = 'angels_tears'
+        IMG = 'items_weapons_angels_tears_w'
+        WT = damages.DamageTypes.PHYSICAL
+        DMG_TYPE = damages.DamageTypes.PHYSICAL
+        COL = (0, 255, 255)
+        DMG_RATE = .5
+        SPD = 240
+        ENABLE_IMMUNE = 1.5
+        DEL = False
+
     class AirFloat(PlatinumWand):
         def __init__(self, pos, rotation):
             super().__init__(pos, rotation)

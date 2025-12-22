@@ -1849,8 +1849,10 @@ class Entities:
             return biome in ['desert']
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_rune_rock'], RuneRockAI, 1550)
-            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 32
+            super().__init__(pos, game.get_game().graphics['entity_rune_rock'], RuneRockAI, 1700)
+            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 60
+            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 40
+            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 40
 
     class AbyssRuneShoot(Entity):
         NAME = 'Abyss Rune'

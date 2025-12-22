@@ -1320,6 +1320,7 @@ class PlantingPot(Chest):
         'gypsophila_seed': ('gypsophila_seedling', 1.8),
         'flamaureus_seed': ('flamaureus_seedling', 1.8),
         'vitaflora_seed': ('vitaflora_seedling', 2.5),
+        'red_alga_seede': ('red_algae_seedling', 1.8),
 
         'crysanths_seedling': ('crysanths', 3.0),
         'dendrobium_seedling': ('dendrobium', 3.5),
@@ -1327,6 +1328,10 @@ class PlantingPot(Chest):
         'gypsophila_seedling': ('gypsophila', 4.5),
         'flamaureus_seedling': ('flamaureus', 4.3),
         'vitaflora_seedling': ('firy_plant', 5.4),
+        'red_algae_seedling': ('red_algae', 3.5),
+
+        'anemovitis_seed': ('anemovitis_seedling', 4.0),
+        'anemovitis_seedling': ('anemovitis', 4.5),
 
         'magic_seed': ('magic_seedling', 17.0),
         'magic_seedling': ('magic_bulb', 54.0),
@@ -1703,6 +1708,16 @@ class Flamaureus(Ore):
     LOOT_TABLE = entity.LootTable([
         entity.IndividualLoot('flamaureus', .8, 1, 3),
         ])
+
+@entity.Entities.entity_type
+class RedAlgae(Ore):
+    IMG = 'items_red_algae'
+    NAME = 'Mysterious Herb'
+    TOUGHNESS = 22
+    HP = 120
+    LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('red_algae', .8, 1, 3),
+    ])
 
 @entity.Entities.entity_type
 class Gypsophila(Ore):
