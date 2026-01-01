@@ -1,11 +1,44 @@
 import copy
 import random
+import inspect
 
 import constants
 from physics import vector
-from underia import game
+from underia import game, entity, weapons, projectiles
 from values import reduction, effects, damages
+from resources import log
+import math
 
+class DamageValue:
+    def __init__(self, value: float, penetrate: float = 0.0, **kwargs):
+        self.value = value
+        self.penetrate = penetrate
+        self.follow_penetrate = False
+        self.source = 'player'
+
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+    def __mul__(self, other):
+        v = copy.copy(self)
+        v.value *= other
+        if self.follow_penetrate:
+            v.penetrate *= other
+
+        return v
+
+    def __add__(self, other):
+        v = copy.copy(self)
+        v.value += other
+        if self.follow_penetrate:
+            v.penetrate += other
+        return v
+
+    def __str__(self):
+        s = str(int(self.value))
+        if self.penetrate > 0:
+            s += f"(+{self.penetrate:.0f})"
+        return s
 
 class HPSystem:
     TRUE_DROP_SPEED_MAX_RATE = 0.1
@@ -26,6 +59,7 @@ class HPSystem:
 
     DODGE_RATE = 0.0
 
+
     def __init__(self, hp: float):
         self.resistances = reduction.Resistances()
         self.defenses = reduction.Defenses()
@@ -42,6 +76,8 @@ class HPSystem:
         self.shields: list[tuple[str, int]] = []
         self.pacify_cd = 0
         self.is_player = False
+        self.adaption = {}
+        self.ADAPTABILITY = 0.0
 
     def __del__(self):
         pass
@@ -58,9 +94,40 @@ class HPSystem:
         else:
             return self.hp
 
-    def damage(self, damage: float, damage_type: int, penetrate: float = 0, sound=True, dd: vector.Vector2D | tuple[int, int] | None = None):
+    def damage(self, damage: float | DamageValue, damage_type: int, penetrate: float = 0, sound=True, dd: vector.Vector2D | tuple[int, int] | None = None):
+        if type(damage) is DamageValue:
+            penetrate += damage.penetrate
+            damage = damage.value
+        if 'adaption' not in dir(self):
+            self.adaption = {}
         if self.IMMUNE or self.is_immune:
             return
+
+        stack = inspect.stack()
+        user = stack[1].frame.f_locals['self']
+        if issubclass(type(user), entity.Entities.Entity):
+            ee = 0b10
+            crit = 0
+        elif issubclass(type(user), weapons.Weapon):
+            ee = 0b1
+            crit = game.get_game().player.strike + user.critical
+
+        elif issubclass(type(user), projectiles.Projectiles.Projectile):
+            ee = 0b1
+            if 'weapon' in dir(user):
+                if 'critical' in dir(user.critical):
+                    crit = game.get_game().player.strike + user.weapon.critical
+                else:
+                    crit = game.get_game().player.strike
+                    log.error(f'Wrong analyze of origin weapon of {user.__name__}, that is {user.weapon}, this may be because of inner problems!')
+            else:
+                crit = game.get_game().player.strike
+                log.error(f'Cannot analyze original weapon of {user.__name__} - {user}, this may be because not calling Projectile.__init__() while defining a subclass' )
+            user = user.weapon
+        else:
+            ee = 0
+            crit = 0
+
         try:
             d = vector.distance(self.pos[0] - game.get_game().player.obj.pos[0],
                                 self.pos[1] - game.get_game().player.obj.pos[1])
@@ -71,7 +138,8 @@ class HPSystem:
         dmm = [.3, 1.0, 1.15, 1.50][constants.DIFFICULTY]
         dm = [.31, 1.0, 1.14, 1.48][constants.DIFFICULTY]
 
-        kd = .6 - constants.DIFFICULTY * .05
+        kd = .6 - constants.DIFFICULTY * .05 # ideal defense rate
+        ct = random.random() < crit
 
         rs = self.resistances[damage_type]
 
@@ -80,7 +148,7 @@ class HPSystem:
 
             rd = td / max(10 ** -9, damage * rs * kd)
 
-            if 'is_player' in dir(self) and self.is_player:
+            if ee & 1:
                 if rd > 1.0:
                     rd **= .9 - constants.DIFFICULTY * .12
                 else:
@@ -99,6 +167,11 @@ class HPSystem:
         dodge = dmg > 1 and random.random() < self.DODGE_RATE
         if dodge:
             dmg = 0
+        if user not in self.adaption:
+            self.adaption[user] = 0
+        dmg *= math.e ** (-self.adaption[user])
+        if ct:
+            dmg *= 1 + (1 + crit) ** 2
         game.get_game().c_dmg += dmg
         if not self.dmg_t:
             self.dmg_t = self.DAMAGE_TEXT_INTERVAL
@@ -126,7 +199,7 @@ class HPSystem:
                     else:
                         dp = dd
                     game.get_game().damage_texts.append(
-                        (t, 0, (dp[0] + random.randint(-30, 30), dp[1] + random.randint(-30, 30))))
+                        (t, 0, (dp[0] + random.randint(-30, 30), dp[1] + random.randint(-30, 30)), 0))
             else:
                 '''
                 for i in range(len(game.get_game().damage_texts)):
@@ -137,14 +210,15 @@ class HPSystem:
                                                            (self.pos[0] + random.randint(-10, 10),
                                                             self.pos[1] + random.randint(-10, 10)))
                         d = 1
-                        break'''
+                    break'''
                 if not d:
                     if dd is None:
                         dp = self.pos
                     else:
                         dp = dd
                     game.get_game().damage_texts.append(
-                        (str(int(dmg)), 0, (dp[0] + random.randint(-30, 30), dp[1] + random.randint(-30, 30))))
+                        (str(int(dmg)), 0, (dp[0] + random.randint(-30, 30), dp[1] + random.randint(-30, 30)), ct))
+        self.adaption[user] += damage * 1e-3 * self.ADAPTABILITY
         if len(self.shields):
             self.shields[0] = (self.shields[0][0], self.shields[0][1] - dmg)
             if self.shields[0][1] <= 0:
@@ -169,7 +243,8 @@ class HPSystem:
             self.hp = 0
 
     def enable_immune(self, t=1.0):
-        self.is_immune = self.IMMUNE_TIME * t
+        if not self.is_immune:
+            self.is_immune = self.IMMUNE_TIME * t
 
     def update(self):
         try:

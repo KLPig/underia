@@ -10,6 +10,7 @@ from underia import game, weapons, entity
 from values import damages, effects, DamageTypes
 from visual import effects as eff, particle_effects, fade_circle, draw, cut_effects
 import constants
+import inspect
 
 
 class ProjectileMotion(mover.Mover):
@@ -64,6 +65,13 @@ class Projectiles:
                                                               closest_entity.obj.pos[1] - self.obj.pos[1])
 
         def __init__(self, pos, img=None, motion: type(ProjectileMotion) = ProjectileMotion):
+            frames = inspect.stack()
+
+            self.weapon = None
+            for frame in frames:
+                if issubclass(type(frame.frame.f_locals['self']), weapons.Weapon):
+                    self.weapon = frame.frame.f_locals['self']
+                    break
             self.obj = motion(pos)
             self.img: pg.Surface | None = img
             self.d_img = self.img
@@ -223,6 +231,7 @@ class Projectiles:
         NAME = 'Magic Sword'
 
         def __init__(self, pos, rotation):
+            super().__init__(pos, rotation)
             self.img = game.get_game().graphics['items_weapons_fiery_iceberg']
             self.obj = ProjectileMotion(pos, rotation)
             self.d_img = self.img
@@ -315,6 +324,13 @@ class Projectiles:
         LIMIT_VEL = 3
 
         def __init__(self, pos, rotation):
+            frames = inspect.stack()
+
+            self.weapon = None
+            for frame in frames:
+                if issubclass(type(frame.frame.f_locals['self']), weapons.Weapon):
+                    self.weapon = frame.frame.f_locals['self']
+                    break
             self.obj = WeakProjectileMotion(pos, rotation)
             self.img = game.get_game().graphics['projectiles_glow']
             self.d_img = self.img
@@ -525,14 +541,6 @@ class Projectiles:
                 for _ in range(3):
                     game.get_game().projectiles.append(Projectiles.Wildsands(pos, rotation + random.randint(-12, 12), t=0))
 
-        def on_damage(self, ee):
-            at_mt = {damages.DamageTypes.PHYSICAL: 0, damages.DamageTypes.PIERCING: 1,
-                     damages.DamageTypes.ARCANE: 2, damages.DamageTypes.MAGICAL: 2}[self.WT]
-            ee.hp_sys.damage(
-                weapons.WEAPONS[self.DAMAGE_AS].damages[self.DMG_TYPE] * game.get_game().player.attack *
-                game.get_game().player.attacks[at_mt] * self.DMG_RATE, self.DMG_TYPE,
-            penetrate=50 * game.get_game().player.attack *
-                game.get_game().player.attacks[at_mt] * self.DMG_RATE)
 
     class Furfur(PlatinumWand):
         DAMAGE_AS = 'furfur'
@@ -639,6 +647,26 @@ class Projectiles:
             super().update()
             pg.draw.circle(game.get_game().displayer.canvas, (0, 255, 255), position.displayed_position(self.obj.pos),
                            int(50 / game.get_game().player.get_screen_scale()), int(10 / game.get_game().player.get_screen_scale()))
+
+    class DevilsFire(PlatinumWand):
+        SPD = 100
+        DAMAGE_AS = 'devils_fire'
+        IMG = 'projectiles_null'
+        COL = (255, 0, 0)
+        DEL = True
+        ENABLE_IMMUNE = 1
+
+        def update(self):
+            super().update()
+            pg.draw.circle(game.get_game().displayer.canvas, (255, 0, 0), position.displayed_position(self.obj.pos),
+                           int(30 / game.get_game().player.get_screen_scale()), int(10 / game.get_game().player.get_screen_scale()))
+
+            if self.dead:
+                game.get_game().displayer.effect(fade_circle.p_fade_circle(*position.displayed_position(self.obj.pos),
+                                                                           sp=10, t=30))
+                for e in game.get_game().entities:
+                    if abs(e.obj.pos - self.obj.pos) < 300:
+                        e.hp_sys.effect(effects.Burning(30, 10))
 
     class DemonShard(PlatinumWand):
         SPD = 150
@@ -1018,6 +1046,21 @@ class Projectiles:
             if self.tick > self.DURATION or abs(self.obj.velocity) < 1:
                 self.dead = True
 
+    class WorldsLord(PlatinumWand):
+        DAMAGE_AS = 'worlds_lord'
+        IMG = 'items_null'
+        WT = damages.DamageTypes.PHYSICAL
+        DMG_TYPE = damages.DamageTypes.THINKING
+        COL = (0, 255, 0)
+        DMG_RATE = 1.0
+        SPD = 300
+        DEL = False
+        ENABLE_IMMUNE = 1.5
+
+        def update(self):
+            super().update()
+            game.get_game().displayer.effect(particle_effects.p_particle_effects(*position.displayed_position(self.obj.pos),
+                                                                    col=(200, 255, 100), t=12, sp=5, n=7, g=0.1))
 
     class VortexSpike(PlatinumWand):
         DAMAGE_AS = 'vortex_spike'
@@ -1065,6 +1108,17 @@ class Projectiles:
         def update(self):
             super().update()
             self.set_rotation(self.tick * 12)
+
+    class Mind(PlatinumWand):
+        DAMAGE_AS = 'mind'
+        IMG = 'items_weapons_mind_w'
+        WT = damages.DamageTypes.PHYSICAL
+        DMG_TYPE = damages.DamageTypes.THINKING
+        COL = (0, 255, 255)
+        DMG_RATE = 1
+        SPD = 50
+        DEL = False
+        ENABLE_IMMUNE = 1.5
 
     class BNightsEdge(PlatinumWand):
         DAMAGE_AS = 'nights_edge'
@@ -1779,6 +1833,8 @@ class Projectiles:
         DMG_RATE = 1.0
 
         def __init__(self, pos, rotation):
+            user = inspect.stack()[1].frame.f_locals
+            self.weapon = user['self']
             ax, ay = vector.rotation_coordinate(rotation)
             self.tar_reg = abs(ax - ay * (-1 if ((ax > 0) != (ay > 0)) else 1))
             self.lf = ax > 0
@@ -1941,6 +1997,14 @@ class Projectiles:
         LENGTH = 150
         DAMAGE_AS = 'life_wooden_sword'
         COLOR = (0, 80, 0)
+        DURATION = 5
+        DMG_TYPE = damages.DamageTypes.PHYSICAL
+
+    class IncrementalBroadsword(Beam):
+        WIDTH = 40
+        LENGTH = 400
+        DAMAGE_AS = 'incremental_broadsword'
+        COLOR = (0, 100, 0)
         DURATION = 5
         DMG_TYPE = damages.DamageTypes.PHYSICAL
 
@@ -2503,6 +2567,11 @@ class Projectiles:
         DAMAGE_AS = 'blood_wand'
         IMG = 'projectiles_blood_wand'
 
+    class CloudcoreStaff(PlatinumWand):
+        DAMAGE_AS = 'cloudcore_staff'
+        IMG = 'projectiles_cloudcore_staff'
+        SPD = 200
+
     class DarkSpiderLily(PlatinumWand):
         DAMAGE_AS = 'dark_spider_lily'
         IMG = 'projectiles_dark_spider_lily'
@@ -2651,6 +2720,33 @@ class Projectiles:
             super().update()
             self.dr += 9
 
+    class ManaShine(PlatinumWand):
+        DAMAGE_AS = 'mana_shine'
+        IMG = 'projectiles_mana_shine'
+        DEL = False
+        SPD = 0
+        LIMIT_VEL = -1
+        DURATION = 180
+        COL = (0, 200, 255)
+        ENABLE_IMMUNE = 2
+        DECAY_RATE = 1
+
+        def __init__(self, pos, rot, rt=9):
+            super().__init__(pos, rot)
+            self.rt = rt
+            self.rr = rot
+            self.obj.SPEED = 0
+            self.obj.velocity.clear()
+            self.obj.force.clear()
+            self.obj.MASS = 1e9
+
+        def update(self):
+            self.set_rotation(self.rr)
+            super().update()
+            if self.rt and self.tick == 12:
+                game.get_game().projectiles.append(Projectiles.ManaShine(self.obj.pos + vector.Vector2D(self.rr, 50), self.rr, self.rt - 1))
+
+
     class ForbiddenCurseFire(PlatinumWand):
         DAMAGE_AS = 'forbidden_curse__fire'
         IMG = 'projectiles_forbidden_curse__fire'
@@ -2665,14 +2761,17 @@ class Projectiles:
 
         def __init__(self, pos, rot, rt=15):
             super().__init__(pos, rot)
-            self.obj.SPEED = 0
             self.rt = rt
             self.rr = rot
+            self.obj.SPEED = 0
+            self.obj.velocity.clear()
+            self.obj.force.clear()
+            self.obj.MASS = 1e9
 
         def update(self):
             self.set_rotation(self.rr)
             super().update()
-            if self.rt and self.tick == 20:
+            if self.rt and self.tick == 18:
                 game.get_game().projectiles.append(Projectiles.ForbiddenCurseFire(self.obj.pos + vector.Vector2D(self.rr, 70), self.rr, self.rt - 1))
 
     class GaiaS(PlatinumWand):
@@ -2818,6 +2917,24 @@ class Projectiles:
             if tar is not None:
                 self.obj.apply_force(vector.Vector2D(vector.coordinate_rotation(*(tar.obj.pos - self.obj.pos)), 120))
 
+    class HellSeal(PlatinumWand):
+        IMG = 'items_weapons_hellseal_w'
+        DAMAGE_AS = 'hellseal'
+        DEL = False
+        LIMIT_VEL = -1
+        DURATION = 300
+        DMG_TYPE = damages.DamageTypes.PHYSICAL
+        DMG_RATE = 1.0
+        ENABLE_IMMUNE = 2
+        SPD = 40
+
+        def update(self):
+            super().update()
+            if self.tick == 40:
+                self.obj.velocity.clear()
+                self.obj.rotation = vector.coordinate_rotation(*(-self.obj.pos + position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos()))))
+
+
 
     class ArkFire(PlatinumWand):
         IMG = 'projectiles_null'
@@ -2865,6 +2982,56 @@ class Projectiles:
             tar, _ = self.get_closest_entity()
             if tar is not None:
                 self.obj.apply_force(vector.Vector2D(vector.coordinate_rotation(*(tar.obj.pos - self.obj.pos)), 400 + self.idr * 200))
+
+    class Adherent(PlatinumWand):
+        IMG = 'projectiles_null'
+        DAMAGE_AS = 'adherent'
+        ENABLE_IMMUNE = 0
+        DEL = True
+        LIMIT_VEL = -1
+        DURATION = 400
+        DMG_TYPE = damages.DamageTypes.PHYSICAL
+        DMG_RATE = 5.0
+        DECAY_RATE = .9
+        COL = (255, 255, 0)
+
+        def __init__(self, *args):
+            super().__init__(*args)
+            self.obj = WeakProjectileMotion(self.obj.pos, 0)
+            self.obj.MASS = 75
+            self.obj.FRICTION = .99
+            self.obj.velocity.clear()
+            self.obj.force.clear()
+            self.obj.apply_force(vector.Vector2D(self.rot, 20000))
+            self.d_eno: list[tuple[int, int]] = []
+            self.poss = []
+            self.rt = 0
+
+        def damage(self):
+            if self.tick > 150:
+                super().damage()
+
+        def update(self):
+            while len(self.d_eno) and self.tick - self.d_eno[0][0] > 20:
+                self.d_eno.pop(0)
+
+            for j in range(len(self.poss) - 1):
+                draw.line(game.get_game().displayer.canvas, (255, 255, 110 - j * 10),
+                          position.displayed_position(self.poss[j]),
+                          position.displayed_position(self.poss[j + 1]),
+                          int((j * 2) / game.get_game().player.get_screen_scale()))
+            pg.draw.circle(game.get_game().displayer.canvas, (255, 255, 0), position.displayed_position(self.obj.pos),
+                           int(12 / game.get_game().player.get_screen_scale()))
+            self.rt = (self.rt + self.obj.velocity.get_net_rotation()) / 2
+            self.set_rotation(self.rt)
+            super().update()
+            self.poss.append(self.obj.pos.to_value())
+            if len(self.poss) > 12:
+                self.poss.pop(0)
+            tar, _ = self.get_closest_entity()
+            if tar is not None:
+                self.obj.apply_force(vector.Vector2D(vector.coordinate_rotation(*(tar.obj.pos - self.obj.pos)), 600))
+
 
     class ArkWind(PlatinumWand):
         IMG = 'projectiles_null'
@@ -2959,32 +3126,43 @@ class Projectiles:
 
         def update(self):
             px, py = game.get_game().player.obj.pos
-            self.obj.pos << (px, py - 1000)
+            self.obj.pos << (px, py - min(1000, self.tick ** 1.1) - 200 * math.sin(self.tick / 50))
             self.tick += 1
             pg.draw.circle(game.get_game().displayer.canvas, (255, 0, 0), position.displayed_position(self.obj.pos),
-                           radius=2000 // game.get_game().player.get_screen_scale(), width=12)
+                           radius=(2000 + 200 * math.sin(self.tick / 50)) // game.get_game().player.get_screen_scale(), width=12)
             if self.tick < 10 and constants.USE_ALPHA:
                 self.img.set_alpha(self.tick * 10)
-            elif self.tick < 90:
+            elif self.tick < 290:
                 game.get_game().displayer.effect(
                     particle_effects.p_particle_effects(*position.displayed_position(self.obj.pos),
-                                                        n=18, r=15 / game.get_game().player.get_screen_scale(),
-                                                        t=15, sp=6 / game.get_game().player.get_screen_scale(),
-                                                        g=-0.6))
+                                                        n=12, r=10,
+                                                        t=55, sp=25,
+                                                        g=0.2, col=(255, 50, 0)))
+                game.get_game().displayer.effect(
+                    particle_effects.p_particle_effects(*position.displayed_position(self.obj.pos),
+                                                        n=6, r=10,
+                                                        t=55, sp=4,
+                                                        g=-0.2, col=(255, 50, 0)))
 
-                if self.tick % 8 == 0:
-                    game.get_game().displayer.effect(particle_effects.p_particle_effects(*position.displayed_position(self.obj.pos),
-                                                                                         n=120, r=40 / game.get_game().player.get_screen_scale(),
-                                                                                         t=50, sp=40 / game.get_game().player.get_screen_scale(),
-                                                                                         g=0.2))
+                if self.tick % 40 == 0:
+                    game.get_game().displayer.shake_amp += 40
+                    game.get_game().displayer.effect(
+                        particle_effects.p_particle_effects(*position.displayed_position(self.obj.pos),
+                                                            n=23, r=10,
+                                                            t=55, sp=30,
+                                                            g=0.08, col=(255, 50, 0)))
+
+                    game.get_game().displayer.effect(fade_circle.p_fade_circle(*position.displayed_position(self.obj.pos),
+                                                                            (255, 50, 0), 60, 60,  True))
                     for e in game.get_game().entities:
                         if vector.distance(self.obj.pos[0] - e.obj.pos[0], self.obj.pos[1] - e.obj.pos[1]) < 2000:
                             e.hp_sys.damage(
                                 weapons.WEAPONS['great_forbidden_curse__fire'].damages[damages.DamageTypes.ARCANE] * game.get_game().player.attack *
                                 game.get_game().player.attacks[2], damages.DamageTypes.ARCANE)
-            elif self.tick < 100:
+                            e.hp_sys.enable_immune()
+            elif self.tick < 300:
                 if constants.USE_ALPHA:
-                    self.img.set_alpha(100 - (self.tick - 90) * 10)
+                    self.img.set_alpha(100 - (self.tick - 290) * 10)
             else:
                 self.dead = True
             super().update()
@@ -4086,33 +4264,41 @@ class Projectiles:
         def update(self):
             self.set_rotation(vector.coordinate_rotation(self.tp[0] - self.obj.pos[0], self.tp[1] - self.obj.pos[1]))
             self.tick += 1
-            if self.tick < 10:
+            if self.tick < 40:
                 super().update()
                 self.obj.pos << (self.obj.pos[0] + (self.tp[0] - self.obj.pos[0]) / 2,
                                 self.obj.pos[1] + (self.tp[1] - self.obj.pos[1]) / 2)
                 if vector.distance(self.tp[0] - self.obj.pos[0], self.tp[1] - self.obj.pos[1]) < 120:
-                    self.tick = 10
+                    self.tick = 40
                 for e in game.get_game().entities:
                     if vector.distance(self.obj.pos[0] - e.obj.pos[0], self.obj.pos[1] - e.obj.pos[1]) < 120:
-                        self.tick = 30
-            elif self.tick < 40:
-                rt = (40 - self.tick) ** 2
-                dt = (40 - self.tick) ** 2
-                rd = (40 - self.tick) ** 2 / 5 / game.get_game().player.get_screen_scale()
-                for ar in range(0, 360, 72):
+                        self.tick = 70
+            elif self.tick < 90:
+                self.set_rotation(0)
+                super().update()
+                rt = (90 - self.tick) ** 1.3
+                dt = (90 - self.tick) ** 1.3
+                rd = (90 - self.tick) ** 1.3 / 5 / game.get_game().player.get_screen_scale()
+                for ar in range(0, 360, 60):
                     ax, ay = vector.rotation_coordinate(rt + ar)
                     pg.draw.circle(game.get_game().displayer.canvas, (100, 100, 255),
                                    position.displayed_position((self.obj.pos[0] + ax * dt, self.obj.pos[1] + ay * dt)),
                                    rd)
-            elif self.tick < 60:
-                if self.tick % 8 == 0:
+            elif self.tick < 150:
+                self.set_rotation(0)
+                super().update()
+                if self.tick % 20 == 10:
                     game.get_game().displayer.effect(fade_circle.p_fade_circle(*position.displayed_position(self.obj.pos),
-                                                                               (0, 0, 255), t=8, sp=100))
-                for e in game.get_game().entities:
-                    if vector.distance(self.obj.pos[0] - e.obj.pos[0], self.obj.pos[1] - e.obj.pos[1]) < 400:
-                        e.hp_sys.damage(
-                            weapons.WEAPONS[self.DAMAGE_AS].damages[damages.DamageTypes.PHYSICAL] * game.get_game().player.attack *
-                            game.get_game().player.attacks[0], damages.DamageTypes.PHYSICAL)
+                                                                               (100, 100, 255), t=20, sp=30))
+                    game.get_game().displayer.effect(particle_effects.p_particle_effects(*position.displayed_position(self.obj.pos),
+                                                                                         20, 18, (100, 100, 255), 10, 55,
+                                                                                         -.2, True))
+                    game.get_game().displayer.shake_amp += 5
+                    for e in game.get_game().entities:
+                        if vector.distance(self.obj.pos[0] - e.obj.pos[0], self.obj.pos[1] - e.obj.pos[1]) < 400:
+                            e.hp_sys.damage(
+                                weapons.WEAPONS[self.DAMAGE_AS].damages[damages.DamageTypes.PHYSICAL] * game.get_game().player.attack *
+                                game.get_game().player.attacks[0], damages.DamageTypes.PHYSICAL)
             else:
                 self.dead = True
 

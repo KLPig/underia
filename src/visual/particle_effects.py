@@ -23,23 +23,15 @@ class Particle(effects.Effect):
         self.ay = 0
         self.t = init_radius / decay_speed
         if follow_map:
-            xx, yy = position.real_position((0, 0))
-            self.ax = -xx
-            self.ay = -yy
+            self.ax, self.ay = position.real_position((x, y))
         self.follow_map = follow_map
         self.tick = 0
 
     def update(self, window: pg.Surface):
         if self.follow_map:
-            xx, yy = position.real_position((0, 0))
-            nax = -xx
-            nay = -yy
-            self.x += (nax - self.ax) / game.get_game().player.get_screen_scale()
-            self.y += (nay - self.ay) / game.get_game().player.get_screen_scale()
-            self.ax = nax
-            self.ay = nay
-        self.x += self.forward_speed * math.cos(self.angle)
-        self.y += self.forward_speed * math.sin(self.angle) + self.vy
+            self.x, self.y = position.displayed_position((self.ax, self.ay))
+        self.x += self.forward_speed * math.cos(self.angle) / 3
+        self.y += self.forward_speed * math.sin(self.angle) / 3 + self.vy
         self.vy += self.g
         self.tick += 1
         self.radius -= int(self.decay_speed * (0.8 + 0.1 * self.tick))
@@ -53,6 +45,8 @@ class Particle(effects.Effect):
             window.blit(sf, (int(self.x - self.radius), int(self.y - self.radius)))
         else:
             pg.draw.circle(window, self.color, (int(self.x), int(self.y)), int(self.radius))
+        if self.follow_map:
+            self.ax, self.ay = position.real_position((self.x, self.y))
         return True
 
 class CircularLighter(effects.Effect):
@@ -103,5 +97,5 @@ def p_particle_effects(x, y, n=15, r=10, col=(255, 0, 0), sp=6, t=10, g=0.6, fol
     for i in range(n):
         angle = i * 2 * math.pi / n + randomize * random.uniform(-math.pi / 12, math.pi / 12) + ar
         nr = r + randomize_size * random.uniform(-r / 10, r / 10)
-        particles.append(Particle(x, y, nr, col, sp, nr / t, angle, g, follow_map))
+        particles.append(Particle(x, y, nr, col, sp * random.uniform(0, 1), nr / t, angle, g, follow_map))
     return particles + [CircularLighter(x, y, sp, col, r, t, g, follow_map)]

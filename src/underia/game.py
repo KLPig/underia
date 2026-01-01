@@ -99,7 +99,7 @@ class Game:
         self.furniture: list[entity.Entities.Entity | object] = []
         self.projectiles: list[projectiles.Projectiles.Projectile | object] = []
         self.clock = resources.Clock()
-        self.damage_texts: list[tuple[str, int, tuple[int, int]]] = []
+        self.damage_texts: list[tuple[str, int, tuple[int, int], int]] = []
         self.save = ''
         self.day_time = 0.3
         self.drop_items = []
@@ -153,6 +153,11 @@ class Game:
         self.w_events = []
 
     def get_night_color(self, time_days: float):
+        if type(self.player.weapons[self.player.sel_weapon]) is weapons.MilkyWay:
+            self.displayer.light_engine.lights.clear()
+            return (int(100 * (1 + math.cos(time_days * 10)) / 2),
+                    int(100 * (1 + math.sin(time_days * 10)) / 2),
+                    int(100 * (1 + math.sin(time_days * 10)) / 2))
         if len([1 for e in self.entities if type(e) is entity.Entities.AbyssEye]):
             return 255, 200, 200
         if len([1 for e in self.entities if type(e) is entity.Entities.CLOCK]):
@@ -280,6 +285,8 @@ class Game:
                 self.load_graphics(os.path.join(directory, file), index + file + '_', cnt=cnt)
 
     def _display_progress(self, prog, st=1):
+        if constants.DEBUG:
+            return
         stt = 3 - st
         window = pg.display.get_surface()
         window.fill((0,0,0))
@@ -849,9 +856,9 @@ class Game:
             e.t_draw()
         self.displayer.night_darkness_color = self.get_night_color(self.day_time % 1.0)
         self.displayer.night_darkness()
-        self.damage_texts = [(dmg, tick + 1, pos) for dmg, tick, pos in self.damage_texts if tick < 80]
-        for dmg, tick, pos in self.damage_texts:
-            ll = int(math.log(max(.01, int(dmg)), max(1.1, 1 + (1 + self.player.strike) ** 2))) % 2 == 1 if str.isdecimal(dmg) and int(dmg) > 0 else 1
+        self.damage_texts = [(dmg, tick + 1, pos, b) for dmg, tick, pos, b in self.damage_texts if tick < 80]
+        for dmg, tick, pos, b in self.damage_texts:
+            ll = b
             f = self.displayer.font_dmg.render(str(dmg), True, (255, 127, 0) if ll else (255, 0, 0))
             f.set_alpha(min(255.0, tick * tick / 2))
             fr = f.get_rect(center=resources.displayed_position((pos[0] + 2, pos[1] + (80 - tick) ** 3 // 4000 + 2)))
@@ -1042,7 +1049,7 @@ class Game:
                                         loop.create_task(self.server.start_server())
                                 elif ev.key == pg.K_s:
                                     settings.set_settings()
-                                elif ev.key == pg.K_t and constants.DEBUG:
+                                elif ev.key == pg.K_t:# and constants.DEBUG:
                                     cmd = ''
                                     qt = False
                                     shift = False

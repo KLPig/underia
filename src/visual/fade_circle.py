@@ -13,21 +13,12 @@ class FadeCircle(effects.Effect):
         self.decay_speed = decay_speed
         self.sz = 0
         self.col = col
-        if follow_map:
-            xx, yy = position.real_position((0, 0))
-            self.ax = -xx
-            self.ay = -yy
+        self.ax, self.ay = position.real_position((x, y))
         self.follow_map = follow_map
 
     def update(self, window: pg.Surface):
         if self.follow_map:
-            xx, yy = position.real_position((0, 0))
-            nax = -xx
-            nay = -yy
-            self.x += (nax - self.ax) / game.get_game().player.get_screen_scale()
-            self.y += (nay - self.ay) / game.get_game().player.get_screen_scale()
-            self.ax = nax
-            self.ay = nay
+            self.x, self.y = position.displayed_position((self.ax, self.ay))
         scale = game.get_game().player.get_screen_scale()
         self.sz += self.decay_speed
         nsz = self.sz / scale

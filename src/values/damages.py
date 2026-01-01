@@ -15,6 +15,8 @@ class DamageTypes:
     HALLOW: int = 0
     PACIFY: int = 0
 
+    KARMA: int = 0
+
 
 for element in dir(elements.ElementTypes):
     if not element.startswith('__'):

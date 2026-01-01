@@ -159,8 +159,10 @@ class Destroy(weapons.Blade):
                         else:
                             e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
                     if self.ENABLE_IMMUNE:
-                        if constants.DIFFICULTY > 1:
-                            e.hp_sys.enable_immune()
+                            if constants.DIFFICULTY <= 1:
+                                e.hp_sys.enable_immune()
+                            else:
+                                e.hp_sys.enable_immune(.5)
 
 class Generate(weapons.Blade):
     def damage(self):

@@ -287,7 +287,7 @@ game.player.sel_weapon = 1
 game.player.inventory.sort()
 # game.player.inventory.items['recipe_book'] = 1
 # game.player.inventory.items['arrow_thrower'] = 1
-game.player.hp_sys(op='config', immune_time=10, true_drop_speed_max_value=1, immune=False)
+game.player.hp_sys(op='config', immune_time=50, true_drop_speed_max_value=1, immune=False)
 
 game.w_events = w_e
 
@@ -462,6 +462,12 @@ def update():
         if d > 5000 + entity.rarity * 2000:
             game.drop_items.remove(entity)
     if game.chapter <= 1:
+        if bm:
+            underia.entity_spawn(underia.Entities.BloodyEye, target_number=70, to_player_max=2500, to_player_min=800,
+                                 rate=120)
+            underia.entity_spawn(underia.Entities.ScreamingWood, target_number=70, to_player_max=2500, to_player_min=800,
+                                 rate=120)
+
         if game.get_biome() == 'forest':
             if 5 > game.stage > 1:
                 underia.entity_spawn(underia.Entities.Tree, target_number=20, to_player_max=2500, to_player_min=800, rate=25)

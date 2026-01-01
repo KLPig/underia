@@ -2,6 +2,7 @@ import requests
 import xml.etree.ElementTree as et
 import version
 import resources.log as log
+import constants
 
 target = 'https://klpig.github.io/underia/data.xml'
 
@@ -16,6 +17,8 @@ def compare(x: tuple[str, str, str], y: tuple[str, str, str]):
         return 0
 
 def check(c_hash=None) -> tuple[bool, bool, str, list[str]]:
+    if not constants.WEB_CHECK:
+        return False, True, 'Web-check skipped!', []
     try:
         response = requests.get(target)
         if response.status_code == 200:

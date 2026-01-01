@@ -10,7 +10,6 @@ import datetime
 import asyncio
 import resources, underia, mods, constants
 from underia import good_words
-import underia3
 import modloader
 import packs
 from resources import log
@@ -73,7 +72,9 @@ game.world_events.clear()
 
 game.w_events = w_e
 
-game.entities.append(underia.Entities.Entity((100, 0)))
+game.entities.append(underia.Entities.Entity((1000, 0)))
+
+
 game.player.hp_sys.max_hp = constants.INFINITY
 game.player.hp_sys.hp = constants.INFINITY
 game.player.max_mana = constants.INFINITY

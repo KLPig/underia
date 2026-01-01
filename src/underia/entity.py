@@ -1,6 +1,7 @@
 import copy
 import math
 import random
+import string
 import sys
 
 import pygame as pg
@@ -938,6 +939,8 @@ class Entities:
                 self.hp_sys = hp_system.SubHPSystem(hp_sys)
                 self.show_bar = False
             if self.hp_sys.hp == 100000000:
+                self.IS_MENACE = True
+                self.PHASE_SEGMENTS = [1 - 10 ** -r for r in range(1, 11)]
                 self.img = pg.Surface((100, 100))
                 pg.draw.circle(self.img, (255, 0, 0), (50, 50), 40)
             self.img: pg.Surface | None = img
@@ -1134,8 +1137,8 @@ class Entities:
                     }
                     game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(self.obj.pos),
                                                                             col=cols[e.CORRESPONDED_ELEMENT], n=1,
-                                                                            sp=(self.d_img.get_width() * 1.2 + 5) / 50 * game.get_game().player.get_screen_scale(),
-                                                                            t=50))
+                                                                            sp=(self.d_img.get_width() * 1.2 + 5) / 7 * game.get_game().player.get_screen_scale(),
+                                                                            t=20, g=.05))
 
         def get_shown_txt(self):
             txt1 = f'{styles.text(self.NAME)}'
@@ -1143,7 +1146,7 @@ class Entities:
                 txt1 = styles.text(self.adj) + ' ' + txt1
             dm, df = 0, 0
             for dt, d in game.get_game().player.weapons[game.get_game().player.sel_weapon].damages.items():
-                dm += d
+                dm += d.value if type(d) is hp_system.DamageValue else d
                 df += self.hp_sys.defenses[dt]
             txt2 = (f'{int(self.hp_sys.hp)}/{int(self.hp_sys.max_hp)} HP '
                    f'{self.obj.TOUCHING_DAMAGE / self.o_atk * 100 if self.o_atk else 0:.0f}% AT '
@@ -1183,6 +1186,7 @@ class Entities:
 
         def __repr__(self):
             return str(self)
+
 
     class EntityDefinition(Entity):
         def __init__(self, *args, **kwargs):
@@ -5599,6 +5603,7 @@ class Entities:
             self.tick = 0
 
         def t_draw(self):
+            self.img = game.get_game().graphics['entity_raven']
             self.set_rotation(-self.obj.velocity.get_net_rotation())
             super().t_draw()
             nt = self.obj.tick
@@ -6378,11 +6383,46 @@ class Entities:
                 self.moon_eye.action_state = 6
             self.obj.pos << self.sun_eye.obj.pos
 
+    class Disciple(Entity):
+        NAME = 'The ?????'
+        BOSS_NAME = 'Unknown'
+        CHAOS = True
+        DISPLAY_MODE = 1
+        PHASE_SEGMENTS = [.9998]
+        IS_MENACE = True
+        LOOT_TABLE = LootTable([])
+
+        def __init__(self, pos):
+            super().__init__(pos, game.get_game().graphics['entity3_chaos_disciple'], BuildingAI,
+                             hp=12 * 10 ** 9)
+            self.hp_sys.ADAPTABILITY += 0.0007
+            for d in self.hp_sys.defenses:
+                self.hp_sys.defenses[d] = 150
+                self.hp_sys.resistances[d] *= 3
+
+        def t_draw(self):
+            super().t_draw()
+            self.NAME = ''
+            for _ in range(6):
+                c = random.randint(0, 127)
+                while not str.isprintable(chr(c)):
+                    c = random.randint(0, 127)
+                self.NAME += chr(c)
+
+        def get_shown_txt(self):
+            w = game.get_game().player.weapons[game.get_game().player.sel_weapon]
+
+            if w in self.hp_sys.adaption:
+                return self.NAME, f'WEAPON {(1 - math.e ** -self.hp_sys.adaption[w]) * 100:.0f}% ADAPTED'
+            else:
+                return self.NAME, 'UNADAPTED'
 
     class LifeFire(Entity):
         NAME = 'Life Fire'
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([])
+        VITAL = True
+        DIVERSITY = False
 
         def __init__(self, pos, rot, follow_entity=None, tt=0):
             super().__init__(pos, game.get_game().graphics['entity_lifefire'], FastBulletAI, 10 ** 6)
@@ -6405,7 +6445,7 @@ class Entities:
             if self.tick > 10:
                 self.obj.update()
                 game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(self.obj.pos),
-                                                                        col=(200, 255, 100), t=6, sp=20, n=3))
+                                                                        col=(200, 255, 100), t=12, sp=5, n=7, g=0.1))
             else:
                 if self.follow_entity is not None:
                     self.obj.pos << (self.follow_entity.obj.pos[0] + self.ax, self.follow_entity.obj.pos[1] + self.ay)
@@ -6415,6 +6455,8 @@ class Entities:
                           position.displayed_position(self.obj.pos),
                           position.displayed_position((self.obj.pos[0] + ax * 3000, self.obj.pos[1] + ay * 3000)),
                           3)
+                self.hp_sys.hp -= 5e3
+
 
         def on_update(self):
             self.tick += 1
@@ -6422,7 +6464,6 @@ class Entities:
                 pass
             else:
                 self.damage()
-                self.hp_sys.hp -= 25 * 10 ** 3
 
         def damage(self):
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
@@ -6434,6 +6475,8 @@ class Entities:
         NAME = 'Life Dart'
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([])
+        VITAL = True
+        DIVERSITY = False
 
         def __init__(self, pos, rot, follow_entity=None):
             super().__init__(pos, game.get_game().graphics['entity_lifefire'], FastBulletAI, 10 ** 6)
@@ -6479,6 +6522,7 @@ class Entities:
                           position.displayed_position(self.obj.pos),
                           position.displayed_position((self.obj.pos[0] + ax * 3000, self.obj.pos[1] + ay * 3000)),
                           int(7 + 6 * math.sin(self.tt / 30)))
+                self.hp_sys.hp -= 5e3
 
         def on_update(self):
             self.tick += 1
@@ -6723,13 +6767,13 @@ class Entities:
                             position.displayed_position(self.obj.pos - (self.rw // 2, self.rh // 2)),
                             position.displayed_position(self.obj.pos + (self.rw // 2, self.rh // 2)), 10)
                 if game.get_game().player.obj.pos[0] < self.obj.pos[0] - self.rw // 2:
-                    game.get_game().player.obj.velocity.add(vector.Vector2D(dx=50))
+                    game.get_game().player.obj.velocity.add(vector.Vector2D(dx=(self.obj.pos[0] - self.rw // 2 - game.get_game().player.obj.pos[0]) / 20))
                 if game.get_game().player.obj.pos[0] > self.obj.pos[0] + self.rw // 2:
-                    game.get_game().player.obj.velocity.add(vector.Vector2D(dx=-50))
+                    game.get_game().player.obj.velocity.add(vector.Vector2D(dx=(self.obj.pos[0] + self.rw // 2 - game.get_game().player.obj.pos[0]) / 20))
                 if game.get_game().player.obj.pos[1] < self.obj.pos[1] - self.rh // 2:
-                    game.get_game().player.obj.velocity.add(vector.Vector2D(dy=50))
+                    game.get_game().player.obj.velocity.add(vector.Vector2D(dy=(self.obj.pos[1] - self.rh // 2 - game.get_game().player.obj.pos[1]) / 20))
                 if game.get_game().player.obj.pos[1] > self.obj.pos[1] + self.rh // 2:
-                    game.get_game().player.obj.velocity.add(vector.Vector2D(dy=-50))
+                    game.get_game().player.obj.velocity.add(vector.Vector2D(dy=(self.obj.pos[1] + self.rh // 2 - game.get_game().player.obj.pos[1]) / 20))
 
 
         def on_update(self):
@@ -6763,7 +6807,7 @@ class Entities:
                 self.img = game.get_game().graphics['entity_reincarnation__the_worlds_tree_' + self.PHASES[self.phase]]
                 self.NAME = 'The World\'s Tree - ' + self.PHASES[self.phase].upper()
                 self.hp_sys.effect(effects.Frozen(3, 1))
-            if random.uniform(0, 10 - self.phase) < .4:
+            if random.uniform(0, 10 - self.phase) < .4 and False:
                 for i, e in enumerate(game.get_game().entities):
                     if type(e) is Entities.LifeFire:
                         game.get_game().entities[i].obj = SoulFlowerAI(e.obj.pos)
@@ -6802,6 +6846,7 @@ class Entities:
                                                                           vector.coordinate_rotation(1, 0)))
                         game.get_game().entities.append(Entities.LifeDart(self.obj.pos + (4000 + self.tick * 100 % 4000, 1000),
                                                                           vector.coordinate_rotation(-1, 0)))
+                        game.get_game().entities.append(Entities.LifeDart(self.obj.pos, random.randint(0, 360)))
             elif self.phase == 1:
                 if self.at_p % 2 == 0:
                     self.obj.state = 1
@@ -6817,7 +6862,6 @@ class Entities:
                         for ar in range(int((self.obj.pos[0] + self.obj.pos[1]) / 300) % 60, 360, 60):
                             game.get_game().entities.append(Entities.LifeDart(self.obj.pos, ar, self))
             elif self.phase == 2:
-                self.obj.state = 1
                 if self.at_p % 2 == 0:
                     self.rw = 500
                     self.rh = 500
@@ -6825,82 +6869,90 @@ class Entities:
                     self.obj.state = 1
                 else:
                     self.obj.state = 0
-                    self.rw = 2000
-                    self.rh = 8000
-                    if self.tick % 10 == 0:
-                        game.get_game().entities.append(Entities.LargeTree(self.obj.pos, 0))
-                        game.get_game().entities.append(Entities.LargeTree(self.obj.pos, 180))
+                    self.rw = 5000
+                    self.rh = 5000
+                    if self.tick % 100 == 0:
+                        sr = random.randint(0, 360)
+                        for ar in range(0, 300, 20):
+                            game.get_game().entities.append(Entities.LifeFire(self.obj.pos, ar + sr, self))
             elif self.phase == 3:
-                self.obj.state = 2
-                rr = random.randint(0, 30)
-                if self.tick % 16 == 0:
-                    for ar in range(0, 360, 30):
-                        game.get_game().entities.append(Entities.LifeFire(self.obj.pos, ar + rr, self))
-                elif self.tick % 2 == 0:
-                    px, py = game.get_game().player.obj.pos
-                    rr = vector.coordinate_rotation(px - self.obj.pos[0], py - self.obj.pos[1])
-                    pr = self.tick % 16 // 2
-                    game.get_game().entities.append(Entities.LifeFire(self.obj.pos, rr - pr * 5, self))
-                    game.get_game().entities.append(Entities.LifeFire(self.obj.pos, rr + pr * 5, self))
+                if self.at_p % 2 == 0:
+                    self.rw = 500
+                    self.rh = 500
+                    self.obj.FRICTION = 1
+                    self.obj.state = 1
+                    if self.tick % 20 == 0:
+                        ar = random.randint(0, 360)
+                        game.get_game().entities.append(Entities.LifeDart(game.get_game().player.obj.pos + vector.Vector2D(ar, 1000)
+                                                                          , ar + 180))
+                else:
+                    self.rw = 1000
+                    self.rh = 1000
+                    self.obj.state = 0
+                    if self.tick % 5 == 0:
+                        ar = self.tick * 10 % 360
+                        game.get_game().entities.append(Entities.LifeFire(self.obj.pos + vector.Vector2D(ar, 1000), ar + 180))
             elif self.phase == 4:
                 if self.tick % 80 < 40:
                     self.obj.state = 1
                 else:
                     self.obj.state = 2
-                if self.tick % 2 == 0:
-                    dr = self.tick // 2 * 20 % 360
-                    for ar in range(0, 360, 24):
-                        game.get_game().entities.append(Entities.LifeFire(self.obj.pos, ar + dr, self))
+                self.rw = 4000
+                self.rh = 1000
+                if self.tick % 50 == 0:
+                    for ry in range(-2000, 2001, 400):
+                        game.get_game().entities.append(Entities.LifeFire(self.obj.pos + (-4000, ry),
+                                                        vector.coordinate_rotation(1, 0)))
             elif self.phase == 5:
+                self.rw = 2000
+                self.rh = 2000
                 self.obj.state = 0
-                if self.tick % 16 == 0:
+                if self.tick % 4 == 0:
                     px, py = game.get_game().player.obj.pos
                     rr = vector.coordinate_rotation(px - self.obj.pos[0], py - self.obj.pos[1])
-                    game.get_game().entities.append(Entities.LifeFire(self.obj.pos, rr - 15, self))
-                    game.get_game().entities.append(Entities.LifeFire(self.obj.pos, rr + 15, self))
-                    game.get_game().entities.append(Entities.LifeFire(self.obj.pos, rr - 45, self))
-                    game.get_game().entities.append(Entities.LifeFire(self.obj.pos, rr + 45, self))
-                elif self.tick % 8 == 0:
-                    px, py = game.get_game().player.obj.pos
-                    rr = vector.coordinate_rotation(px - self.obj.pos[0], py - self.obj.pos[1])
-                    game.get_game().entities.append(Entities.LifeFire(self.obj.pos, rr, self))
-                    game.get_game().entities.append(Entities.LifeFire(self.obj.pos, rr - 30, self))
-                    game.get_game().entities.append(Entities.LifeFire(self.obj.pos, rr + 30, self))
-                    game.get_game().entities.append(Entities.LifeFire(self.obj.pos, rr - 60, self))
-                    game.get_game().entities.append(Entities.LifeFire(self.obj.pos, rr + 60, self))
+                    if self.tick % 5 == 0:
+                        for dr in range(0, 360, 60):
+                            ar = self.tick * 5 % 360 + dr
+                            game.get_game().entities.append(Entities.LifeFire(self.obj.pos + vector.Vector2D(ar, 1000), ar + 180))
             elif self.phase == 6:
+                self.rw = 6000
+                self.rh = 6000
                 px, py = game.get_game().player.obj.pos
                 ax, ay = random.randint(-1000, 1000), random.randint(-1000, 1000)
                 game.get_game().entities.append(Entities.LifeFire((px + ax, py + ay),
                                                 vector.coordinate_rotation(-ax, -ay), self))
-                if self.tick % 2 == 0:
+                if self.tick % 5 == 0:
                     game.get_game().entities.append(
-                        Entities.LifeFire((game.get_game().player.obj.pos[0] + random.randint(-3000, 3000),
+                        Entities.LifeDart((game.get_game().player.obj.pos[0] + random.randint(-3000, 3000),
                                            game.get_game().player.obj.pos[1] + random.randint(1000, 4000)),
                                           vector.coordinate_rotation(0, -1)))
             elif self.phase == 7:
                 self.obj.state = 1
+                self.rw = 6000
+                self.rh = 4000
                 if self.tick % 3 == 0:
-                    game.get_game().entities.append(
-                        Entities.LifeFire((game.get_game().player.obj.pos[0] + random.randint(-3000, 3000),
-                                           game.get_game().player.obj.pos[1] + random.randint(1000, 4000)),
-                                          vector.coordinate_rotation(0, -1)))
-                if self.tick % 12 == 0:
+                    for _ in range(5):
+                        game.get_game().entities.append(
+                            Entities.LifeFire((game.get_game().player.obj.pos[0] + random.randint(-3000, 3000),
+                                               game.get_game().player.obj.pos[1] + random.randint(1000, 4000)),
+                                              vector.coordinate_rotation(0, -1)))
+                if self.tick % 48 == 0:
                     for _ in range(9):
                         px, py = game.get_game().player.obj.pos
                         rr = vector.coordinate_rotation(px - self.obj.pos[0], py - self.obj.pos[1])
-                        game.get_game().entities.append(Entities.LifeFire(self.obj.pos, rr + random.randint(-30, 30), self))
+                        game.get_game().entities.append(Entities.LifeDart(self.obj.pos, rr + random.randint(-30, 30), self))
             elif self.phase == 8:
                 self.obj.state = 1
                 if self.tick % 2 == 0:
-                    game.get_game().entities.append(
-                        Entities.LifeFire((game.get_game().player.obj.pos[0] + random.randint(-3000, 3000),
-                                           game.get_game().player.obj.pos[1] + random.randint(1000, 4000)),
-                                          vector.coordinate_rotation(0, -1)))
-                if self.tick % 6 == 0:
+                    for _ in range(7):
+                        game.get_game().entities.append(
+                            Entities.LifeFire((game.get_game().player.obj.pos[0] + random.randint(-3000, 3000),
+                                               game.get_game().player.obj.pos[1] + random.randint(1000, 4000)),
+                                              vector.coordinate_rotation(0, -1)))
+                if self.tick % 60 == 0:
                     pr = self.tick % 360
                     for ar in range(0, 360, 20):
-                        game.get_game().entities.append(Entities.LifeFire(self.obj.pos, ar + pr, self))
+                        game.get_game().entities.append(Entities.LifeDart(self.obj.pos, ar + pr, self))
 
     class Faith(Entity):
         NAME = 'Supreme Lord: Faith'

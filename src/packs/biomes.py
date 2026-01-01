@@ -1,6 +1,6 @@
 from scipy.stats import energy_distance
 
-from underia import entity, game, inventory, player_profile, BuildingAI
+from underia import entity, game, inventory, player_profile
 from values import damages, effects
 from visual import draw
 from physics import vector
@@ -855,12 +855,13 @@ class OriginBulb(Entity):
         IndividualLoot('magic_stone', 1, 12, 18),
         IndividualLoot('leaf', .5, 12, 25),
         IndividualLoot('life_core', 1, 4, 8),
+        SelectionLoot([('magic_defense', 1, 1), ('leading_ray', 1, 1), ('mana_shine', 1, 1)], 1, 1),
     ])
 
     PHASE_SEGMENTS = [.8]
 
     def __init__(self, pos):
-        super().__init__(pos, game.get_game().graphics['entity_origin_bulb'], BuildingAI, 14000)
+        super().__init__(pos, game.get_game().graphics['entity_origin_bulb'], entity.BuildingAI, 14000)
         self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] += 45
         self.hp_sys.defenses[damages.DamageTypes.MAGICAL] += 45
         self.hp_sys.defenses[damages.DamageTypes.PIERCING] += 45
@@ -971,15 +972,23 @@ class Balrog(Entity):
     SOUND_HURT = 'corrupt'
     SOUND_DEATH = 'huge_monster'
 
+    LOOT_TABLE = entity.LootTable([
+        IndividualLoot('firy_plant', 1, 8, 20),
+        IndividualLoot('firite_ingot', 1, 10, 20),
+        SelectionLoot([('hellseal', 1, 1), ('burst', 1, 1), ('devils_fire', 1, 1)], 1, 1),
+        IndividualLoot('hell_giantshield', 1, 1, 1),
+
+        ])
+
     PHASE_SEGMENTS = [.6]
 
     def __init__(self, pos):
-        super().__init__(pos, game.get_game().graphics['entity_balrog'], BuildingAI, 32000)
+        super().__init__(pos, game.get_game().graphics['entity_balrog'], entity.BuildingAI, 32000)
         self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] += 75
         self.hp_sys.defenses[damages.DamageTypes.MAGICAL] += 75
         self.hp_sys.defenses[damages.DamageTypes.PIERCING] += 75
 
-        self.obj.MASS = 300
+        self.obj.MASS = 500
         self.obj.FRICTION = .9
 
         self.phase = 0
@@ -1070,6 +1079,39 @@ class Balrog(Entity):
         for f in self.fb:
             f.on_update()
 
+@entity.Entities.entity_type
+class Isotherms(WormEntity):
+    NAME = 'Isotherms'
+    DISPLAY_MODE = 1
+    IS_MENACE = True
+    BOSS_NAME = 'Disastrous Worm'
+    VITAL = True
+    SOUND_SPAWN = 'boss'
+    SOUND_HURT = 'corrupt'
+    SOUND_DEATH = 'explosive'
 
+    LOOT_TABLE = entity.LootTable([
+        IndividualLoot('firy_plant', 1, 8, 20),
+        IndividualLoot('thermal_ingot', 1, 10, 20),
+        ])
 
+    def __init__(self, pos):
+        super().__init__(pos, 20, game.get_game().graphics['entity_isotherms_head'],
+                         game.get_game().graphics['entity_isotherms_body'], entity.DestroyerAI,
+                         80000, 120, 300)
+        self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] += 300
+        self.hp_sys.defenses[damages.DamageTypes.MAGICAL] += 300
+        self.hp_sys.defenses[damages.DamageTypes.PIERCING] += 300
+        self.hp_sys.defenses[damages.DamageTypes.ARCANE] += 300
 
+        self.tb = 12
+        self.obj.MASS *= 2
+
+        for i, b in enumerate(self.body):
+            dt = i == self.tb
+            for d in b.hp_sys.defenses:
+                b.hp_sys.defenses[d] += 300 - 280 * dt
+            if dt:
+                b.img = game.get_game().graphics['entity_isotherms_body_h']
+            if i == len(self.body) - 1:
+                b.img = game.get_game().graphics['entity_isotherms_tail']

@@ -534,7 +534,7 @@ class Player:
             self.p_data.append(f'{int(self.attacks[3] * self.attack * 100)}% octave')
             self.p_data.append(f'{int(self.attacks[4] * self.attack * 100)}% hallow')
             self.p_data.append(f'{int(self.attacks[5] * self.attack * 100)}% pacify')
-        self.attack *= 1 + (random.random() < self.strike) * (1 + self.strike) ** 2
+        # self.attack *= 1 + (random.random() < self.strike) * (1 + self.strike) ** 2
         self.hp_sys.resistances[damages.DamageTypes.TOUCHING] = .8 / (self.calculate_data('damage_absorb', rate_data=True, rate_multiply=True) - .2)
         self.hp_sys.resistances[damages.DamageTypes.MAGICAL] = .8 / (self.calculate_data('damage_absorb', rate_data=True, rate_multiply=True) - .2)
         self.p_data.append(f'{100 - self.hp_sys.resistances[damages.DamageTypes.TOUCHING] * 100:.2f}% res.')
@@ -609,7 +609,7 @@ class Player:
                         f = 1
                 if not f:
                     self.splint_t -= 10
-            else:
+            elif self.splint_t > -1000:
                 i = (9 - self.splint_t % 10) % 10
                 if self.splint_t < -400:
                     self.splint_t = 11
@@ -617,12 +617,26 @@ class Player:
                 i = max(0, min(3, i))
                 d = [pg.K_w, pg.K_a, pg.K_s, pg.K_d][i]
                 if d in game.get_game().get_keys():
+                    self.splint_t = -1001 - i
+                else:
+                    self.splint_t -= 10
+            else:
+                self.splint_t -= 10
+                if self.splint_t <= -1040:
+                    self.splint_t = 1
+                f = 0
+                for d in [pg.K_w, pg.K_a, pg.K_s, pg.K_d]:
+                    if d in game.get_game().get_keys():
+                        f = 1
+                if not f:
+                    i = (9 - self.splint_t % 10) % 10
+                    rt = [0, 270, 180, 90]
+                    i = max(0, min(3, i))
                     self.splint_t = self.splint_cd
                     self.obj.velocity += vector.Vector(rt[i], self.splint_distance * 4)
                     if 'logos_thaumaturgy' in self.accessories:
                         self.hp_sys.effect(effects.LogosThaumaturgy(3, 3))
-                else:
-                    self.splint_t -= 10
+
             self.p_data.append(f'{self.splint_distance} sprint')
         self.p_data.append(f'vel. {int(self.obj.velocity.get_net_value() / 2) / 10}('
                            f'{int(self.obj.velocity.get_net_rotation())}deg)')
@@ -1088,45 +1102,54 @@ class Player:
 
             wc = self.profile.get_color()
             aw = (127 + wc[0] // 2, 127 + wc[1] // 2, 127 + wc[2] // 2)
-            bc = (wc[0] // 2, wc[1] // 2, wc[2] // 2)
-            bcc = (wc[0] // 3, wc[1] // 3, wc[2] // 3)
+            abc = (wc[0] // 2, wc[1] // 2, wc[2] // 2)
+            bc = (242, 166, 94)# (wc[0] // 2, wc[1] // 2, wc[2] // 2)
+            bcc = (255, 145, 102)# (wc[0] // 3, wc[1] // 3, wc[2] // 3)
 
-            pg.draw.polygon(game.get_game().displayer.canvas, wc,
+            pg.draw.polygon(game.get_game().displayer.canvas, aw,
                             [(150, 180), (650 + at_l, 180), (700 + at_l, 80), (150, 80)])
-            pg.draw.polygon(game.get_game().displayer.canvas, bc,
+            pg.draw.polygon(game.get_game().displayer.canvas, bcc,
                             [(150, 180), (650 + at_l, 180), (700 + at_l, 80), (150, 80)],
-                            width=10)
+                            width=8)
 
-            pg.draw.rect(game.get_game().displayer.canvas, (0, 50, 50),
-                         (150, 40, 600 + at_l, 80))
-            pg.draw.rect(game.get_game().displayer.canvas, (0, 255, 255),
-                         (750 + at_l - int((600 + at_l) * mp_p), 40, int(int(at_l + 600) * mp_p), 80))
+            pg.draw.polygon(game.get_game().displayer.canvas, (71, 178, 159),
+                            [(150, 40), (750 + at_l, 40), (720 + at_l, 100), (120, 100)],)
+            pg.draw.polygon(game.get_game().displayer.canvas, (102, 255, 227),
+                            [(750 + at_l - int((600 + at_l) * mp_p), 40), (750 + at_l, 40), (720 + at_l, 100), (720 + at_l - int((600 + at_l) * mp_p), 100)],
+                            )
+            pg.draw.polygon(game.get_game().displayer.canvas, bcc,
+                            [(150, 40), (750 + at_l, 40), (720 + at_l, 100), (120, 100)],
+                            width=8)
             at = (600 + at_l) * 100 // self.max_mana
             at = max(at, 50)
-            for ax in range(at, 600 + at_l, at):
-                pg.draw.rect(game.get_game().displayer.canvas, bc,
-                             (150, 40, ax, 80), width=6)
-            pg.draw.rect(game.get_game().displayer.canvas, bcc,
-                         (150, 40, 600 + at_l, 80), width=10)
+            for ax in range(at, 600 + at_l + 1, at):
+                pg.draw.polygon(game.get_game().displayer.canvas, bc,
+                                [(150, 40), (150 + ax, 40), (120 + ax, 100),
+                                 (120, 100)],
+                                width=4)
 
 
             if self.max_talent:
-                pg.draw.circle(game.get_game().displayer.canvas, (0, 50, 0),
-                               (750 + at_l, 80), 45)
-                pg.draw.circle(game.get_game().displayer.canvas, (0, 255, 0),
-                               (750 + at_l, 80), int(45 * tp_p))
-                pg.draw.circle(game.get_game().displayer.canvas, bcc,
-                               (750 + at_l, 80), 45, width=10)
+                pg.draw.polygon(game.get_game().displayer.canvas, (0, 50, 0),
+                                [(755 + at_l, 25), (815 + at_l, 25), (760 + at_l, 135), (700 + at_l, 135)],
+                                )
+                pg.draw.polygon(game.get_game().displayer.canvas, (207, 255, 112),
+                                [(700 + 55 * tp_p + at_l, 135 - 110 * tp_p), (760 + 55 * tp_p + at_l, 135 - 110 * tp_p),
+                                 (760 + at_l, 135), (700 + at_l, 135)],
+                                )
+                pg.draw.polygon(game.get_game().displayer.canvas, bcc,
+                                [(755 + at_l, 25), (815 + at_l, 25), (760 + at_l, 135), (700 + at_l, 135)],
+                                width=8)
 
 
             pg.draw.circle(game.get_game().displayer.canvas, bc, (150, 140), 120)
-            pg.draw.circle(game.get_game().displayer.canvas, aw, (150, 140), int(120 - self.shield_break / 5))
-            pg.draw.circle(game.get_game().displayer.canvas, wc, (150, 140), int(100 * hp_p))
-            pg.draw.circle(game.get_game().displayer.canvas, (255, 255, 0), (150, 140), int(100 * sd_p))
+            pg.draw.circle(game.get_game().displayer.canvas, abc, (150, 140), int(120 - self.shield_break / 5))
+            pg.draw.circle(game.get_game().displayer.canvas, aw, (150, 140), int(100 * hp_p))
+            pg.draw.circle(game.get_game().displayer.canvas, (255, 181, 112), (150, 140), int(100 * sd_p))
             at = 120 * 250 // self.hp_sys.max_hp
             at = int(max(at, 20))
             for ax in range(at, 120 + 1, at):
-                pg.draw.circle(game.get_game().displayer.canvas, bcc, (150, 140), ax, width=2)
+                pg.draw.circle(game.get_game().displayer.canvas, bc, (150, 140), ax, width=2)
             pg.draw.circle(game.get_game().displayer.canvas, bcc, (150, 140), 120, width=10)
 
 
@@ -1350,26 +1373,26 @@ class Player:
                     self.obj.velocity.add(vector.Vector(vector.coordinate_rotation(px, py), min(0.0, e_hp - s_hp) / self.hp_sys.max_hp * 250))
             self.obj.object_gravitational(_entity.obj)
             _entity.obj.object_gravitational(self.obj)
-        nx = 10 + 30 + 10
-        tsk_rect = pg.Rect(nx - 30, 270, 60, 60)
+        nx = 310
+        tsk_rect = pg.Rect(nx - 30, 200, 60, 60)
         im = game.get_game().graphics['background_ui_tasks']
         if not tsk_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
             im = pg.transform.scale(im, (54, 54))
-        imr = im.get_rect(center=(nx, 300))
+        imr = im.get_rect(center=(nx, 230))
         displayer.canvas.blit(im, imr)
-        nx = 10 + 30 + 10 + 60
-        att_rect = pg.Rect(nx - 30, 270, 60, 60)
+        nx = 380
+        att_rect = pg.Rect(nx - 30, 200, 60, 60)
         im = game.get_game().graphics['background_ui_attributes']
         if not att_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
             im = pg.transform.scale(im, (54, 54))
-        imr = im.get_rect(center=(nx, 300))
+        imr = im.get_rect(center=(nx, 230))
         displayer.canvas.blit(im, imr)
-        nx = 10 + 30 + 10 + 60 * 2
-        inv_rect = pg.Rect(nx - 30, 270, 60, 60)
+        nx = 450
+        inv_rect = pg.Rect(nx - 30, 200, 60, 60)
         im = game.get_game().graphics['background_ui_inventory']
         if not inv_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
             im = pg.transform.scale(im, (54, 54))
-        imr = im.get_rect(center=(nx, 300))
+        imr = im.get_rect(center=(nx, 230))
         displayer.canvas.blit(im, imr)
         if tsk_rect.collidepoint(game.get_game().displayer.reflect(*pg.mouse.get_pos())):
             self.in_ui = True
@@ -2094,23 +2117,21 @@ class Player:
                                 entity.entity_spawn(entity.Entities.Python, 2000, 2000, 0, 1145, 100000)
                         elif item.id == 'suspicious_eye':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if type(e) is effects.StoneAltar]):
-                                game.get_game().dialog.dialog('Unable to summon True Eye.', 'There is no Stone Altar nearby.')
+                                game.get_game().dialog.dialog('...\nBut nothing happens.')
                             else:
                                 entity.entity_spawn(entity.Entities.TrueEye, 2000, 2000, 0, 1145, 100000)
                                 self.inventory.remove_item(item)
                         elif item.id == 'wild_fluffball':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.StoneAltar]):
-                                game.get_game().dialog.dialog('Unable to summon Fluffff.',
-                                                              'There is no Stone Altar nearby.')
+                                game.get_game().dialog.dialog('...\nBut nothing happens.')
                             else:
                                 entity.entity_spawn(entity.Entities.Fluffff, 2000, 2000, 0, 1145, 100000)
                                 self.inventory.remove_item(item)
                         elif item.id == 'fire_slime':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.StoneAltar]):
-                                game.get_game().dialog.dialog('Unable to summon Magma King.',
-                                                              'There is no Stone Altar nearby.')
+                                game.get_game().dialog.dialog('...\nBut nothing happens.')
                             else:
                                 entity.entity_spawn(entity.Entities.MagmaKing, 2000, 2000, 0, 1145, 100000)
                                 entity.entity_spawn(entity.Entities.MagmaKingCounter, 2000, 2000, 0, 1145, 100000)
@@ -2118,40 +2139,46 @@ class Player:
                         elif item.id == 'monument':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.StoneAltar]):
-                                game.get_game().dialog.dialog('Unable to summon Azure Stele.',
-                                                              'There is no Stone Altar nearby.')
+                                game.get_game().dialog.dialog('...\nBut nothing happens.')
                             else:
                                 entity.entity_spawn(entity.Entities.AzureStele, 2000, 2000, 0, 1145, 100000)
                                 self.inventory.remove_item(item)
                         elif item.id == 'magic_bulb':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.StoneAltar]):
-                                game.get_game().dialog.dialog('Unable to summon Origin Bulb.',
-                                                              'There is no Stone Altar nearby.')
+                                game.get_game().dialog.dialog('...\nBut nothing happens.')
                             else:
                                 entity.entity_spawn(entity.Entities.OriginBulb, 2000, 2000, 0, 1145, 100000)
                                 self.inventory.remove_item(item)
                         elif item.id == 'red_apple':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.StoneAltar]):
-                                game.get_game().dialog.dialog('Unable to summon the World\'s Fruit.',
-                                                              'There is no Stone Altar nearby.')
+                                game.get_game().dialog.dialog('...\nBut nothing happens.')
                             else:
                                 entity.entity_spawn(entity.Entities.TheWorldsFruit, 2000, 2000, 0, 1145, 100000)
                                 self.inventory.remove_item(item)
                         elif item.id == 'wind':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.StoneAltar]):
-                                game.get_game().dialog.dialog('Unable to summon Sandstorm.',
-                                                              'There is no Stone Altar nearby.')
+                                game.get_game().dialog.dialog('...\nBut nothing happens.')
                             else:
                                 entity.entity_spawn(entity.Entities.SandStorm, 2000, 2000, 0, 1145, 100000)
                                 self.inventory.remove_item(item)
+                        elif item.id == 'nature_core':
+                            if not len([1 for e in game.get_game().player.hp_sys.effects if
+                                        type(e) is effects.StoneAltar]) or game.get_game().get_biome() not in ['hell', 'fallen_sea']:
+                                game.get_game().dialog.dialog('...\nBut nothing happens.')
+                            elif game.get_game().get_biome() == 'hell':
+                                entity.entity_spawn(entity.Entities.Balrog, 2000, 2000, 0, 1145, 100000)
+                                self.inventory.remove_item(item)
+                            else:
+                                entity.entity_spawn(entity.Entities.GlimmerSkate, 2000, 2000, 0, 1145, 100000)
+                                self.inventory.remove_item(item)
+
                         elif item.id == 'blood_substance':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.StoneAltar]):
-                                game.get_game().dialog.dialog('Unable to summon Abyss Eye.',
-                                                              'There is no Stone Altar nearby.')
+                                game.get_game().dialog.dialog('...\nBut nothing happens.')
                             else:
                                 entity.entity_spawn(entity.Entities.AbyssEye, 1600, 1600, 0, 1145, 100000)
                                 self.inventory.remove_item(item)
@@ -2162,8 +2189,7 @@ class Player:
                         elif item.id == 'sky_painting':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.MetalAltar]):
-                                game.get_game().dialog.dialog('Unable to summon the Sky Cubes.',
-                                                              'There is no Metal Altar nearby.')
+                                game.get_game().dialog.dialog('...\nBut nothing happens.')
                             else:
                                 entity.entity_spawn(entity.Entities.SkyCubeFighter, 2000, 2000, 0, 1145, 100000)
                                 entity.entity_spawn(entity.Entities.SkyCubeRanger, 2000, 2000, 0, 1145, 100000)
@@ -2171,8 +2197,7 @@ class Player:
                         elif item.id == 'green_thing':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) in [effects.MetalAltar, effects.ScarlettAltar]]):
-                                game.get_game().dialog.dialog('Unable to summon the Heaven Goblins.',
-                                                              'There is no Metal Altar nearby.')
+                                game.get_game().dialog.dialog('...\nBut nothing happens.')
                             elif game.get_game().chapter == 1:
                                 entity.entity_spawn(entity.Entities.GoblinWaveEP2, 2000, 2000, 0, 1145, 100000)
                             else:
@@ -2183,8 +2208,7 @@ class Player:
                         elif item.id == 'mechanic_eye':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.MetalAltar]):
-                                game.get_game().dialog.dialog('Unable to summon Faithless and Truthless Eyes.',
-                                                               'There is no Metal Altar nearby.')
+                                game.get_game().dialog.dialog('...\nBut nothing happens.')
                             else:
                                 entity.entity_spawn(entity.Entities.FaithlessEye, 2000, 2000, 0, 1145, 100000)
                                 entity.entity_spawn(entity.Entities.TruthlessEye, 2000, 2000, 0, 1145, 100000)
@@ -2192,40 +2216,35 @@ class Player:
                         elif item.id == 'mechanic_worm':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.MetalAltar]):
-                                game.get_game().dialog.dialog('Unable to summon Destroyer.',
-                                                              'There is no Metal Altar nearby.')
+                                game.get_game().dialog.dialog('...\nBut nothing happens.')
                             else:
                                 entity.entity_spawn(entity.Entities.Destroyer, 4000, 4000, 0, 1145, 100000)
                                 self.inventory.remove_item(item)
                         elif item.id == 'electric_unit':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.MetalAltar]):
-                                game.get_game().dialog.dialog('Unable to summon The CPU.',
-                                                              'There is no Metal Altar nearby.')
+                                game.get_game().dialog.dialog('...\nBut nothing happens.')
                             else:
                                 entity.entity_spawn(entity.Entities.TheCPU, 2000, 2000, 0, 1145, 100000)
                                 self.inventory.remove_item(item)
                         elif item.id == 'mechanic_spider':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.MetalAltar]):
-                                game.get_game().dialog.dialog('Unable to summon Greed.',
-                                                              'There is no Metal Altar nearby.')
+                                game.get_game().dialog.dialog('...\nBut nothing happens.')
                             else:
                                 entity.entity_spawn(entity.Entities.Greed, 2000, 2000, 0, 1145, 100000)
                                 self.inventory.remove_item(item)
                         elif item.id == 'watch':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.MetalAltar]):
-                                game.get_game().dialog.dialog('Unable to summon Clock.',
-                                                               'There is no Metal Altar nearby.')
+                                game.get_game().dialog.dialog('...\nBut nothing happens.')
                             else:
                                 entity.entity_spawn(entity.Entities.EyeOfTime, 2000, 2000, 0, 1145, 100000)
                                 self.inventory.remove_item(item)
                         elif item.id == 'metal_food':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.MetalAltar]):
-                                game.get_game().dialog.dialog('Unable to summon Devil Python.',
-                                                              'There is no Metal Altar nearby.')
+                                game.get_game().dialog.dialog('...\nBut nothing happens.')
                             else:
                                 entity.entity_spawn(entity.Entities.DevilPython, 2000, 2000, 0, 1145, 100000)
                                 self.inventory.remove_item(item)
@@ -2239,8 +2258,7 @@ class Player:
                                 entity.entity_spawn(entity.Entities.Jevil2, 2000, 2000, 0, 1145, 100000)
                                 self.inventory.remove_item(item)
                             else:
-                                game.get_game().dialog.dialog('Unable to summon Jevil.',
-                                                              'There is no Metal Altar nearby.')
+                                game.get_game().dialog.dialog('...\nBut nothing happens.')
 
                         elif item.id == 'plantera_bulb':
                             self.inventory.remove_item(item)
@@ -2256,32 +2274,28 @@ class Player:
                         elif item.id == 'mechanical':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.ScarlettAltar]):
-                                game.get_game().dialog.dialog('Unable to summon the Mechanical Medusa.',
-                                                               'There is no Scarlett Altar nearby.')
+                                game.get_game().dialog.dialog('...\nBut nothing happens.')
                             else:
                                 entity.entity_spawn(entity.Entities.MechanicalMedusa, 2000, 2000, 0, 1145, 100000)
                                 self.inventory.remove_item(item)
                         elif item.id == 'dark_skull':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.ScarlettAltar]):
-                                game.get_game().dialog.dialog('Unable to summon the Wither.',
-                                                               'There is no Scarlett Altar nearby.')
+                                game.get_game().dialog.dialog('...\nBut nothing happens.')
                             else:
                                 entity.entity_spawn(entity.Entities.TheWither, 2000, 2000, 0, 1145, 100000)
                                 self.inventory.remove_item(item)
                         elif item.id == 'plastic_flower':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.ScarlettAltar]):
-                                game.get_game().dialog.dialog('Unable to summon the Life Watcher.',
-                                                               'There is no Scarlett Altar nearby.')
+                                game.get_game().dialog.dialog('...\nBut nothing happens.')
                             else:
                                 entity.entity_spawn(entity.Entities.LifeWatcher, 2000, 2000, 0, 1145, 100000)
                                 self.inventory.remove_item(item)
                         elif item.id == 'huge_snowball':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.ScarlettAltar]):
-                                game.get_game().dialog.dialog('Unable to summon the Polar Cube.',
-                                                               'There is no Scarlett Altar nearby.')
+                                game.get_game().dialog.dialog('...\nBut nothing happens.')
                             else:
                                 entity.entity_spawn(entity.Entities.PolarCube, 2000, 2000, 0, 1145, 100000)
                                 self.inventory.remove_item(item)

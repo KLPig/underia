@@ -69,7 +69,7 @@ class UrchinAI(SlowMoverAI):
 
 @entity.AIs.entity_ai
 class GlimmerSkateAI(MonsterAI):
-    MASS = 2000
+    MASS = 3500
     FRICTION = 0.8
     IDLE_SPEED = 12000
     IDLE_TIME = 15
