@@ -125,7 +125,7 @@ class Player:
         self.open_inventory = False
         self.open_chest = None
         self.attack = 0
-        self.mana = 0
+        self.mana = 30
         self.max_mana = 30
         self.recipes = []
         self.sel_recipe = 0

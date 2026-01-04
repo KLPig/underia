@@ -1894,7 +1894,7 @@ class Projectiles:
                 y = (x - self.start_pos[0]) / ax * ay + self.start_pos[1]
                 dx, dy = position.displayed_position((x, y))
                 game.get_game().displayer.point_light(self.COLOR, (dx, dy), 1.2,
-                                                      self.WIDTH / game.get_game().player.get_screen_scale())
+                                                      self.WIDTH / 2 / game.get_game().player.get_screen_scale())
             for ee in game.get_game().entities:
                 ex = ee.obj.pos[0] - game.get_game().player.obj.pos[0]
                 ey = ee.obj.pos[1] - game.get_game().player.obj.pos[1]
@@ -3682,6 +3682,13 @@ class Projectiles:
         ENABLE_IMMUNE = 0
 
         def __init__(self, pos, rotation, speed, damage, kb=0):
+            frames = inspect.stack()
+
+            self.weapon = None
+            for frame in frames:
+                if issubclass(type(frame.frame.f_locals['self']), weapons.Weapon):
+                    self.weapon = frame.frame.f_locals['self']
+                    break
             self.obj = ProjectileMotion(pos, rotation, (speed + self.SPEED) * self.SPEED_RATE)
             self.dmg = damage + self.DAMAGES
             self.img = game.get_game().graphics['projectiles_' + self.IMG]

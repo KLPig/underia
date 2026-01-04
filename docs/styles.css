@@ -56,7 +56,6 @@ td {
 .item {
   padding: 16px 16px;
   max-width: 120px;
-  overflow: scroll;
   :hover {
   color: #ffff00;
   }
@@ -115,10 +114,20 @@ border: 2px #ffff00 solid;
   line-height: 1.4;
 }
 
-tr.item-row td:first-child {
+tr.item-row  {
 border: 2px white solid;
 padding: 20px;
+max-height: 100%;
+height: 100%
 }
+
+td:first-child{
+border: 2px white solid;
+padding: 20px;
+max-height: 100%;
+height: 100%
+}
+
 
 /* 响应式调整 */
 @media (max-width: 768px) {
@@ -140,19 +149,25 @@ padding: 20px;
   overflow: auto;
 }
 
-.amount {
+p.amount {
     color: #ffffff;
+  vertical-align: flex;
+  max-width: 100px;
+  width: 100px;
+  text-overflow: hidden;
+  overflow-wrap: break-word;
   white-space: nowrap;
-  vertical-align: middle;
+  overflow: auto;
 }
 
 
 tr.item-row {
   height: 50px;
-  width: 1000px;
-  overflow: auto;
+  overflow: hidden;
   border-radius: 6px;
   margin: 12px auto;
+  max-width: 100px;
+  width: 100px;
 }
 
 th.header-class {
@@ -201,4 +216,85 @@ p.h {
 
 .p-old:hover {
   text-decoration: line-through;
+}
+
+@keyframes rainbow-color {
+    0% {
+        color: #ff0000;
+    }
+    14% {
+        color: #ff7f00;
+    }
+    29% {
+        color: #ffff00;
+    }
+    43% {
+        color: #00ff00;
+    }
+    58% {
+        color: #00ffff;
+    }
+    72% {
+        color: #0000ff;
+    }
+    87% {
+        color: #ff00ff;
+    }
+    100% {
+        color: #ff0000;
+    }
+}
+
+.txt-rainbow {
+  animation: rainbow-color 10s infinite;
+}
+
+@keyframes br_chaos {
+  0% {
+    color: #000000;
+  }
+  25% {
+    color: #ff0000;
+  }
+  50% {
+    color: #ff00ff;
+  }
+  75% {
+    color: #0000ff;
+  }
+  100% {
+    color: #000000;
+  }
+}
+
+.txt-br-chaos {
+  animation: br_chaos 5s infinite;
+}
+
+@keyframes bl_chaos {
+ 0% {
+    color: #000000;
+ }
+ 50% {
+    color: #ffffff;
+ }
+ 100% {
+    color: #000000;
+ }
+}
+
+.rec {
+    float: left;
+}
+
+
+.txt-bl-chaos {
+  animation: bl_chaos 2s infinite;
+}
+
+.p_pic {
+    padding: 0;
+    margin: 0;
+    max-width: 25px;
+    max-height: 25px;
 }

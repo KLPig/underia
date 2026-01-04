@@ -27,6 +27,9 @@ class DamageValue:
 
         return v
 
+    def __float__(self):
+        return float(self.value)
+
     def __add__(self, other):
         v = copy.copy(self)
         v.value += other
@@ -115,14 +118,14 @@ class HPSystem:
         elif issubclass(type(user), projectiles.Projectiles.Projectile):
             ee = 0b1
             if 'weapon' in dir(user):
-                if 'critical' in dir(user.critical):
+                if 'critical' in dir(user.weapon):
                     crit = game.get_game().player.strike + user.weapon.critical
                 else:
                     crit = game.get_game().player.strike
-                    log.error(f'Wrong analyze of origin weapon of {user.__name__}, that is {user.weapon}, this may be because of inner problems!')
+                    log.error(f'Wrong analyze of origin weapon of {user}, that is {user.weapon}, this may be because of inner problems!')
             else:
                 crit = game.get_game().player.strike
-                log.error(f'Cannot analyze original weapon of {user.__name__} - {user}, this may be because not calling Projectile.__init__() while defining a subclass' )
+                log.error(f'Cannot analyze original weapon of {user} - {user}, this may be because not calling Projectile.__init__() while defining a subclass' )
             user = user.weapon
         else:
             ee = 0

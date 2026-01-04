@@ -1,0 +1,60 @@
+
+@font-face {
+font-family: 'dtm-sans';
+src: url('./assets/dtm-sans.otf');
+}
+
+@font-face {
+font-family: 'fz-pixel';
+src: url('./assets/fz-pixel.ttf') format('truetype');
+}
+
+:root {
+  background: rgba(0,0,0,0.95);
+  color: #ffffff;
+    font-family: 'dtm-sans', 'fz-pixel', sans-serif;
+}
+
+
+.tt-time {
+    width: 200px;
+}
+
+.tt-lvl {
+    width: 100px;
+}
+
+td {
+    text-align: left;
+    padding: 3px;
+    border-width: 0px 2px 0px 2px;
+    border-style: solid;
+    border-color: #ffffff;
+    padding-left: 10px;
+}
+
+th {
+    text-weight: bold;
+    text-align: left;
+    font-size: 1.2em;
+    border-width: 0px 2px 0px 2px;
+    border-style: solid;
+    border-color: #ffffff;
+    padding: 10px;
+}
+
+.tt-DEBUG {
+    color: #dfdfdf;
+}
+
+.tt-WARN {
+    color: #ffffdf;
+}
+
+.tt-ERROR {
+    color: #ffdfdf;
+}
+
+.tt-FATAL {
+    color: #ff0000
+}

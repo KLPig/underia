@@ -389,8 +389,8 @@ class ThiefWeapon(SweepWeapon):
     DMG_AS_IDX = 1
 
     def __init__(self, name, damages: dict[int, float | hp_system.DamageValue], kb: float, img, speed: int, at_time: int, rot_speed: int,
-                 st_pos: int, throw_interval: int, power: int):
-        super().__init__(name, damages, kb, img, speed, at_time, rot_speed, st_pos, auto_fire=True)
+                 st_pos: int, throw_interval: int, power: int, critical: float = 0.13):
+        super().__init__(name, damages, kb, img, speed, at_time, rot_speed, st_pos, auto_fire=True, critical=critical)
         self.sk_mcd = throw_interval * 2
         self.throwing = False
         self.pow = power
@@ -442,8 +442,8 @@ class ThrowerThiefWeapon(SweepWeapon):
     DMG_AS_IDX = 1
 
     def __init__(self, name, damages: dict[int, float | hp_system.DamageValue], kb: float, img, speed: int, at_time: int, rot_speed: int,
-                 st_pos: int, throw_interval: int, power: int, stack_size: int):
-        super().__init__(name, damages, kb, img, speed, at_time, rot_speed, st_pos, auto_fire=True)
+                 st_pos: int, throw_interval: int, power: int, stack_size: int, critical: float = 0.13):
+        super().__init__(name, damages, kb, img, speed, at_time, rot_speed, st_pos, auto_fire=True, critical=critical)
         self.stack_size = stack_size
         self.amount = 0
         self.throwing = False
@@ -486,8 +486,8 @@ class ThiefDoubleKnife(ThiefWeapon):
     def __init__(self, name, damages: dict[int, float | hp_system.DamageValue], kb: float, img: str | tuple[str, str], speed: int, at_time: int, rot_speed: int,
                  st_pos: int, throw_interval: int, power: int, dcols: tuple[tuple[int, int, int], tuple[int, int, int]] |
                                  tuple[tuple[tuple[int, int, int], tuple[int, int, int]], tuple[tuple[int, int, int], tuple[int, int, int]]] | None = None,
-                 dsz: int = 4):
-        super().__init__(name, damages, kb, 'items_weapons_null', speed, at_time, rot_speed, st_pos, throw_interval, power)
+                 dsz: int = 4, critical: float = 0.13):
+        super().__init__(name, damages, kb, 'items_weapons_null', speed, at_time, rot_speed, st_pos, throw_interval, power, critical=critical)
         self.double_sided = True
         self.hand_timer = 0
         self.same_direction = False
@@ -1051,10 +1051,11 @@ class ChaosReap(Blade):
         target.play_sound('attack_slash')
         for ac in range(0, 256, 64):
             game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(target.obj.pos),
-                                                                    n=3, sp=7, t=50, col=(0, ac, 255), g=0.1))
+                                                                    n=5, sp=7, t=80, col=(0, ac, 255), g=0.1))
         target.hp_sys.enable_immune(2)
 
     def on_attack(self):
+        self.cutting_effect(4, (0, 255, 255), (0, 0, 100))
         super().on_attack()
         self.scale = (self.scale * 7 + self.t_scale * (5 - 4 * 1.2 ** -(self.tr / 50))) / 8
         self.rotate(4 * (1 - 1.2 ** -(self.tr / 50)) * self.rot_speed)

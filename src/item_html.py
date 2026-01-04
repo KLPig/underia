@@ -29,14 +29,28 @@ f += "<h1>Underia Items</h1>"
 f += open('./docs/header.html').read()
 
 f += "<table id='item-table'>"
-img_str = "<span class='item %s' id='%s-%s'> <img src='assets/graphics/items/%s.png' style='width: 50px; height: 50px'/></span>"
+img_str = ("<span class='item %s' id='%s-%s'> "
+           "<picture><source srcset='../assets/graphics/items/%s.gif' style='width: 50px; height: 50px'/>"
+           "<img srcset='../assets/graphics/items/%s.png' style='width: 50px; height: 50px'/>"
+           "</picture></span>")
 item_str = "<p style='color: rgb%s'>%s</p>" # <p class='desc' style='color: rgb%s'>%s</p>"
 
 kw = [(k, v) for k, v in underia.ITEMS.items()]
 
+ps = {}
+
+for ti, item in kw:
+    ps['p_item_' + ti] = (f"<a class='p-item' href='./{ti}.html'><picture>"
+                          f"<source srcset='../assets/graphics/items/{ti}.png' type='image/png' >"
+                          f"<source srcset='../assets/graphics/items/{ti}.gif' type='image/gif' >"
+           f"<img src='../assets/graphics/items/{ti}.png' style='width: 30px; height: 30px' class='p_pic' />"
+           f"</picture> {item.name.upper()} </a>")
+
+
+
 for _, item in kw:
     f += f"<tr onclick='location.href=\"./items/{item.id}.html\"' class='item-row' id='{item.id}-filter' style='max-height: 100px'>\n"
-    f += "<td>" + img_str % ('main', item.id, 'main', item.id) + "</td>\n"
+    f += "<td>" + img_str % ('main', item.id, 'main', item.id, item.id) + "</td>\n"
     c = underia.Inventory.Rarity_Colors[item.rarity]
     t = underia.text(item.name)
     if t is None:
@@ -117,7 +131,7 @@ for _, item in kw:
         if r_mat:
             dc += 'It involves as a material of '
             for r in r_mat[:15]:
-                dc += f'<a href=\'./{r.result}.html\'>{underia.ITEMS[r.result].name}</a>'
+                dc += f'$p_item_{r.result}'
                 if r is not r_mat[-1]:
                     dc += ', '
                 else:
@@ -170,7 +184,7 @@ for _, item in kw:
             dc += 'complex weapon.'
         dt = w.at_time + w.cd + 1
         dc += f' It attacks every {dt} ticks, i.e {round(80 / dt, 2)} per second. '
-        dc += f'It\'s "dashboard" dpm is {round(sum([v for _, v in w.damages.items()]) * 80 / dt, 1)}. '
+        dc += f'It\'s "dashboard" dpm is {round(sum([float(v) for _, v in w.damages.items()]) * 80 / dt, 1)}. '
 
     rf = ''
     if r_mat:
@@ -181,7 +195,7 @@ for _, item in kw:
 
         for recipe in r_mat:
             t = underia.text(underia.ITEMS[recipe.result].name)
-            rf += "<tr class='item-row %s'><td class='rec'>%s</td>\n" % (
+            rf += "<tr class='item-row %s'><td class='rec'>%s</td>\n<td>" % (
                 ' '.join([f'{k}-mat-filt' for k in recipe.material.keys()]) +
             f' {recipe.result}-res-filt',
                 dimg_str % ('main', recipe.result, 'main', recipe.result, recipe.result,
@@ -189,10 +203,10 @@ for _, item in kw:
             j = 0
             for it, amount in recipe.material.items():
                 t = underia.text(underia.ITEMS[it].name)
-                rf += "<td class='rec'>%s</td>\n" % (dimg_str % ('regular', it, 'regular', it, it,
+                rf += "<div class='rec'>%s</div>\n" % (dimg_str % ('regular', it, 'regular', it, it,
                                                                f'{underia.ITEMS[it].name} {t}*{amount}'))
                 j += 1
-            rf += "</tr>\n"
+            rf += "</td></tr>\n"
         rf += "</table>\n<script src='recipe_js.js'></script>\n</body></html>"
     if r_res:
         rf += f"<h1 style='color: rgb{c}'>As Results From:</h1>"
@@ -202,7 +216,7 @@ for _, item in kw:
 
         for recipe in r_res:
             t = underia.text(underia.ITEMS[recipe.result].name)
-            rf += "<tr class='item-row %s'><td class='rec'>%s</td>\n" % (
+            rf += "<tr class='item-row %s'><td class='rec'>%s</td>\n<td>" % (
                 ' '.join([f'{k}-mat-filt' for k in recipe.material.keys()]) +
                 f' {recipe.result}-res-filt',
                 dimg_str % ('main', recipe.result, 'main', recipe.result, recipe.result,
@@ -210,10 +224,10 @@ for _, item in kw:
             j = 0
             for it, amount in recipe.material.items():
                 t = underia.text(underia.ITEMS[it].name)
-                rf += "<td class='rec'>%s</td>\n" % (dimg_str % ('regular', it, 'regular', it, it,
+                rf += "<div class='rec'>%s</div>\n" % (dimg_str % ('regular', it, 'regular', it, it,
                                                                 f'{underia.ITEMS[it].name} {t}*{amount}'))
                 j += 1
-            rf += "</tr>\n"
+            rf += "</td></tr>\n"
         rf += "</table>"
 
     if not os.path.exists(f'./docs/items/{item.id}.html'):
@@ -222,17 +236,31 @@ for _, item in kw:
         with open(f'./docs/items/{item.id}.html', 'r', encoding='utf-8') as af:
             ap = af.read().split('<span id="wtw">')[1].split('</span>')[0]
             af.close()
-    nt = Template(temp).substitute({
+    dsc = ''
+    for d in item.get_full_desc().split('\n'):
+        if d.startswith('col'):
+            d = f'<span style="color: #{d[3:9]}">{d[9:]}</span>'
+        elif d.startswith('rainbow'):
+            d = f'<span class="txt-rainbow">{d[7:]}</span>'
+        elif d.startswith('bl_chaos'):
+            d = f'<span class="txt-bl-chaos">{d[8:]}</span>'
+        elif d.startswith('br_chaos'):
+            d = f'<span class="txt-br-chaos">{d[8:]}</span>'
+        elif d.startswith('cm'):
+            d = f'<span class="txt-cm">{d[2:]}</span>'
+        dsc += d + '<br/>'
+    sbs = {
         'name': item.name,
         'id': item.id,
         'inner_id': item.inner_id,
         'rarity': item.rarity,
-        'desc': item.get_full_desc().replace('\n', '<br/>'),
+        'desc': dsc,
         'col': 'rgb' + str(underia.Inventory.Rarity_Colors[item.rarity]),
-        'init_desc': dc,
+        'init_desc': Template(dc).safe_substitute(ps),
         'rf': rf,
-        'ap': ap
-    })
+        'ap': Template(ap).safe_substitute(ps),
+    }
+    nt = Template(temp).substitute(sbs)
     with open(f'./docs/items/{item.id}.html', 'w') as af:
         af.write(nt)
         af.close()

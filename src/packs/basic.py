@@ -218,6 +218,33 @@ class Eye(entity.Entities.Entity):
         super().on_update()
         self.set_rotation((self.rot * 5 - self.obj.velocity.get_net_rotation()) // 6)
 
+@entity.Entities.entity_type
+class DrEye(Eye):
+    NAME = 'Dr. Eye'
+    DISPLAY_MODE = 1
+    LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('fearful_necklace', 1.0, 1, 1),
+        entity.IndividualLoot('cell_organization', 1, 2, 5),
+        entity.IndividualLoot('watcher_wand', 0.15, 1, 1),
+    ])
+
+    def __init__(self, pos):
+        super().__init__(pos)
+        self.obj.MASS *= 3
+        self.obj.SPEED *= 4
+        self.obj.TOUCHING_DAMAGE += 20
+        self.img = game.get_game().graphics['entity_dr_eye']
+
+    def t_draw(self):
+        super(Eye, self).t_draw()
+        if self.hp_sys.hp <= 0:
+            b = 0
+            if not 'M1' in game.get_game().player.nts and random.random() < 1.1:
+                game.get_game().player.nts.append('M1')
+                b = 1
+            if b:
+                game.get_game().dialog.push_dialog('[Notebook Updated!]')
+
 
 @entity.Entities.entity_type
 class Tree(entity.Entities.Entity):

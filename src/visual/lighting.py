@@ -77,7 +77,7 @@ class LightingEngine:
             'color': color,
             'pos': scaled_pos,
             'radius': scaled_radius * 2,
-            'power': max(0.0, min(1.0, power / lightness / 3))
+            'power': max(0.0, min(255.0, power / lightness / 4))
         })
 
     def update(self, surface):
@@ -113,17 +113,21 @@ class LightingEngine:
             diameter = int(radius * 2)
             light_surf = pygame.Surface((diameter, diameter), pygame.SRCALPHA)
 
+
+            stp = max(3, int(radius / 100))
             # Use gfxdraw for optimized circle drawing
-            for r in range(int(radius), 0, -1):  # Draw from outer radius inward for gradient
-                attenuation = 1.0 - (r / radius) ** 2
+            for ar in range(int(radius), 0, -stp):  # Draw from outer radius inward for gradient
+                r = ar
+                attenuation = ((r + stp) / radius) ** 2 - (r / radius) ** 2
                 attenuation *= power
 
-                r_color = int(color[0] * attenuation)
-                g_color = int(color[1] * attenuation)
-                b_color = int(color[2] * attenuation)
-                a_color = int(color[3] * attenuation)
+                r_color = int(color[0])
+                g_color = int(color[1])
+                b_color = int(color[2])
+                a_color = min(255, int(color[3] * attenuation))
 
-                pygame.gfxdraw.aacircle(light_surf, int(radius), int(radius), r, (r_color, g_color, b_color, a_color))
+
+
                 pygame.gfxdraw.filled_circle(light_surf, int(radius), int(radius), r, (r_color, g_color, b_color, a_color))
 
             self.light_cache[cache_key] = light_surf
