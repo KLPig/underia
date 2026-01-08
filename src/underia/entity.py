@@ -865,19 +865,20 @@ class WorldsTreeAI(MonsterAI):
 @functools.lru_cache(maxsize=int(constants.MEMORY_USE * .1))
 def entity_get_surface(display_mode, rot, scale, img, alpha=255):
     if img is not None and img.get_width() + img.get_height() > 30 * scale:
+        sd = pg.transform.scale(img,
+                                (img.get_width() / scale, img.get_height() / scale)) if img is not None else None
         if display_mode == Entities.DisplayModes.DIRECTIONAL:
-            d_img = pg.transform.rotate(img, rot)
+            d_img = pg.transform.rotate(sd, rot)
         elif display_mode == Entities.DisplayModes.BIDIRECTIONAL:
             if rot % 360 < 180:
-                d_img = pg.transform.flip(img, True, False)
+                d_img = pg.transform.flip(sd, True, False)
             else:
-                d_img = img
+                d_img = sd
         else:
-            d_img = img
-        sd = pg.transform.scale(d_img,(d_img.get_width() / scale, d_img.get_height() / scale)) if d_img is not None else None
+            d_img = sd
         if alpha != 255:
-            sd.set_alpha(alpha)
-        return sd
+            d_img.set_alpha(alpha)
+        return d_img
     else:
         return pg.Surface((1, 1))
 
@@ -6436,6 +6437,17 @@ class Entities:
             self.set_rotation(540 * math.sin(self.tick / 50))
             self.mask.img.set_alpha(abs(int(math.cos(self.tick / 50) * 255)))
             self.mask.set_rotation(270 * math.cos(self.tick / 50))
+            dr = math.sin(self.tick / 12 + .4) * 40 + 30
+            for ar in range(0, 75, 25):
+                rr = entity_get_surface(1, ar + dr - math.sin(self.tick / 3 + ar / 75 * 2 * math.pi) * 2, game.get_game().player.get_screen_scale() / 8,
+                                        game.get_game().graphics['entity_disciple_lwing'], 255)
+                sr = rr.get_rect(center=position.displayed_position(self.obj.pos - (0, 50)))
+                game.get_game().displayer.canvas.blit(rr, sr)
+
+                lr = entity_get_surface(1, -ar - dr + math.sin(self.tick / 3 + ar / 75 * 2 * math.pi) * 2, game.get_game().player.get_screen_scale() / 8,
+                                        game.get_game().graphics['entity_disciple_rwing'], 255)
+                sr = rr.get_rect(center=position.displayed_position(self.obj.pos - (0, 50)))
+                game.get_game().displayer.canvas.blit(lr, sr)
             super().t_draw()
             self.mask.t_draw()
             self.NAME = ''

@@ -1061,6 +1061,15 @@ class Game:
                                                 elif ee.key == pg.K_LSHIFT or ee.key == pg.K_RSHIFT:
                                                      shift = True
                                                 elif ee.key == pg.K_RETURN:
+                                                    class CE:
+                                                        @staticmethod
+                                                        def sm(eei):
+                                                            self.entities = [eei((1000, 0))]
+
+                                                        @staticmethod
+                                                        def am(eei):
+                                                            self.entities.append(eei((1000, 0)))
+
                                                     qt = True
                                                     try:
                                                         cmd = str(eval(cmd))

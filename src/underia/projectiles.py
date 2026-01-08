@@ -331,6 +331,9 @@ class Projectiles:
                 if issubclass(type(frame.frame.f_locals['self']), weapons.Weapon):
                     self.weapon = frame.frame.f_locals['self']
                     break
+                elif issubclass(type(frame.frame.f_locals['self']), Projectiles.Projectile):
+                    self.weapon = frame.frame.f_locals['self'].weapon
+                    break
             self.obj = WeakProjectileMotion(pos, rotation)
             self.img = game.get_game().graphics['projectiles_glow']
             self.d_img = self.img
