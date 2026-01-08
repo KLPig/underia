@@ -6393,14 +6393,23 @@ class Entities:
         LOOT_TABLE = LootTable([])
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity3_chaos_disciple'], BuildingAI,
+            super().__init__(pos, game.get_game().graphics['entity_disciple'], BuildingAI,
                              hp=12 * 10 ** 9)
             self.hp_sys.ADAPTABILITY += 0.0007
+            self.tick = 0
             for d in self.hp_sys.defenses:
                 self.hp_sys.defenses[d] = 150
                 self.hp_sys.resistances[d] *= 3
+            self.mask = Entities.Entity(pos, copy.copy(game.get_game().graphics['entity_disciple_mask']), BuildingAI, 1)
+            self.mask.get_name = lambda *args: '', ''
+            self.mask.DISPLAY_MODE = 1
 
         def t_draw(self):
+            self.tick += 1
+            self.set_rotation(1080 * math.sin(self.tick / 100))
+            self.mask.img.set_alpha(abs(int(math.sin(self.tick / 100) * 255)))
+            self.mask.set_rotation(540 * math.cos(self.tick / 100))
+            self.mask.t_draw()
             super().t_draw()
             self.NAME = ''
             for _ in range(6):

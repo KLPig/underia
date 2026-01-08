@@ -23,3 +23,14 @@ src: url('./assets/fz-pixel.ttf') format('truetype');
 .tt-lvl {
     max-width: 200px;
 }
+
+th {
+    text-align: center;
+    padding: 10px;
+    margin: 10px;
+    color: #ffff00;
+}
+
+th.tt-time, th.tt-lvl {
+    width: 150px;
+}

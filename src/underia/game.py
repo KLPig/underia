@@ -285,8 +285,6 @@ class Game:
                 self.load_graphics(os.path.join(directory, file), index + file + '_', cnt=cnt)
 
     def _display_progress(self, prog, st=1):
-        if constants.DEBUG:
-            return
         stt = 3 - st
         window = pg.display.get_surface()
         window.fill((0,0,0))
