@@ -30,8 +30,9 @@ f += open('./docs/header.html').read()
 
 f += "<table id='item-table'>"
 img_str = ("<span class='item %s' id='%s-%s'> "
-           "<picture><source srcset='../assets/graphics/items/%s.gif' style='width: 50px; height: 50px'/>"
-           "<img srcset='../assets/graphics/items/%s.png' style='width: 50px; height: 50px'/>"
+           "<picture><source srcset='./assets/graphics/items/%s.png' />"
+           "<source srcset='./assets/graphics/items/%s.gif' />"
+           "<img srcset='./assets/graphics/items/%s.png' />"
            "</picture></span>")
 item_str = "<p style='color: rgb%s'>%s</p>" # <p class='desc' style='color: rgb%s'>%s</p>"
 
@@ -50,7 +51,7 @@ for ti, item in kw:
 
 for _, item in kw:
     f += f"<tr onclick='location.href=\"./items/{item.id}.html\"' class='item-row' id='{item.id}-filter' style='max-height: 100px'>\n"
-    f += "<td>" + img_str % ('main', item.id, 'main', item.id, item.id) + "</td>\n"
+    f += "<td>" + img_str % ('main', item.id, 'main', item.id, item.id, item.id) + "</td>\n"
     c = underia.Inventory.Rarity_Colors[item.rarity]
     t = underia.text(item.name)
     if t is None:
@@ -184,7 +185,7 @@ for _, item in kw:
             dc += 'complex weapon.'
         dt = w.at_time + w.cd + 1
         dc += f' It attacks every {dt} ticks, i.e {round(80 / dt, 2)} per second. '
-        dc += f'It\'s "dashboard" dpm is {round(sum([float(v) for _, v in w.damages.items()]) * 80 / dt, 1)}. '
+        dc += f'It\'s "dashboard" dpm is {round(sum([float(v) for _, v in w.damages.items()]) * (1 + (w.critical + 1.08) ** 2 * (0.08 + w.critical)) * 80 / dt * 60, 0)}. '
 
     rf = ''
     if r_mat:

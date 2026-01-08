@@ -18,7 +18,11 @@
         </tr>
     </table>
     <h1 style="color: $col">$name</h1>
-    <img src="../assets/graphics/items/$id.png" alt="$name" style="width: 100%; max-width: 500px;">
+    <picture>
+        <source srcset="../assets/graphics/items/$id.png">
+        <source srcset="../assets/graphics/items/$id.gif">
+        <img src="../assets/graphics/items/$id.png" alt="$name" style="width: 100%; max-width: 500px;">
+    </picture>
     <table id='item-table' class="spes-table">
         <tr class='item-row' id='$id-filter'>
             <td>

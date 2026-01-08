@@ -388,6 +388,8 @@ class AbyssEyeAI(BuildingAI):
     MASS = 6000
     FRICTION = 0.1
     TOUCHING_DAMAGE = 100
+    SPEED = 0
+
 class DragonAI(MonsterAI):
     MASS = 8800
     FRICTION = 0.8
@@ -519,15 +521,13 @@ class AbyssRuneAI(MonsterAI):
         self.tick = 0
         self.state = 0
         self.ar = 6
+        self.ft = None
 
     def on_update(self):
-        self.rot = (self.rot + self.ar) % 360
-        e = [e for e in game.get_game().entities if type(e) is Entities.AbyssEye]
-        if not len(e):
+        self.rot += self.ar / 5
+        if self.ft is None:
             return
-        self.pos = e[0].obj.pos
-        ax, ay = vector.rotation_coordinate(self.rot)
-        self.pos << (self.pos[0] + ax * self.d, self.pos[1] + ay * self.d)
+        self.pos = self.ft.obj.pos + vector.Vector2D(self.rot, self.d)
 
 class AbyssRuneShootAI(MonsterAI):
     FRICTION = 1
@@ -1861,11 +1861,13 @@ class Entities:
     class AbyssRuneShoot(Entity):
         NAME = 'Abyss Rune'
         DISPLAY_MODE = 3
+        DIVERSITY = False
 
         def __init__(self, pos, rot):
             super().__init__(pos, game.get_game().graphics['entity_abyss_rune'], AbyssRuneShootAI, 500)
             self.obj.rot = rot
             self.obj.MASS /= 2
+            self.show_bar = False
 
         def on_update(self):
             self.set_rotation(self.rot)
@@ -2583,16 +2585,17 @@ class Entities:
         ])
         VITAL = True
 
-        def __init__(self, pos, rot, dis, hp=10000, ar=6):
+        def __init__(self, pos, rot, dis, hp=10000, ar=6, sb=None):
             super().__init__(pos, game.get_game().graphics['entity_abyss_rune'], AbyssRuneAI, hp)
             self.obj.rot = rot
             self.obj.d = dis
             self.obj.ar = ar / 10
+            self.e = sb
+            self.obj.ft = sb
 
         def on_update(self):
             super().on_update()
-            e = [e for e in game.get_game().entities if type(e) is Entities.AbyssEye]
-            if not len(e):
+            if self.e is None or self.e.hp_sys.hp <= 1:
                 self.hp_sys.hp -= self.hp_sys.max_hp // 300
 
     class RStarfury(Entity):
@@ -2668,7 +2671,6 @@ class Entities:
                     IndividualLoot('z', 1, 1, 1),
                     ])
             super().__init__(pos, game.get_game().graphics['entity_abyss_eye'], AbyssEyeAI, 64000)
-            self.img.set_alpha(80)
             self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 20
             self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 25
             self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 23
@@ -2676,21 +2678,25 @@ class Entities:
             self.state = 0
             self.rounds = 0
             self.phase = 0
+            self.pjs = []
             for i in range(5):
-                for r in range(0, 361, [60, 40, 30, 20, 15, 10][i]):
+                for r in range(0, 361, 2 * [60, 45, 36, 30, 20, 18][i]):
                     game.get_game().entities.append(
-                        Entities.AbyssRune((0, 0), r, i * 300 + 300, 15000 - i * i * 500, int((-1.15) ** i * 3)))
+                        Entities.AbyssRune(self.obj.pos, r, i * 500 + 1000, 15000 - i * i * 500, int((-1.15) ** i * 3), self))
             for r in range(0, 361, 5):
-                game.get_game().entities.append(Entities.AbyssRune((0, 0), r, 1800, 10000000, 12))
+                self.pjs.append(Entities.AbyssRune(self.obj.pos, r, 4500, 10000000, 12, self))
             self.rr = [180, 120, 90, 72, 60]
+            self.obj.IS_OBJECT = False
+            self.sp = self.obj.pos.to_value()
+            self.dp = game.get_game().player.obj.pos + vector.Vector2D()
 
         def on_update(self):
+            for pj in self.pjs:
+                pj.on_update()
             super().on_update()
             game.get_game().day_time = 0
             if self.hp_sys.hp < self.hp_sys.max_hp * .55 and self.phase == 0:
                 self.phase = 1
-                for e in game.get_game().entities:
-                    e.hp_sys.damage(10000, damages.DamageTypes.TRUE)
                 self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] += 20
                 self.hp_sys.defenses[damages.DamageTypes.PIERCING] += 20
                 self.hp_sys.defenses[damages.DamageTypes.MAGICAL] += 20
@@ -2698,8 +2704,6 @@ class Entities:
                 self.rr.extend([45, 40, 36, 30])
             elif self.hp_sys.hp < self.hp_sys.max_hp * .2 and self.phase == 1:
                 self.phase = 2
-                for e in game.get_game().entities:
-                    e.hp_sys.damage(4000, damages.DamageTypes.TRUE)
                 self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] += 20
                 self.hp_sys.defenses[damages.DamageTypes.PIERCING] += 20
                 self.hp_sys.defenses[damages.DamageTypes.MAGICAL] += 20
@@ -2708,6 +2712,7 @@ class Entities:
                 self.rr.extend([24, 20, 18])
 
         def t_draw(self):
+            self.obj.pos << self.sp
             if self.hp_sys.hp <= 0:
                 sf = 0
                 if 'T1' not in game.get_game().player.nts:
@@ -2717,30 +2722,50 @@ class Entities:
                 if sf:
                     notebook.start_write()
                 if 'ray' not in game.get_game().npc_data:
-                    game.get_game().entities.append(Entities.Ray((0, 0)))
+                    game.get_game().entities.append(Entities.NPCRay((0, 0)))
                     game.get_game().npc_data['ray']['acc'] = 0
 
+            for p in self.pjs:
+                p.t_draw()
+                if p.hp_sys.hp <= 0:
+                    self.pjs.remove(p)
+            if self.tick < 45:
+                pg.draw.circle(game.get_game().displayer.canvas, (100, 0, 0),
+                               position.displayed_position(self.obj.pos), int(4500 * (self.tick / 45) ** 1.5 / game.get_game().player.get_screen_scale()), 3)
             super().t_draw()
+            rt = vector.coordinate_rotation(*(game.get_game().player.obj.pos - self.obj.pos))
+            pg.draw.rect(game.get_game().displayer.canvas, (200, 100, 0),
+                           (position.displayed_position(self.obj.pos + vector.Vector2D(rt, 20) -
+                                                        vector.Vector2D(0, 0, 20, 20)  / game.get_game().player.get_screen_scale()),
+                            (40 / game.get_game().player.get_screen_scale(), 40 / game.get_game().player.get_screen_scale())),
+                           )
             self.tick += 1
-            if self.tick > random.randint(400, 800):
+            if self.tick > random.randint(400, 800) - (self.state == 2) * 300 + (self.state == 3) * 400:
                 self.tick = 0
-                self.state = (self.state + 1) % 3
+                self.state = (self.state + 1) % 4
                 if not self.state:
                     self.rounds += 1
             if self.state == 0:
-                if self.tick % 5 == 1:
-                    game.get_game().entities.append(Entities.AbyssRuneShoot(self.obj.pos, self.tick * 2))
+                if self.tick % 12 == 1:
+                    self.pjs.append(Entities.AbyssRuneShoot(self.obj.pos, self.tick * 2))
             elif self.state == 1:
-                if self.tick % 8 == 1:
-                    game.get_game().entities.append(Entities.AbyssRuneShoot(self.obj.pos, random.randint(0, 360)))
+                if self.tick % 7 == 1:
+                    self.pjs.append(Entities.AbyssRuneShoot(self.obj.pos, random.randint(0, 360)))
+            elif self.state == 2:
+                game.get_game().displayer.shake_amp = max(game.get_game().displayer.shake_amp, 30)
             else:
-                if self.tick % (6 - self.phase) == 1:
-                    if self.rounds < len(self.rr):
-                        k = self.rr[self.rounds]
-                    else:
-                        k = 45
+                if self.rounds < len(self.rr):
+                    k = self.rr[self.rounds]
+                else:
+                    k = 45
+                for r in range(0, 360, k):
+                    draw.line(game.get_game().displayer.canvas, (100, 0, 0),
+                              position.displayed_position(self.obj.pos + vector.Vector2D(self.tick * (6 + self.phase) // 6 + r, 4500)),
+                              position.displayed_position(self.obj.pos),
+                              3)
+                if self.tick % (8 - self.phase) == 1:
                     for r in range(0, 360, k):
-                        game.get_game().entities.append(Entities.AbyssRuneShoot(self.obj.pos, self.tick * (6 + self.phase) // 6 + r))
+                        self.pjs.append(Entities.AbyssRuneShoot(self.obj.pos, self.tick * (6 + self.phase) // 6 + r))
 
     class Ore(EntityDefinition):
         pass
@@ -6401,16 +6426,18 @@ class Entities:
                 self.hp_sys.defenses[d] = 150
                 self.hp_sys.resistances[d] *= 3
             self.mask = Entities.Entity(pos, copy.copy(game.get_game().graphics['entity_disciple_mask']), BuildingAI, 1)
-            self.mask.get_name = lambda *args: '', ''
+            self.mask.show_bar = False
+            self.mask.get_shown_txt = lambda *args: '', ''
             self.mask.DISPLAY_MODE = 1
+            self.mask.pos = self.obj.pos
 
         def t_draw(self):
             self.tick += 1
-            self.set_rotation(1080 * math.sin(self.tick / 100))
-            self.mask.img.set_alpha(abs(int(math.sin(self.tick / 100) * 255)))
-            self.mask.set_rotation(540 * math.cos(self.tick / 100))
-            self.mask.t_draw()
+            self.set_rotation(540 * math.sin(self.tick / 50))
+            self.mask.img.set_alpha(abs(int(math.cos(self.tick / 50) * 255)))
+            self.mask.set_rotation(270 * math.cos(self.tick / 50))
             super().t_draw()
+            self.mask.t_draw()
             self.NAME = ''
             for _ in range(6):
                 c = random.randint(0, 127)

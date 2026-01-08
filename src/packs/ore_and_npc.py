@@ -1369,6 +1369,7 @@ class PlantingPot(Chest):
 
     def t_draw(self):
         dr = 'Not working...'
+        self.chest.sel = 1
 
         if self.data['current'] in PlantingPot.TARGET:
             tg, mt = PlantingPot.TARGET[self.data['current']]
@@ -1399,7 +1400,12 @@ class PlantingPot(Chest):
                                 (self.data['current'], 1)]
             self.chest.n = 2
 
+
         super().t_draw()
+        tp = entity.entity_get_surface(3, 0, 4 / game.get_game().player.get_screen_scale(),
+                                       game.get_game().graphics['items_' + inventory.ITEMS[self.chest.items[1][0]].img], alpha=255)
+        tpr = tp.get_rect(midbottom=position.displayed_position(self.obj.pos))
+        game.get_game().displayer.canvas.blit(tp, tpr)
 
 @entity.Entities.entity_type
 class ChristmasTree(Chest):

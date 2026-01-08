@@ -26,9 +26,12 @@ class Mover:
         self.on_update()
         if not self.MASS:
             self.MASS = 1.0
-        self.velocity.add(self.force.get_net_vector(1 / self.MASS))
+        dt = game.get_game().clock.last_tick / 50
+        dt = max(dt, constants.DT_MIN)
+        dt = min(dt, constants.DT_MAX)
+        self.velocity += self.force / self.MASS * dt
         self.force.clear()
-        self.pos += self.velocity / 50 * game.get_game().clock.last_tick
+        self.pos += self.velocity * dt
         self.pos.restrict(-constants.MOVER_POS, constants.MOVER_POS)
         self.velocity.reset(self.FRICTION)
         self.on_update()

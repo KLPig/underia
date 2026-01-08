@@ -16,6 +16,7 @@ class DamageTypes:
     PACIFY: int = 0
 
     KARMA: int = 0
+    INFINITESIMAL: int = 0
 
 
 for element in dir(elements.ElementTypes):

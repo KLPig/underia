@@ -42,7 +42,7 @@ def msg_html(lvl, msg):
     global log_html, fle, pt
     log_html += (f'<tr class="tt-{lvl}"><td>{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S').upper()}</td>'
                  f'<td>{lvl}</td><td>{msg}</td></tr>')
-    with open(os.path.join(pt if pt is not None else './logs', fle + '.html'), 'w') as f:
+    with open(os.path.join(pt if pt is not None else './src/logs', fle + '.html'), 'w') as f:
         f.write(log_html + '</table></body></html>')
         f.close()
 

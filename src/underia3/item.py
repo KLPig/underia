@@ -748,14 +748,14 @@ ITEMS = {
     
     'thaumaturgy': inventory.Inventory.Item('Thaumaturgy', 'Ring of spirit.', 'thaumaturgy', 1,
                                             [inventory.TAGS['item'], inventory.TAGS['accessory']]),
-    'pluma_thaumaturgy': inventory.Inventory.Item('Pluma Thaumaturgy', '+8% dodge rate\nReleases feather according to speed, deal melee damage.',
+    'pluma_thaumaturgy': inventory.Inventory.Item('Pluma Thaumaturgy', 'br_chaosAscension\n+8% dodge rate\nReleases feather according to speed, deal melee damage.',
                                                   'pluma_thaumaturgy', 2,
                                          [inventory.TAGS['item'], inventory.TAGS['accessory']]),
-    'bioic_thaumaturgy': inventory.Inventory.Item('Bioic Thaumaturgy', 'Summon a slowly-regenerating shield.', 'bioic_thaumaturgy', 2,
+    'bioic_thaumaturgy': inventory.Inventory.Item('Bioic Thaumaturgy', 'br_chaosLife\nSummon a slowly-regenerating shield.', 'bioic_thaumaturgy', 2,
                                          [inventory.TAGS['item'], inventory.TAGS['accessory']]),
-    'logos_thaumaturgy': inventory.Inventory.Item('Logos Thaumaturgy', '-20% air resistance\nEnable sprinting, sprinting makes you more likely to strike.[cmd]\n+50 sprint', 'logos_thaumaturgy', 3,
+    'logos_thaumaturgy': inventory.Inventory.Item('Logos Thaumaturgy', 'br_chaosFaith\n-20% air resistance\nEnable sprinting, sprinting makes you more likely to strike.[cmd]\n+50 sprint', 'logos_thaumaturgy', 3,
                                                   [inventory.TAGS['item'], inventory.TAGS['accessory']]),
-    'dendro_thaumaturgy': inventory.Inventory.Item('Dendro Thaumaturgy', '+12% damage absorb\nMaximum damage is restricted to 99% maximum HP.', 'dendro_thaumaturgy', 3,
+    'dendro_thaumaturgy': inventory.Inventory.Item('Dendro Thaumaturgy', 'br_chaosImmortality\n+12% damage absorb\nMaximum damage is restricted to 99% maximum HP.', 'dendro_thaumaturgy', 3,
                                                    [inventory.TAGS['item'], inventory.TAGS['accessory']]),
 
     'e_galaxy_broadsword': inventory.Inventory.Item('Hope: Galaxy Broadsword', 'rainbowThe galaxy has already headbowed you.', 'e_galaxy_broadsword', 7,

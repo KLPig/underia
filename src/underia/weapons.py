@@ -1029,12 +1029,13 @@ class ChaosReap(Blade):
         super().__init__(*args)
         self.tr = 0
         self.pstates = []
+        self.critical = .3
 
     def update(self):
         self.img = game.get_game().graphics[self.img_index]
         super().update()
         self.t_scale = [2.5, 3.5, 4, 4.5, 5][min(4, game.get_game().stage)]
-        self.damages[dmg.DamageTypes.KARMA] = [200, 350, 500, 1000, 9000][min(4, game.get_game().stage)]
+        self.damages[dmg.DamageTypes.KARMA] = [200, 350, 500, 1000, 9000][min(4, game.get_game().stage)] * .75
         self.vel += (-self.x / 100, -self.y / 100)
         self.vel *= .9
         self.x, self.y = self.vel + (self.x, self.y)
@@ -1058,6 +1059,7 @@ class ChaosReap(Blade):
         self.cutting_effect(4, (0, 255, 255), (0, 0, 100))
         super().on_attack()
         self.scale = (self.scale * 7 + self.t_scale * (5 - 4 * 1.2 ** -(self.tr / 50))) / 8
+        self.critical = (1 - .7 * 1.2 ** -(self.tr / 50))
         self.rotate(4 * (1 - 1.2 ** -(self.tr / 50)) * self.rot_speed)
 
     def on_special_attack(self, strike: int):
@@ -1071,6 +1073,7 @@ class ChaosReap(Blade):
         super().on_idle()
         self.scale = 2
         self.tr = 0
+        self.critical = .3
 
 class AbyssSever(Blade):
     def __init__(self, *args, **kwargs):
@@ -1080,6 +1083,7 @@ class AbyssSever(Blade):
         self.at_t = 0
         self.r_des = []
         self.mr = 0
+        self.critical = .3
 
 
     def on_special_attack(self, strike: int):
@@ -1097,12 +1101,15 @@ class AbyssSever(Blade):
         super().on_start_attack()
         self.at_t = (self.at_t + 1) % 7
         if self.at_t == 0:
+            self.critical = 1.0
             self.set_rotation(vector.coordinate_rotation(*(-game.get_game().player.obj.pos + position.real_position(game.get_game().displayer.reflect(*pg.mouse.get_pos())))))
             self.mr = self.rot
             for target in self.r_des:
                 for r in target.hp_sys.resistances:
                     target.hp_sys.resistances[r] *= .5
             self.r_des = []
+        else:
+            self.critical = .3
 
     def on_end_attack(self):
         super().on_end_attack()
@@ -1184,7 +1191,7 @@ class AbyssSever(Blade):
         else:
             self.sk_cd = max(0, self.timer)
             self.sk_mcd = self.at_time
-        self.damages[dmg.DamageTypes.PHYSICAL] = [200, 350, 500, 1000, 9000][min(4, game.get_game().stage)] * (1.5 + (not self.at_t) * 1.5)
+        self.damages[dmg.DamageTypes.INFINITESIMAL] = [200, 350, 500, 1000, 9000][min(4, game.get_game().stage)] * .7
         self.set_rotation(self.rot)
 
 class MagicBlade(Blade):
@@ -4925,9 +4932,9 @@ def set_weapons():
                              'items_weapons_arrow_thrower', 1,
                              4, 100, auto_fire=True),
 
-        'chaos_reap': ChaosReap('chaos reap', {dmg.DamageTypes.KARMA: 200}, 3,
+        'chaos_reap': ChaosReap('chaos reap', {dmg.DamageTypes.KARMA: 150}, 3,
                                 'items_weapons_chaos_reap', 7, 11, 30, 180),
-        'abyss_sever': AbyssSever('abyss sever', {dmg.DamageTypes.PHYSICAL: 0}, 3,
+        'abyss_sever': AbyssSever('abyss sever', {dmg.DamageTypes.INFINITESIMAL: 140}, 3,
                                  'items_weapons_abyss_sever', 3, 15, 20, 200),
 
         'wooden_sword': SweepWeapon('wooden sword', {dmg.DamageTypes.PHYSICAL: 8}, 0.1,

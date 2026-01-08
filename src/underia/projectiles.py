@@ -2407,9 +2407,10 @@ class Projectiles:
                 self.dead = True
             self.tick += 1
             for e in game.get_game().entities:
-                if vector.distance(self.obj.pos[0] - e.obj.pos[0], self.obj.pos[1] - e.obj.pos[1]) < self.O_DST + (self.tick >= 6) * self.N_DST:
+                if vector.distance(self.obj.pos[0] - e.obj.pos[0], self.obj.pos[1] - e.obj.pos[1]) < self.O_DST + (self.tick >= 6) * self.N_DST and not e.hp_sys.is_immune:
                     e.hp_sys.damage(weapons.WEAPONS[self.DMG_AS].damages[damages.DamageTypes.PHYSICAL] *\
                                      game.get_game().player.attack * game.get_game().player.attacks[0], damages.DamageTypes.PHYSICAL)
+                    e.hp_sys.enable_immune(1)
 
     class StarWrath(Starfury):
         DMG_AS = 'star_wrath'
