@@ -433,9 +433,9 @@ TAGS = {
     'magic_lv_5': Inventory.Item.Tag('magic_lv_5', 'LV.V'),
     'magic_lv_6': Inventory.Item.Tag('magic_lv_6', 'LV.VI'),
     'magic_lv_7': Inventory.Item.Tag('magic_lv_7', 'LV.VII'),
-    'magic_lv_forbidden_curse': Inventory.Item.Tag('magic_lv_forbidden_curse', 'LV.XX'),
-    'magic_lv_primal_magic': Inventory.Item.Tag('magic_lv_primal_magic', 'LV.NULLA'),
-    'magic_lv_bible': Inventory.Item.Tag('magic_lv_bible', 'LV.XXV'),
+    'magic_lv_forbidden_curse': Inventory.Item.Tag('magic_lv_8', 'LV.XX'),
+    'magic_lv_primal_magic': Inventory.Item.Tag('magic_lv_9', 'LV.NULLA'),
+    'magic_lv_bible': Inventory.Item.Tag('magic_lv_8', 'LV.XXV'),
 }
 items_dict: dict[str, Inventory.Item] = {
     'null': Inventory.Item('null', '', 'null', 0, [TAGS['item']]),
@@ -446,6 +446,8 @@ items_dict: dict[str, Inventory.Item] = {
     'nature': Inventory.Item('Nature', 'A red, shiny stone.\nIt acts as a stable "cash" for trading', 'nature', 12,
                              [TAGS['item']]),
 
+    'murder_core': Inventory.Item('Murder Core', '', 'murder_core', 12, [],
+                                  specify_img='murders_knife'),
     'recipe_book': Inventory.Item('Recipe Book', 'Find related recipes', 'recipe_book', 0, [TAGS['item']]),
     'chest': Inventory.Item('Chest', 'Place for storage', 'chest', 0,
                             [TAGS['item']]),
@@ -563,6 +565,8 @@ items_dict: dict[str, Inventory.Item] = {
                                  [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'abyss_sever': Inventory.Item('Abyss Sever', 'rainbowDamage increases within progress.\nbr_chaosEach 7 hit or strike will "cut" off enemies.\nbl_chaos"Cutting" enemies will freeze them and they will receive double damage.', 'abyss_sever', 12,
                                   [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
+    'oracle': Inventory.Item('Oracle', 'rainbowDamage and size increases within progress.\nbl_chaosLet enemies became burnt under the fire of chaos.\nbr_chaosEnemies becomes less adapted to your power.',
+                             'oracle', 12, [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
 
     'candy_cane': Inventory.Item('Candy Cane', 'cmA powerful, eatable candy.\ncmMerry christmas!', 'candy_cane', 12,
                                  [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon'], TAGS['cm']]),

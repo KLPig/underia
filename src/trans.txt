@@ -1,0 +1,3 @@
+	"hallow magic lv.iv: great healer": "万圣魔法LV.IV ：大治疗师", 
+	"damage up to ": "伤害上限为", 
+	"x for enough good karma": "x足够好的业力", 

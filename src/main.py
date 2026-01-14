@@ -806,6 +806,7 @@ else:
             game.player.weapons = []
             del game.server
             del game.client
+            game.msf = None
             game_pickle = pickle.dumps(game)
             with open(resources.get_save_path(game.save), 'wb') as w:
                 w.write(game_pickle)

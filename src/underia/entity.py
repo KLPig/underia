@@ -1137,9 +1137,9 @@ class Entities:
                         elements.ElementTypes.COLD: (127, 127, 255),
                     }
                     game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(self.obj.pos),
-                                                                            col=cols[e.CORRESPONDED_ELEMENT], n=1,
-                                                                            sp=(self.d_img.get_width() * 1.2 + 5) / 7 * game.get_game().player.get_screen_scale(),
-                                                                            t=20, g=.05))
+                                                                            col=cols[e.CORRESPONDED_ELEMENT], n=max(0, random.randint(-3, 1)),
+                                                                            sp=(self.d_img.get_width() * 1.2 + 5) / 50 * game.get_game().player.get_screen_scale(),
+                                                                            t=30, g=.02))
 
         def get_shown_txt(self):
             txt1 = f'{styles.text(self.NAME)}'
@@ -6407,7 +6407,61 @@ class Entities:
             else:
                 self.sun_eye.action_state = 6
                 self.moon_eye.action_state = 6
-            self.obj.pos << self.sun_eye.obj.pos
+            _ = self.obj.pos << self.sun_eye.obj.pos
+
+    class DiscipleBomb(Entity):
+        NAME = 'Chaos Bomb'
+        DIVERSITY = False
+
+        def __init__(self, pos, rot, action=0, dmg=50, drr=0):
+            super().__init__(pos, game.get_game().graphics['entity_null'], BuildingAI, hp=1)
+            self.mp = []
+            self.action = action
+            self.rot = rot
+            self.obj.MASS = 30
+            self.obj.FRICTION = .92
+            self.dmg = dmg
+            self.drr = drr
+            self.obj.IS_OBJECT = False
+            self.tick = 0
+
+            if constants.DIFFICULTY == 3:
+                self.hp_sys.max_hp *= 2
+
+            if action in [1, 3]:
+                self.obj.apply_force(vector.Vector2D(rot, 5500))
+
+        def t_draw(self):
+            self.tick += 1
+            self.mp.append(self.obj.pos.to_value())
+            self.obj.update()
+            if len(self.mp) > [15, 15, 20, 30][constants.DIFFICULTY]:
+                self.mp.pop(0)
+            for i in range(len(self.mp) - 1):
+                draw.line(game.get_game().displayer.canvas,
+                          (255 * i // len(self.mp) * (not self.drr), 0, 255 * i // len(self.mp) * self.drr),
+                          position.displayed_position(self.mp[i]),
+                          position.displayed_position(self.mp[i + 1]), i * 20 // len(self.mp) + 1)
+            pg.draw.circle(game.get_game().displayer.canvas, (255 * (not self.drr), 0, 255 * self.drr), position.displayed_position(self.obj.pos),
+                           10)
+            if self.action in [0, 2]:
+                self.obj.apply_force(vector.Vector2D(self.rot, 300 if not self.action else 100))
+            elif self.action in [1, 3]:
+                self.obj.FRICTION = 1.01
+                ap = game.get_game().player.obj.pos - self.obj.pos
+                ap = ap / abs(ap)
+                self.obj.apply_force(ap * (100 if constants.DIFFICULTY < 3 else 150))
+            self.hp_sys.hp -= .005
+            for i in range(0, len(self.mp), 4):
+                game.get_game().displayer.point_light((255, 100, 100) if not self.drr else (100, 100, 255),
+                                                      position.displayed_position(self.mp[i]), 3, 10 + i * 3)
+                if vector.distance(*(game.get_game().player.obj.pos - self.mp[i])) < 100:
+                    game.get_game().player.hp_sys.max_hp = max(20, game.get_game().player.hp_sys.max_hp - self.dmg * (
+                                1 + self.drr * 4) // [50, 20, 10, 8][constants.DIFFICULTY])
+                    if self.action != 3:
+                        game.get_game().player.hp_sys.damage(self.dmg * 2,
+                                                             damages.DamageTypes.MAGICAL, penetrate=self.dmg * 2)
+                    self.hp_sys.hp = 0
 
     class Disciple(Entity):
         NAME = 'The ?????'
@@ -6416,29 +6470,46 @@ class Entities:
         DISPLAY_MODE = 1
         PHASE_SEGMENTS = [.9998]
         IS_MENACE = True
-        LOOT_TABLE = LootTable([])
+        LOOT_TABLE = LootTable([
+            IndividualLoot('oracle', 1, 1, 1),
+        ])
 
         def __init__(self, pos):
             super().__init__(pos, game.get_game().graphics['entity_disciple'], BuildingAI,
                              hp=12 * 10 ** 9)
-            self.hp_sys.ADAPTABILITY += 0.0007
+            self.hp_sys.ADAPTABILITY += 0.0011
             self.tick = 0
             for d in self.hp_sys.defenses:
-                self.hp_sys.defenses[d] = 150
-                self.hp_sys.resistances[d] *= 3
+                self.hp_sys.defenses[d] = 250
+                self.hp_sys.resistances[d] *= 7
             self.mask = Entities.Entity(pos, copy.copy(game.get_game().graphics['entity_disciple_mask']), BuildingAI, 1)
             self.mask.show_bar = False
             self.mask.get_shown_txt = lambda *args: '', ''
             self.mask.DISPLAY_MODE = 1
-            self.mask.pos = self.obj.pos
+            self.dp = (0, 0)
+            self.phase = 0
+            self.state = 0
+            self.pjs = []
+            dt = ''
+            for _ in range(60):
+                c = random.randint(0, 127)
+                while not str.isprintable(chr(c)):
+                    c = random.randint(0, 127)
+                dt += chr(c)
+            game.get_game().dialog.dialog(dt)
 
         def t_draw(self):
             self.tick += 1
             self.set_rotation(540 * math.sin(self.tick / 50))
             self.mask.img.set_alpha(abs(int(math.cos(self.tick / 50) * 255)))
             self.mask.set_rotation(270 * math.cos(self.tick / 50))
+            self.mask.obj.pos = self.obj.pos
             dr = math.sin(self.tick / 12 + .4) * 40 + 30
-            for ar in range(0, 75, 25):
+            for p in self.pjs:
+                p.t_draw()
+                if p.hp_sys.hp <= 0:
+                    self.pjs.remove(p)
+            for ar in [[], [40], [18, 57], [0, 25, 50]][self.phase]:
                 rr = entity_get_surface(1, ar + dr - math.sin(self.tick / 3 + ar / 75 * 2 * math.pi) * 2, game.get_game().player.get_screen_scale() / 8,
                                         game.get_game().graphics['entity_disciple_lwing'], 255)
                 sr = rr.get_rect(center=position.displayed_position(self.obj.pos - (0, 50)))
@@ -6448,6 +6519,7 @@ class Entities:
                                         game.get_game().graphics['entity_disciple_rwing'], 255)
                 sr = rr.get_rect(center=position.displayed_position(self.obj.pos - (0, 50)))
                 game.get_game().displayer.canvas.blit(lr, sr)
+
             super().t_draw()
             self.mask.t_draw()
             self.NAME = ''
@@ -6456,6 +6528,226 @@ class Entities:
                 while not str.isprintable(chr(c)):
                     c = random.randint(0, 127)
                 self.NAME += chr(c)
+
+            if self.phase == 0:
+                self.hp_sys.IMMUNE = True
+                if game.get_game().dialog.is_done():
+                    self.phase = 1
+                    self.tick = 0
+                    self.hp_sys.IMMUNE = False
+            elif self.phase == 1:
+                if self.hp_sys.hp < self.hp_sys.max_hp * 0.9998:
+                    self.phase = 2
+                    self.tick = 0
+                    self.PHASE_SEGMENTS = [.9996]
+                    game.get_game().displayer.shake_amp += 50
+                    self.hp_sys.hp = self.hp_sys.max_hp
+
+                    for d in self.hp_sys.defenses:
+                        self.hp_sys.defenses[d] += 50
+                        self.hp_sys.resistances[d] *= 2
+
+
+                if random.randint(0, self.tick) > 300:
+                    self.state = (self.state + 1) % 7
+                    self.tick = 0
+
+                if self.state == 0:
+                    if self.tick % 71 == 5:
+                        rr = random.randint(0, 360)
+                        self.obj.pos = game.get_game().player.obj.pos + vector.Vector2D(rr, 1500)
+                        for ar in range(-20, 21, 20):
+                            self.pjs.append(Entities.DiscipleBomb(self.obj.pos, rr + 180 + ar, 1, 100, (bool(ar) != self.tick % 2)))
+                elif self.state == 1:
+                    ar = self.obj.pos - game.get_game().player.obj.pos
+                    ar = ar / abs(ar) * 500
+                    self.obj.pos = game.get_game().player.obj.pos + ar
+                    if self.tick % 13 == 0:
+                        for rr in range(30, 360, 30):
+                            self.pjs.append(Entities.DiscipleBomb(self.obj.pos, rr + vector.coordinate_rotation(*ar), 2, 150, (rr // 30 % 2 != self.tick % 2)))
+                        self.pjs.append(Entities.DiscipleBomb(self.obj.pos, 135 + vector.coordinate_rotation(*ar) ,1 , 100, self.tick % 2))
+                        self.pjs.append(Entities.DiscipleBomb(self.obj.pos, -135 + vector.coordinate_rotation(*ar) ,1 , 100, self.tick % 2))
+                elif self.state == 2:
+                    if self.tick % 3 == 0:
+                        self.pjs.append(Entities.DiscipleBomb(self.obj.pos, random.randint(0, 360), 1, 100, self.tick % 2))
+                elif self.state in [3, 4]:
+                    ar = self.obj.pos - game.get_game().player.obj.pos
+                    ar = ar / abs(ar) * 2000
+                    self.obj.pos = game.get_game().player.obj.pos + ar
+                    if self.tick % 55 == 0:
+                        self.pjs.append(Entities.DiscipleBomb(self.obj.pos, random.randint(0, 360), 1 , 200, self.tick % 2))
+                    elif self.tick % 11 == 0:
+                        for ar in range(0, 360, 60):
+                            self.pjs.append(Entities.DiscipleBomb(self.obj.pos, ar + self.tick * 4, 0, 150, (ar // 60 % 2 != self.tick % 2)))
+                elif self.state == 5:
+                    if self.tick % 200 == 0:
+                        self.dp = game.get_game().player.obj.pos.to_value()
+                    elif self.tick % 200 < 90:
+                        ar = self.obj.pos - self.dp
+                        ar = ar / abs(ar) * 1200
+                        self.obj.pos = vector.Vector2D(vector.coordinate_rotation(*ar) + 4, 1200) + self.dp
+                        if self.tick % 200 > 20:
+                            if self.tick % 5 == 0:
+                                self.pjs.append(Entities.DiscipleBomb(self.obj.pos, vector.coordinate_rotation(*ar) + 180, 2,
+                                                                      150, self.tick % 2))
+                    elif self.tick % 200 == 100:
+                        self.obj.pos = vector.Vector2D() + self.dp
+                        if self.tick % 5 == 0:
+                            for ar in range(0, 360, 15):
+                                self.pjs.append(Entities.DiscipleBomb(self.obj.pos, ar + self.tick * 5, 2,
+                                                                      100, self.tick % 2))
+                else:
+                    if self.tick % 25 == 0:
+                        for ar in range(0, 360, 9):
+                            self.pjs.append(Entities.DiscipleBomb(self.obj.pos, ar + self.tick * 3, 0,
+                                                                  100, self.tick % 2))
+            elif self.phase == 2:
+                if self.hp_sys.hp < self.hp_sys.max_hp * 0.9996:
+                    self.phase = 3
+                    self.tick = 0
+                    self.PHASE_SEGMENTS = [.999]
+                    game.get_game().displayer.shake_amp += 100
+                    self.hp_sys.hp = self.hp_sys.max_hp
+
+                    for d in self.hp_sys.defenses:
+                        self.hp_sys.defenses[d] += 250
+                        self.hp_sys.resistances[d] *= 2.5
+
+                if random.randint(0, self.tick) > 200:
+                    self.state = (self.state + 1) % 5
+                    self.tick = 0
+
+                if self.state == 0:
+                    if self.tick % 61 == 5:
+                        rr = random.randint(0, 360)
+                        self.obj.pos = game.get_game().player.obj.pos + vector.Vector2D(rr, 1500)
+                        for ar in range(-90, 91, 30):
+                            self.pjs.append(Entities.DiscipleBomb(self.obj.pos, rr + 180 + ar, 1, 200, (bool(ar) != self.tick % 2)))
+                elif self.state == 1:
+
+                    ar = self.obj.pos - game.get_game().player.obj.pos
+                    ar = ar / abs(ar) * 600
+                    self.obj.pos = game.get_game().player.obj.pos + ar
+                    if self.tick % 23 == 0:
+                        for rr in range(60, 360, 60):
+                            self.pjs.append(Entities.DiscipleBomb(self.obj.pos, rr + vector.coordinate_rotation(*ar), 1, 250, (rr // 30 % 2 != self.tick % 2)))
+                elif self.state == 2:
+                    ar = game.get_game().player.obj.pos - self.obj.pos
+                    if self.tick % 15 == 0:
+                        for _ in range(4):
+                            ax = random.randint(-100, 100)
+                            ay = random.randint(-100, 100)
+                            self.pjs.append(Entities.DiscipleBomb(self.obj.pos + (ax, ay), vector.coordinate_rotation(*ar), 0, 250, self.tick % 2))
+                elif self.state == 3:
+                    ar = self.obj.pos - game.get_game().player.obj.pos
+                    ar = ar / abs(ar) * 2000
+                    self.obj.pos = game.get_game().player.obj.pos + ar
+                    if self.tick % 47 == 0:
+                        self.pjs.append(Entities.DiscipleBomb(self.obj.pos, random.randint(0, 360), 1 , 300, self.tick % 2))
+                        for ar in range(0, 360, 10):
+                            self.pjs.append(Entities.DiscipleBomb(self.obj.pos, ar + self.tick * 7, 0, 200, (ar // 10 % 2 != self.tick % 2)))
+                elif self.state == 4:
+                    if self.tick % 200 == 0:
+                        self.dp = game.get_game().player.obj.pos.to_value()
+                    elif self.tick % 200 < 90:
+                        ar = self.obj.pos - self.dp
+                        ar = ar / abs(ar) * 1200
+                        self.obj.pos = vector.Vector2D(vector.coordinate_rotation(*ar) + 7, 1200) + self.dp
+                        if self.tick % 200 > 20:
+                            if self.tick % 5 == 0:
+                                self.pjs.append(Entities.DiscipleBomb(self.obj.pos, vector.coordinate_rotation(*ar) + 180, 2,
+                                                                      150, self.tick % 2))
+                                self.pjs.append(Entities.DiscipleBomb(self.obj.pos, vector.coordinate_rotation(*ar) + 180, 0,
+                                                                      200, self.tick % 2))
+                    elif self.tick % 200 == 100:
+                        self.obj.pos = vector.Vector2D() + self.dp
+                        if self.tick % 5 == 0:
+                            for ar in range(0, 360, 15):
+                                self.pjs.append(Entities.DiscipleBomb(self.obj.pos, ar + self.tick * 5, 2,
+                                                                      150, self.tick % 2))
+                                self.pjs.append(Entities.DiscipleBomb(self.obj.pos, ar + self.tick * 5, 0,
+                                                                      200, self.tick % 2))
+            elif self.phase == 3:
+                if self.hp_sys.hp < self.hp_sys.max_hp * 0.999:
+                    self.hp_sys.hp = 0
+                    game.get_game().displayer.shake_amp += 100
+
+                    dt = ''
+                    for _ in range(60):
+                        c = random.randint(0, 127)
+                        while not str.isprintable(chr(c)):
+                            c = random.randint(0, 127)
+                        dt += chr(c)
+                    game.get_game().dialog.dialog(dt + 'YOU$ARE@^@&STRONG@*(#.')
+
+
+                if random.randint(0, self.tick) > 150:
+                    self.state = (self.state + 1) % 5
+                    self.tick = 0
+
+                if self.state == 0:
+                    if self.tick % 41 == 5:
+                        rr = random.randint(0, 360)
+                        self.obj.pos = game.get_game().player.obj.pos + vector.Vector2D(rr, 1500)
+                        for ar in range(-120, 121, 30):
+                            self.pjs.append(Entities.DiscipleBomb(self.obj.pos, rr + 180 + ar, 1, 300,
+                                                                  (abs(ar // 30 % 2) != self.tick % 2)))
+                elif self.state == 1:
+
+                    ar = self.obj.pos - game.get_game().player.obj.pos
+                    ar = ar / abs(ar) * 600
+                    self.obj.pos = game.get_game().player.obj.pos + ar
+                    if self.tick % 13 == 0:
+                        for rr in range(60 - (self.tick % 2) * 30, 360, 60):
+                            self.pjs.append(
+                                Entities.DiscipleBomb(self.obj.pos, rr + vector.coordinate_rotation(*ar), 1, 250,
+                                                      (rr // 30 % 2 != self.tick % 2)))
+                elif self.state == 2:
+                    ar = game.get_game().player.obj.pos - self.obj.pos
+                    if self.tick % 7 == 0:
+                        for _ in range(6):
+                            ax = random.randint(-200, 200)
+                            ay = random.randint(-200, 200)
+                            self.pjs.append(
+                                Entities.DiscipleBomb(self.obj.pos + (ax, ay), vector.coordinate_rotation(*ar), 0,
+                                                      350, self.tick % 2))
+                elif self.state == 3:
+                    ar = self.obj.pos - game.get_game().player.obj.pos
+                    ar = ar / abs(ar) * 2000
+                    self.obj.pos = game.get_game().player.obj.pos + ar
+                    if self.tick % 27 == 0:
+                        self.pjs.append(
+                            Entities.DiscipleBomb(self.obj.pos, random.randint(0, 360), 1, 500, self.tick % 2))
+                        for ar in range(0, 360, 5):
+                            self.pjs.append(Entities.DiscipleBomb(self.obj.pos, ar + self.tick * 7, self.tick % 2 * 2, 350,
+                                                                  (ar // 10 % 2 != self.tick % 2)))
+                elif self.state == 4:
+                    if self.tick % 300 == 0:
+                        self.dp = game.get_game().player.obj.pos.to_value()
+                    elif self.tick % 300 < 160:
+                        ar = self.obj.pos - self.dp
+                        ar = ar / abs(ar) * 1600
+                        self.obj.pos = vector.Vector2D(vector.coordinate_rotation(*ar) + 7, 1600) + self.dp
+                        if self.tick % 200 > 20:
+                            if self.tick % 5 == 0:
+                                self.pjs.append(
+                                    Entities.DiscipleBomb(self.obj.pos, vector.coordinate_rotation(*ar) + 180, 2,
+                                                          300, self.tick % 2))
+                                self.pjs.append(
+                                    Entities.DiscipleBomb(self.obj.pos, vector.coordinate_rotation(*ar) + 180, 0,
+                                                          350, self.tick % 2))
+                                self.pjs.append(
+                                    Entities.DiscipleBomb(self.obj.pos, vector.coordinate_rotation(*ar), 1,
+                                                          300, self.tick % 2))
+                    elif self.tick % 300 == 240:
+                        self.obj.pos = vector.Vector2D() + self.dp
+                        if self.tick % 5 == 0:
+                            for ar in range(0, 360, 15):
+                                self.pjs.append(Entities.DiscipleBomb(self.obj.pos, ar + self.tick * 5, 2,
+                                                                      350, self.tick % 2))
+                                self.pjs.append(Entities.DiscipleBomb(self.obj.pos, ar + self.tick * 5, 1,
+                                                                      300, (self.tick + 1) % 2))
+
 
         def get_shown_txt(self):
             w = game.get_game().player.weapons[game.get_game().player.sel_weapon]
@@ -6504,6 +6796,7 @@ class Entities:
                           position.displayed_position((self.obj.pos[0] + ax * 3000, self.obj.pos[1] + ay * 3000)),
                           3)
                 self.hp_sys.hp -= 5e3
+
 
 
         def on_update(self):

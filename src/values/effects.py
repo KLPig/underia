@@ -35,7 +35,6 @@ class Effect:
     def on_start(self, entity: hp_system.HPSystem):
         pass
 
-
 class Aberration(Effect):
     IMG = 'aberration'
 

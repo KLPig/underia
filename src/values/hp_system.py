@@ -4,9 +4,10 @@ import inspect
 
 import constants
 from physics import vector
-from underia import game, entity, weapons, projectiles
+from underia import game, entity, weapons, projectiles, inventory
 from values import reduction, effects, damages
-from resources import log
+from visual import particle_effects as pef
+from resources import log, position
 import math
 
 class DamageValue:
@@ -81,6 +82,8 @@ class HPSystem:
         self.is_player = False
         self.adaption = {}
         self.ADAPTABILITY = 0.0
+        self.c_ele = ('', 0)
+        self.spec_ele = {}
 
     def __del__(self):
         pass
@@ -111,9 +114,20 @@ class HPSystem:
         if issubclass(type(user), entity.Entities.Entity):
             ee = 0b10
             crit = 0
+            c_ele = None
         elif issubclass(type(user), weapons.Weapon):
             ee = 0b1
             crit = game.get_game().player.strike + user.critical
+            item = inventory.ITEMS[user.t_id]
+
+            ele_s = [t.value for t in item.tags if t.name.startswith('magic_element_')]
+            ele_v = [t.name.removeprefix('magic_lv_') for t in item.tags if t.name.startswith('magic_lv_')]
+
+            if len(ele_s) and len(ele_v):
+                c_ele = (random.choice(ele_s), float(ele_v[0]))
+            else:
+                c_ele = None
+
 
         elif issubclass(type(user), projectiles.Projectiles.Projectile):
             ee = 0b1
@@ -127,10 +141,20 @@ class HPSystem:
                 crit = game.get_game().player.strike
                 log.error(f'Cannot analyze original weapon of {user} - {user}, this may be because not calling Projectile.__init__() while defining a subclass' )
             user = user.weapon
+            item = inventory.ITEMS[user.t_id]
+
+            ele_s = [t.value for t in item.tags if t.name.startswith('magic_element_')]
+            ele_v = [t.name.removeprefix('magic_lv_') for t in item.tags if t.name.startswith('magic_lv_')]
+
+            if len(ele_s) and len(ele_v):
+                c_ele = (random.choice(ele_s), float(ele_v[0]))
+            else:
+                c_ele = None
         else:
             ee = 0
             crit = 0
 
+            c_ele = None
         try:
             d = vector.distance(self.pos[0] - game.get_game().player.obj.pos[0],
                                 self.pos[1] - game.get_game().player.obj.pos[1])
@@ -173,9 +197,111 @@ class HPSystem:
         if user not in self.adaption:
             self.adaption[user] = 0
         dmg *= math.e ** (-self.adaption[user])
+        if c_ele and c_ele[0] in self.spec_ele:
+            dmg *= self.spec_ele[c_ele[0]] ** (1 + c_ele[1] / 10)
+        game.get_game().c_dmg += dmg
+        if 'c_ele' not in dir(self):
+            self.c_ele = ('', 0)
+        if self.c_ele and c_ele:
+            sl, x = self.c_ele
+            el, y = c_ele
+            dt = sl + '2' + el
+            dp = self.pos if dd is None else dd
+            ds = True
+            if dt == 'fire magic2water magic':
+                if x > max(2.0, y):
+                    dmg *= 1 + .3 * y
+                    game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(dp), n=30, col=(100, 100, 100), g=-0.5, sp=22, t=45))
+                elif y > max(3.0, x):
+                    game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(dp), n=30, col=(0, 255, 255), g=0, sp=12, t=60))
+                    t = [0, .3, .5, .8, 1.0, 1.5, 2.5, 4.0, 12.0, 20.0][min(9, math.floor(y))] * y / min(9, math.floor(y))
+                    self.effect(effects.Freezing(t * 5, 1))
+                    self.effect(effects.Frozen(t, 1))
+            elif dt == 'fire magic2air magic':
+                if y > max(2.0, x):
+                    game.get_game().displayer.effect(
+                        pef.p_particle_effects(*position.displayed_position(dp), n=60, col=(255, 0, 0), g=0.01, sp=12, t=50))
+                    for e in game.get_game().entities:
+                        if abs(e.obj.pos - dp) < 100 * y:
+                            e.hp_sys.effect(effects.Burning(5, int(dmg / 5)))
+            elif dt == 'earth magic2water magic':
+                if y > x > 2:
+                    game.get_game().displayer.effect(
+                        pef.p_particle_effects(*position.displayed_position(dp), n=40, col=(50, 50, 0), g=0.05, sp=4, t=50, r=20))
+                    for e in game.get_game().entities:
+                        if e.hp_sys == self:
+                            e.obj.MASS *= 1 + .03 * y
+            elif dt == 'earth magic2air magic':
+                if y - 1 > x > 1:
+                    game.get_game().displayer.effect(
+                        pef.p_particle_effects(*position.displayed_position(dp), n=30, col=(0, 200, 200), g=-0.5, sp=22, t=45))
+                    if self.defenses[damage_type] > dmg * max(0.0, 10 - y) / 10:
+                        self.defenses[damage_type] -= dmg / 50 * y
+            elif dt == 'water magic2fire magic':
+                if y > x > 2:
+                    game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(dp), n=30, col=(0, 100, 255), g=0.1, sp=12, t=60))
+                    for e in game.get_game().entities:
+                        if e.hp_sys == self and e.obj.SPEED > 1:
+                            e.obj.SPEED *= 1 - .03 * y
+            elif dt == 'life magic2fire magic':
+                if 6 > y > x > 2:
+                    game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(dp), n=30, col=(100, 100, 100), g=-0.3, sp=12, t=55))
+                    self.effect(effects.Burning(5, int(dmg * y / 5)))
+                elif x > y > 5:
+                    game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(dp), n=90, col=(255, 0, 0), g=-0.3, sp=25, t=85, r=30))
+                    dmg += .001 * y * self.max_hp
+            elif dt == 'earth magic2life magic':
+                if x > y > 2:
+                    game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(dp), n=20, col=(200, 255, 0), g=0, sp=5, t=40))
+                    if self.defenses[damage_type] > dmg:
+                        self.defenses[damage_type] -= dmg / 30 * y ** 1.5
+            elif dt in ['death magic2life magic', 'life magic2death magic']:
+                if x == y > 2:
+                    game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(dp), n=20, col=(0, 0, 0), g=0.1, sp=9, t=40))
+                    game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(dp), n=20, col=(255, 255, 255), g=-0.1, sp=9, t=40))
+                    if self.resistances[damage_type] < 1.0 + y * .1:
+                        self.resistances[damage_type] /= 1 - y * .008
+            elif dt == 'earth magic2death magic':
+                if min(x, y) > 3:
+                    game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(dp), n=30, col=(0, 0, 0), g=0.1, sp=14, t=40))
+                    if self.resistances[damage_type] < max(1.0, .5 + y * .25):
+                        self.resistances[damage_type] *= 1 - y * .003
+            elif dt == 'fire magic2light magic':
+                if y > x > 2:
+                    game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(dp), n=30, col=(255, 255, 255), g=-0.1, sp=14, t=40))
+                    for e in game.get_game().entities:
+                        if abs(e.obj.pos - dp) < 80 * y:
+                            e.hp_sys.damage(damage_type, dmg * y / 10)
+            elif dt == 'dark magic2death magic':
+                if x == y > 4:
+                    game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(dp), n=20, col=(0, 0, 0), g=0.03, sp=4, t=60))
+                    dmg *= max(1.0, .3 + .5 * y)
+            elif dt == 'light magic2life magic':
+                if x == y > 4:
+                    game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(dp), n=20, col=(255, 255, 200), g=0.03, sp=4, t=60))
+                    crit *= 1 + y * .3
+                    ct = random.random() < crit
+            elif dt == 'death magic2time magic':
+                if x > 5:
+                    game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(dp), n=90, col=(100, 0, 0), g=0.03, sp=20, t=60))
+                    for e in game.get_game().entities:
+                        e.hp_sys.damage(damage_type, dmg * (5 + y) / 25)
+            elif dt == 'life magic2time magic':
+                if x > 5:
+                    game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(dp), n=90, col=(100, 255, 0), g=0.03, sp=20, t=60))
+                    game.get_game().player.hp_sys.heal(dmg * (5 + y) / 25)
+            else:
+                 ds = False
+
+            if ds:
+                for e in game.get_game().entities:
+                    if e.hp_sys == self:
+                        e.play_sound('create')
+
         if ct:
             dmg *= 1 + (1 + crit) ** 2
-        game.get_game().c_dmg += dmg
+        if c_ele:
+            self.c_ele = copy.copy(c_ele)
         if not self.dmg_t:
             self.dmg_t = self.DAMAGE_TEXT_INTERVAL
             d = 0
@@ -221,6 +347,8 @@ class HPSystem:
                         dp = dd
                     game.get_game().damage_texts.append(
                         (str(int(dmg)), 0, (dp[0] + random.randint(-30, 30), dp[1] + random.randint(-30, 30)), ct))
+        if 'ADAPTABILITY' not in dir(self):
+            self.ADAPTABILITY = 0.0
         self.adaption[user] += damage * 1e-3 * self.ADAPTABILITY
         if len(self.shields):
             self.shields[0] = (self.shields[0][0], self.shields[0][1] - dmg)
@@ -238,9 +366,11 @@ class HPSystem:
         if damage_type == damages.DamageTypes.PHYSICAL:
             game.get_game().player.profile.skill_points['melee'] += damage / 10
         if damage_type == damages.DamageTypes.PIERCING:
-            game.get_game().player.profile.skill_points['ranged'] += dmg / 14 + penetrate / 14
+            game.get_game().player.profile.skill_points['ranged'] += dmg / 12 + penetrate / 5
         if self is game.get_game().player.hp_sys:
             game.get_game().player.profile.skill_points['vessel'] += damage / 7
+        if ee & 0b1:
+            game.get_game().player.profile.skill_points['murder'] += dmg
 
         if self.hp <= 0:
             self.hp = 0

@@ -17,6 +17,8 @@ class DamageTypes:
 
     KARMA: int = 0
     INFINITESIMAL: int = 0
+    EXTENT: int = 0
+    CHAOS: int = 0
 
 
 for element in dir(elements.ElementTypes):

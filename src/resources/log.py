@@ -14,6 +14,7 @@ else:
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 log_html = ('<!DOCTYPE html><html><head><title>LOG</title><link rel="stylesheet" href="../styles.css" type="text/css">'
+            '<meta charset="utf-8">'
             '</head><body><table><tr><th class="tt-time">TIME</th><th class="tt-lvl">LEVEL</th><th class="tt-msg">MESSAGE</th>'
             '</tr>')
 

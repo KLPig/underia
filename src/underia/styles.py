@@ -4,7 +4,9 @@ from values import hp_system
 import constants
 import resources.log as log
 import math
+import translate
 
+ts = translate.Translator(to_lang='zh')
 
 def hp_bar(hp: hp_system.HPSystem, midtop: tuple, size: float):
     displayer = game.get_game().displayer
@@ -44,14 +46,16 @@ def hp_bar(hp: hp_system.HPSystem, midtop: tuple, size: float):
 Dictionary = word_dict.en_cn
 
 un_trans = []
+n_d = ''
 
 
 def text(txt: str) -> str:
+    global n_d
     word = txt
     if constants.LANG != 'zh':
         return word
     for i, c in enumerate(word):
-        if str.isdecimal(c):
+        if str.isdecimal(c) or c in ['(', ')', '[', ']', '{', '}', '@', '#', '$', '%', '^', '&', '*']:
             return text(word[:i]) + c + text(word[i + 1:])
     s = ''
     word = str.lower(word)
@@ -89,7 +93,14 @@ def text(txt: str) -> str:
         Dictionary[word] = s
     if df:
         log.warning('Untranslated: ' + txt + '->' + s)
-        return txt
+        rs = ts.translate(txt)
+        Dictionary[word] = rs
+        log.warning('Translated: ' + txt + '->' + rs)
+        n_d += f'\t"{word}": "{rs}", \n'
+        with open("./src/trans.txt", "w") as f:
+            f.write(n_d)
+            f.close()
+        return rs
     return s
 
 

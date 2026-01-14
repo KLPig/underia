@@ -854,6 +854,8 @@ class Game:
             e.t_draw()
         self.displayer.night_darkness_color = self.get_night_color(self.day_time % 1.0)
         self.displayer.night_darkness()
+        if len(self.damage_texts) and len(self.damage_texts[0]) < 4:
+            self.damage_texts.clear()
         self.damage_texts = [(dmg, tick + 1, pos, b) for dmg, tick, pos, b in self.damage_texts if tick < 80]
         for dmg, tick, pos, b in self.damage_texts:
             ll = b
@@ -1069,6 +1071,29 @@ class Game:
                                                         @staticmethod
                                                         def am(eei):
                                                             self.entities.append(eei((1000, 0)))
+
+                                                        @staticmethod
+                                                        def s4():
+                                                            self.player.accessories = ['godkiller_helmet', 'godkiller_chestplate',
+                                                                                       'godkiller_leggings', 'chaos_sheath',
+                                                                                       'eternal_wings', 'eternal_pocket_watch',
+                                                                                       'flashback', 'chaos_evileye',
+                                                                                       'determined_ring', 'null']
+                                                            self.player.weapons = [
+                                                                weapons.WEAPONS['milky_way'],
+                                                                weapons.WEAPONS['ember'],
+                                                                weapons.WEAPONS['void'],
+                                                                weapons.WEAPONS['abyss_sever'],
+                                                                weapons.WEAPONS['chaos_reap'],
+                                                                weapons.WEAPONS['ark_of_elements'],
+                                                                weapons.WEAPONS['dream_violet']
+                                                            ]
+
+                                                            self.stage = 3
+                                                            self.player.max_mana = 1000
+
+                                                            self.player.ammo = ('eterrow', constants.INFINITY)
+                                                            self.player.ammo_bullet = ('space_jumper', constants.INFINITY)
 
                                                     qt = True
                                                     try:

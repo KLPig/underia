@@ -77,6 +77,7 @@ class PlayerProfile:
                 'nature_magic': 0,
                 'law_magic': 0,
                 'illusion': 0,
+                'murder': 0,
             }
 
     def get_color(self, w = 0, s = 0, a = 0, ml = 0, rg = 0, mg = 0):

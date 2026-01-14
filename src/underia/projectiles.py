@@ -127,6 +127,8 @@ class Projectiles:
         DAMAGE_AS = 'copper_knife'
         DMG_RANGE = 120
         DEAD_DELETE = True
+        ENABLE_IMMUNE = 1
+        DMG_TYPE = damages.DamageTypes.PIERCING
 
         def __init__(self, pos, rotation, power):
             super().__init__(pos, game.get_game().graphics[self.IMG], ProjectileMotion)
@@ -144,12 +146,12 @@ class Projectiles:
             self.damage()
 
         def damage(self):
-            for entity in game.get_game().entities:
-                if vector.distance(entity.obj.pos[0] - self.obj.pos[0], entity.obj.pos[1] - self.obj.pos[1]) < self.DMG_RANGE:
-                    entity.hp_sys.damage(weapons.WEAPONS[self.DAMAGE_AS].damages[
-                                             damages.DamageTypes.PIERCING] * game.get_game().player.attack *
-                                         game.get_game().player.attacks[1], damages.DamageTypes.PIERCING)
+            for ee in game.get_game().entities:
+                if vector.distance(ee.obj.pos[0] - self.obj.pos[0], ee.obj.pos[1] - self.obj.pos[1]) < self.DMG_RANGE and not ee.hp_sys.is_immune:
+                    ee.hp_sys.damage(weapons.WEAPONS[self.DAMAGE_AS].damages[self.DMG_TYPE] * game.get_game().player.attack *
+                                     game.get_game().player.attacks[1], self.DMG_TYPE)
                     self.dead = self.dead or self.DEAD_DELETE
+                    ee.hp_sys.enable_immune(self.ENABLE_IMMUNE)
 
     class Dagger(ThiefWeapon):
         IMG = 'items_weapons_dagger'
@@ -163,6 +165,16 @@ class Projectiles:
         NAME = 'Magic Sword'
 
         def __init__(self, pos, rotation):
+            frames = inspect.stack()
+
+            self.weapon = None
+            for frame in frames:
+                if issubclass(type(frame.frame.f_locals['self']), weapons.Weapon):
+                    self.weapon = frame.frame.f_locals['self']
+                    break
+                elif issubclass(type(frame.frame.f_locals['self']), Projectiles.Projectile) and not issubclass(type(self), type(frame.frame.f_locals['self'])):
+                    self.weapon = frame.frame.f_locals['self'].weapon
+                    break
             self.img = game.get_game().graphics['projectiles_magic_sword']
             self.obj = ProjectileMotion(pos, rotation)
             self.d_img = self.img
@@ -331,7 +343,7 @@ class Projectiles:
                 if issubclass(type(frame.frame.f_locals['self']), weapons.Weapon):
                     self.weapon = frame.frame.f_locals['self']
                     break
-                elif issubclass(type(frame.frame.f_locals['self']), Projectiles.Projectile):
+                elif issubclass(type(frame.frame.f_locals['self']), Projectiles.Projectile) and not issubclass(type(self), type(frame.frame.f_locals['self'])):
                     self.weapon = frame.frame.f_locals['self'].weapon
                     break
             self.obj = WeakProjectileMotion(pos, rotation)
@@ -1567,6 +1579,16 @@ class Projectiles:
         ENABLE_IMMUNE = 1.5
 
         def __init__(self, pos, rotation):
+            frames = inspect.stack()
+
+            self.weapon = None
+            for frame in frames:
+                if issubclass(type(frame.frame.f_locals['self']), weapons.Weapon):
+                    self.weapon = frame.frame.f_locals['self']
+                    break
+                elif issubclass(type(frame.frame.f_locals['self']), Projectiles.Projectile) and not issubclass(type(self), type(frame.frame.f_locals['self'])):
+                    self.weapon = frame.frame.f_locals['self'].weapon
+                    break
             self.obj = mover.Mover(pos)
             self.img = game.get_game().graphics[self.IMG]
             if constants.USE_ALPHA:
@@ -1836,8 +1858,16 @@ class Projectiles:
         DMG_RATE = 1.0
 
         def __init__(self, pos, rotation):
-            user = inspect.stack()[1].frame.f_locals
-            self.weapon = user['self']
+            frames = inspect.stack()
+
+            self.weapon = None
+            for frame in frames:
+                if issubclass(type(frame.frame.f_locals['self']), weapons.Weapon):
+                    self.weapon = frame.frame.f_locals['self']
+                    break
+                elif issubclass(type(frame.frame.f_locals['self']), Projectiles.Projectile) and not issubclass(type(self), type(frame.frame.f_locals['self'])):
+                    self.weapon = frame.frame.f_locals['self'].weapon
+                    break
             ax, ay = vector.rotation_coordinate(rotation)
             self.tar_reg = abs(ax - ay * (-1 if ((ax > 0) != (ay > 0)) else 1))
             self.lf = ax > 0
@@ -4636,6 +4666,26 @@ class Projectiles:
             game.get_game().projectiles.append(Projectiles.GenerationBeam(pos, rotation))
             game.get_game().projectiles.append(Projectiles.GenerationBeam(pos, rotation + 180))
 
+
+    class Oracle(ThiefWeapon):
+        DAMAGE_AS = 'oracle'
+        IMG = 'items_weapons_oracle_l'
+        DMG_RANGE = 260
+        DEAD_DELETE = False
+        DMG_TYPE = damages.DamageTypes.CHAOS
+
+        def __init__(self, pos, rotation, power):
+            super().__init__(pos, rotation, power)
+            self.img = game.get_game().graphics[f'items_weapons_oracle_{random.choice(["l", "r"])}']
+            self.set_rotation(self.rot)
+            for e in game.get_game().entities:
+                if abs(e.obj.pos - self.obj.pos) < 1000:
+                    e.hp_sys.effect(effects.Chaotic(1, 500))
+                    if weapons.WEAPONS['oracle'] not in e.hp_sys.adaption:
+                        e.hp_sys.adaption[weapons.WEAPONS['oracle']] = 0
+
+                    e.hp_sys.adaption[weapons.WEAPONS['oracle']] = max(-.1, e.hp_sys.adaption[weapons.WEAPONS['oracle']] - .03)
+
     class TimeFlies(Projectile):
         TIMER = 0
         STEP = 0
@@ -4744,5 +4794,6 @@ THIEF_WEAPONS = {
     'jade_grenade': Projectiles.JadeGrenade,
     'shuriken': Projectiles.Shuriken,
     'spikeball': Projectiles.SpikeBall,
-    'generation': Projectiles.Generation
+    'generation': Projectiles.Generation,
+    'oracle': Projectiles.Oracle,
 }

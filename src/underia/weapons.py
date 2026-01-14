@@ -25,6 +25,7 @@ class Weapon:
                  auto_fire: bool = False, critical: float = 0.08):
         self.critical = critical
         self.name = name
+        self.t_id = ''
         self.damages = damages
         self.img_index = img_index
         self.img = pg.Surface((10, 10))
@@ -1035,7 +1036,7 @@ class ChaosReap(Blade):
         self.img = game.get_game().graphics[self.img_index]
         super().update()
         self.t_scale = [2.5, 3.5, 4, 4.5, 5][min(4, game.get_game().stage)]
-        self.damages[dmg.DamageTypes.KARMA] = [200, 350, 500, 1000, 9000][min(4, game.get_game().stage)] * .75
+        self.damages[dmg.DamageTypes.KARMA] = [200, 350, 500, 1000, 2000][min(4, game.get_game().stage)] * .75
         self.vel += (-self.x / 100, -self.y / 100)
         self.vel *= .9
         self.x, self.y = self.vel + (self.x, self.y)
@@ -1191,8 +1192,14 @@ class AbyssSever(Blade):
         else:
             self.sk_cd = max(0, self.timer)
             self.sk_mcd = self.at_time
-        self.damages[dmg.DamageTypes.INFINITESIMAL] = [200, 350, 500, 1000, 9000][min(4, game.get_game().stage)] * .7
+        self.damages[dmg.DamageTypes.INFINITESIMAL] = [200, 350, 500, 1000, 2000][min(4, game.get_game().stage)] * .7
         self.set_rotation(self.rot)
+
+class Oracle(ThiefDoubleKnife):
+    def update(self):
+        super().update()
+        self.damages[dmg.DamageTypes.CHAOS] = [200, 350, 500, 1000, 2000][min(4, game.get_game().stage)] * 1.2
+        self.critical = .9
 
 class MagicBlade(Blade):
     def on_start_attack(self):
@@ -4936,6 +4943,10 @@ def set_weapons():
                                 'items_weapons_chaos_reap', 7, 11, 30, 180),
         'abyss_sever': AbyssSever('abyss sever', {dmg.DamageTypes.INFINITESIMAL: 140}, 3,
                                  'items_weapons_abyss_sever', 3, 15, 20, 200),
+        'oracle': Oracle('oracle', {dmg.DamageTypes.CHAOS: 240}, 3,
+                         ('items_weapons_oracle_l', 'items_weapons_oracle_r'),
+                         2, 9, 30, 200, 25, 8000,
+                         (((100, 0, 0), (127, 127, 127)), ((200, 200, 255), (127, 127, 127))), 6),
 
         'wooden_sword': SweepWeapon('wooden sword', {dmg.DamageTypes.PHYSICAL: 8}, 0.1,
                                     'items_weapons_wooden_sword', 5,
@@ -6039,5 +6050,6 @@ def set_weapons():
     print(len(WEAPONS), len(weapons))
     for k, v in weapons.items():
         WEAPONS[k] = v
+        WEAPONS[k].t_id = k
 
 set_weapons()
