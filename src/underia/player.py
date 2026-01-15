@@ -175,6 +175,7 @@ class Player:
         self.shield_break = 0.0
         self.nts = []
         self.cc_t = 0
+        self.blood_value = 0.0
 
     def calculate_regeneration(self):
         ACCESSORY_REGEN = {}
@@ -600,6 +601,7 @@ class Player:
         ar = (1 - math.e ** (-self.profile.skill_points['murder'] / sp))
         sr = f'colff0000MURDER LEVEL {["I", "II", "III", "IV", "V"][min(5, game.get_game().stage)]}\n'
         sr += f'BLOOD VALUE {self.profile.skill_points['murder'] / sp:.2f}\n'
+        self.blood_value = self.profile.skill_points['murder'] / sp
         sr += f'bl_chaosUNLOCKED {ar * 100:.2f}% ABILITY\n'
         l = 0
         if self.profile.skill_points['murder'] / sp > .5:

@@ -294,8 +294,8 @@ class SweepWeapon(Weapon):
 
     def on_attack(self):
         self.rotate(self.rot_speed)
-        self.rotate(int(-(self.timer - self.at_time / 2) * abs(self.rot_speed) // self.rot_speed *
-                        (25 + self.strike * 35) * (2 if constants.DIFFICULTY > 1 else 1) // self.at_time) if self.timer <= self.at_time else 0)
+        self.rotate(int(-(self.timer - self.at_time / 2) * self.rot_speed *
+                        (1 + self.strike) * (2 if constants.DIFFICULTY > 1 else 1) // self.at_time // 6) if self.timer <= self.at_time else 0)
         super().on_attack()
         self.flip = self.rot_speed < 0
         self.damage()
@@ -1022,6 +1022,20 @@ class Mantle(Blade):
         super().on_attack()
         game.get_game().projectiles.append(projectiles.Projectiles.Mantle(game.get_game().player.obj.pos + (self.x, self.y) + vector.Vector2D(self.rot, self.img.get_width()),
                                                                           self.rot + self.rot_speed * 3))
+
+class BloodlustScythe(Blade):
+    def update(self):
+        super().update()
+        self.damages[dmg.DamageTypes.PHYSICAL] = ([200, 350, 500, 1000, 2000][min(4, game.get_game().stage)] * 3 *
+                                                  (game.get_game().player.blood_value >= 1.0))
+
+    def on_damage(self, target):
+        super().on_damage(target)
+        game.get_game().player.profile.skill_points['murder'] += self.damages[dmg.DamageTypes.PHYSICAL] * 3
+
+    def on_attack(self):
+        super().on_attack()
+        self.rotate(int(45 * self.rot_speed / abs(self.rot_speed) * max(0.0, 1 - self.timer / self.at_time) ** 3.0))
 
 class ChaosReap(Blade):
     def __init__(self, *args):
@@ -4938,6 +4952,9 @@ def set_weapons():
         'arrow_thrower': Bow('arrow thrower', {dmg.DamageTypes.PIERCING: 3}, 0.3,
                              'items_weapons_arrow_thrower', 1,
                              4, 100, auto_fire=True),
+
+        'bloodlust_scythe': BloodlustScythe('bloodlust scythe', {dmg.DamageTypes.PHYSICAL: 40}, 5,
+                                            'items_weapons_bloodlust_scythe', 7, 14, 3, 140, critical=.5),
 
         'chaos_reap': ChaosReap('chaos reap', {dmg.DamageTypes.KARMA: 150}, 3,
                                 'items_weapons_chaos_reap', 7, 11, 30, 180),

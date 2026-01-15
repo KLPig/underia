@@ -559,6 +559,9 @@ items_dict: dict[str, Inventory.Item] = {
                                                                                          TAGS['arcane_weapon'], TAGS['magic_lv_primal_magic'], TAGS['magic_element_time']]),
     'destroy_shard': Inventory.Item('Destroy Shard', 'The crush and demolish in the world.', 'destroy_shard', 13, [TAGS['item']]),
 
+    'bloodlust_scythe': Inventory.Item('Bloodlust Scythe', 'rainbowDamage and size increases within progress.\ncolff0000REQUIRE BLOOD VALUE 1.0',
+                                       'bloodlust_scythe', 12,
+                                       [TAGS['item'], TAGS['weapon'], TAGS['melee_weapon']]),
     'chaos_reap': Inventory.Item('Chaos Reap',
                                  'rainbowDamage and size increases within progress.\nbl_chaosChaoticly sacrifice enemies in freeze, wither and bleeding.\nbr_chaosStrike to throw it.',
                                  'chaos_reap', 12,

@@ -1,3 +1,3 @@
-	"hallow magic lv.iv: great healer": "万圣魔法LV.IV ：大治疗师", 
-	"damage up to ": "伤害上限为", 
-	"x for enough good karma": "x足够好的业力", 
+	"lost: growth eater": "Lost: Growth Eater", 
+	"the lost weapon.": "丢失的武器。", 
+	"cut off lines.": "截止行", 
