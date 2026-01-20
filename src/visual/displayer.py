@@ -67,7 +67,7 @@ class Displayer:
                                              window.get_height() // 2 + self.shake_y))
         self.blit_pos = rect.topleft
         window.blit(blit_surface, rect)
-        self.canvas.fill((255, 255, 255))
+        self.canvas.fill((0, 0, 0))
         if self.lsw != self.SCREEN_WIDTH or self.lsh != self.SCREEN_HEIGHT:
             self.lsw, self.lsh = self.SCREEN_WIDTH, self.SCREEN_HEIGHT
             self.canvas = pg.Surface((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pg.SRCALPHA)
@@ -89,6 +89,14 @@ class Displayer:
                                           position.displayed_position(game.get_game().player.obj.pos),
                                           300 / game.get_game().player.get_screen_scale(),
                                           0.5)
+        if game.get_game().get_dimension() == 'path':
+            self.light_engine.lights.clear()
+            self.light_engine.ambient_light = (150, 150, 150, 255)
+            self.night_darkness_color = (150, 150, 150)
+            for f in game.get_game().furniture:
+                if f.NAME == 'LIGHT':
+                    self.light_engine.point_light((0, 255, 255), position.displayed_position(f.obj.pos),
+                                                  int(500 / game.get_game().player.get_screen_scale()), 0.5)
         self.light_engine.update(self.canvas)
         self.light_engine.clear()
         r, g, b = self.night_darkness_color

@@ -16,8 +16,11 @@ def relative_position(pos):
 def displayed_position(pos):
     ax, ay = game.get_game().get_anchor()
     dis = game.get_game().displayer
-    return ((pos[0] - ax) / game.get_game().player.get_screen_scale() + dis.SCREEN_WIDTH // 2,
+    dx, dy = ((pos[0] - ax) / game.get_game().player.get_screen_scale() + dis.SCREEN_WIDTH // 2,
             (pos[1] - ay) / game.get_game().player.get_screen_scale() + dis.SCREEN_HEIGHT // 2)
+    dx = max(-1e9, min(1e9, dx))
+    dy = max(-1e9, min(1e9, dy))
+    return dx, dy
 
 
 def real_position(pos):

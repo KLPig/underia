@@ -1035,6 +1035,10 @@ class BloodlustScythe(Blade):
 
     def on_attack(self):
         super().on_attack()
+        self.rotate(-self.rot_speed)
+        self.rotate(-int(-(self.timer - self.at_time / 2) * self.rot_speed *
+                        (1 + self.strike) * (2 if constants.DIFFICULTY > 1 else 1) // self.at_time // 6) if self.timer <= self.at_time else 0)
+
         self.rotate(int(45 * self.rot_speed / abs(self.rot_speed) * max(0.0, 1 - self.timer / self.at_time) ** 3.0))
 
 class ChaosReap(Blade):
@@ -2844,7 +2848,7 @@ class TheRulingSword(Blade):
 
         for ar in range(-30, 31, 30):
             ax, ay = vector.rotation_coordinate(r + ar)
-            ee = e(self.name, self.damages, self.knock_back, en, self.cd, self.at_time, self.rot_speed, self.st_pos, self.auto_fire, critical)
+            ee = e(self.name, self.damages, self.knock_back, en, self.cd, self.at_time, self.rot_speed, self.st_pos, self.auto_fire, critical=self.critical)
             ee.ax = ax
             ee.ay = ay
             ee.keys = []
@@ -4954,7 +4958,7 @@ def set_weapons():
                              4, 100, auto_fire=True),
 
         'bloodlust_scythe': BloodlustScythe('bloodlust scythe', {dmg.DamageTypes.PHYSICAL: 40}, 5,
-                                            'items_weapons_bloodlust_scythe', 7, 14, 3, 140, critical=.5),
+                                            'items_weapons_bloodlust_scythe', 7, 14, 50, 140, critical=.5),
 
         'chaos_reap': ChaosReap('chaos reap', {dmg.DamageTypes.KARMA: 150}, 3,
                                 'items_weapons_chaos_reap', 7, 11, 30, 180),

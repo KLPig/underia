@@ -538,6 +538,7 @@ items_dict: dict[str, Inventory.Item] = {
                                             [TAGS['item']]),
     'origin_spirit_essence': Inventory.Item('Origin Spirit Essence', 'br_chaosCombination of numberless essences.', 'origin_spirit_essence', 9, [TAGS['item']]),
     'chaos_heart': Inventory.Item('Chaos Heart', 'The inner\'s heart.\nProbably have to destroy it.', 'chaos_heart', 9, [TAGS['item']]),
+    'compass': Inventory.Item('Compass', 'bl_chaosWhere is it leading you to?\nTake you to PATH.', 'compass', 12, [TAGS['item']]),
     'wierd_essence': Inventory.Item('Wierd Essence', 'Something strange.', 'wierd_essence', 9, [TAGS['item']]),
     'time_essence': Inventory.Item('Time Essence', 'Minutes and hours.', 'time_essence', 9, [TAGS['item']]),
     'substance_essence': Inventory.Item('Substance Essence', 'It\'s still here.', 'substance_essence', 9, [TAGS['item']]),
@@ -2124,6 +2125,7 @@ items_dict: dict[str, Inventory.Item] = {
     'potion_of_teleport': Inventory.Item('Potion of Teleport', 'Teleports to a random place within a region.', 'potion_of_teleport', 4, [TAGS['item']]),
     'iron_donut': Inventory.Item('Iron Donut', 'Increase your defense by 32.\nDuration: 54s', 'iron_donut', 4, [TAGS['item']]),
     'heart_pie': Inventory.Item('Heart Pie', 'Increase regeneration by 10/sec.\nDuration: 15s', 'heart_pie', 4, [TAGS['item']]),
+    'potion_of_sanctuary': Inventory.Item('Potion of Sanctuary', 'Where is it going to lead you?', 'potion_of_sanctuary', 12, [TAGS['item']]),
 
     'weak_healing_potion': Inventory.Item('Weak Healing Potion', 'Recover 50 HP\nCausing potion sickness.',
                                           'weak_healing_potion', 0, [TAGS['item'], TAGS['healing_potion']]),
@@ -2418,9 +2420,11 @@ RECIPES = [
     Recipe({'cauldron': 1, 'gypsophila': 2, 'red_algae': 3, 'mana_crystal': 1}, 'magic_potion', 5),
     Recipe({'cauldron': 1, 'gypsophila': 1, 'flamaureus': 1, 'red_algae': 2, 'anemovitis': 1, 'mysterious_substance': 1}, 'immune_potion'),
     Recipe({'cauldron': 1, 'dendrobium': 3, 'anemovitis': 2, 'firy_plant': 1, 'aerialite_ingot': 1}, 'storm_potion'),
+    Recipe({'cauldron': 1, 'dendrobium': 15, 'anemovitis': 10, 'firy_plant': 10, 'red_algae': 15}, 'potion_of_sanctuary'),
 
     Recipe({'blood_ingot': 18, 'obsidian_ingot': 5, 'floatstone': 2, 'anvil': 1}, 'bloody_traveller_boots'),
     Recipe({'blood_ingot': 2, 'anvil': 1}, 'cell_organization', 5),
+    Recipe({'blood_ingot': 55, 'cell_organization': 80, 'floatstone': 25, 'life_core': 25}, 'bloodlust_scythe'),
     Recipe({'platinum_ingot': 10, 'blood_ingot': 20, 'obsidian_ingot': 8, 'anvil': 1}, 'bloody_sword'),
     Recipe({'zirconium_ingot': 8, 'blood_ingot': 20, 'obsidian_ingot': 8, 'anvil': 1}, 'bloody_sword'),
     Recipe({'platinum_ingot': 12, 'blood_ingot': 32, 'obsidian_ingot': 5, 'anvil': 1}, 'blood_pike'),
@@ -2524,6 +2528,7 @@ RECIPES = [
     Recipe({'storm_core': 1, 'mysterious_ingot': 3, 'floatstone': 2}, 'wind'),
 
     Recipe({'soul': 60}, 'spiritual_heart'),
+    Recipe({'spiritual_heart': 3, 'biome_alloy': 5}, 'compass'),
     Recipe({'soul': 30, 'firy_plant': 5}, 'butterscotch_pie', 10),
     Recipe({'soul': 10, 'magic_stone': 5}, 'seatea', 10),
     Recipe({'soul': 10, 'firy_plant': 3, 'life_core': 3}, 'scarlett_pearl'),

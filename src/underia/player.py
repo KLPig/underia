@@ -2093,6 +2093,10 @@ class Player:
                         elif item.id == 'potion_of_memory':
                             self.obj.pos = vector.Vector2D()
                             self.inventory.remove_item(item)
+                        elif item.id in ['potion_of_sanctuary', 'compass']:
+                            self.obj.pos = vector.Vector2D(0, 0, 0, 1e9 + 9000)
+                            if item.id != 'compass':
+                                self.inventory.remove_item(item)
                         elif item.id == 'potion_of_teleport':
                             self.obj.pos = vector.Vector2D(random.randint(0, 360), math.sqrt(random.randint(0, 5000 ** 2)))
                             self.inventory.remove_item(item)

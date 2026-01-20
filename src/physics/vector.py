@@ -109,6 +109,7 @@ class Vector2D:
 
 
     def restrict(self, d_min, d_max):
+        return
         self.x = max(d_min, min(d_max, self.x))
         self.y = max(d_min, min(d_max, self.y))
 

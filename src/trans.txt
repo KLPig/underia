@@ -1,3 +1,1 @@
-	"lost: growth eater": "Lost: Growth Eater", 
-	"the lost weapon.": "丢失的武器。", 
-	"cut off lines.": "截止行", 
+	"task ": "任务", 

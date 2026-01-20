@@ -20,7 +20,7 @@ MUSICS = {
     'wild_east': ['desert1', 'desert0', 'wither0', 'wither1'],
     'waterfall': ['forest0', 'rainforest0', 'desert0', 'snowland0', 'heaven0', 'heaven1', 'inner0', 'wither1',
                   'ocean0', 'ocean1'],
-    'fields': ['forest1', 'rainforest1', 'snowland1', 'forest0', 'ocean'],
+    'fields': ['forest1', 'rainforest1', 'snowland1', 'forest0', 'oceasdn0'],
     'empty': ['hell0', 'hell1', 'forest1', 'rainforest1', 'battle', 'hallow0', 'hallow1', 'wither0', 'wither1',
               'life_forest0', 'life_forest1', 'ocean0', 'ocean1'],
     'snow': ['snowland0', 'snowland1', 'hallow0', 'hallow1'],
@@ -35,7 +35,7 @@ MUSICS = {
                           'chaos_abyss_red0', 'chaos_abyss_red1', 'chaos_abyss_blue0',
                           'chaos_abyss_blue1'],
     'rlyeh': ['hot_spring1', 'inner0', 'inner1', 'chaos_abyss_red0', 'chaos_abyss_red1', 'chaos_abyss_blue0',
-                          'chaos_abyss_blue1'],
+                          'chaos_abyss_blue1', 'path0', 'path1'],
     'null': [],
     'rude_buster': ['battle'],
     'worlds_revolving': ['battle'],
@@ -349,6 +349,11 @@ class Game:
         pg.display.update()
         pg.event.get()
 
+    def get_dimension(self):
+        if self.player.obj.pos[1] > 1e9:
+            return 'path'
+        return 'main'
+
     def setup(self):
         if 'fun' not in dir(self):
             self.fun = random.randint(1, 13)
@@ -446,6 +451,9 @@ class Game:
         cp.chest = self.c_chest
         cp.sm = False
         self.furniture.append(cp)
+        for ar in range(0, 8000, 500):
+            self.furniture.append(entity.Entities.PathLight((-500, 1e9 + 8000 + ar), 'l'))
+            self.furniture.append(entity.Entities.PathLight((500, 1e9 + 8000 + ar), 'r'))
 
     def play_sound(self, sound: str, vol=1.0, stop_if_need=True, fadeout=0):
         self.sounds[sound].set_volume(vol * constants.SOUND_VOL)
@@ -471,6 +479,8 @@ class Game:
         return not len([1 for e in self.entities if e.IS_MENACE or type(e).IS_MENACE])
 
     def get_biome(self, pos=None):
+        if self.get_dimension() == 'path':
+            return 'path'
         if len(self.furniture):
             cp = self.furniture[0]
             dt = abs(cp.obj.pos - self.player.obj.pos)
@@ -648,15 +658,36 @@ class Game:
             if self.last_biome[1] >= 20:
                 self.last_biome = (self.get_biome(), 0)
         slg, _ = self.last_biome
-        for i in range(-bg_size, self.displayer.SCREEN_WIDTH + bg_size * chunk_size, bg_size * chunk_size):
-            for j in range(-bg_size, self.displayer.SCREEN_HEIGHT + bg_size * chunk_size, bg_size * chunk_size):
-                cx, cy = resources.real_position((i - bg_ax + bg_size // 2, j - bg_ay + bg_size // 2))
-                bgg = [[self.get_biome(((cx + i * bg_size * self.player.get_screen_scale()) // self.CHUNK_SIZE + 120,
-                                        (cy + j * bg_size * self.player.get_screen_scale()) // self.CHUNK_SIZE + 120))
-                        for j in range(chunk_size)] for i in range(chunk_size)]
-                surf = self.get_chunked_images(tuple([tuple(b) for b in bgg]), bg_size)
-                #self.bl_bg.blit(surf, (i - bg_ax, j - bg_ay))
-                self.displayer.canvas.blit(surf, (i - bg_ax, j - bg_ay))
+        if self.get_dimension() == 'path':
+
+            self.player.obj.pos[1] = min(max(1e9 + 8000, self.player.obj.pos[1]), 1e9 + 50000)
+            tl = (-500, 1e9 + 8000)
+            rr = pg.Rect(resources.displayed_position(tl), (int(1000 / self.player.get_screen_scale()), int(8000 / self.player.get_screen_scale())))
+            pg.draw.rect(self.displayer.canvas, (255, 181, 112), rr)
+            pg.draw.rect(self.displayer.canvas, (242, 166, 94), rr,
+                         int(15 / self.player.get_screen_scale() + 1))
+            rr = pg.Rect(tl, (1000, 8000))
+            if rr.top < self.player.obj.pos[1] < rr.bottom:
+                self.player.obj.pos[0] = min(rr.right, max(rr.left, self.player.obj.pos[0]))
+
+            tl = (-1500, 1e9 + 16000)
+            rr = pg.Rect(resources.displayed_position(tl), (int(3000 / self.player.get_screen_scale()), int(3000 / self.player.get_screen_scale())))
+            pg.draw.rect(self.displayer.canvas, (255, 181, 112), rr)
+            pg.draw.rect(self.displayer.canvas, (242, 166, 94), rr,
+                         int(15 / self.player.get_screen_scale() + 1))
+            rr = pg.Rect(tl, (3000, 3000))
+            if rr.top < self.player.obj.pos[1] < rr.bottom:
+                self.player.obj.pos[0] = min(rr.right, max(rr.left, self.player.obj.pos[0]))
+        else:
+            for i in range(-bg_size, self.displayer.SCREEN_WIDTH + bg_size * chunk_size, bg_size * chunk_size):
+                for j in range(-bg_size, self.displayer.SCREEN_HEIGHT + bg_size * chunk_size, bg_size * chunk_size):
+                    cx, cy = resources.real_position((i - bg_ax + bg_size // 2, j - bg_ay + bg_size // 2))
+                    bgg = [[self.get_biome(((cx + i * bg_size * self.player.get_screen_scale()) // self.CHUNK_SIZE + 120,
+                                            (cy + j * bg_size * self.player.get_screen_scale()) // self.CHUNK_SIZE + 120))
+                            for j in range(chunk_size)] for i in range(chunk_size)]
+                    surf = self.get_chunked_images(tuple([tuple(b) for b in bgg]), bg_size)
+                    #self.bl_bg.blit(surf, (i - bg_ax, j - bg_ay))
+                    self.displayer.canvas.blit(surf, (i - bg_ax, j - bg_ay))
         if self.chapter == 2:
             for e in self.entities:
                 if e.obj.pos[1] < -99000:
@@ -699,9 +730,9 @@ class Game:
         if '3rd_sanctuary' not in MUSICS:
             MUSICS['3rd_sanctuary'] = ['forest0', 'forest1', 'rainforest0', 'rainforest1', 'desert0', 'desert1',
                                        'snowland0', 'snowland1', 'hell0', 'hell1', 'heaven0', 'heaven1', 'ancient0',
-                                       'ancient1']
+                                       'ancient1', 'path0', 'path1']
             MUSICS['dark_sanctuary'] = ['ancient0', 'ancient1', 'ancient_city0', 'ancient_city1',
-                                        'ancient_wall0', 'ancient_wall1']
+                                        'ancient_wall0', 'ancient_wall1', 'path0', 'path1']
         if (self.prepared_music is None and self.channel.get_busy() == 0) or \
                 (self.cur_music is not None and (self.get_biome() + str(int(0.3 < self.day_time < 0.7))) not in
                  self.MUSICS[self.cur_music] and not len([1 for e in self.entities if e.IS_MENACE or type(e) in [entity.Entities.Irec]])) \

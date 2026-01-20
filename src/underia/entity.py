@@ -1446,6 +1446,24 @@ class Entities:
     class TheCPU(EntityDefinition):
         pass
 
+    class PathLight(Entity):
+        NAME = 'LIGHT'
+        DISPLAY_MODE = 2
+
+        def __init__(self, pos, tp='l'):
+            super().__init__(pos, game.get_game().graphics['background_path_light_' + tp], BuildingAI, 100)
+            self.hp_sys.IMMUNE = True
+            self.tp = tp
+
+        def t_draw(self):
+            super().t_draw()
+            pr = self.obj.pos + (-20 if self.tp == 'l' else 20, -80 + 10 * math.sin(game.get_game().player.tick / 50))
+            pg.draw.circle(game.get_game().displayer.canvas, (0, 255, 255),
+                           position.displayed_position(pr), int(1 + 20 / game.get_game().player.get_screen_scale()))
+
+        def get_shown_txt(self):
+            return '"LIGHT"', '- SHINING MY MIND'
+
     class Dummy(Entity):
         NAME = 'Dummy'
         DISPLAY_MODE = 0
