@@ -162,38 +162,53 @@ class PathAltarBase(Chest):
     IMG = 'background_path_altar_base'
 
     def __init__(self, pos):
-        super().__init__(pos)
+        super().__init__(pos, hp=1e9)
         self.chest.items = [('null', 1)]
         self.chest.n = 1
+        self.sm = False
 
     def get_shown_txt(self):
-        return '"BASE"\n-TRANSFORM'
+        return '"BASE"', '-TRANSFORM'
 
     def t_draw(self):
         super().t_draw()
+        self.hp_sys.hp = self.hp_sys.max_hp
         it, nm = self.chest.items[0]
         if nm > 1:
-            game.get_game().player.inventory.add_item(inventory.ITEMS['it'], nm - 1)
+            game.get_game().player.inventory.add_item(inventory.ITEMS[it], nm - 1)
             self.chest.items[0] = (it, 1)
 
-        gf = pg.transform.scale(game.get_game().graphics['items_' + inventory.ITESM['it'].img], (200, 200))
-        gf = entity.entity_get_surface(2, 0, 1 / game.get_game().player.get_screen_scale(), gf)
-
-        game.get_game().displayer.canvas.blit(gf, position.displayed_position(self.obj.pos - (0, 80 - 10 * math.sin(game.get_game().player.tick / 50))))
-
+        gf = pg.transform.scale(game.get_game().graphics['items_' + inventory.ITEMS[it].img], (100, 100))
+        gf = entity.entity_get_surface(2, 0, game.get_game().player.get_screen_scale(), gf)
+        gfr = gf.get_rect(center=position.displayed_position(self.obj.pos - (0, 80 - 10 * math.sin(game.get_game().player.tick / 50))))
+        game.get_game().displayer.canvas.blit(gf, gfr)
 @entity.Entities.entity_type
 class PathAltar(PathAltarBase):
     IMG = 'background_path_altar'
 
     RECIPE = [
-        (['otherworld_stone'] * 3 + ['eye_lens', 'worm_scarf', 'worlds_seed'], 'storm_core', 'ray', ('null', 1)),
-        (['soul_of_' for d in ['integrity', 'bravery', 'kindness', 'perseverance', 'patience', 'justice']], 'willpower_shard',
-         'soul_of_determination', ('soul_of_determination', 7)),
-        (['soul_of_determination'] * 6, 'origin', 'origin', ('null', 1))
+        (['otherworld_stone'] * 3 + ['eye_lens', 'worm_scarf', 'worlds_seed'], 'storm_core', 'ray', ('null', 1), 600),
+        (['soul_of_' + d for d in ['integrity', 'bravery', 'kindness', 'perseverance', 'patience', 'justice']], 'willpower_shard',
+         'soul_of_determination', ('soul_of_determination', 7), 100),
+        (['photon'] * 6, 'joker', 'jevil', ('null', 1), 600),
+        (['soul_of_determination'] * 6, 'origin', 'origin', ('null', 1), 600),
+        (['substance_essence'] * 3 + ['chaos_ingot', 'soul_of_determination', 'incremental_spirit_essence'],
+         'origin', 'matter', ('null', 1), 1500),
+        (['time_essence'] * 3 + ['chaos_ingot', 'soul_of_determination', 'incremental_spirit_essence'],
+         'origin', 'clock', ('null', 1), 1500),
+        (['light_essence', 'wierd_essence', 'origin_spirit_essence'] * 2,
+         'origin', 'gods_eye', ('null', 1), 1500),
+        (['origin_feather', 'origin_spirit_essence', 'soul_of_determination', 'fate', 'scorch_core',
+          'curse_core'],
+         'origin', 'disciple', ('null', 1), 3000)
     ]
 
     def get_shown_txt(self):
-        return '"ALTAR"\n-REBORN'
+        ci, cn = self.ceremony_now
+        if cn >= 0:
+            return '"ALTAR"', f'{cn / 80:.1f}S LEFT'
+
+        return '"ALTAR"', '-REBORN'
 
     def __init__(self, pos):
         super().__init__(pos)
@@ -202,16 +217,31 @@ class PathAltar(PathAltarBase):
         self.cur: tuple | None = None
 
     def on_done(self, cid):
-        pass
+        if cid == 'ray':
+            if game.get_game().stage == 0:
+                game.get_game().entities.append(entity.Entities.Ray(self.obj.pos.to_value()))
+        if cid == 'jevil':
+            if game.get_game().stage == 1:
+                game.get_game().entities.append(entity.Entities.Jevil(self.obj.pos.to_value()))
+        if cid == 'matter':
+            game.get_game().entities.append(entity.Entities.MATTER(self.obj.pos.to_value()))
+        if cid == 'clock':
+            game.get_game().entities.append(entity.Entities.CLOCK(self.obj.pos.to_value()))
+        if cid == 'gods_eye':
+            game.get_game().entities.append(entity.Entities.GodsEye(self.obj.pos.to_value()))
+        if cid == 'disciple':
+            if game.get_game().stage == 3:
+                game.get_game().entities.append(entity.Entities.Disciple(self.obj.pos.to_value()))
+
 
     def t_draw(self):
         super().t_draw()
         ci, cn = self.ceremony_now
         if cn >= 0:
-            game.get_game().player.open_chest = None
+            # game.get_game().player.open_chest = None
             if cn == 0:
                 self.on_done(ci)
-                it, mn, cid, tt = self.cur
+                it, mn, cid, tt, dt = self.cur
                 self.chest.items[0] = tt
                 for b in self.bases:
                     b.chest.items[0] = ('null', 1)
@@ -219,17 +249,22 @@ class PathAltar(PathAltarBase):
             self.ceremony_now = (ci, cn - 1)
         else:
             for r in self.RECIPE:
-                it, mn, cid, tt = r
+                it, mn, cid, tt, dt = r
                 its = []
                 for b in self.bases:
                     its.append(b.chest.items[0][0])
                 if self.chest.items[0][0] != mn:
                     continue
-                its = sorted(its)
-                it = sorted(it)
-                if it == its:
-                    self.ceremony_now = (cid, 200)
-                    self.cur = r
+                f = 1
+                for itt in it:
+                    if itt in its:
+                        its.remove(itt)
+                    else:
+                        f = 0
+                if not f:
+                    continue
+                self.ceremony_now = (cid, dt)
+                self.cur = r
 
 
 
@@ -1023,7 +1058,7 @@ class NPCRay(Chest):
         self.ct2 = [('npc_ray_home', 1), ('npc_ray_chaos_reap', 1), ('npc_ray_fate', 1), ('npc_ray_chaos_vocalist_headgear', 1), ('npc_ray_chaos_vocalist_crown', 1),
                     ('npc_ray_chaos_vocalist_shabby_cloak', 1), ('npc_ray_chaos_vocalist_traveller_boots', 1),
                     ('npc_ray_soulfeather', 81)]
-        self.ct3 = [('npc_ray_c_1', 1), ('npc_ray_c_2')]
+        self.ct3 = [('npc_ray_c_1', 1), ('npc_ray_c_2', 1)]
         self.state = 0
 
         self.chest.items = self.ct1

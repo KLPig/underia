@@ -3165,7 +3165,6 @@ RECIPES = [
     Recipe({'mana_crystal': 3, 'mysterious_substance': 20}, 'wind'),
     Recipe({'obsidian_ingot': 10, 'floatstone': 10, 'life_core': 10, 'otherworld_stone': 50}, 'nature_core'),
     Recipe({'cell_organization': 20, 'obsidian_ingot': 20, 'otherworld_stone': 100}, 'blood_substance'),
-    Recipe({'eye_lens': 1, 'worm_scarf': 1, 'worlds_seed': 1, 'otherworld_stone': 150}, 'legend_soul'),
 
     Recipe({'palladium_ingot': 5, 'mithrill_ingot': 5, 'titanium_ingot': 5, 'soul_of_flying': 5}, 'sky_painting'),
     Recipe({'saint_steel_ingot': 15, 'soul_of_integrity': 15, 'soul_of_flying': 5}, 'green_thing'),
@@ -3184,7 +3183,16 @@ RECIPES = [
     Recipe({'storm_core': 1, 'path_altar': 1, 'eye_lens': 1, 'worm_scarf': 1, 'worlds_seed': 1, 'otherworld_stone': 3}, 'noitem'),
     Recipe({'willpower_shard': 1, 'path_altar': 1, 'soul_of_integrity': 1, 'soul_of_bravery': 1, 'soul_of_kindness': 1,
             'soul_of_perseverance': 1, 'soul_of_patience': 1, 'soul_of_justice': 1}, 'soul_of_determination'),
+    Recipe({'joker': 1, 'path_altar': 1, 'photon': 6}, 'noitem'),
     Recipe({'origin': 1, 'path_altar': 1, 'soul_of_determination': 6}, 'noitem'),
+    Recipe({'origin': 1, 'path_altar': 1, 'time_essence': 3, 'chaos_ingot': 1, 'soul_of_determination': 1,
+            'incremental_spirit_essence': 1}, 'noitem'),
+    Recipe({'origin': 1, 'path_altar': 1, 'substance_essence': 3, 'chaos_ingot': 1, 'soul_of_determination': 1,
+            'incremental_spirit_essence': 1}, 'noitem'),
+    Recipe({'origin': 1, 'path_altar': 1, 'light_essence': 2, 'wierd_essence': 2, 'origin_spirit_essence': 2},
+           'noitem'),
+    Recipe({'origin': 1, 'path_altar': 1, 'fate': 1, 'scorch_core': 1, 'curse_core': 1,
+            'origin_feather': 1, 'soul_of_determination': 1}, 'noitem'),
 
 
 ]

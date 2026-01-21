@@ -458,7 +458,7 @@ class Game:
         fs = []
         for ar in range(0, 360, 60):
             fs.append(entity.Entities.PathAltarBase(physics.Vector2D(ar, 400) + ct))
-        self.furniture.extend(fs)
+        self.furniture += fs
         fn = entity.Entities.PathAltar(ct)
         fn.bases = fs
         self.furniture.append(fn)
