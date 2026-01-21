@@ -439,6 +439,12 @@ TAGS = {
 }
 items_dict: dict[str, Inventory.Item] = {
     'null': Inventory.Item('null', '', 'null', 0, [TAGS['item']]),
+    'noitem': Inventory.Item('Not an item', '', 'noitem', 0, [TAGS['item']]),
+
+    'path_altar': Inventory.Item('Ceremony in Path', 'Put items in the right to BASE.\n'
+                                                      'Put item in the left to ALTAR.\n'
+                                                      'Enable CEREMONY.',
+                                  'path_altar', 12, []),
 
     '_developer_tool__sight': Inventory.Item('Developer Tool - Sight', 'dt', '_developer_tool__sight', 0, [TAGS['accessory']], specify_img='null'),
     '_developer_tool__speed': Inventory.Item('Developer Tool - Speed', 'dt\n+1000% speed', '_developer_tool__speed', 0, [TAGS['accessory']], specify_img='null'),
@@ -3174,6 +3180,12 @@ RECIPES = [
     Recipe({'chlorophyte_ingot': 4, 'thermal_ingot': 4, 'dark_ingot': 4, 'chlorophyll': 1}, 'joker'),
     Recipe({'hallow_ingot': 10, 'strength_ingot': 4}, 'joker'),
     Recipe({'substance_essence': 50}, 'suspicious_substance'),
+
+    Recipe({'storm_core': 1, 'path_altar': 1, 'eye_lens': 1, 'worm_scarf': 1, 'worlds_seed': 1, 'otherworld_stone': 3}, 'noitem'),
+    Recipe({'willpower_shard': 1, 'path_altar': 1, 'soul_of_integrity': 1, 'soul_of_bravery': 1, 'soul_of_kindness': 1,
+            'soul_of_perseverance': 1, 'soul_of_patience': 1, 'soul_of_justice': 1}, 'soul_of_determination'),
+    Recipe({'origin': 1, 'path_altar': 1, 'soul_of_determination': 6}, 'noitem'),
+
 
 ]
 

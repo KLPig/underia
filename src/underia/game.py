@@ -454,6 +454,14 @@ class Game:
         for ar in range(0, 8000, 500):
             self.furniture.append(entity.Entities.PathLight((-500, 1e9 + 8000 + ar), 'l'))
             self.furniture.append(entity.Entities.PathLight((500, 1e9 + 8000 + ar), 'r'))
+        ct = (0, 1e9 + 17500)
+        fs = []
+        for ar in range(0, 360, 60):
+            fs.append(entity.Entities.PathAltarBase(physics.Vector2D(ar, 400) + ct))
+        self.furniture.extend(fs)
+        fn = entity.Entities.PathAltar(ct)
+        fn.bases = fs
+        self.furniture.append(fn)
 
     def play_sound(self, sound: str, vol=1.0, stop_if_need=True, fadeout=0):
         self.sounds[sound].set_volume(vol * constants.SOUND_VOL)

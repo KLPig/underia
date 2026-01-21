@@ -1332,9 +1332,6 @@ class Entities:
     class ScarlettPillar(EntityDefinition):
         pass
 
-    class NPCJevil(EntityDefinition):
-        pass
-
     class Crysanths(EntityDefinition):
         pass
 
@@ -1354,6 +1351,21 @@ class Entities:
         pass
 
     class EvilMark(EntityDefinition):
+        pass
+
+    class PathAltarBase(EntityDefinition):
+        pass
+
+    class PathAltar(EntityDefinition):
+        pass
+
+    class PlantingPot(EntityDefinition):
+        pass
+
+    class ChristmasTree(EntityDefinition):
+        pass
+
+    class RedAlgae(EntityDefinition):
         pass
 
     # From pack: ./fallen_sea.py
@@ -1463,6 +1475,7 @@ class Entities:
 
         def get_shown_txt(self):
             return '"LIGHT"', '- SHINING MY MIND'
+
 
     class Dummy(Entity):
         NAME = 'Dummy'

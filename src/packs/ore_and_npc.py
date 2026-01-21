@@ -158,6 +158,84 @@ class Chest(Ore):
         game.get_game().player.open_chest = None
 
 @entity.Entities.entity_type
+class PathAltarBase(Chest):
+    IMG = 'background_path_altar_base'
+
+    def __init__(self, pos):
+        super().__init__(pos)
+        self.chest.items = [('null', 1)]
+        self.chest.n = 1
+
+    def get_shown_txt(self):
+        return '"BASE"\n-TRANSFORM'
+
+    def t_draw(self):
+        super().t_draw()
+        it, nm = self.chest.items[0]
+        if nm > 1:
+            game.get_game().player.inventory.add_item(inventory.ITEMS['it'], nm - 1)
+            self.chest.items[0] = (it, 1)
+
+        gf = pg.transform.scale(game.get_game().graphics['items_' + inventory.ITESM['it'].img], (200, 200))
+        gf = entity.entity_get_surface(2, 0, 1 / game.get_game().player.get_screen_scale(), gf)
+
+        game.get_game().displayer.canvas.blit(gf, position.displayed_position(self.obj.pos - (0, 80 - 10 * math.sin(game.get_game().player.tick / 50))))
+
+@entity.Entities.entity_type
+class PathAltar(PathAltarBase):
+    IMG = 'background_path_altar'
+
+    RECIPE = [
+        (['otherworld_stone'] * 3 + ['eye_lens', 'worm_scarf', 'worlds_seed'], 'storm_core', 'ray', ('null', 1)),
+        (['soul_of_' for d in ['integrity', 'bravery', 'kindness', 'perseverance', 'patience', 'justice']], 'willpower_shard',
+         'soul_of_determination', ('soul_of_determination', 7)),
+        (['soul_of_determination'] * 6, 'origin', 'origin', ('null', 1))
+    ]
+
+    def get_shown_txt(self):
+        return '"ALTAR"\n-REBORN'
+
+    def __init__(self, pos):
+        super().__init__(pos)
+        self.bases: list[PathAltarBase] = []
+        self.ceremony_now = ('none', -1)
+        self.cur: tuple | None = None
+
+    def on_done(self, cid):
+        pass
+
+    def t_draw(self):
+        super().t_draw()
+        ci, cn = self.ceremony_now
+        if cn >= 0:
+            game.get_game().player.open_chest = None
+            if cn == 0:
+                self.on_done(ci)
+                it, mn, cid, tt = self.cur
+                self.chest.items[0] = tt
+                for b in self.bases:
+                    b.chest.items[0] = ('null', 1)
+
+            self.ceremony_now = (ci, cn - 1)
+        else:
+            for r in self.RECIPE:
+                it, mn, cid, tt = r
+                its = []
+                for b in self.bases:
+                    its.append(b.chest.items[0][0])
+                if self.chest.items[0][0] != mn:
+                    continue
+                its = sorted(its)
+                it = sorted(it)
+                if it == its:
+                    self.ceremony_now = (cid, 200)
+                    self.cur = r
+
+
+
+
+
+@entity.Entities.entity_type
 class HolyPillar(Ore):
     NAME = 'Holy Pillar'
     DISPLAY_MODE = 1

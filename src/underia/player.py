@@ -619,8 +619,8 @@ class Player:
             else:
                 sr += f'col7f7f7f[2]LOCKED - TILL 1.0\n'
         if l and game.get_game().stage > 1:
-            sr += f'colff0000[3]KARMA POISON {l * 3 * ar:.1f}\n'
-            self.hp_sys.hp = min(self.hp_sys.hp, self.hp_sys.max_hp * (1 - l * .2 * ar))
+            sr += f'colff0000[3]KARMA POISON {l * 30 * ar:.1f}\n'
+            self.hp_sys.hp = min(self.hp_sys.hp, self.hp_sys.max_hp * (1 - l * .25 * ar))
 
         if l and game.get_game().stage > 2:
             sr += f'colff0000[4]KARMA EROSION {l * ar * self.hp_sys.max_hp / 100:.1f}\n'
