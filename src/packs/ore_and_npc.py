@@ -200,7 +200,12 @@ class PathAltar(PathAltarBase):
          'origin', 'gods_eye', ('null', 1), 1500),
         (['origin_feather', 'origin_spirit_essence', 'soul_of_determination', 'fate', 'scorch_core',
           'curse_core'],
-         'origin', 'disciple', ('null', 1), 3000)
+         'origin', 'disciple', ('null', 1), 3000),
+        (['soulfeather'] * 6, 'ultra_lightspeed', 'ultra_lightspeed', ('beyond_horizon', 1), 2000),
+        (['reason', 'result'] * 3, 'the_final_ingot', "the_final_ingot", ('the_final_ingot', 2), 300),
+        (['origin_spirit_essence', 'soul', 'soul'] * 2, 'ascendant_spirit_essence', 'ascendant_spirit_essence',
+         ('ascendant_spirit_essence', 2), 300),
+
     ]
 
     def get_shown_txt(self):
@@ -238,7 +243,7 @@ class PathAltar(PathAltarBase):
         super().t_draw()
         ci, cn = self.ceremony_now
         if cn >= 0:
-            # game.get_game().player.open_chest = None
+            game.get_game().player.open_chest = None
             if cn == 0:
                 self.on_done(ci)
                 it, mn, cid, tt, dt = self.cur
