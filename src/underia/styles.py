@@ -97,7 +97,7 @@ def text(txt: str) -> str:
         Dictionary[word] = rs
         log.warning('Translated: ' + txt + '->' + rs)
         n_d += f'\t"{word}": "{rs}", \n'
-        with open("./src/trans.txt", "w") as f:
+        with open("./trans.txt", "w") as f:
             f.write(n_d)
             f.close()
         return rs

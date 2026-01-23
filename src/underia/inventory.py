@@ -839,6 +839,8 @@ items_dict: dict[str, Inventory.Item] = {
                                   [TAGS['item'], TAGS['weapon'], TAGS['bow'], TAGS['ce_item']]),
     'retribution': Inventory.Item('Retribution', 'Summon arrows from the sky.', 'retribution', 10,
                                   [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
+    'apocalypse': Inventory.Item('Apocalypse', 'br_chaosFire of faith burning everything.',
+                                 'apocalypse', 11, [TAGS['item'], TAGS['weapon'], TAGS['bow']]),
 
     'pistol': Inventory.Item('pistol', '', 'pistol', 0, [TAGS['item'], TAGS['weapon'], TAGS['gun']]),
     'rifle': Inventory.Item('rifle', '', 'rifle', 0, [TAGS['item'], TAGS['weapon'], TAGS['gun']]),

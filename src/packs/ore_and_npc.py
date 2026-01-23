@@ -205,6 +205,8 @@ class PathAltar(PathAltarBase):
         (['reason', 'result'] * 3, 'the_final_ingot', "the_final_ingot", ('the_final_ingot', 2), 300),
         (['origin_spirit_essence', 'soul', 'soul'] * 2, 'ascendant_spirit_essence', 'ascendant_spirit_essence',
          ('ascendant_spirit_essence', 2), 300),
+        (['ascendant_spirit_essence', 'origin', 'scorch_core', 'soul_of_determination', 'the_final_ingot',
+          'no_fountain'], 'retribution', 'apocalypse', ('apocalypse', 1), 1000),
 
     ]
 

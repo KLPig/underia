@@ -3983,6 +3983,34 @@ class Projectiles:
                         cd.append(ee)
             return cd
 
+    class Apocalypse(Bullet):
+        DAMAGES = 400
+        SPEED = 500
+        IMG = 'null'
+        TAIL_SIZE = 5
+        TAIL_WIDTH = 12
+        TAIL_COLOR = (255, 255, 0)
+
+        def damage(self, pos, cd):
+            imr = self.d_img.get_rect(center=pos)
+            x, y = pos
+            for ee in game.get_game().entities:
+                if imr.collidepoint(ee.obj.pos[0], ee.obj.pos[1]) or ee.d_img.get_rect(
+                        center=(ee.obj.pos[0], ee.obj.pos[1])).collidepoint(x, y) and ee not in cd:
+                    for e2 in game.get_game().entities:
+                        if vector.distance(e2.obj.pos[0] - self.obj.pos[0], e2.obj.pos[1] - self.obj.pos[1]) < 100:
+                            e2.hp_sys.damage(self.dmg * 3, damages.DamageTypes.PIERCING)
+                            e2.hp_sys.effect(effects.Faith(50, int(self.dmg / 12)))
+                    game.get_game().displayer.effect(
+                        fade_circle.p_fade_circle(*position.displayed_position(self.obj.pos),
+                                                  (255, 255, 0), t=5,
+                                                  sp=20))
+                    if self.DELETE:
+                        self.dead = True
+                    else:
+                        cd.append(ee)
+            return cd
+
     class EnergyArrow(Arrow):
         DAMAGES = 20
         SPEED = 50
