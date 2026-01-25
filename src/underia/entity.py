@@ -5680,6 +5680,85 @@ class Entities:
                                                                       self.dt, 0))
 
 
+    class Challenge(Entity):
+        NAME = "CHALLENGE"
+        DISPLAY_MODE = 3
+        LOOT_TABLE = LootTable([])
+        IS_MENACE = True
+        PHASE_SEGMENTS = [1 / 3, 2 / 3]
+
+        def __init__(self, pos):
+            super().__init__(pos, game.get_game().graphics['entity_null'], BuildingAI, 60)
+            self.state = 0
+            self.ee = 0
+            self.hp_sys.IMMUNE = True
+            self.obj.IS_OBJECT = False
+            game.get_game().dialog.dialog('Let\'s see...\nWho\'s here now...', 'An arrayer?\nThat should be rare...')
+
+        def t_draw(self):
+            if self.state == 0:
+                if game.get_game().dialog.is_done():
+                    self.state = 1
+                    self.ee = Entities.TrueEye(self.obj.pos)
+                    self.ee.hp_sys.max_hp *= 24
+                    self.ee.hp_sys.hp *= 24
+                    self.ee.obj.TOUCHING_DAMAGE = 900
+                    self.ee.obj.SPEED *= 25
+                    self.ee.obj.MASS *= 5
+                    self.ee.IS_MENACE = False
+                    for d in self.ee.hp_sys.defenses:
+                        self.ee.hp_sys.defenses[d] += 200
+                    self.ee.LOOT_TABLE = LootTable([])
+                    game.get_game().entities.append(self.ee)
+            if self.state == 2:
+                if game.get_game().dialog.is_done():
+                    self.state = 3
+                    self.ee = Entities.Balrog(self.obj.pos)
+                    self.ee.hp_sys.max_hp *= 18
+                    self.ee.hp_sys.hp *= 18
+                    self.ee.obj.TOUCHING_DAMAGE = 900
+                    self.ee.obj.SPEED *= 15
+                    self.ee.obj.MASS *= 5
+                    self.ee.IS_MENACE = False
+                    self.ee.LOOT_TABLE = LootTable([])
+                    for d in self.ee.hp_sys.defenses:
+                        self.ee.hp_sys.defenses[d] += 300
+                    game.get_game().entities.append(self.ee)
+            if self.state == 4:
+                if game.get_game().dialog.is_done():
+                    self.state = 5
+                    self.ee = Entities.SkyCubeFighter(self.obj.pos)
+                    self.ee.hp_sys.max_hp *= 25
+                    self.ee.hp_sys.hp *= 25
+                    self.ee.obj.TOUCHING_DAMAGE = 800
+                    self.ee.obj.SPEED *= 35
+                    self.ee.obj.MASS *= 5
+                    self.ee.IS_MENACE = False
+                    self.ee.LOOT_TABLE = LootTable([])
+                    for d in self.ee.hp_sys.defenses:
+                        self.ee.hp_sys.defenses[d] += 180
+                    game.get_game().entities.append(self.ee)
+
+            if self.state == 6:
+                if game.get_game().dialog.is_done():
+                    game.get_game().player.profile.add_point(3)
+                    self.hp_sys.hp = 0
+            if self.state % 2 == 1:
+                self.hp_sys.hp = 40 - self.state // 2 * 20 + 20 * self.ee.hp_sys.hp / self.ee.hp_sys.max_hp + .01
+                if self.ee.hp_sys.hp <= 1:
+                    if self.state == 1:
+                        game.get_game().dialog.dialog("A nice defeat, \nbut isn\'t enough...")
+                        self.state = 2
+                    if self.state == 3:
+                        game.get_game().dialog.dialog("Great... you\'ve achieved a high level.\nStill, something is waiting for you...")
+                        self.state = 4
+                    if self.state == 5:
+                        game.get_game().dialog.dialog("Perfect.\nYour performance now is undeniably great.", "It\'s time for your...")
+                        self.state = 6
+
+
+
+
     class Holyfire(Entity):
         NAME = 'Holyfire'
         DISPLAY_MODE = 3

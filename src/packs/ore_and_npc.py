@@ -187,11 +187,12 @@ class PathAltar(PathAltarBase):
     IMG = 'background_path_altar'
 
     RECIPE = [
+        (['blood_ingot', 'life_core', 'bloodstone', 'cell_organization', 'watcher_wand', 'war_necklace'], 'bloodstone_amulet', 'blood', ('null', 1), 800),
         (['otherworld_stone'] * 3 + ['eye_lens', 'worm_scarf', 'worlds_seed'], 'storm_core', 'ray', ('null', 1), 600),
         (['soul_of_' + d for d in ['integrity', 'bravery', 'kindness', 'perseverance', 'patience', 'justice']], 'willpower_shard',
          'soul_of_determination', ('soul_of_determination', 7), 100),
         (['photon'] * 6, 'joker', 'jevil', ('null', 1), 600),
-        (['soul_of_determination'] * 6, 'origin', 'origin', ('null', 1), 600),
+        (['soul_of_determination'] * 6, 'origin', 'challenge', ('null', 1), 1500),
         (['substance_essence'] * 3 + ['chaos_ingot', 'soul_of_determination', 'incremental_spirit_essence'],
          'origin', 'matter', ('null', 1), 1500),
         (['time_essence'] * 3 + ['chaos_ingot', 'soul_of_determination', 'incremental_spirit_essence'],
@@ -199,8 +200,11 @@ class PathAltar(PathAltarBase):
         (['light_essence', 'wierd_essence', 'origin_spirit_essence'] * 2,
          'origin', 'gods_eye', ('null', 1), 1500),
         (['origin_feather', 'origin_spirit_essence', 'soul_of_determination', 'fate', 'scorch_core',
-          'curse_core'],
-         'origin', 'disciple', ('null', 1), 3000),
+          'curse_core'], 'origin', 'disciple', ('null', 1), 3000),
+        (['result'] * 3 + ['the_final_ingot', 'scorch_core', 'ascendant_spirit_essence'],
+         'my_soul', 'faith', ('null', 1), 3500),
+        (['reason'] * 3 + ['the_final_ingot', 'curse_core', 'ascendant_spirit_essence'],
+         'my_soul', 'wtree', ('null', 1), 3500),
         (['soulfeather'] * 6, 'ultra_lightspeed', 'ultra_lightspeed', ('beyond_horizon', 1), 2000),
         (['reason', 'result'] * 3, 'the_final_ingot', "the_final_ingot", ('the_final_ingot', 2), 300),
         (['origin_spirit_essence', 'soul', 'soul'] * 2, 'ascendant_spirit_essence', 'ascendant_spirit_essence',
@@ -224,9 +228,13 @@ class PathAltar(PathAltarBase):
         self.cur: tuple | None = None
 
     def on_done(self, cid):
+        if cid == 'blood':
+            game.get_game().player.enable_murder = True
         if cid == 'ray':
             if game.get_game().stage == 0:
                 game.get_game().entities.append(entity.Entities.Ray(self.obj.pos.to_value()))
+        if cid == 'challenge':
+            game.get_game().entities.append(entity.Entities.Challenge(self.obj.pos.to_value()))
         if cid == 'jevil':
             if game.get_game().stage == 1:
                 game.get_game().entities.append(entity.Entities.Jevil(self.obj.pos.to_value()))
@@ -234,6 +242,10 @@ class PathAltar(PathAltarBase):
             game.get_game().entities.append(entity.Entities.MATTER(self.obj.pos.to_value()))
         if cid == 'clock':
             game.get_game().entities.append(entity.Entities.CLOCK(self.obj.pos.to_value()))
+        if cid == 'faith':
+            game.get_game().entities.append(entity.Entities.Faith(self.obj.pos.to_value()))
+        if cid == 'wtree':
+            game.get_game().entities.append(entity.Entities.ReincarnationTheWorldsTree(self.obj.pos.to_value()))
         if cid == 'gods_eye':
             game.get_game().entities.append(entity.Entities.GodsEye(self.obj.pos.to_value()))
         if cid == 'disciple':
@@ -254,6 +266,15 @@ class PathAltar(PathAltarBase):
                     b.chest.items[0] = ('null', 1)
 
             self.ceremony_now = (ci, cn - 1)
+
+            for b in self.bases:
+                pg.draw.circle(game.get_game().displayer.canvas,
+                               (255, 255, 255), position.displayed_position(b.obj.pos),
+                               int((200 + 50 * math.sin(game.get_game().player.tick / 25)) / game.get_game().player.get_screen_scale()), 1)
+
+            pg.draw.circle(game.get_game().displayer.canvas,
+                           (255, 255, 255), position.displayed_position(self.obj.pos),
+                           int((400 + 100 * math.sin(game.get_game().player.tick / 25)) / game.get_game().player.get_screen_scale()), 1)
         else:
             for r in self.RECIPE:
                 it, mn, cid, tt, dt = r
@@ -1064,7 +1085,7 @@ class NPCRay(Chest):
         self.ct1 = [('npc_ray_f', 1), ('npc_ray_p', 1), ('npc_ray_c', 1)]
         self.ct2 = [('npc_ray_home', 1), ('npc_ray_chaos_reap', 1), ('npc_ray_fate', 1), ('npc_ray_chaos_vocalist_headgear', 1), ('npc_ray_chaos_vocalist_crown', 1),
                     ('npc_ray_chaos_vocalist_shabby_cloak', 1), ('npc_ray_chaos_vocalist_traveller_boots', 1),
-                    ('npc_ray_soulfeather', 81)]
+                    ('npc_ray_soulfeather', 6)]
         self.ct3 = [('npc_ray_c_1', 1), ('npc_ray_c_2', 1)]
         self.state = 0
 
@@ -1160,7 +1181,7 @@ class NPCRay(Chest):
             )
             inventory.ITEMS['npc_ray_soulfeather'] = inventory.Inventory.Item(
                 'Soulfeather',
-                'rainbowAccelerate until nobody will ever faster than you.\ncol00ff00Cost: 818181 NATURE',
+                'rainbowAccelerate until nobody will ever faster than you.\ncol00ff00Cost: 135000 NATURE',
                 'npc_ray_soulfeather',
                 13, [],
                 specify_img='soulfeather'
@@ -1201,7 +1222,7 @@ class NPCRay(Chest):
                 ('npc_ray_chaos_vocalist_traveller_boots', 'chaos_vocalist_traveller_boots', 40000, 2, None),
                 ('npc_ray_chaos_vocalist_headgear', 'chaos_vocalist_headgear', 40000, 2, None),
                 ('npc_ray_chaos_vocalist_crown', 'chaos_vocalist_crown', 60000, 3, None),
-                ('npc_ray_soulfeather', 'soulfeather', 10101, 3, None),
+                ('npc_ray_soulfeather', 'soulfeather', 22500, 3, None),
             ]
 
             for it, tt, nn, rac, rq in ps:

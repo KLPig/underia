@@ -38,6 +38,7 @@ MUSICS = {
                           'chaos_abyss_blue1', 'path0', 'path1'],
     'null': [],
     'rude_buster': ['battle'],
+    'pest_of_the_cosmos': ['battle'],
     'worlds_revolving': ['battle'],
     'boss_otherworld': ['battle'],
     'plantera': ['battle'],
@@ -75,6 +76,7 @@ MUSIC_DATA = {
     'hydrothermophobia': 'Hydrothermophobia (Terraria Calamity)',
     'left_alone': 'Left Alone (Terraria Calamity)',
     'rlyeh': '"R\'lyeh\'" (Terraria Calamity)',
+    'pest_of_the_cosmos': "Pest of the Cosmos (Terraria Calamity)",
 
     'platinum_star': 'Platinum Star (Terraria Fargo)',
     'ruf_calamity': 'Raw, Unfiltered Calamity (Terraria Calamity)'
@@ -457,7 +459,12 @@ class Game:
         ct = (0, 1e9 + 17500)
         fs = []
         for ar in range(0, 360, 60):
-            fs.append(entity.Entities.PathAltarBase(physics.Vector2D(ar, 400) + ct))
+            fs.append(entity.Entities.PathAltarBase(physics.Vector2D(ar, 800) + ct))
+        for ar in range(30, 360, 60):
+            self.furniture.append(entity.Entities.PathLight(physics.Vector2D(ar, 500) + ct, 'l' if ar > 180 else 'r'))
+        for ar in range(0, 3000, 500):
+            self.furniture.append(entity.Entities.PathLight((-1200, 1e9 + 16000 + ar), 'l'))
+            self.furniture.append(entity.Entities.PathLight((1200, 1e9 + 16000 + ar), 'r'))
         self.furniture += fs
         fn = entity.Entities.PathAltar(ct)
         fn.bases = fs
@@ -753,6 +760,8 @@ class Game:
                     self.prepared_music = 'ruf_calamity'
                 elif len([1 for e in self.entities if type(e) in [entity.Entities.Jevil, entity.Entities.Jevil2]]):
                     self.prepared_music = 'worlds_revolving'
+                elif len([1 for e in self.entities if type(e) in [entity.Entities.Challenge]]):
+                    self.prepared_music = 'pest_of_the_cosmos'
                 elif len([1 for e in self.entities if type(e) is entity.Entities.Plantera]):
                     self.prepared_music = 'plantera'
                 elif len([1 for e in self.entities if type(e) is entity.Entities.Ray]):
@@ -763,8 +772,8 @@ class Game:
                     self.prepared_music = 'nothing_matter'
                 elif len([1 for e in self.entities if type(e) is entity.Entities.OmegaFlowery]):
                     self.prepared_music = 'empty'
-                elif len([1 for e in self.entities if type(e) is underia3.ChaosDisciple]):
-                    self.prepared_music = 'knight' if [e for e in self.entities if type(e) is underia3.ChaosDisciple][0].phase == 0 else 'knight_appears'
+                elif len([1 for e in self.entities if type(e) in [underia3.ChaosDisciple, entity.Entities.Disciple]]):
+                    self.prepared_music = 'knight'
                 elif len([1 for e in self.entities if type(e) in [entity.Entities.GodsEye]]):
                     self.prepared_music = 'wof_otherworld'
                 elif len([1 for e in self.entities if type(e) in [entity.Entities.CLOCK, entity.Entities.MATTER]]):

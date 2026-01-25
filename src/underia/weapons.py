@@ -5338,7 +5338,7 @@ def set_weapons():
         'resolution': Resolution('resolution', {dmg.DamageTypes.PIERCING: hp_system.DamageValue(50, 500, follow_penetrate=True), dmg.DamageTypes.THINKING: 200}, 0.5, 'items_weapons_resolution',
                                   15, 25, 2200, True, ammo_save_chance=1 / 2, critical=.3),
         'apocalypse': Apocalypse('apocalypse', {dmg.DamageTypes.PIERCING: hp_system.DamageValue(4999, 9999, follow_penetrate=True)},
-                                 20, 35, 35, 4000, True, critical=1.0),
+                                 20, 'items_weapons_apocalypse', 35, 35, 4000, True, critical=1.0),
 
         'pistol': Gun('pistol', {dmg.DamageTypes.PIERCING: 24}, 0.1, 'items_weapons_pistol',
                       3, 15, 15, precision=2),

@@ -6,6 +6,7 @@ import pygame as pg
 
 from physics import mover, vector
 from resources import position, cursors, errors, path
+from quests import disp
 from underia import game, styles, inventory, weapons, entity, projectiles, player_profile, notebook
 from values import hp_system, damages, effects, WeakManaI, ManaDrain
 import constants
@@ -176,6 +177,7 @@ class Player:
         self.nts = []
         self.cc_t = 0
         self.blood_value = 0.0
+        self.enable_murder = False
 
     def calculate_regeneration(self):
         ACCESSORY_REGEN = {}
@@ -595,39 +597,42 @@ class Player:
         self.splint_cd = self.calculate_data('splint_cd', True, rate_multiply=True) * 80
 
 
-        if 'murder' not in self.profile.skill_points:
-            self.profile.skill_points['murder'] = 0
-        sp = [1e6, 4e6, 1e7, 15e6, 3e7, 1e8][min(5, game.get_game().stage)]
-        ar = (1 - math.e ** (-self.profile.skill_points['murder'] / sp))
-        sr = f'colff0000MURDER LEVEL {["I", "II", "III", "IV", "V"][min(5, game.get_game().stage)]}\n'
-        sr += f'BLOOD VALUE {self.profile.skill_points['murder'] / sp:.2f}\n'
-        self.blood_value = self.profile.skill_points['murder'] / sp
-        sr += f'bl_chaosUNLOCKED {ar * 100:.2f}% ABILITY\n'
-        l = 0
-        if self.profile.skill_points['murder'] / sp > .5:
-            sr += f'colff0000[1]DAMAGE LOCKED TO {100 + ar * (game.get_game().stage + 1) * 200:.2f}%\n'
-            self.attack = 1.0
-            self.attacks = [1 + ar * (game.get_game().stage + 1) * 2 for _ in range(6)]
-            l = 1
-        else:
-            sr += f'col7f7f7f[1]LOCKED - TILL 0.5\n'
-        if game.get_game().stage > 0:
-            if self.profile.skill_points['murder'] / sp > 1.0:
-                sr += f'colff0000[2]CRITICAL LOCKED TO {10 + ar * (15 + game.get_game().stage * 8):.1f}%\n'
-                self.strike = .1 + (.15 + game.get_game().stage * .08) * ar
-                l = 2
+        if 'enable_murder' not in dir(self):
+            self.enable_murder = False
+        if self.enable_murder:
+            if 'murder' not in self.profile.skill_points:
+                self.profile.skill_points['murder'] = 0
+            sp = [1e6, 4e6, 1e7, 15e6, 3e7, 1e8][min(5, game.get_game().stage)]
+            ar = (1 - math.e ** (-self.profile.skill_points['murder'] / sp))
+            sr = f'colff0000MURDER LEVEL {["I", "II", "III", "IV", "V"][min(5, game.get_game().stage)]}\n'
+            sr += f'BLOOD VALUE {self.profile.skill_points['murder'] / sp:.2f}\n'
+            self.blood_value = self.profile.skill_points['murder'] / sp
+            sr += f'bl_chaosUNLOCKED {ar * 100:.2f}% ABILITY\n'
+            l = 0
+            if self.profile.skill_points['murder'] / sp > .5:
+                sr += f'colff0000[1]DAMAGE LOCKED TO {100 + ar * (game.get_game().stage + 1) * 200:.2f}%\n'
+                self.attack = 1.0
+                self.attacks = [1 + ar * (game.get_game().stage + 1) * 2 for _ in range(6)]
+                l = 1
             else:
-                sr += f'col7f7f7f[2]LOCKED - TILL 1.0\n'
-        if l and game.get_game().stage > 1:
-            sr += f'colff0000[3]KARMA POISON {l * 30 * ar:.1f}\n'
-            self.hp_sys.hp = min(self.hp_sys.hp, self.hp_sys.max_hp * (1 - l * .25 * ar))
+                sr += f'col7f7f7f[1]LOCKED - TILL 0.5\n'
+            if game.get_game().stage > 0:
+                if self.profile.skill_points['murder'] / sp > 1.0:
+                    sr += f'colff0000[2]CRITICAL LOCKED TO {10 + ar * (15 + game.get_game().stage * 8):.1f}%\n'
+                    self.strike = .1 + (.15 + game.get_game().stage * .08) * ar
+                    l = 2
+                else:
+                    sr += f'col7f7f7f[2]LOCKED - TILL 1.0\n'
+            if l and game.get_game().stage > 1:
+                sr += f'colff0000[3]KARMA POISON {l * 30 * ar:.1f}\n'
+                self.hp_sys.hp = min(self.hp_sys.hp, self.hp_sys.max_hp * (1 - l * .25 * ar))
 
-        if l and game.get_game().stage > 2:
-            sr += f'colff0000[4]KARMA EROSION {l * ar * self.hp_sys.max_hp / 100:.1f}\n'
-            if random.random() < l * ar * self.hp_sys.max_hp / 20000:
-                self.hp_sys.max_hp -= 1
+            if l and game.get_game().stage > 2:
+                sr += f'colff0000[4]KARMA EROSION {l * ar * self.hp_sys.max_hp / 100:.1f}\n'
+                if random.random() < l * ar * self.hp_sys.max_hp / 20000:
+                    self.hp_sys.max_hp -= 1
 
-        inventory.ITEMS['murder_core'].desc = sr
+            inventory.ITEMS['murder_core'].desc = sr
 
 
         if self.splint_distance:
@@ -737,6 +742,9 @@ class Player:
         self.p_data.append(f'phy.  def. {int(self.hp_sys.defenses[damages.DamageTypes.TOUCHING])}')
         if len([1 for eff in self.hp_sys.effects if eff.NAME == 'Gravity']):
             self.obj.apply_force(vector.Vector(180, 200))
+        if pg.K_SEMICOLON in game.get_game().get_keys():
+            disp.DISP.start()
+
         if pg.K_e in game.get_game().get_keys():
             if self.open_chest is not None:
                 self.open_chest = None
@@ -1516,8 +1524,11 @@ class Player:
                 if self.weapons[i].sk_cd:
                     self.weapons[i].sk_cd -= 1
 
-        styles.item_display(game.get_game().displayer.SCREEN_WIDTH - 226 + self.inv_pos // 20, 500,
-                            'murder_core', '', '', 1.2)
+        if 'enable_murder' not in dir(self):
+            self.enable_murder = False
+        if self.enable_murder:
+            styles.item_display(game.get_game().displayer.SCREEN_WIDTH - 226 + self.inv_pos // 20, 500,
+                                'murder_core', '', '', 1.2)
 
 
         w = self.weapons[self.sel_weapon]
@@ -1798,8 +1809,9 @@ class Player:
                     game.get_game().displayer.reflect(*pg.mouse.get_pos())) and 1 in game.get_game().get_mouse_press():
                 self.sel_weapon = i % len(self.weapons)
 
-        styles.item_mouse(game.get_game().displayer.SCREEN_WIDTH - 226 + self.inv_pos // 20, 500,
-                            'murder_core', '', '', 1.2, anchor='right')
+        if self.enable_murder:
+            styles.item_mouse(game.get_game().displayer.SCREEN_WIDTH - 226 + self.inv_pos // 20, 500,
+                                'murder_core', '', '', 1.2, anchor='right')
         try:
             for i, ww in enumerate(self.weapons[self.sel_weapon].weapons):
                 styles.item_display(10 + i * 60, 190, ww.name.replace(' ', '_'), self.weapons[self.sel_weapon].PRESET_KEY_SET[i], '1', 0.75)
@@ -2299,8 +2311,11 @@ class Player:
                         elif item.id == 'joker':
                             if len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.MetalAltar]):
-                                entity.entity_spawn(entity.Entities.Jevil, 2000, 2000, 0, 1145, 100000)
-                                self.inventory.remove_item(item)
+                                if game.get_game().stage >= 2:
+                                    entity.entity_spawn(entity.Entities.Jevil, 2000, 2000, 0, 1145, 100000)
+                                    self.inventory.remove_item(item)
+                                else:
+                                    game.get_game().dialog.dialog('Looks like you\'re not strong enough.')
                             elif len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.ScarlettAltar]):
                                 entity.entity_spawn(entity.Entities.Jevil2, 2000, 2000, 0, 1145, 100000)
@@ -2313,12 +2328,7 @@ class Player:
                             entity.entity_spawn(entity.Entities.Plantera, 2000, 2000, 0, 1145, 100000)
                             self.inventory.remove_item(item)
                         elif item.id == 'origin':
-                            if len([1 for e in self.hp_sys.effects if type(e) == effects.TimeStop]):
-                                entity.entity_spawn(entity.Entities.CLOCK, 2000, 2000, 0, 1145, 100000)
-                            elif game.get_game().get_biome() == 'heaven':
-                                entity.entity_spawn(entity.Entities.GodsEye, 2000, 2000, 0, 1145, 100000)
-                            elif self.inventory.is_enough(inventory.ITEMS['suspicious_substance']):
-                                entity.entity_spawn(entity.Entities.MATTER, 2000, 2000, 0, 1145, 100000)
+                            pass
                         elif item.id == 'mechanical':
                             if not len([1 for e in game.get_game().player.hp_sys.effects if
                                         type(e) is effects.ScarlettAltar]):
@@ -2372,10 +2382,6 @@ class Player:
                             self.inventory.remove_item(item)
                         elif item.id == 'my_soul':
                             self.profile.add_point(4)
-                            if sum([v for _, v in self.hp_sys.shields]) + self.hp_sys.hp > self.hp_sys.max_hp:
-                                entity.entity_spawn(entity.Entities.ReincarnationTheWorldsTree, 2000, 2000, 0, 1145, 100000)
-                            else:
-                                entity.entity_spawn(entity.Entities.Faith, 2000, 2000, 0, 1145, 100000)
                         elif item.id == 'finale__soul':
                             self.covered_items.extend(self.accessories)
                             self.covered_items.extend([i for i in self.inventory.items.keys() if inventory.TAGS['ce_item'] in inventory.ITEMS[i].tags])
