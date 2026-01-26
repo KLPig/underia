@@ -222,5 +222,12 @@ base.add_child(single.QuestBlock(qid='murder', name='MURDER START!',
                                             reqs=[single.ItemRequirement(item='bloodlust_scythe', num=1),],
                                             disp='bloodlust_scythe', pos=(1200, 600), rarity=5),))
 
+# insert
+single.QUEST_NAME["wind"].add_child(single.QuestBlock(qid="abyss_eye", name="Abyss Eye", desc="", content="Take otherworld stone from True Eye, Worlds Fruit and Fluffff.\nCraft blood substance.\nKill abyss eye and get an important material: soul\n\nNOW REQUIRE: \n- Blood Substance*1\n- Notebook D4\n- Soul * 50", reqs=[single.ItemRequirement(item='blood_substance', num=1), single.ItemRequirement(item='soul', num=50)], req_num=2, pos=(1800, 0), disp="spiritual_stabber"))
+single.QUEST_NAME["magic_sword"].add_child(single.QuestBlock(qid="nights_edge", name="Nights Edge", desc="", content="Use storm core and several strong weapons to craft nights edge.\n Night edge shoots strong energy.\n\nNOW REQUIRE: \n -Nights edge*1", reqs=[single.ItemRequirement(item='nights_edge', num=1)], req_num=1, pos=(1200, -1100), disp="nights_edge"))
+single.QUEST_NAME["spiritual_stabber"].add_child(single.QuestBlock(qid="excalibur", name="EX! Calibur!", desc="", content="", reqs=[single.ItemRequirement(item='excalibur', num=1)], req_num=1, pos=(1200, -1300), disp="excalibur"))
+single.QUEST_NAME["nights_edge"].add_child(single.QuestBlock(qid="spiritual_stabber", name="Spiritual Stabber", desc="", content="Abyss Eye may drop spiritual stabber.\n\nNOW REQUIRE: \n -Spiritual Stabber*1", reqs=[single.ItemRequirement(item='spiritual_stabber', num=1)], req_num=1, pos=(1200, -1300), disp="spiritual_stabber"))
+single.QUEST_NAME["abyss_eye"].add_child(single.QuestBlock(qid="spiritual_heart", name="Spiritual Heart", desc="", content="Use SPIRITUAL HEART and start an entire journey - the stage 2, while also reinforcing you.\nNew life based on soul will be generated.\n\nNOW REQUIRE: \n- Spiritual Heart*1", reqs=[single.ItemRequirement(item='spiritual_heart', num=1)], req_num=1, pos=(2100, 0), disp="spiritual_heart"))
+
 for q in single.QUESTS:
     q.write()
