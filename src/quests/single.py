@@ -1,5 +1,6 @@
 from underia import game, inventory
 import physics
+import constants
 
 QUESTS: list['QuestBlock'] = []
 QUEST_NAME: dict[str, 'QuestBlock'] = {}
@@ -37,6 +38,12 @@ class NotebookRequirement(QuestRequirement):
     def __bool__(self):
         note = '' if 'note' not in dir(self) else getattr(self, 'note')
         return note in game.get_game().player.nts
+
+class ConstantRequirement(QuestRequirement):
+    def __bool__(self):
+        tr = '' if 'tr' not in dir(self) else getattr(self, 'tr')
+        tv = '' if 'tv' not in dir(self) else getattr(self, 'tv')
+        return getattr(constants, tr) == tv
 
 class QuestBlock:
     def __init__(self, qid: str, **kwargs):

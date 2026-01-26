@@ -257,10 +257,10 @@ class DataEntryForm:
             dt = (f'single.QUEST_NAME["{self.data['father_id']}"].add_child(single.QuestBlock(qid="{self.data['id']}",'
                   f' name="{self.data['name']}", desc="{self.data['description']}", content="{self.data['content']}",'
                   f' reqs=[{", ".join(self.data["requirements"])}], req_num={len(self.data["requirements"])}, '
-                  f'pos={(self.data['pos'], self.data['posy'])}, disp="{self.data['disp']}"))')
-            dt = "# insert\n" + dt
+                  f'pos={(self.data['pos'], self.data['posy'])}, disp="{self.data['disp']}", '
+                  f'pre=[{", ".join(self.data["prerequisites"])}],))')
+            dt += "\n# insert"
 
-            st = ''
             with open("./build.py") as f:
                 st = f.read()
                 f.close()
