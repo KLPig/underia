@@ -7,13 +7,17 @@ class QuestDisplayer:
     def __init__(self):
         self.scroll = vector.Vector2D()
         self.instant = None
+        self.gf = None
 
     def start(self):
         window = pg.display.get_surface()
         presence = True
         width, height = window.get_size()
+        self.gf = game.get_game().graphics['background_stars']
+        self.gf = pg.transform.scale(self.gf, (120, 120))
 
         while presence:
+
             mouse = False
             for event in pg.event.get():
                 if event.type == pg.QUIT:
@@ -28,6 +32,11 @@ class QuestDisplayer:
                         presence = False
 
             window.fill((0, 0, 0))
+
+            ax, ay = int(-self.scroll[0] % 120), int(-self.scroll[1] % 120)
+            for dx in range(-400 + ax, 400 + width, 120):
+                for dy in range(-400 + ay, 400 + height, 120):
+                    window.blit(self.gf, (dx, dy))
 
             for q in single.QUESTS:
                 q.update()
