@@ -5,15 +5,17 @@ from underia import game
 
 SETTINGS = [
     ('Graphics', [
-        ['BLADE_EFFECT_QUALITY', 'Blade Cutting Effect', (1, 'High'), (2, 'Low'), (3, 'Fast')],
         ['PARTICLES', 'Particles', (0, 'Least'), (1, 'Less'), (2, 'Normal')],
         ['EASY_BACKGROUND', 'Background', (0, 'Graphic'), (1, 'Easy')],
-        ['HEART_BAR', 'Status Display', (0, 'Bar'), (1, 'Heart'), (2, 'New')],
+        ['BLADE_EFFECT_QUALITY', 'Blade Cutting Effect', (1, 'High'), (2, 'Low'), (3, 'Fast')],
         ['FADING_PARTICLE', 'Fading Particles', (0, 'Off'), (1, 'On')],
         ['USE_ALPHA', 'Enable Transparent', (0, 'Off'), (1, 'On')],
-        ['LIGHTING', 'Lighting', (0, 'Off'), (1, 'On')]
+        ['LIGHTING', 'Lighting', (0, 'Off'), (1, 'On')],
+        ['RESOLUTION', 'Resolution', (2 / 3, '1600x900'), (1.0, '2400x1350')],
+        ['DIRECT_DISPLAY', 'Direct Display', (True, 'On'), (False, 'Off')],
     ]),
     ('Content', [
+        ['HEART_BAR', 'Status Display', (0, 'Bar'), (1, 'Heart'), (2, 'New')],
         ['APRIL_FOOL', 'April Fools', (0, 'Off'), (1, 'On')],
         ['ENTITY_NUMBER', 'Entity Number', (6, 'Fast'), (12, 'Low'), (18, 'Normal'), (28, 'High'), (36, 'Fancy')],
         ['FPS', 'FPS Limit', (120, '120')],
@@ -63,8 +65,15 @@ def set_settings():
                     setattr(constants, st[0], opt[(i + 1) % len(opt)][0])
                     if st[1] == 'Language':
                         game.get_game().displayer.__init__()
+                    if st[1] == 'Resolution':
+                        game.get_game().displayer.SCREEN_WIDTH = int(2400 * constants.RESOLUTION)
+                        game.get_game().displayer.SCREEN_HEIGHT = int(1350 * constants.RESOLUTION)
+                        game.get_game().displayer.__init__()
+
                     if st[1] == 'Difficulty':
                         pass
+                    if st[1] == 'Direct Display':
+                        game.get_game().displayer.MODE = constants.DIRECT_DISPLAY
                 elif event.key == pg.K_ESCAPE:
                     return
         tr = font.render(SETTINGS[sel_s][0], True, (255, 255, 255))

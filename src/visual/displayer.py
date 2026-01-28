@@ -11,13 +11,14 @@ import perlin_noise
 class Displayer:
     SCREEN_WIDTH = 2400
     SCREEN_HEIGHT = 1350
+    MODE = 1
 
     def __init__(self):
         try:
             if constants.WEB_DEPLOY:
-                pg.display.set_mode((4800, 2700))
+                pg.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
             else:
-                pg.display.set_mode((4800, 2700), pg.RESIZABLE | pg.HWSURFACE | pg.DOUBLEBUF | pg.SCALED | pg.FULLSCREEN)
+                pg.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pg.RESIZABLE | pg.HWSURFACE | pg.DOUBLEBUF | pg.SCALED | pg.FULLSCREEN)
         except pg.error:
             pass
         self.canvas = pg.Surface((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pg.SRCALPHA | pg.HWACCEL)
@@ -49,6 +50,10 @@ class Displayer:
         self.light_engine = lighting.LightingEngine(*self.canvas.get_size(), resolution_factor=.1)
 
     def update(self):
+        if self.MODE:
+            self.canvas = pg.display.get_surface()
+            return
+
         window = pg.display.get_surface()
         for effect in self.effects:
             if not effect.update(self.canvas):
@@ -73,6 +78,8 @@ class Displayer:
             self.canvas = pg.Surface((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pg.SRCALPHA)
 
     def reflect(self, window_x: float, window_y: float) -> tuple[int, int]:
+        if self.MODE:
+            return window_x, window_y
         window = pg.display.get_surface()
         scale = min(window.get_width() / self.SCREEN_WIDTH,
                     window.get_height() / self.SCREEN_HEIGHT)

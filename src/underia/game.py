@@ -344,10 +344,15 @@ class Game:
             ],
         ][(self.fun * 4 + self.stage * 3) % 9]
         for i in range(stt - 1):
-            txt = font.render(words[i], True, (255, 255, 255))
+            txt = font.render('*' + words[i], True, (255, 255, 255))
             window.blit(txt, (100, 100 + i * 100))
-        ntxt = font.render(words[stt - 1][:min(len(words[stt - 1]), int(1.3 * prog * len(words[stt - 1])))], True, (255, 255, 255))
+        ntxt = font.render('>' + words[stt - 1][:min(len(words[stt - 1]), int(1.3 * prog * len(words[stt - 1])))], True, (255, 255, 0))
         window.blit(ntxt, (100, stt * 100))
+        dw = window.get_width()
+        pg.draw.line(window, (100, 0, 0), (0, 500),
+                     (dw, 500), 10)
+        pg.draw.line(window, (100, 0, 100), (0, 500),
+                     (int(dw * (prog / 3 + (stt - 1) / 3)), 500), 10)
         pg.display.update()
         pg.event.get()
 

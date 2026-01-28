@@ -25,8 +25,10 @@ anchor = 0
 cmds = []
 cb = 0
 bios = [pg.image.load(path.get_path(f'assets/graphics/background/{b}.png')) for b in ['forest', 'rainforest', 'snowland', 'heaven',
-                                                                                      'hell', 'desert', 'inner', 'life_forest',
-                                                                                      'hallow', 'wither', 'ancient', 'ancient_city']]
+                                                                                      'hell', 'desert', 'fallen_sea', 'inner', 'chaos_abyss_red',
+                                                                                      'chaos_abyss_blue', 'life_forest',
+                                                                                      'hallow', 'wither', 'ancient', 'ancient_city',
+                                                                                      ]]
 bios = [pg.transform.scale(b, (100, 100)) for b in bios]
 datas = []
 
@@ -258,17 +260,17 @@ def choose_save(modified, stop, msg):
             dt = datas[n]
 
             if dt.lv in [3, 4]:
-                cb = 6
-            elif dt.lv == 5:
                 cb = 7
+            elif dt.lv == 5:
+                cb = max(8, min(cb, 10))
             elif dt.lv in [7, 8, 9]:
-                cb = max(8, min(cb, 9))
+                cb = max(11, min(cb, 12))
             elif dt.lv == 10:
-                cb = 10
+                cb = 13
             elif dt.lv == 11:
-                cb = 11
+                cb = 14
             else:
-                cb = min(cb, 5)
+                cb = min(cb, 6)
             sn = selects[n]
             sf = pg.transform.scale(pf.get_surface(0, 0, 0), (200, 200))
             screen.blit(sf, (screen.get_width() // 2 - 90, 300 + math.sin(tick / 125 * math.pi) * 20 + 10 + hrx))
