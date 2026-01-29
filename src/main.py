@@ -468,6 +468,12 @@ def update():
             underia.entity_spawn(underia.Entities.ScreamingWood, target_number=70, to_player_max=2500, to_player_min=800,
                                  rate=120)
 
+        if 'solar eclipse' in game.world_events and game.stage > 0:
+            underia.entity_spawn(underia.Entities.ShadowEye, target_number=70, to_player_max=2500, to_player_min=800,
+                                 rate=120)
+            underia.entity_spawn(underia.Entities.ShadowFlower, target_number=70, to_player_max=2500, to_player_min=800,
+                                 rate=120)
+
         if game.get_biome() == 'forest':
             if 5 > game.stage > 1:
                 underia.entity_spawn(underia.Entities.Tree, target_number=20, to_player_max=2500, to_player_min=800, rate=25)

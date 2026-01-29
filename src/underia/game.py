@@ -1148,6 +1148,33 @@ class Game:
                                                             self.player.ammo = ('eterrow', constants.INFINITY)
                                                             self.player.ammo_bullet = ('space_jumper', constants.INFINITY)
 
+                                                        @staticmethod
+                                                        def s5():
+                                                            self.player.accessories = ['karmic_helmet',
+                                                                                       'karmic_chestplate',
+                                                                                       'karmic_leggings',
+                                                                                       'heart_locket',
+                                                                                       'ultra_lightspeed',
+                                                                                       'fate_alignment_amulet',
+                                                                                       'flashback', 'karmic_trail_boots',
+                                                                                       'grasp_of_the_infinite_corridor', 'null']
+                                                            self.player.weapons = [
+                                                                weapons.WEAPONS['apocalypse'],
+                                                                weapons.WEAPONS['resolution'],
+                                                                weapons.WEAPONS['climax'],
+                                                                weapons.WEAPONS['abyss_sever'],
+                                                                weapons.WEAPONS['chaos_reap'],
+                                                                weapons.WEAPONS['rising_action'],
+                                                                weapons.WEAPONS['adherent']
+                                                            ]
+
+                                                            self.stage = 4
+                                                            self.player.max_mana = 3000
+
+                                                            self.player.ammo = ('eterrow', constants.INFINITY)
+                                                            self.player.ammo_bullet = ('space_jumper',
+                                                                                       constants.INFINITY)
+
                                                     qt = True
                                                     try:
                                                         cmd = str(eval(cmd))

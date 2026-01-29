@@ -458,6 +458,53 @@ class AiolianEye(Entity):
         super().t_draw()
 
 @entity.Entities.entity_type
+class ShadowEye(Entity):
+    NAME = 'Shadow Eye'
+    DISPLAY_MODE = 1
+    LOOT_TABLE = LootTable([
+        IndividualLoot('watcher_wand', .03, 1, 1),
+        IndividualLoot('sun_shadow_ingot', .5, 1, 3),
+    ])
+
+    SOUND_HURT = 'sticky'
+    SOUND_DEATH = 'sticky'
+
+    def __init__(self, pos):
+        super().__init__(pos, game.get_game().graphics['entity_aiolian_eye'], entity.EyeAI, 2400)
+        self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 80
+        self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 80
+        self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 80
+        self.obj.TOUCHING_DAMAGE = 350
+        self.obj.SPEED *= 4
+        self.obj.MASS *= 1.5
+        self.obj.SIGHT_DISTANCE *= 3
+
+    def t_draw(self):
+        self.set_rotation(-self.obj.velocity.get_net_rotation())
+        super().t_draw()
+
+@entity.Entities.entity_type
+class ShadowFlower(Entity):
+    NAME = 'Shadow Flower'
+    DISPLAY_MODE = 3
+    LOOT_TABLE = entity.LootTable([
+        entity.IndividualLoot('spikeflower', 0.36, 1, 1),
+        IndividualLoot('sun_shadow_ingot', .5, 1, 3),
+    ])
+
+    SOUND_HURT = 'corrupt'
+    SOUND_DEATH = 'sticky'
+
+    def __init__(self, pos):
+        super().__init__(pos, game.get_game().graphics['entity_bloodflower'], entity.BloodflowerAI, 3000)
+        self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 30
+        self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 40
+        self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 30
+        self.obj.SPEED *= 12
+        self.obj.MASS *= 7
+        self.obj.TOUCHING_DAMAGE = 320
+
+@entity.Entities.entity_type
 class HeavenGuard(Entity):
     NAME = 'Heaven Guard'
     DISPLAY_MODE = 1

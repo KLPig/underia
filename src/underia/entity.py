@@ -7151,7 +7151,7 @@ class Entities:
         def __init__(self, pos):
             super().__init__(pos, 64, game.get_game().graphics['entity_quark_ghost_head'],
                              game.get_game().graphics['entity_quark_ghost_body'],
-                             QuarkGhostAI, 45000000, body_length=250, body_touching_damage=1500)
+                             QuarkGhostAI, 45000000, body_length=120, body_touching_damage=1500)
 
             self.phase = 0
 
