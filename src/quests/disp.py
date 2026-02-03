@@ -23,7 +23,7 @@ class QuestDisplayer:
                 if event.type == pg.QUIT:
                     presence = False
                 elif event.type == pg.MOUSEWHEEL:
-                    self.scroll += (event.x * 5, event.y * -5)
+                    self.scroll += (event.x * 10, event.y * -10)
                 elif event.type == pg.MOUSEBUTTONDOWN:
                     if event.button == pg.BUTTON_LEFT:
                         mouse = True

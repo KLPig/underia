@@ -152,12 +152,12 @@ class Destroy(weapons.Blade):
                     if 'matters_touch' in game.get_game().player.accessories:
                         e.obj.MASS *= 1.01
                     if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
-                        if not e.IS_MENACE and not e.VITAL:
+                        if not e.IS_MENACE and not e.VITAL and e.hp_sys.hp < 1e8:
                             e.hp_sys.damage(e.hp_sys.max_hp / 10, damages.DamageTypes.THINKING)
                             if random.randint(0, 10) == 0:
                                 e.hp_sys.hp = 0
                         else:
-                            e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
+                            e.hp_sys.damage(min(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
                     if self.ENABLE_IMMUNE:
                             if constants.DIFFICULTY <= 1:
                                 e.hp_sys.enable_immune()
@@ -194,12 +194,12 @@ class Generate(weapons.Blade):
                     if 'matters_touch' in game.get_game().player.accessories:
                         e.obj.MASS *= 1.01
                     if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
-                        if not e.IS_MENACE and not e.VITAL:
+                        if not e.IS_MENACE and not e.VITAL and e.hp_sys.hp < 1e8:
                             e.hp_sys.damage(e.hp_sys.max_hp / 10, damages.DamageTypes.THINKING)
                             if random.randint(0, 10) == 0:
                                 e.hp_sys.hp = 0
                         else:
-                            e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
+                            e.hp_sys.damage(min(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
                     if self.ENABLE_IMMUNE:
                         if constants.DIFFICULTY > 1:
                             e.hp_sys.enable_immune()
@@ -234,12 +234,12 @@ class WheelFrogileSword(weapons.Blade):
                     if 'matters_touch' in game.get_game().player.accessories:
                         e.obj.MASS *= 1.01
                     if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
-                        if not e.IS_MENACE and not e.VITAL:
+                        if not e.IS_MENACE and not e.VITAL and e.hp_sys.hp < 1e8:
                             e.hp_sys.damage(e.hp_sys.max_hp / 10, damages.DamageTypes.THINKING)
                             if random.randint(0, 10) == 0:
                                 e.hp_sys.hp = 0
                         else:
-                            e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
+                            e.hp_sys.damage(min(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
                     if self.ENABLE_IMMUNE:
                         if constants.DIFFICULTY > 1:
                             e.hp_sys.enable_immune()
@@ -272,12 +272,12 @@ class CorruptSword(weapons.Blade):
                     if 'matters_touch' in game.get_game().player.accessories:
                         e.obj.MASS *= 1.01
                     if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
-                        if not e.IS_MENACE and not e.VITAL:
+                        if not e.IS_MENACE and not e.VITAL and e.hp_sys.hp < 1e8:
                             e.hp_sys.damage(e.hp_sys.max_hp / 10, damages.DamageTypes.THINKING)
                             if random.randint(0, 10) == 0:
                                 e.hp_sys.hp = 0
                         else:
-                            e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
+                            e.hp_sys.damage(min(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
                     if self.ENABLE_IMMUNE:
                         if constants.DIFFICULTY > 1:
                             e.hp_sys.enable_immune()
@@ -310,12 +310,12 @@ class GaussDagger(weapons.Blade):
                     if 'matters_touch' in game.get_game().player.accessories:
                         e.obj.MASS *= 1.01
                     if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
-                        if not e.IS_MENACE and not e.VITAL:
+                        if not e.IS_MENACE and not e.VITAL and e.hp_sys.hp < 1e8:
                             e.hp_sys.damage(e.hp_sys.max_hp / 10, damages.DamageTypes.THINKING)
                             if random.randint(0, 10) == 0:
                                 e.hp_sys.hp = 0
                         else:
-                            e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
+                            e.hp_sys.damage(min(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
                     if self.ENABLE_IMMUNE:
                         if constants.DIFFICULTY > 1:
                             e.hp_sys.enable_immune()
@@ -349,12 +349,12 @@ class HighTechMetalSword(weapons.Blade):
                     if 'matters_touch' in game.get_game().player.accessories:
                         e.obj.MASS *= 1.01
                     if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
-                        if not e.IS_MENACE and not e.VITAL:
+                        if not e.IS_MENACE and not e.VITAL and e.hp_sys.hp < 1e8:
                             e.hp_sys.damage(e.hp_sys.max_hp / 10, damages.DamageTypes.THINKING)
                             if random.randint(0, 10) == 0:
                                 e.hp_sys.hp = 0
                         else:
-                            e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
+                            e.hp_sys.damage(min(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
                     if self.ENABLE_IMMUNE:
                         if constants.DIFFICULTY > 1:
                             e.hp_sys.enable_immune()
@@ -395,12 +395,12 @@ class ScarDagger(weapons.Blade):
                     if 'matters_touch' in game.get_game().player.accessories:
                         e.obj.MASS *= 1.01
                     if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
-                        if not e.IS_MENACE and not e.VITAL:
+                        if not e.IS_MENACE and not e.VITAL and e.hp_sys.hp < 1e8:
                             e.hp_sys.damage(e.hp_sys.max_hp / 10, damages.DamageTypes.THINKING)
                             if random.randint(0, 10) == 0:
                                 e.hp_sys.hp = 0
                         else:
-                            e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
+                            e.hp_sys.damage(min(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
                     if self.ENABLE_IMMUNE:
                         if constants.DIFFICULTY > 1:
                             e.hp_sys.enable_immune()
@@ -442,12 +442,12 @@ class ChaosDagger(weapons.Blade):
                     if 'matters_touch' in game.get_game().player.accessories:
                         e.obj.MASS *= 1.01
                     if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
-                        if not e.IS_MENACE and not e.VITAL:
+                        if not e.IS_MENACE and not e.VITAL and e.hp_sys.hp < 1e8:
                             e.hp_sys.damage(e.hp_sys.max_hp / 10, damages.DamageTypes.THINKING)
                             if random.randint(0, 10) == 0:
                                 e.hp_sys.hp = 0
                         else:
-                            e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
+                            e.hp_sys.damage(min(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
                     if self.ENABLE_IMMUNE:
                         if constants.DIFFICULTY > 1:
                             e.hp_sys.enable_immune()
@@ -517,12 +517,12 @@ class MuraKumo(weapons.Blade):
                     if 'matters_touch' in game.get_game().player.accessories:
                         e.obj.MASS *= 1.01
                     if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
-                        if not e.IS_MENACE and not e.VITAL:
+                        if not e.IS_MENACE and not e.VITAL and e.hp_sys.hp < 1e8:
                             e.hp_sys.damage(e.hp_sys.max_hp / 10, damages.DamageTypes.THINKING)
                             if random.randint(0, 10) == 0:
                                 e.hp_sys.hp = 0
                         else:
-                            e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
+                            e.hp_sys.damage(min(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
                     if self.ENABLE_IMMUNE:
                         if constants.DIFFICULTY > 1:
                             e.hp_sys.enable_immune()
@@ -1476,12 +1476,12 @@ class WVector(weapons.Blade):
                     if 'matters_touch' in game.get_game().player.accessories:
                         e.obj.MASS *= 1.01
                     if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
-                        if not e.IS_MENACE and not e.VITAL:
+                        if not e.IS_MENACE and not e.VITAL and e.hp_sys.hp < 1e8:
                             e.hp_sys.damage(e.hp_sys.max_hp / 10, damages.DamageTypes.THINKING)
                             if random.randint(0, 10) == 0:
                                 e.hp_sys.hp = 0
                         else:
-                            e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
+                            e.hp_sys.damage(min(e.hp_sys.max_hp / 1000, 10000), damages.DamageTypes.THINKING)
                     if self.ENABLE_IMMUNE:
                         if constants.DIFFICULTY > 1:
                             e.hp_sys.enable_immune()

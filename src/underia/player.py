@@ -483,7 +483,7 @@ class Player:
         mn = self.mana / self.max_mana
         if mn <= 1:
             self.attack *= 1 - (1 - mn) ** 2
-        self.strike = 0.08 + math.sqrt(max(0, self.calculate_data('crit', False))) / 100
+        self.strike = 0.08 + max(0, self.calculate_data('crit', False)) ** .8 / 100
         self.attacks = [self.calculate_melee_damage() * self.calculate_data('melee_damage', rate_data=True, rate_multiply=True),
                         self.calculate_ranged_damage() * self.calculate_data('ranged_damage', rate_data=True, rate_multiply=True),
                         self.calculate_magic_damage() * self.calculate_data('magic_damage', rate_data=True, rate_multiply=True),
@@ -651,7 +651,7 @@ class Player:
                     if d in game.get_game().get_keys():
                         f = 1
                 if not f:
-                    self.splint_t -= 10
+                    self.splint_t -= 400
             elif self.splint_t > -1000:
                 i = (9 - self.splint_t % 10) % 10
                 if self.splint_t < -400:
@@ -676,7 +676,7 @@ class Player:
                     rt = [0, 270, 180, 90]
                     i = max(0, min(3, i))
                     self.splint_t = self.splint_cd
-                    self.obj.velocity += vector.Vector(rt[i], self.splint_distance * 4)
+                    self.obj.velocity += vector.Vector(rt[i], self.splint_distance * 4) / 9 / self.obj.FRICTION ** 2
                     if 'logos_thaumaturgy' in self.accessories:
                         self.hp_sys.effect(effects.LogosThaumaturgy(3, 3))
 
@@ -1140,7 +1140,7 @@ class Player:
             self.talent -= v / 8
         if constants.HEART_BAR == 2:
             at_l = min(10, self.max_mana // 30) * 50 - 200
-            hp_p = self.hp_sys.hp / self.hp_sys.max_hp
+            hp_p = (self.hp_sys.hp / self.hp_sys.max_hp) ** .5
             mp_p = min(1.0, self.mana / self.max_mana)
             sd_p = min(1, sum([v for n, v in game.get_game().player.hp_sys.shields]) / game.get_game().player.hp_sys.max_hp)
             tp_p = self.talent / self.max_talent if self.max_talent else 0
@@ -1195,7 +1195,7 @@ class Player:
             at = 120 * 250 // self.hp_sys.max_hp
             at = int(max(at, 20))
             for ax in range(at, 120 + 1, at):
-                pg.draw.circle(game.get_game().displayer.canvas, bc, (150, 140), ax, width=2)
+                pg.draw.circle(game.get_game().displayer.canvas, bc, (150, 140), (ax * 120) ** .5, width=2)
             pg.draw.circle(game.get_game().displayer.canvas, bcc, (150, 140), 120, width=10)
 
 
@@ -2385,7 +2385,6 @@ class Player:
                         elif item.id == 'finale__soul':
                             self.covered_items.extend(self.accessories)
                             self.covered_items.extend([i for i in self.inventory.items.keys() if inventory.TAGS['ce_item'] in inventory.ITEMS[i].tags])
-                            self.profile.add_point(5)
                         elif item.id == 'finale__earth_core':
                             self.covered_items.extend(self.accessories)
                             self.covered_items.extend([i for i in self.inventory.items.keys() if inventory.TAGS['ce_item'] in inventory.ITEMS[i].tags])
@@ -2447,9 +2446,6 @@ class Player:
                                 self.max_inspiration = 800
                                 self.profile.add_point(6)
                                 self.hp_sys.effect(effects.Weak(10 ** 9, 1))
-                        elif item.id == 'yellow_flower':
-                            entity.entity_spawn(entity.Entities.OmegaFlowery, 2000, 2000, 0, 1145, 100000)
-                            self.inventory.remove_item(item)
                         elif item.id == 'recipe_book':
                             rep = [r for r in inventory.RECIPES if r.is_related(self.inventory)]
                             window_opened = bool(len(rep))

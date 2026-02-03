@@ -212,6 +212,9 @@ class PathAltar(PathAltarBase):
         (['ascendant_spirit_essence', 'origin', 'scorch_core', 'soul_of_determination', 'the_final_ingot',
           'no_fountain'], 'retribution', 'apocalypse', ('apocalypse', 1), 1000),
 
+        (['no_fountain', 'death_fountain', 'celestic_fountain', 'time_fountain',
+          'substance_fountain', 'my_soul'], 'yellow_flower', 'omega', ('null', 1), 1000),
+
     ]
 
     def get_shown_txt(self):
@@ -243,11 +246,21 @@ class PathAltar(PathAltarBase):
         if cid == 'clock':
             game.get_game().entities.append(entity.Entities.CLOCK(self.obj.pos.to_value()))
         if cid == 'faith':
-            game.get_game().entities.append(entity.Entities.Faith(self.obj.pos.to_value()))
+            rd = random.randint(-20000, 20000), random.randint(-20000, 20000)
+            game.get_game().player.obj.pos << rd
+            game.get_game().entities.append(entity.Entities.Faith(rd))
         if cid == 'wtree':
-            game.get_game().entities.append(entity.Entities.ReincarnationTheWorldsTree(self.obj.pos.to_value()))
+            rd = random.randint(-20000, 20000), random.randint(-20000, 20000)
+            game.get_game().player.obj.pos << rd
+            game.get_game().entities.append(entity.Entities.ReincarnationTheWorldsTree(rd))
         if cid == 'gods_eye':
-            game.get_game().entities.append(entity.Entities.GodsEye(self.obj.pos.to_value()))
+            rd = random.randint(-20000, 20000), random.randint(-20000, 20000)
+            game.get_game().player.obj.pos << rd
+            game.get_game().entities.append(entity.Entities.GodsEye(rd))
+        if cid == 'omega':
+            rd = random.randint(-20000, 20000), random.randint(-20000, 20000)
+            game.get_game().player.obj.pos << rd
+            game.get_game().entities.append(entity.Entities.OmegaFlowery(rd))
         if cid == 'disciple':
             if game.get_game().stage == 3:
                 game.get_game().entities.append(entity.Entities.Disciple(self.obj.pos.to_value()))

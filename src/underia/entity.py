@@ -425,7 +425,7 @@ class QuarkGhostAI(MonsterAI):
     MASS = 8800
     FRICTION = 0.8
     SIGHT_DISTANCE = 99999
-    TOUCHING_DAMAGE = 640
+    TOUCHING_DAMAGE = 1800
     IS_OBJECT = False
 
     def __init__(self, pos):
@@ -443,7 +443,7 @@ class QuarkGhostAI(MonsterAI):
             elif self.d_rot < -180:
                 self.d_rot += 360
             self.apply_force(vector.Vector(self.velocity.get_net_rotation(), max(0, 150000 - self.d_rot * 300)))
-            self.apply_force(vector.Vector(self.velocity.get_net_rotation() + 90, self.d_rot * 300))
+            self.apply_force(vector.Vector(self.velocity.get_net_rotation() + 90, self.d_rot / abs(self.d_rot) * (self.d_rot + 40) * 300 + 12000 * math.sin(game.get_game().player.tick / 5)))
             self.IS_OBJECT = True
 
 class NagaAI(MonsterAI):
@@ -558,7 +558,7 @@ class FastBulletAI(MonsterAI):
 
 
 
-class DevilPythonAI(DestroyerAI):
+class DevilPythonAI(MonsterAI):
     MASS = 18000
     FRICTION = 0.9
     TOUCHING_DAMAGE = 560
@@ -579,7 +579,7 @@ class DevilPythonAI(DestroyerAI):
             px = player.pos[0] - self.pos[0]
             py = player.pos[1] - self.pos[1]
             if self.tick > 200:
-                self.state = (self.state + 1) % 2
+                self.state = (self.state + 1) % (1 + constants.DIFFICULTY2)
                 self.tick = 0
                 self.rot = random.randint(0, 360)
             self.tick += 1
@@ -589,11 +589,17 @@ class DevilPythonAI(DestroyerAI):
                 px += ax * 1000
                 py += ay * 1000
                 self.apply_force(vector.Vector(vector.coordinate_rotation(px, py), vector.distance(px, py) * 100))
-            else:
+            elif self.state == 1:
                 if self.tick % 80 == 1:
                     self.rot = vector.coordinate_rotation(px, py)
                 elif self.tick % 80 < 50:
                     self.apply_force(vector.Vector(self.rot, 150000))
+            elif self.state == 2:
+                self.rot -= 4
+                self.apply_force(vector.Vector(self.rot, 250000))
+            else:
+                self.apply_force(vector.Vector(self.rot, 50000))
+
 
 class JevilAI(SlowMoverAI):
     MASS = 1000
@@ -727,7 +733,7 @@ class GreedAI(SlowMoverAI):
     MASS = 400
     FRICTION = 0.95
     TOUCHING_DAMAGE = 0
-    TD = 220
+    TD = 450
     KB = 100
     SIGHT_DISTANCE = 99999
 
@@ -748,28 +754,29 @@ class GreedAI(SlowMoverAI):
             self.tick += 1
             if self.tick > 80:
                 self.state = (self.state + 1) % 4
-                if self.state == 3:
-                    self.rot = (self.rot + 180) % 360
                 self.tick = 0
             if self.state == 0:
                 self.TOUCHING_DAMAGE = self.TD
-                self.apply_force(vector.Vector(vector.coordinate_rotation(px, py), 600))
+                self.apply_force(vector.Vector(180 + self.rot, 1000 + constants.DIFFICULTY2 * 1000))
             else:
                 self.TOUCHING_DAMAGE = 0
                 ax, ay = vector.rotation_coordinate(self.rot)
-                px += ax * 320
-                py += ay * 320
+                px += ax * 800
+                py += ay * 800
+                if constants.DIFFICULTY2 >= 2:
+                    px += ax * self.state * 200
+                    py += ay * self.state * 200
                 self.pos << (self.pos[0] + px // 5, self.pos[1] + py // 5)
-                self.velocity.clear()
-                self.velocity.add(vector.Vector(0, self.KB))
                 if self.state == 1:
+                    self.rot = (self.rot + 1) % 360
+                if self.state == 2:
                     self.rot = (self.rot + 3) % 360
                 elif self.state == 3:
-                    self.rot = (self.rot + 10) % 360
-                else:
-                    draw.line(game.get_game().displayer.canvas, (255, 0, 0), position.displayed_position(self.pos),
-                                 position.displayed_position((self.pos[0] + px - 800 * ax, self.pos[1] + py - 800 * ay)),
-                                 width=50)
+                    self.rot = (self.rot + 5 + (constants.DIFFICULTY2 >= 3) * 12) % 360
+                    if constants.DIFFICULTY < 3:
+                        draw.line(game.get_game().displayer.canvas, (255, 0, 0), position.displayed_position(self.pos),
+                                     position.displayed_position((self.pos[0] + px - 2000 * ax, self.pos[1] + py - 2000 * ay)),
+                                     width=5)
             self.dp = self.pos
 
 class CardBombAI(SlowMoverAI):
@@ -3931,452 +3938,6 @@ class Entities:
                                                                        g.obj.pos[1] - self.obj.pos[1]) < (
                                         1300 + g.IS_MENACE * 2700) ** 2]
 
-
-    class SnowDrake(Entity):
-            NAME = 'Snow Drake'
-            DISPLAY_MODE = 3
-            LOOT_TABLE = LootTable([
-                IndividualLoot('soul_of_coldness', 0.9, 5, 12),
-                IndividualLoot('evil_ingot', 0.9, 2, 5),
-            ])
-
-            SOUND_HURT = 'sticky'
-            SOUND_DEATH = 'monster'
-
-            def __init__(self, pos):
-                super().__init__(pos, game.get_game().graphics['entity_snowdrake'], SnowDrakeAI, 2500)
-                self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 10
-                self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 15
-                self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 18
-
-    class IceCap(Entity):
-        NAME = 'Ice Cap'
-        DISPLAY_MODE = 2
-        LOOT_TABLE = LootTable([
-            IndividualLoot('soul_of_coldness', 0.9, 5, 12),
-            IndividualLoot('evil_ingot', 0.9, 2, 5),
-        ])
-
-        SOUND_HURT = 'metal'
-        SOUND_DEATH = 'monster'
-
-        def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_ice_cap'], IceCapAI, 1200)
-            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 2
-            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 2
-            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 8
-            self.hp_sys.resistances[damages.DamageTypes.PHYSICAL] = .2
-            self.hp_sys.resistances[damages.DamageTypes.MAGICAL] = .2
-            self.hp_sys.resistances[damages.DamageTypes.PIERCING] = .2
-
-    class MechanicEye(Entity):
-        NAME = 'Mechanic Eye'
-        DISPLAY_MODE = 1
-        LOOT_TABLE = LootTable([
-            IndividualLoot('evil_ingot', 1, 5, 8),
-            IndividualLoot('soul', 1, 5, 8),
-            IndividualLoot('watcher_wand', .05, 5, 8),
-        ])
-
-        SOUND_HURT = 'metal'
-        SOUND_DEATH = 'explosive'
-
-        def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_mechanic_eye'], MechanicEyeAI, 2000)
-            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 60
-            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 65
-            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 68
-            self.tick = 0
-
-        def on_update(self):
-            super().on_update()
-            self.set_rotation((self.rot * 4 - self.obj.velocity.get_net_rotation()) // 5)
-            self.tick += 1
-            if self.tick % 6 == 1:
-                game.get_game().entities.append(Entities.Lazer(self.obj.pos, -self.rot))
-
-    class FaithlessEye(Entity):
-        NAME = 'Faithless Eye'
-        DISPLAY_MODE = 1
-        IS_MENACE = True
-        BOSS_NAME = 'The Non-Believer'
-        LOOT_TABLE = LootTable([
-            SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 1, 3),
-            IndividualLoot('soul_of_integrity', 1, 10, 22),
-            IndividualLoot('double_watcher_wand', 0.25, 1, 1),
-        ])
-
-        SOUND_SPAWN = 'boss'
-        SOUND_HURT = 'metal'
-        SOUND_DEATH = 'explosive'
-        PHASE_SEGMENTS = [0.25, 0.65]
-
-
-        def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_faithless_eye'], FaithlessEyeAI, 48000)
-            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 85
-            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 87
-            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 88
-            self.obj.SPEED *= 1.1
-            self.phase = 1
-
-        def on_update(self):
-            super().on_update()
-            if self.phase == 1 and (self.hp_sys.hp < self.hp_sys.max_hp * 0.65 or not
-                    bool(len([1 for e in game.get_game().entities if type(e) is Entities.TruthlessEye]))):
-                self.phase = 2
-                self.obj.phase = 2
-                self.img = game.get_game().graphics['entity_faithless_eye_phase2']
-                if self.hp_sys.hp > self.hp_sys.max_hp * 0.65:
-                    self.PHASE_SEGMENTS = []
-            if self.phase == 2 and self.hp_sys.hp < self.hp_sys.max_hp * 0.3:
-                self.phase = 3
-                self.obj.state = not self.obj.state
-            if self.obj.state == 0:
-                self.set_rotation((self.rot * 2 - self.obj.velocity.get_net_rotation()) // 3)
-            else:
-                self.set_rotation((self.rot - self.obj.rot) // 2)
-                if self.obj.tick % 50 == 1:
-                    px, py = game.get_game().player.obj.pos
-                    k = 1
-                    if self.obj.phase == 2:
-                        k = 3
-                    if self.obj.phase == 3:
-                        k = 5
-                    ps = k * 3
-                    dr = random.uniform(-ps, ps)
-                    for r in range(-k * 15, k * 15 + 1, 15 - (self.obj.phase == 3) * 5):
-                        game.get_game().entities.append(Entities.FaithlessCurse(self.obj.pos,
-                                                                                vector.coordinate_rotation(
-                                                                                    px - self.obj.pos[0],
-                                                                                    py - self.obj.pos[1]) + r + dr))
-
-    class TruthlessEye(Entity):
-        NAME = 'Truthless Eye'
-        DISPLAY_MODE = 1
-        IS_MENACE = True
-        BOSS_NAME = 'The Dishonester'
-        LOOT_TABLE = LootTable([
-            SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 1, 3),
-            IndividualLoot('soul_of_integrity', 1, 10, 22),
-            IndividualLoot('double_watcher_wand', 0.25, 1, 1),
-        ])
-
-        SOUND_SPAWN = 'boss'
-        SOUND_HURT = 'metal'
-        SOUND_DEATH = 'explosive'
-        PHASE_SEGMENTS = [0.25, 0.6]
-
-        def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_truthless_eye'], FaithlessEyeAI, 56000)
-            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 85
-            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 87
-            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 88
-            self.obj.ax = 900
-            self.obj.ay = -400
-            self.obj.state = 1
-            self.phase = 1
-
-        def on_update(self):
-            super().on_update()
-            if self.phase == 1 and (self.hp_sys.hp < self.hp_sys.max_hp * 0.6 or not
-                    bool(len([1 for e in game.get_game().entities if type(e) is Entities.FaithlessEye]))):
-                self.phase = 2
-                self.obj.phase = 2
-                self.img = game.get_game().graphics['entity_faithless_eye_phase2']
-                if self.hp_sys.hp > self.hp_sys.max_hp * 0.6:
-                    self.PHASE_SEGMENTS = []
-            if self.phase == 2 and self.hp_sys.hp < self.hp_sys.max_hp * 0.25:
-                self.phase = 3
-            if self.obj.state == 0:
-                self.set_rotation((self.rot * 2 - self.obj.velocity.get_net_rotation()) // 3)
-            else:
-                self.set_rotation((self.rot - self.obj.rot) // 2)
-                if self.obj.tick % 60 == 0:
-                    px, py = game.get_game().player.obj.pos
-                    k = 0
-                    if self.obj.phase == 2:
-                        k = 5
-                    if self.obj.phase == 3:
-                        k = 7
-                    ps = k * 2
-                    dr = random.uniform(-ps, ps)
-                    for r in range(-k * 20, k * 20 + 1, 20 - (self.obj.phase == 3) * 10):
-                        game.get_game().entities.append(Entities.TruthlessCurse(self.obj.pos,
-                                                                                vector.coordinate_rotation(
-                                                                                    px - self.obj.pos[0],
-                                                                                    py - self.obj.pos[1]) + dr + r))
-
-    class SkyCubeFighter(Entity):
-        NAME = 'Sky Cube Fighter'
-        DISPLAY_MODE = 1
-        IS_MENACE = True
-        LOOT_TABLE = LootTable([
-            IndividualLoot('rune_blade', 0.5, 1, 1),
-            IndividualLoot('starlight_shard', 0.8, 1, 2),
-        ])
-
-        SOUND_SPAWN = 'boss'
-        SOUND_HURT = 'metal'
-        SOUND_DEATH = 'explosive'
-
-        def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_sky_cube_fighter'], SkyCubeFighterAI, 36000)
-            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 140
-            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 148
-            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 136
-
-        def on_update(self):
-            super().on_update()
-            self.set_rotation(self.rot + 15)
-
-    class SkyCubeRanger(Entity):
-        NAME = 'Sky Cube Ranger'
-        DISPLAY_MODE = 1
-        IS_MENACE = True
-        LOOT_TABLE = LootTable([
-            IndividualLoot('dark_exploder', 0.5, 1, 1),
-            IndividualLoot('starlight_shard', 0.8, 1, 2),
-        ])
-
-        SOUND_SPAWN = 'boss'
-        SOUND_HURT = 'metal'
-        SOUND_DEATH = 'explosive'
-
-        def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_sky_cube_ranger'], SkyCubeRangerAI, 28000)
-            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 88
-            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 88
-            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 88
-            self.tick = 0
-
-        def on_update(self):
-            super().on_update()
-            self.set_rotation(self.rot - 22)
-            if self.tick % 80 < 30:
-                if self.tick % 3 == 0:
-                    game.get_game().entities.append(Entities.Lazer(self.obj.pos,
-                                                                   vector.coordinate_rotation(
-                                                                       game.get_game().player.obj.pos[0] - self.obj.pos[0],
-                                                                       game.get_game().player.obj.pos[1] - self.obj.pos[1])
-                                                                   ))
-            elif self.tick % 12 == 0:
-                for ar in range(0, 361, 20 - constants.DIFFICULTY // 2 * 5):
-                    game.get_game().entities.append(Entities.Lazer(self.obj.pos,
-                                                                   vector.coordinate_rotation(
-                                                                       game.get_game().player.obj.pos[0] - self.obj.pos[0],
-                                                                       game.get_game().player.obj.pos[1] - self.obj.pos[1])
-                                                                   + ar))
-            self.tick += 1
-
-    class SkyCubeBlocker(Entity):
-        NAME = 'Sky Cube Blocker'
-        DISPLAY_MODE = 1
-        IS_MENACE = True
-        LOOT_TABLE = LootTable([
-            IndividualLoot('water_of_disability', 0.5, 1, 1),
-            IndividualLoot('starlight_shard', 0.8, 1, 2),
-        ])
-
-        SOUND_SPAWN = 'boss'
-        SOUND_HURT = 'metal'
-        SOUND_DEATH = 'explosive'
-
-        def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_sky_cube_blocker'], SkyCubeBlockerAI, 42000)
-            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 266
-            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 272
-            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 270
-
-        def on_update(self):
-            super().on_update()
-            self.set_rotation(self.rot + 5)
-
-    class Destroyer(WormEntity):
-        NAME = 'Destroyer'
-        DISPLAY_MODE = 1
-        IS_MENACE = True
-        BOSS_NAME = 'The Metal Worm of Strength'
-        LOOT_TABLE = LootTable([
-            SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 1, 3),
-            IndividualLoot('soul_of_bravery', 1, 10, 22),
-            IndividualLoot('demolisher', .5, 1, 1),
-        ])
-
-        SOUND_SPAWN = 'boss'
-        SOUND_HURT = 'metal'
-        SOUND_DEATH = 'explosive'
-        VITAL = True
-
-        def __init__(self, pos):
-            super().__init__(pos, 64, game.get_game().graphics['entity_destroyer_head'],
-                             game.get_game().graphics['entity_destroyer_body'], DestroyerAI, 240000, body_length=120,
-                             body_touching_damage=280)
-            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 245
-            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 240
-            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 255
-            self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 200
-            self.obj.SPEED *= 2
-            self.tick = 0
-            self.ft = 0
-            for b in self.body:
-                setattr(b, 'ot', -1000)
-                setattr(b, 'op', False)
-                for r in b.hp_sys.resistances.resistances.keys():
-                    b.hp_sys.resistances.resistances[r] *= .5
-
-
-        def on_update(self):
-            self.tick += 1
-            if self.obj.state == 1:
-                if self.ft > 0:
-                    self.ft -= 1
-                else:
-                    self.ft = 120 - constants.DIFFICULTY * 10 - constants.DIFFICULTY2 * 15
-                    for b in self.body:
-                        setattr(b, 'orr', random.randint(0, 360))
-            if self.obj.state == 2:
-                self.ft = 0
-                if self.tick % 70 == 0:
-                    bb = random.choices(self.body, k=len(self.body) - 3)
-                    for b in bb:
-                        game.get_game().entities.append(Entities.Lazer(b.obj.pos,
-                                                                       vector.coordinate_rotation(
-                                                                           *(game.get_game().player.obj.pos - b.obj.pos))
-                                                                       ))
-            for b in self.body:
-                if random.randint(0, 300 - constants.DIFFICULTY * 15 - constants.DIFFICULTY2 * 20) == 0 and self.obj.state == 0:
-                    rot = vector.coordinate_rotation(game.get_game().player.obj.pos[0] - b.obj.pos[0],
-                                                     game.get_game().player.obj.pos[1] - b.obj.pos[1])
-                    l = Entities.Lazer(b.obj.pos, rot)
-                    l.obj.apply_force(vector.Vector(rot, 5000))
-                    game.get_game().entities.append(l)
-                    setattr(b, 'ot', self.tick)
-                if self.obj.state == 1:
-                    if self.ft == 10:
-                        l = Entities.Lazer(b.obj.pos, b.orr)
-                        l.DMG += 80
-                        game.get_game().entities.append(l)
-                        if constants.DIFFICULTY2 == 3:
-                            l = Entities.Lazer(b.obj.pos + vector.Vector2D(random.randint(0, 360), 50), b.orr)
-                            l.DMG += 80
-                            game.get_game().entities.append(l)
-
-
-                op =  self.tick - getattr(b, 'ot') <= 100
-                if b != self.body[0]:
-                    if op:
-                        b.img = game.get_game().graphics['entity_destroyer_body_open']
-                    else:
-                        b.img = game.get_game().graphics['entity_destroyer_body']
-                if op and not getattr(b, 'op'):
-                    for r in b.hp_sys.resistances.resistances.keys():
-                        b.hp_sys.resistances.resistances[r] *= 1 / (.3 - constants.DIFFICULTY * .05)
-                else:
-                    for r in b.hp_sys.resistances.resistances.keys():
-                        b.hp_sys.resistances.resistances[r] *= .3 - constants.DIFFICULTY * .05
-                setattr(b, 'op', op)
-            super().on_update()
-
-        def t_draw(self):
-            for b in self.body:
-                if self.obj.state == 1 and 'orr' in dir(b) and self.ft > 10:
-                    draw.line(game.get_game().displayer.canvas, (255, 0, 0), position.displayed_position(b.obj.pos),
-                              position.displayed_position(b.obj.pos + vector.Vector2D(b.orr, 3000)), 2
-                              )
-            super().t_draw()
-
-
-
-    class TheCPU(Entity):
-        NAME = 'The CPU'
-        DISPLAY_MODE = 1
-        IS_MENACE = True
-        BOSS_NAME = 'The Electric Lier'
-        LOOT_TABLE = LootTable([
-            SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 1, 3),
-            IndividualLoot('soul_of_kindness', 1, 10, 22),
-            IndividualLoot('remote_sword', 0.5, 1, 1),
-        ])
-
-        SOUND_SPAWN = 'boss'
-        SOUND_HURT = 'metal'
-        SOUND_DEATH = 'explosive'
-        PHASE_SEGMENTS = [0.5]
-
-        def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_the_cpu'], TheCPUAI, 48000)
-            self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 30
-            self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 25
-            self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 45
-            self.rs = []
-            for _ in range(constants.DIFFICULTY2 * 4 + 2):
-                rx = random.uniform(-1, 1)
-                ry = (1 - rx ** 2) ** .5 * random.choice([-1, 1])
-
-                self.rs.append(vector.Vector2D(0, 0, rx, ry) * 2 ** random.uniform(-1, 1))
-
-        def on_update(self):
-            super().on_update()
-            if self.hp_sys.hp < self.hp_sys.max_hp * 0.5 and self.obj.phase == 1:
-                self.obj.phase = 2
-                self.img = game.get_game().graphics['entity_the_cpu_phase2']
-                self.set_rotation(self.rot)
-                self.obj.tick = -200
-            if self.hp_sys.hp < self.hp_sys.max_hp * 0.35 and self.obj.phase == 2 and constants.DIFFICULTY2 > 1:
-                self.obj.phase = 3
-                self.set_rotation(self.rot)
-                self.obj.tick = -200
-
-        def t_draw(self):
-            super().t_draw()
-            px, py = game.get_game().player.obj.pos
-            aax, aay = self.obj.pos[0] - game.get_game().player.obj.pos[0], self.obj.pos[1] - \
-                       game.get_game().player.obj.pos[1]
-            displayer = game.get_game().displayer
-            r = self.d_img.get_rect()
-            if constants.USE_ALPHA:
-                self.d_img.set_alpha(255 - int(240 * self.hp_sys.hp // self.hp_sys.max_hp))
-            else:
-                self.d_img.set_alpha(0)
-            r.center = position.displayed_position((px - aax, py + aay))
-            displayer.canvas.blit(self.d_img, r)
-            r.center = position.displayed_position((px + aax, py - aay))
-            displayer.canvas.blit(self.d_img, r)
-            r.center = position.displayed_position((px - aax, py - aay))
-            displayer.canvas.blit(self.d_img, r)
-            if self.obj.phase >= 2:
-                r.center = position.displayed_position((px + aay, py + aax))
-                displayer.canvas.blit(self.d_img, r)
-                r.center = position.displayed_position((px - aay, py - aax))
-                displayer.canvas.blit(self.d_img, r)
-                r.center = position.displayed_position((px + aay, py - aax))
-                displayer.canvas.blit(self.d_img, r)
-                r.center = position.displayed_position((px - aay, py + aax))
-                displayer.canvas.blit(self.d_img, r)
-            dt = vector.distance(aax, aay)
-            pax = aax
-            pay = aay
-            if self.obj.phase == 3:
-                for rx, ry in self.rs:
-                    aax = (rx * dt + pax) / 2
-                    aay = (ry * dt + pay) / 2
-                    r.center = position.displayed_position((px - aax, py + aay))
-                    displayer.canvas.blit(self.d_img, r)
-                    r.center = position.displayed_position((px + aax, py - aay))
-                    displayer.canvas.blit(self.d_img, r)
-                    r.center = position.displayed_position((px - aax, py - aay))
-                    displayer.canvas.blit(self.d_img, r)
-                    r.center = position.displayed_position((px + aay, py + aax))
-                    displayer.canvas.blit(self.d_img, r)
-                    r.center = position.displayed_position((px - aay, py - aax))
-                    displayer.canvas.blit(self.d_img, r)
-                    r.center = position.displayed_position((px + aay, py - aax))
-                    displayer.canvas.blit(self.d_img, r)
-                    r.center = position.displayed_position((px - aay, py + aax))
-                    displayer.canvas.blit(self.d_img, r)
-            self.d_img.set_alpha(255)
-
     class Irec(Entity):
         NAME = 'Irec'
         DISPLAY_MODE = 1
@@ -4895,7 +4456,6 @@ class Entities:
             SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 1, 3),
             IndividualLoot('saint_steel_ingot', 1, 5, 8),
             IndividualLoot('soul_of_perseverance', 1, 10, 22),
-            SelectionLoot([('tip8', 1, 1), ('tip9', 1, 1)], 0, 2),
         ])
 
         SOUND_HURT = 'corrupt'
@@ -4916,12 +4476,15 @@ class Entities:
             super().on_update()
             if self.hp_sys.hp <= self.hp_sys.max_hp * (1 - self.phase * 0.2) and not self.d:
                 self.phase += 1
-                for i in range(4 * self.phase - 1):
+                self.obj.TOUCHING_DAMAGE += 30
+                for i in range(2 * self.phase - 2 + constants.DIFFICULTY):
                     d = Entities.Greed(self.obj.pos, True)
                     d.IS_MENACE = False
                     d.hp_sys.hp = 8000 + 4000 * self.phase
                     d.hp_sys.max_hp = d.hp_sys.hp
                     d.img = pg.transform.scale_by(d.img, 0.2 + 0.1 * self.phase)
+                    for k in d.hp_sys.defenses:
+                        d.hp_sys.defenses[k] -= 100
                     d.obj.state = i
                     d.obj.TD = 60
                     d.obj.KB = 40
@@ -5023,7 +4586,6 @@ class Entities:
             SelectionLoot([('palladium', 20, 30), ('mithrill', 20, 30), ('titanium', 20, 30)], 1, 3),
             IndividualLoot('daedalus_ingot', 1, 5, 8),
             IndividualLoot('soul_of_justice', 1, 10, 22),
-            SelectionLoot([('tip8', 1, 1), ('tip9', 1, 1)], 0, 2),
         ])
 
         SOUND_HURT = 'corrupt'
@@ -5040,13 +4602,20 @@ class Entities:
             for b in self.body:
                 kr = b == self.body[0] or b == self.body[-1]
                 for r in b.hp_sys.resistances.resistances.keys():
-                    b.hp_sys.resistances[r] /= 3 - kr
+                    b.hp_sys.resistances[r] *= 1 + kr
 
 
         def on_update(self):
-            for b in self.body:
-                if random.randint(0, 1000) < 3:
-                    game.get_game().entities.append(Entities.DevilsMark(b.obj.pos))
+            if self.obj.state == 3:
+                for b in self.body:
+                    if random.randint(0, 300) < 3:
+                        game.get_game().entities.append(Entities.DevilsMark(b.obj.pos +
+                                                                            vector.Vector2D(0, 0, random.randint(-500, 500),
+                                                                                            random.randint(-500, 500))))
+            else:
+                for b in self.body:
+                    if random.randint(0, 400 - constants.DIFFICULTY * 50 + int((1500 - constants.DIFFICULTY * 500) * self.hp_sys.hp / self.hp_sys.max_hp)) < 3:
+                        game.get_game().entities.append(Entities.DevilsMark(b.obj.pos))
 
     class Leaf(Entity):
         NAME = 'Leaf'
@@ -7110,8 +6679,9 @@ class Entities:
         def t_draw(self):
             if self.tick > 5:
                 self.obj.update()
-                game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(self.obj.pos),
-                                                                        col=(0, 255, 255), t=6, sp=8, n=2))
+                if self.tick % 3 == 0:
+                    game.get_game().displayer.effect(pef.p_particle_effects(*position.displayed_position(self.obj.pos),
+                                                                            col=(0, 255, 255), t=25, sp=3, n=3))
             else:
                 if self.follow_entity is not None:
                     self.obj.pos << (
@@ -7121,7 +6691,7 @@ class Entities:
                 draw.line(game.get_game().displayer.canvas, (0, 255, 255),
                              position.displayed_position(self.obj.pos),
                              position.displayed_position(
-                                 (self.obj.pos[0] + ax * 3000, self.obj.pos[1] + ay * 3000)), 3)
+                                 (self.obj.pos[0] + ax * 8000, self.obj.pos[1] + ay * 8000)), 3)
 
         def on_update(self):
             self.tick += 1
@@ -7160,9 +6730,19 @@ class Entities:
             if self.phase == 0 and self.hp_sys.hp < self.hp_sys.max_hp * .6:
                 self.phase = 1
                 self.obj.SPEED *= 1.5
+                game.get_game().displayer.shake_amp += 150
+                for b in self.body[1:]:
+                    b.obj.TOUCHING_DAMAGE += 200
+                    b.img = game.get_game().graphics['entity_quark_ghost_body_2']
+                self.obj.TOUCHING_DAMAGE += 500
             if self.phase == 1 and self.hp_sys.hp < self.hp_sys.max_hp * .3:
                 self.phase = 2
-                self.obj.SPEED *= 1.5
+                self.obj.SPEED *= 1.2
+                game.get_game().displayer.shake_amp += 150
+                for b in self.body[1:]:
+                    b.obj.TOUCHING_DAMAGE += 200
+                    b.img = game.get_game().graphics['entity_quark_ghost_body_3']
+                self.obj.TOUCHING_DAMAGE += 500
             for b in self.body:
                 if random.randint(0, 650 - self.phase * 180) == 114:
                     px, py = game.get_game().player.obj.pos
@@ -7637,7 +7217,7 @@ class Entities:
         PHASE_SEGMENTS = [0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 
         def __init__(self, pos):
-            super().__init__(pos, game.get_game().graphics['entity_omega_flowery'], BuildingAI, 10 ** 10 * 8)
+            super().__init__(pos, game.get_game().graphics['entity_omega_flowery'], BuildingAI, 250000000)
             self.obj.MASS = 10 ** 8
             self.obj.TOUCHING_DAMAGE = 0
             self.obj.IS_OBJECT = False
@@ -7663,14 +7243,15 @@ class Entities:
             game.get_game().player.hp_sys.effect(effects.Polluted(10 ** 9, 1))
             constants.ENTITY_NUMBER = 0
 
+            for d in self.hp_sys.defenses:
+                self.hp_sys.defenses[d] = 400
+
 
         def t_draw(self):
             if not self.phase:
                 super().t_draw()
             elif self.phase < 13 and not self.state:
                 super().t_draw()
-            game.get_game().entities = [e for e in game.get_game().entities if e.VITAL or e.IS_MENACE or not e.obj.IS_OBJECT]
-            game.get_game().drop_items = []
             px, py = game.get_game().player.obj.pos
             px -= self.obj.pos[0]
             py -= self.obj.pos[1]
@@ -7690,16 +7271,16 @@ class Entities:
                     if self.phase in cols.keys():
                         col = cols[self.phase]
             pg.draw.circle(game.get_game().displayer.canvas, col, position.displayed_position(self.obj.pos),
-                           1200 / game.get_game().player.get_screen_scale())
+                           1200 / game.get_game().player.get_screen_scale(), int(50 / game.get_game().player.get_screen_scale()))
             if self.phase:
                 game.get_game().player.scale = 3
                 if self.phase >= 13:
                     self.rt += 25
-                    self.hp_sys.resistances[damages.DamageTypes.PHYSICAL] = 3
-                    self.hp_sys.resistances[damages.DamageTypes.PIERCING] = 3
-                    self.hp_sys.resistances[damages.DamageTypes.MAGICAL] = 3
-                    self.hp_sys.resistances[damages.DamageTypes.ARCANE] = 3
-                    self.hp_sys.resistances[damages.DamageTypes.THINKING] = 10
+                    self.hp_sys.resistances[damages.DamageTypes.PHYSICAL] = 5
+                    self.hp_sys.resistances[damages.DamageTypes.PIERCING] = 5
+                    self.hp_sys.resistances[damages.DamageTypes.MAGICAL] = 5
+                    self.hp_sys.resistances[damages.DamageTypes.ARCANE] = 5
+                    self.hp_sys.resistances[damages.DamageTypes.THINKING] = 15
                     self.NAME = 'Finale'
                     self.hp_sys(op='config', maximum_damage=self.hp_sys.hp - 1)
                 elif self.state == -1:
@@ -8036,6 +7617,7 @@ class Entities:
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([])
         VITAL = True
+        DIVERSITY = False
 
         def __init__(self, pos, rot, follow_entity=None):
             super().__init__(pos, game.get_game().graphics['entity_friendly_bullet'], FastBulletAI, 10 ** 9)
@@ -8055,8 +7637,7 @@ class Entities:
         def on_update(self):
             super().on_update()
             self.tick += 1
-            if self.tick % 3 == 0:
-                self.set_rotation(self.rot + 77)
+            self.set_rotation(self.rot + 37)
             if self.tick < 10:
                 if self.follow_entity is not None:
                     self.obj.pos << (self.follow_entity.obj.pos[0] + self.ax, self.follow_entity.obj.pos[1] + self.ay)
@@ -8071,8 +7652,8 @@ class Entities:
 
         def damage(self):
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
-                               self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 80:
-                game.get_game().player.hp_sys.damage(1600, damages.DamageTypes.MAGICAL)
+                               self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 300:
+                game.get_game().player.hp_sys.damage(1400, damages.DamageTypes.MAGICAL)
                 self.hp_sys.hp = 10 ** 8
 
     class Knife(Entity):
@@ -8080,9 +7661,10 @@ class Entities:
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([])
         VITAL = True
+        DIVERSITY = False
 
         def __init__(self, pos, rot, st=0.0):
-            super().__init__(pos, game.get_game().graphics['entity_knife'], BuildingAI, 5 * 10 ** 8)
+            super().__init__(pos, game.get_game().graphics['entity_knife'], BuildingAI, 500000)
             self.obj.MASS = 1000
             self.obj.rot = rot
             self.tick = st
@@ -8104,6 +7686,7 @@ class Entities:
         DISPLAY_MODE = 3
         LOOT_TABLE = LootTable([])
         VITAL = True
+        DIVERSITY = False
 
         def __init__(self, pos, rot, follow_entity=None):
             super().__init__(pos, game.get_game().graphics['entity_bomb'], FastBulletAI, 10 ** 9)
@@ -8134,16 +7717,15 @@ class Entities:
                              position.displayed_position((self.obj.pos[0] + ax * 3000, self.obj.pos[1] + ay * 3000)), 3)
 
             else:
-                super().update()
                 self.damage()
                 self.hp_sys.hp -= 25 * 10 ** 6
 
         def damage(self):
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
-                               self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 80:
-                game.get_game().player.hp_sys.damage(1200, damages.DamageTypes.MAGICAL)
+                               self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 300:
+                game.get_game().player.hp_sys.damage(1400, damages.DamageTypes.MAGICAL)
                 self.hp_sys.hp = 0
-            if vector.distance(self.sp[0] - self.obj.pos[0], self.sp[1] - self.obj.pos[1]) > 3000:
+            if vector.distance(self.sp[0] - self.obj.pos[0], self.sp[1] - self.obj.pos[1]) > 3000 or random.randint(0, 100) < 9:
                 game.get_game().displayer.effect(fc.p_fade_circle(*position.displayed_position(self.obj.pos), col=(255, 0, 0),
                                                                   sp=80, t=20))
                 if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
@@ -8156,9 +7738,10 @@ class Entities:
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([])
         VITAL = True
+        DIVERSITY = False
 
         def __init__(self, pos, rot, st=0.0):
-            super().__init__(pos, game.get_game().graphics['entity_gloves'], BuildingAI, 5 * 10 ** 8)
+            super().__init__(pos, game.get_game().graphics['entity_gloves'], BuildingAI, 500000)
             self.obj.MASS = 1000
             self.obj.rot = rot
             self.tick = st
@@ -8179,17 +7762,19 @@ class Entities:
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([])
         VITAL = True
+        DIVERSITY = False
 
         def __init__(self, pos):
             super().__init__(pos, game.get_game().graphics['entity_flower'], BuildingAI, 4 * 10 ** 8)
             self.obj.MASS = 1000
             self.tick = 0
+            self.hp_sys.IMMUNE = True
             self.set_rotation(random.randint(0, 360))
             self.obj.IS_OBJECT = False
 
         def on_update(self):
             self.tick += 1
-            super().update()
+            super().on_update()
             if self.tick < 10:
                 self.set_rotation(self.rot + 40)
             elif self.tick == 10:
@@ -8199,19 +7784,21 @@ class Entities:
                 self.damage()
             else:
                 self.hp_sys.hp = 0
+
         def damage(self):
             if vector.distance(self.obj.pos[0] - game.get_game().player.obj.pos[0],
                                self.obj.pos[1] - game.get_game().player.obj.pos[1]) < 400:
-                game.get_game().player.hp_sys.damage(900, damages.DamageTypes.MAGICAL)
+                game.get_game().player.hp_sys.damage(1100, damages.DamageTypes.MAGICAL)
 
     class Shoe(Entity):
         NAME = '????'
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([])
         VITAL = True
+        DIVERSITY = False
 
         def __init__(self, pos, rot, st=0.0):
-            super().__init__(pos, game.get_game().graphics['entity_shoe'], BuildingAI, 5 * 10 ** 8)
+            super().__init__(pos, game.get_game().graphics['entity_shoe'], BuildingAI, 500000)
             self.obj.MASS = 1000
             self.obj.rot = rot
             self.tick = st
@@ -8240,10 +7827,12 @@ class Entities:
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([])
         VITAL = True
+        DIVERSITY = False
 
         def __init__(self, pos, rot, st=0.0, no=0):
-            super().__init__(pos, pg.transform.scale_by(game.get_game().displayer.font.render(chr(65 + no) if no < 26 else chr(48 + no - 26), 10), True, (255, 255, 255), (0, 0, 0)),
-                             BuildingAI, 5 * 10 ** 8)
+            super().__init__(pos, pg.transform.scale_by(game.get_game().displayer.font.render(chr(65 + no) if no < 26 else chr(48 + no - 26),
+                                                                                              True, (255, 255, 255), (0, 0, 0), ), 10),
+                             BuildingAI, 500000)
             self.obj.MASS = 1000
             self.obj.rot = rot
             self.tick = st
@@ -8265,6 +7854,7 @@ class Entities:
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([])
         VITAL = True
+        DIVERSITY = False
 
         def __init__(self, pos, rot):
             super().__init__(pos, game.get_game().graphics['entity_fly'], FastBulletAI, 4 * 10 ** 8)
@@ -8272,6 +7862,7 @@ class Entities:
             self.obj.rot = rot
             self.obj.speed = 8800
             self.tick = 0
+            self.hp_sys.IMMUNE = True
             self.obj.TOUCHING_DAMAGE = 960
 
         def on_update(self):
@@ -8291,6 +7882,7 @@ class Entities:
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([])
         VITAL = True
+        DIVERSITY = False
 
         def __init__(self, pos):
             super().__init__(pos, game.get_game().graphics['item_null'], BuildingAI, 1)
@@ -8312,9 +7904,10 @@ class Entities:
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([])
         VITAL = True
+        DIVERSITY = False
 
         def __init__(self, pos, rot, st=0.0):
-            super().__init__(pos, game.get_game().graphics['entity_pan'], BuildingAI, 5 * 10 ** 8)
+            super().__init__(pos, game.get_game().graphics['entity_pan'], BuildingAI, 500000)
             self.obj.MASS = 1000
             self.obj.rot = rot
             self.tick = st
@@ -8343,9 +7936,10 @@ class Entities:
         DISPLAY_MODE = 1
         LOOT_TABLE = LootTable([])
         VITAL = True
+        DIVERSITY = False
 
         def __init__(self, pos, rot, st=0.0):
-            super().__init__(pos, game.get_game().graphics['entity_bullet'], BuildingAI, 5 * 10 ** 8)
+            super().__init__(pos, game.get_game().graphics['entity_bullet'], BuildingAI, 500000)
             self.obj.MASS = 1000
             self.obj.rot = rot
             self.tick = st

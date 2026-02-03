@@ -1126,6 +1126,54 @@ class Game:
                                                             self.entities.append(eei((1000, 0)))
 
                                                         @staticmethod
+                                                        def s2():
+                                                            self.player.accessories = ['merged_metal_helmet', 'merged_metal_chestplate',
+                                                                                       'merged_metal_greaves', 'titanium_glove',
+                                                                                       'wings', 'red_ring',
+                                                                                       'fires_defense', 'mechanic_boots',
+                                                                                       'aimer', 'null']
+                                                            self.player.weapons = [
+                                                                weapons.WEAPONS['blade_wand'],
+                                                                weapons.WEAPONS['fire_shine'],
+                                                                weapons.WEAPONS['daedalus_stormbow'],
+                                                                weapons.WEAPONS['nights_edge'],
+                                                                weapons.WEAPONS['chaos_reap'],
+                                                                weapons.WEAPONS['evil_book'],
+                                                                weapons.WEAPONS['dark_spider_lily']
+                                                            ]
+
+                                                            self.stage = 1
+                                                            self.player.max_mana = 600
+
+                                                            self.player.ammo = ('judgement', constants.INFINITY)
+                                                            self.player.ammo_bullet = ('thermality', constants.INFINITY)
+
+
+                                                        @staticmethod
+                                                        def s25():
+                                                            self.player.accessories = ['thermscale_helmet', 'thermscale_battlegear',
+                                                                                       'thermscale_greaves', 'titanium_glove',
+                                                                                       'honest_flyer', 'red_ring',
+                                                                                       'unregretted_heart', 'highspeed_boots',
+                                                                                       'aimer', 'null']
+                                                            self.player.weapons = [
+                                                                weapons.WEAPONS['forbidden_curse__evil'],
+                                                                weapons.WEAPONS['true_shadow'],
+                                                                weapons.WEAPONS['true_daedalus_stormbow'],
+                                                                weapons.WEAPONS['true_nights_edge'],
+                                                                weapons.WEAPONS['forbidden_oath'],
+                                                                weapons.WEAPONS['muramasa'],
+                                                                weapons.WEAPONS['time_lily']
+                                                            ]
+
+                                                            self.stage = 1
+                                                            self.player.max_mana = 600
+
+                                                            self.player.ammo = ('judgement', constants.INFINITY)
+                                                            self.player.ammo_bullet = ('thermality', constants.INFINITY)
+
+
+                                                        @staticmethod
                                                         def s4():
                                                             self.player.accessories = ['godkiller_helmet', 'godkiller_chestplate',
                                                                                        'godkiller_leggings', 'chaos_sheath',

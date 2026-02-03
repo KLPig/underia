@@ -232,8 +232,8 @@ class DataEntryForm:
         self.data["posy"] = self.posy_var.get()
         self.data["name"] = self.name_var.get()
         self.data["disp"] = self.disp_var.get()
-        self.data["description"] = self.desc_text.get("1.0", tk.END).strip()
-        self.data["content"] = self.content_text.get("1.0", tk.END).strip()
+        self.data["description"] = self.desc_text.get("1.0", tk.END).strip().replace('\n', '\\n')
+        self.data["content"] = self.content_text.get("1.0", tk.END).strip().replace('\n', '\\n')
 
         # Get prerequisites as list
         self.data["prerequisites"] = list(self.pre_listbox.get(0, tk.END))

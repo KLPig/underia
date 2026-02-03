@@ -1511,6 +1511,16 @@ items_dict: dict[str, Inventory.Item] = {
     'stardream_cloak': Inventory.Item('Stardream Cloak', '11 armor\n+12% magic damage\n+200 additional maximum mana', 'stardream_cloak', 5, [TAGS['item'], TAGS['accessory'], TAGS['body']]),
     'stardream_boots': Inventory.Item('Stardream Boots', '8 armor\n+10% magic damage\n+20/sec mana regeneration', 'stardream_boots', 5, [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
 
+    'thermscale_helmet': Inventory.Item('Thermscale Helmet', '13 armor\n+17% melee damage', 'thermscale_helmet', 6,
+                                        [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'thermscale_battlegear': Inventory.Item('Thermscale Battlegear', '24 armor\n+38% melee damage\n+40% critical', 'thermscale_battlegear',
+                                            6, [TAGS['item'], TAGS['accessory'], TAGS['body']]),
+    'thermscale_chestplate': Inventory.Item('Thermscale Battlegear', '31 armor\n+26% melee damage\n+20% critical', 'thermscale_chestplate',
+                                            6, [TAGS['item'], TAGS['accessory'], TAGS['body']]),
+    'thermscale_greaves': Inventory.Item('Thermscale Battlegear', '9 armor\n+14% melee damage', 'thermscale_greaves',
+                                            6, [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
+
+
     'chloro_formal_hat': Inventory.Item('Chloro. Formal Hat', '19 armor\n+10/sec regeneration\n+30/sec mana regeneration', 'chloro_formal_hat',
                                          7, [TAGS['item'], TAGS['accessory'], TAGS['head']]),
     'chloro_chestplate': Inventory.Item('Chloro. Chestplate', '35 armor\n+20/sec regeneration\n+50/sec mana regeneration', 'chloro_chestplate', 7,
@@ -1529,18 +1539,18 @@ items_dict: dict[str, Inventory.Item] = {
     'chaos_leggings': Inventory.Item('Chaos Leggings', '22 armor\n+40% speed\n+100/sec mana regeneration', 'chaos_leggings', 8,
                                       [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
 
-    'chaos_artist_helmet': Inventory.Item('Chaos Artist Helmet', '44 armor\n+45% ranged damage\n+50% critical', 'chaos_artist_helmet', 8,
+    'chaos_artist_helmet': Inventory.Item('Chaos Artist Helmet', '37 armor\n+45% ranged damage\n+50% critical', 'chaos_artist_helmet', 8,
                                            [TAGS['item'], TAGS['accessory'], TAGS['head']]),
-    'chaos_artist_chestplate': Inventory.Item('Chaos Artist Chestplate', '66 armor\n+50% critical', 'chaos_artist_chestplate', 8,
+    'chaos_artist_chestplate': Inventory.Item('Chaos Artist Chestplate', '55 armor\n+50% critical', 'chaos_artist_chestplate', 8,
                                                [TAGS['item'], TAGS['accessory'], TAGS['body']]),
-    'chaos_artist_greaves': Inventory.Item('Chaos Artist Greaves', '36 armor\n+50% speed\n-50% air resistance', 'chaos_artist_greaves', 8,
+    'chaos_artist_greaves': Inventory.Item('Chaos Artist Greaves', '26 armor\n+50% speed\n-50% air resistance', 'chaos_artist_greaves', 8,
                                             [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
 
-    'godkiller_helmet': Inventory.Item('Godkiller Helmet', '38 armor\n+40% melee damage\n+20% critical\n+20% speed', 'godkiller_helmet', 9,
+    'godkiller_helmet': Inventory.Item('Godkiller Helmet', '47 armor\n+40% melee damage\n+20% critical\n+20% speed', 'godkiller_helmet', 9,
                                         [TAGS['item'], TAGS['accessory'], TAGS['head']]),
-    'godkiller_chestplate': Inventory.Item('Godkiller Chestplate', '64 armor\n+55% melee damage\n+30% critical\n+30% speed', 'godkiller_chestplate', 9,
+    'godkiller_chestplate': Inventory.Item('Godkiller Chestplate', '77 armor\n+55% melee damage\n+30% critical\n+30% speed', 'godkiller_chestplate', 9,
                                             [TAGS['item'], TAGS['accessory'], TAGS['body']]),
-    'godkiller_leggings': Inventory.Item('Godkiller Leggings', '32 armor\n+35% melee damage\n+15% critical\n+15% speed', 'godkiller_leggings', 9,
+    'godkiller_leggings': Inventory.Item('Godkiller Leggings', '39 armor\n+35% melee damage\n+15% critical\n+15% speed', 'godkiller_leggings', 9,
                                          [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
 
     'plaguebringer_skull': Inventory.Item('Plaguebringer Skull', '27 armor\n+30% magic damage\n+400 additional maximum mana', 'plaguebringer_skull', 10,
@@ -1549,6 +1559,17 @@ items_dict: dict[str, Inventory.Item] = {
                                            [TAGS['item'], TAGS['accessory'], TAGS['body']]),
     'plaguebringer_boots': Inventory.Item('Plaguebringer Boots', '21 armor\n+25% magic damage\n-30% mana cost\n+5/sec mentality regeneration', 'plaguebringer_boots', 10,
                                            [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
+
+    'clockplate_headgear': Inventory.Item('Clockplate Headgear', '39 armor\n+25% damage\n+35% critical', 'clockplate_headgear',
+                                          11, [TAGS['item'], TAGS['accessory'], TAGS['head']]),
+    'clockplate_battlegear': Inventory.Item('Clockplate Battlegear', '88 armor\n+55% melee damage\n-5 attack speed',
+                                            'clockplate_battlegear', 11, [TAGS['item'], TAGS['accessory'], TAGS['body']]),
+    'clockplate_chestplate': Inventory.Item('Clockplate Chestplate', '53 armor\n+55% ranged damage\n+50% critical',
+                                            'clockplate_chestplate', 11, [TAGS['item'], TAGS['accessory'], TAGS['body']]),
+    'clockplate_cloak': Inventory.Item('Clockplate Cloak', '24 armor\n+50% magic damage\n+600 additional maximum mana\n+20% domain size',
+                                            'clockplate_cloak', 11, [TAGS['item'], TAGS['accessory'], TAGS['body']]),
+    'clockplate_greaves': Inventory.Item('Clockplate Greaves', '29 armor\n+100% speed\n-50% sprint cd\n-20% air resistance\n-50% biome friction effect',
+                                         'clockplate_greaves', 11, [TAGS['item'], TAGS['accessory'], TAGS['leg']]),
 
     'karmic_helmet': Inventory.Item('Karmic Helmet', '120 armor\n+15% damage\n+15%critical\n+15% speed\n+15/sec regeneration\n+30/sec mana regeneration\n'
                                                      '+3/sec mentality regeneration\n+15% domain size\n+15% speed\n+150 additional maximum mana', 'karmic_helmet', 11,
@@ -1815,10 +1836,17 @@ items_dict: dict[str, Inventory.Item] = {
                                      'mechanic_boots', 5, [TAGS['item'], TAGS['accessory']]),
     'broken_copper_boots': Inventory.Item('Broken Copper Boots', '-60% speed', 'broken_copper_boots',
                                           5, [TAGS['item'], TAGS['accessory']]),
-    'twin_glasses': Inventory.Item('Twin Glasses', 'rainbowThe proof of embracing eternity.\n7 mana cost\n75 magic damage\nSummon a pair of eyes, shoots lazer.', 'twin_glasses', 7,
+    'twin_glasses': Inventory.Item('Twin Glasses', 'rainbowThe proof of embracing eternity.\n7 mana cost\n'
+                                                   '75 magic damage\nSummon a pair of eyes, shoots lazer.', 'twin_glasses', 7,
                                     [TAGS['item'], TAGS['accessory'], TAGS['eternal']]),
-    'mechanical_tentacle': Inventory.Item('Mechanical Tentacle', 'rainbowThe proof of embracing eternity.\n300 projectile speed\n40 ranged damage\nSummon a tentacle, shoots bullet.',
+    'mechanical_tentacle': Inventory.Item('Mechanical Tentacle', 'rainbowThe proof of embracing eternity.\n'
+                                                                 '300 projectile speed\n40 ranged damage\nSummon a tentacle, shoots bullet.',
                                           'mechanical_tentacle', 7, [TAGS['item'], TAGS['accessory'], TAGS['eternal']]),
+    'phantom_generator': Inventory.Item('Phantom Generator', 'rainbowThe proof of embracing eternity.\n'
+                                                             '120 melee damage\nSummon a phantom to co-attack with you.',
+                                        'phantom_generator', 7, [TAGS['item'], TAGS['accessory'], TAGS['eternal']]),
+
+
     'sanctuary': Inventory.Item('Sanctuary', '45kg\n+35 touching defense\n+75 magic defense\n+80 sprint',
                                 'sanctuary', 7, [TAGS['item'], TAGS['accessory']]),
     'cloudy_heavyboots': Inventory.Item('Cloudy Heavyboots', '15kg\n+70% speed\n-20% air resistance',
@@ -2725,8 +2753,8 @@ RECIPES = [
     Recipe({'chaos_ingot': 40, 'spirit_essence': 7, 'sheath': 1}, 'chaos_sheath'),
     Recipe({'chaos_ingot': 15, 'soarer_bottle': 1, 'magic_anklet': 1, 'mana_flower': 1, 'incremental_spirit_essence': 8}, 'the_chaos_flower_vase'),
     Recipe({'chaos_ingot': 15, 'fire_eye': 1, 'rune_eye': 1, 'photon_aimer': 1, 'photon': 24, 'incremental_spirit_essence': 8}, 'chaos_evileye'),
-    Recipe({'chaos_ingot': 15, 'fire_gloves': 1, 'palladium_gloves': 1, 'mithrill_gloves': 1,
-            'titanium_gloves': 1, 'tough_gloves': 1, 'origin': 1, 'incremental_spirit_essence': 6}, 'starnight_gloves'),
+    Recipe({'chaos_ingot': 15, 'fire_gloves': 1, 'palladium_glove': 1, 'mithrill_glove': 1,
+            'titanium_glove': 1, 'tough_gloves': 1, 'origin': 1, 'incremental_spirit_essence': 6}, 'starnight_gloves'),
     Recipe({'chaos_ingot': 15, 'broken_copper_boots': 1, 'lava_walker': 1, 'highspeed_boots': 1,
             'life_boots': 1, 'guardian_necklace': 1, 'origin': 1, 'incremental_spirit_essence': 6}, 'corrupt_boots'),
 
@@ -2989,7 +3017,7 @@ RECIPES = [
     Recipe({'chaos_ingot': 100, 'willpower_shard': 5}, 'dragon_horn'),
     Recipe({'dragon_horn': 1, 'origin': 1}, 'poison_horn'),
 
-    Recipe({'the_final_soul': 15, 'murders_knife': 1, 'savior': 1}, 'finale__soul'),
+    Recipe({'the_final_soul': 15, 'ascendant_spirit_essence': 15}, 'finale__soul'),
     Recipe({'destroy_shard': 15, 'dark_dragon_ingot': 10, 'light_dragon_ingot': 10}, 'finale__earth_core'),
 
     Recipe({'platinum_ingot': 36, 'mana_crystal': 1, 'anvil': 1}, 'rocket_launcher'),
@@ -3095,6 +3123,11 @@ RECIPES = [
     Recipe({'dark_ingot': 24, 'soul_of_integrity': 16, 'starnight_shard': 1, 'mithrill_anvil': 1}, 'stardream_cloak'),
     Recipe({'dark_ingot': 16, 'soul_of_integrity': 10, 'starnight_shard': 1, 'mithrill_anvil': 1}, 'stardream_boots'),
 
+    Recipe({'scale_headgear': 1, 'thermal_ingot': 9, 'spirit_essence': 1, 'mithrill_anvil': 1}, 'thermscale_helmet'),
+    Recipe({'scale_chestplate': 1, 'thermal_ingot': 13, 'spirit_essence': 1, 'mithrill_anvil': 1}, 'thermscale_chestplate'),
+    Recipe({'scale_chestplate': 1, 'thermal_ingot': 13, 'spirit_essence': 1, 'mithrill_anvil': 1}, 'thermscale_battlegear'),
+    Recipe({'scale_boots': 1, 'thermal_ingot': 7, 'spirit_essence': 1, 'mithrill_anvil': 1}, 'thermscale_greaves'),
+
     Recipe({'chlorophyte_ingot': 8}, 'chloro_formal_hat'),
     Recipe({'chlorophyte_ingot': 12}, 'chloro_chestplate'),
     Recipe({'chlorophyte_ingot': 8}, 'chloro_leggings'),
@@ -3110,6 +3143,12 @@ RECIPES = [
     Recipe({'curse_core': 1, 'chaos_ingot': 800}, 'plaguebringer_skull'),
     Recipe({'origin_feather': 1, 'chaos_ingot': 1300}, 'plaguebringer_cloak'),
     Recipe({'time_fountain': 1, 'chaos_ingot': 700}, 'plaguebringer_boots'),
+
+    Recipe({'chaos_ingot': 400, 'time_essence': 45, 'time_fountain': 1}, 'clockplate_headgear'),
+    Recipe({'chaos_ingot': 700, 'time_essence': 65, 'time_fountain': 1}, 'clockplate_battlegear'),
+    Recipe({'chaos_ingot': 700, 'time_essence': 65, 'time_fountain': 1}, 'clockplate_chestplate'),
+    Recipe({'chaos_ingot': 700, 'time_essence': 65, 'time_fountain': 1}, 'clockplate_cloak'),
+    Recipe({'chaos_ingot': 300, 'time_essence': 35, 'time_fountain': 1}, 'clockplate_greaves'),
 
     Recipe({'the_final_ingot': 7, 'my_soul': 1}, 'karmic_helmet'),
     Recipe({'the_final_ingot': 11, 'my_soul': 1}, 'karmic_chestplate'),

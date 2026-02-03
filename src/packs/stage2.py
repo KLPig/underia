@@ -69,7 +69,7 @@ class FaithlessEyeAI(entity.MonsterAI):
 
     def on_update(self):
         if self.tick > 320:
-            self.state = (self.state + 1) % 2
+            self.state = (self.state + 1) % (1 + constants.DIFFICULTY2)
             self.tick = 0
         self.tick += 1
         px, py = self.cur_target.pos if self.cur_target is not None else (0, 0)
@@ -79,11 +79,21 @@ class FaithlessEyeAI(entity.MonsterAI):
                                                5000 + self.phase * (1000 + constants.DIFFICULTY * 400)))
             else:
                 self.tr = (self.tr * 5 + vector.coordinate_rotation(px - self.pos[0], py - self.pos[1])) / 6
-        else:
+        elif self.state == 1:
             tar_x, tar_y = px + self.ax, py + self.ay
             self.apply_force(vector.Vector(vector.coordinate_rotation(tar_x - self.pos[0], tar_y - self.pos[1]),
                                            vector.distance(tar_x - self.pos[0], tar_y - self.pos[1]) * 5))
             self.rot = vector.coordinate_rotation(px - self.pos[0], py - self.pos[1])
+        elif self.state == 2:
+            self.rot += 15 + self.tick ** 2 // 1000
+        else:
+            if self.tick % 60 > 10:
+                self.apply_force(vector.Vector(self.tr,
+                                               8000 + self.phase * (1000 + constants.DIFFICULTY * 400)))
+            else:
+                self.tr = (self.tr * 5 + vector.coordinate_rotation(px - self.pos[0], py - self.pos[1])) / 6
+                self.velocity *= 0
+
 
 @entity.AIs.entity_ai
 class DestroyerAI(entity.SlowMoverAI):
@@ -408,6 +418,11 @@ class FaithlessEye(Entity):
             self.obj.state = not self.obj.state
         if self.obj.state == 0:
             self.set_rotation((self.rot * 2 - self.obj.velocity.get_net_rotation()) // 3)
+        elif self.obj.state == 2:
+            self.set_rotation((self.rot * 2 - self.obj.rot) // 3)
+            px, py = game.get_game().player.obj.pos
+            if self.obj.tick % 2 == 0:
+                game.get_game().entities.append(FaithlessCurse(self.obj.pos, self.rot))
         else:
             self.set_rotation((self.rot - self.obj.rot) // 2)
             if self.obj.tick % 50 == 1:
@@ -465,6 +480,11 @@ class TruthlessEye(Entity):
             self.phase = 3
         if self.obj.state == 0:
             self.set_rotation((self.rot * 2 - self.obj.velocity.get_net_rotation()) // 3)
+        elif self.obj.state == 2:
+            self.set_rotation((self.rot * 2 - self.obj.rot) // 3)
+            px, py = game.get_game().player.obj.pos
+            if self.obj.tick % 2 == 0:
+                game.get_game().entities.append(TruthlessCurse(self.obj.pos, self.rot))
         else:
             self.set_rotation((self.rot - self.obj.rot) // 2)
             if self.obj.tick % 60 == 0:
@@ -591,10 +611,10 @@ class Destroyer(WormEntity):
         super().__init__(pos, 64, game.get_game().graphics['entity_destroyer_head'],
                          game.get_game().graphics['entity_destroyer_body'], DestroyerAI, 240000, body_length=120,
                          body_touching_damage=280)
-        self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 245
-        self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 240
-        self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 255
-        self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 200
+        self.hp_sys.defenses[damages.DamageTypes.PHYSICAL] = 45
+        self.hp_sys.defenses[damages.DamageTypes.MAGICAL] = 40
+        self.hp_sys.defenses[damages.DamageTypes.PIERCING] = 55
+        self.hp_sys.defenses[damages.DamageTypes.ARCANE] = 20
         self.obj.SPEED *= 2
         self.tick = 0
         self.ft = 0
@@ -602,7 +622,7 @@ class Destroyer(WormEntity):
             setattr(b, 'ot', -1000)
             setattr(b, 'op', False)
             for r in b.hp_sys.resistances.resistances.keys():
-                b.hp_sys.resistances.resistances[r] *= .5
+                b.hp_sys.resistances.resistances[r] *= 1.5
 
     def on_update(self):
         self.tick += 1

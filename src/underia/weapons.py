@@ -338,12 +338,12 @@ class SweepWeapon(Weapon):
                         if 'matters_touch' in game.get_game().player.accessories:
                             e.obj.MASS *= 1.01
                         if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
-                            if not e.IS_MENACE and not e.VITAL:
+                            if not e.IS_MENACE and not e.VITAL and e.hp_sys.hp < 1e8:
                                 e.hp_sys.damage(e.hp_sys.max_hp / 10, dmg.DamageTypes.THINKING)
                                 if random.randint(0, 10) == 0:
                                     e.hp_sys.hp = 0
                             else:
-                                e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), dmg.DamageTypes.THINKING)
+                                e.hp_sys.damage(min(e.hp_sys.max_hp / 1000, 10000), dmg.DamageTypes.THINKING)
                         if self.ENABLE_IMMUNE:
                             if constants.DIFFICULTY <= 1:
                                 e.hp_sys.enable_immune()
@@ -2469,12 +2469,12 @@ class EZenith(Blade):
                     if 'matters_touch' in game.get_game().player.accessories:
                         e.obj.MASS *= 1.01
                     if 'grasp_of_the_infinite_corridor' in game.get_game().player.accessories:
-                        if not e.IS_MENACE and not e.VITAL:
+                        if not e.IS_MENACE and not e.VITAL and e.hp_sys.hp < 1e8:
                             e.hp_sys.damage(e.hp_sys.max_hp / 10, dmg.DamageTypes.THINKING)
                             if random.randint(0, 10) == 0:
                                 e.hp_sys.hp = 0
                         else:
-                            e.hp_sys.damage(max(e.hp_sys.max_hp / 1000, 10000), dmg.DamageTypes.THINKING)
+                            e.hp_sys.damage(min(e.hp_sys.max_hp / 1000, 10000), dmg.DamageTypes.THINKING)
                     if self.ENABLE_IMMUNE:
                         if constants.DIFFICULTY <= 1:
                             e.hp_sys.enable_immune()
@@ -5183,7 +5183,7 @@ def set_weapons():
                                              4, 11, 25, 200),
         'mind': Mind('mind', {dmg.DamageTypes.PHYSICAL: 300, dmg.DamageTypes.THINKING: 100}, 30, 'items_weapons_mind',
                      25, 15, 10, 60),
-        'adherent': Adherent('adherent', {dmg.DamageTypes.PHYSICAL: 600, dmg.DamageTypes.THINKING: 450}, 35, 'items_weapons_adherent',
+        'adherent': Adherent('adherent', {dmg.DamageTypes.PHYSICAL: 300, dmg.DamageTypes.THINKING: 150}, 35, 'items_weapons_adherent',
                              25, 15, 30, 300),
         'worlds_lord': WorldsLord('worlds lord', {dmg.DamageTypes.PHYSICAL: 400, dmg.DamageTypes.THINKING: 800}, 40, 'items_weapons_worlds_lord',
                                  10, 20, 40, 200),
