@@ -7250,7 +7250,7 @@ class Entities:
         def t_draw(self):
             if not self.phase:
                 super().t_draw()
-            elif self.phase < 13 and not self.state:
+            elif not self.state:
                 super().t_draw()
             px, py = game.get_game().player.obj.pos
             px -= self.obj.pos[0]
@@ -7332,8 +7332,8 @@ class Entities:
             if self.a_state == 0:
                 pass
             elif self.a_state == 1:
-                if self.a_tick % 30 == 0:
-                    for _ in range(random.randint(3, 5)):
+                if self.a_tick % 45 == 0:
+                    for _ in range(random.randint(1, 2)):
                         px, py = game.get_game().player.obj.pos
                         rot = random.randint(0, 359)
                         vx, vy = vector.rotation_coordinate(rot)
@@ -7380,8 +7380,8 @@ class Entities:
                     game.get_game().entities.append(Entities.Flower((self.obj.pos[0] + random.randint(-2000, 2000),
                                                                      self.obj.pos[1] + random.randint(-2000, 2000))))
             elif self.a_state == 7:
-                if self.a_tick % 40 == 0:
-                    for _ in range(random.randint(2, 4)):
+                if self.a_tick % 50 == 0:
+                    for _ in range(random.randint(1, 2)):
                         px, py = game.get_game().player.obj.pos
                         rot = random.randint(0, 359)
                         vx, vy = vector.rotation_coordinate(rot)
@@ -7390,10 +7390,10 @@ class Entities:
                     game.get_game().entities.append(Entities.Bomb((game.get_game().player.obj.pos[0], game.get_game().player.obj.pos[1] - 3000),
                                                                   vector.coordinate_rotation(0, 1)))
                 elif self.a_tick % 5 == 0:
-                    for _ in range(random.randint(0, 2)):
+                    for _ in range(random.randint(0, 1)):
                         game.get_game().entities.append(Entities.FriendlyBullet((self.obj.pos[0] - 3000, self.obj.pos[1] + random.randint(-2000, 2000)),
                                                                                 vector.coordinate_rotation(1, 0)))
-                    for _ in range(random.randint(0, 2)):
+                    for _ in range(random.randint(0, 1)):
                         game.get_game().entities.append(Entities.FriendlyBullet((self.obj.pos[0] + 3000, self.obj.pos[1] + random.randint(-2000, 2000)),
                                                                                 vector.coordinate_rotation(-1, 0)))
             elif self.a_state == 8:
@@ -7473,6 +7473,7 @@ class Entities:
                         self.state = 1
                         for i in range(30):
                             game.get_game().entities.append(Entities.Gloves(self.obj.pos, i * 12, math.pi * 40 * i / 15))
+                            game.get_game().entities.append(Entities.Gloves(self.obj.pos, i * 12, math.pi * 40 * (i + 15) / 15))
             elif self.phase == 4 and not self.is_playing('Your_Best_Nightmare_music_SOUL_2'):
                 self.play_sound('Your_Best_Nightmare_music_part_3')
                 self.phase = 5
@@ -7637,7 +7638,8 @@ class Entities:
         def on_update(self):
             super().on_update()
             self.tick += 1
-            self.set_rotation(self.rot + 37)
+            if self.tick % 2 == 1:
+                self.set_rotation(self.rot + 77)
             if self.tick < 10:
                 if self.follow_entity is not None:
                     self.obj.pos << (self.follow_entity.obj.pos[0] + self.ax, self.follow_entity.obj.pos[1] + self.ay)
@@ -7907,7 +7909,7 @@ class Entities:
         DIVERSITY = False
 
         def __init__(self, pos, rot, st=0.0):
-            super().__init__(pos, game.get_game().graphics['entity_pan'], BuildingAI, 500000)
+            super().__init__(pos, pg.transform.scale_by(game.get_game().graphics['entity_pan'], 3), BuildingAI, 500000)
             self.obj.MASS = 1000
             self.obj.rot = rot
             self.tick = st

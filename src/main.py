@@ -614,6 +614,13 @@ def update():
         if 5 > game.stage > 0:
             underia.entity_spawn(underia.Entities.MetalAltar, target_number=3, to_player_max=2500, to_player_min=2000,
                                  rate=50, number_factor=3)
+        if game.stage == 4:
+            underia.entity_spawn(underia.Entities.ParadoxerReason, target_number=5, to_player_max=2000,
+                                 to_player_min=1500,
+                                 rate=90)
+            underia.entity_spawn(underia.Entities.ParadoxerResult, target_number=5, to_player_max=2000,
+                                 to_player_min=1500,
+                                 rate=90)
         if game.stage > 5:
             underia.entity_spawn(underia.Entities.ScarlettAltar, target_number=3, to_player_max=2500, to_player_min=2000,
                                  rate=50, number_factor=3)

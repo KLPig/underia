@@ -5,6 +5,7 @@ from .fallen_sea import *
 from .stage2 import *
 from .christmas import *
 from .events import *
+from .karma import *
 
 from resources import log
 log.info('Loaded packs')

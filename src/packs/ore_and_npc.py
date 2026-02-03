@@ -212,7 +212,7 @@ class PathAltar(PathAltarBase):
         (['ascendant_spirit_essence', 'origin', 'scorch_core', 'soul_of_determination', 'the_final_ingot',
           'no_fountain'], 'retribution', 'apocalypse', ('apocalypse', 1), 1000),
 
-        (['no_fountain', 'death_fountain', 'celestic_fountain', 'time_fountain',
+        (['no_fountain', 'death_fountain', 'celestial_fountain', 'time_fountain',
           'substance_fountain', 'my_soul'], 'yellow_flower', 'omega', ('null', 1), 1000),
 
     ]
