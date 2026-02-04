@@ -11,7 +11,7 @@ import perlin_noise
 class Displayer:
     SCREEN_WIDTH = 2400
     SCREEN_HEIGHT = 1350
-    MODE = 1
+    MODE = 0
 
     def __init__(self):
         try:

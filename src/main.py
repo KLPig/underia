@@ -476,6 +476,10 @@ def update():
 
         if game.get_biome() == 'forest':
             if 5 > game.stage > 1:
+                if game.stage == 4:
+                    underia.entity_spawn(underia.Entities.ParadoxTree, target_number=12, to_player_max=2000,
+                                         to_player_min=1500,
+                                         rate=60)
                 underia.entity_spawn(underia.Entities.Tree, target_number=20, to_player_max=2500, to_player_min=800, rate=25)
                 underia.entity_spawn(underia.Entities.TreeMonster, target_number=15, to_player_max=2500, to_player_min=800,
                                      rate=25)
@@ -495,6 +499,10 @@ def update():
         elif game.get_biome() == 'rainforest':
             underia.entity_spawn(underia.Entities.Crysanths, target_number=3, to_player_max=2500, to_player_min=1000, rate=60)
             if 5 > game.stage > 1:
+                if game.stage == 4:
+                    underia.entity_spawn(underia.Entities.ParadoxTree, target_number=12, to_player_max=2000,
+                                         to_player_min=1500,
+                                         rate=60)
                 underia.entity_spawn(underia.Entities.Tree, target_number=5, to_player_max=2500, to_player_min=1000, rate=25)
                 underia.entity_spawn(underia.Entities.HugeTree, target_number=20, to_player_max=2500, to_player_min=1000,
                                      rate=40)

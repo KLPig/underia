@@ -1,0 +1,3 @@
+	"paradox tree": "悖论树", 
+	"protected": "受保护", 
+	"paradoxer: reason": "悖论者：原因", 

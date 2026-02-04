@@ -169,6 +169,8 @@ class Projectiles:
 
             self.weapon = None
             for frame in frames:
+                if 'self' not in frame.frame.f_locals:
+                    continue
                 if issubclass(type(frame.frame.f_locals['self']), weapons.Weapon):
                     self.weapon = frame.frame.f_locals['self']
                     break
@@ -340,6 +342,8 @@ class Projectiles:
 
             self.weapon = None
             for frame in frames:
+                if 'self' not in frame.frame.f_locals:
+                    continue
                 if issubclass(type(frame.frame.f_locals['self']), weapons.Weapon):
                     self.weapon = frame.frame.f_locals['self']
                     break
@@ -1583,6 +1587,8 @@ class Projectiles:
 
             self.weapon = None
             for frame in frames:
+                if 'self' not in frame.frame.f_locals:
+                    continue
                 if issubclass(type(frame.frame.f_locals['self']), weapons.Weapon):
                     self.weapon = frame.frame.f_locals['self']
                     break
@@ -1862,6 +1868,8 @@ class Projectiles:
 
             self.weapon = None
             for frame in frames:
+                if 'self' not in frame.frame.f_locals:
+                    continue
                 if issubclass(type(frame.frame.f_locals['self']), weapons.Weapon):
                     self.weapon = frame.frame.f_locals['self']
                     break
@@ -3720,6 +3728,8 @@ class Projectiles:
 
             self.weapon = None
             for frame in frames:
+                if 'self' not in frame.frame.f_locals:
+                    continue
                 if issubclass(type(frame.frame.f_locals['self']), weapons.Weapon):
                     self.weapon = frame.frame.f_locals['self']
                     break

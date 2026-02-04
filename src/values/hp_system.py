@@ -194,9 +194,10 @@ class HPSystem:
         dodge = dmg > 1 and random.random() < self.DODGE_RATE
         if dodge:
             dmg = 0
-        if user not in self.adaption:
-            self.adaption[user] = 0
-        dmg *= math.e ** (-self.adaption[user])
+        u_name = user.__class__.__name__
+        if u_name not in self.adaption:
+            self.adaption[u_name] = 0
+        dmg *= math.e ** (-self.adaption[u_name])
         if c_ele and c_ele[0] in self.spec_ele:
             dmg *= self.spec_ele[c_ele[0]] ** (1 + c_ele[1] / 10)
         game.get_game().c_dmg += dmg
@@ -349,7 +350,7 @@ class HPSystem:
                         (str(int(dmg)), 0, (dp[0] + random.randint(-30, 30), dp[1] + random.randint(-30, 30)), ct))
         if 'ADAPTABILITY' not in dir(self):
             self.ADAPTABILITY = 0.0
-        self.adaption[user] += damage * 1e-3 * self.ADAPTABILITY
+        self.adaption[u_name] += damage * 1e-3 * self.ADAPTABILITY
         if len(self.shields):
             self.shields[0] = (self.shields[0][0], self.shields[0][1] - dmg)
             if self.shields[0][1] <= 0:
@@ -360,6 +361,8 @@ class HPSystem:
             self.pacify_cd = int(self.PACIFY_TIME * game.get_game().player.calculate_data('pacify_time', rate_data=True, rate_multiply=True))
         else:
             self.hp -= dmg
+        if 'murder' not in game.get_game().player.profile.skill_points:
+            game.get_game().player.profile.skill_points['murder'] = 0
         if damage_type == damages.DamageTypes.THINKING:
             game.get_game().player.hp_sys.heal(dmg * game.get_game().player.hp_sys.max_hp // 1200000)
             game.get_game().player.profile.skill_points['illusion'] += dmg / 5
@@ -372,8 +375,6 @@ class HPSystem:
         if ee & 0b1:
             game.get_game().player.profile.skill_points['murder'] += dmg
 
-        if self.hp <= 0:
-            self.hp = 0
 
     def enable_immune(self, t=1.0):
         if not self.is_immune:
