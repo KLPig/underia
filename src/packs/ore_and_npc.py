@@ -173,10 +173,8 @@ class PathAltarBase(Chest):
     def t_draw(self):
         super().t_draw()
         self.hp_sys.hp = self.hp_sys.max_hp
-        it, nm = self.chest.items[0]
-        if nm > 1:
-            game.get_game().player.inventory.add_item(inventory.ITEMS[it], nm - 1)
-            self.chest.items[0] = (it, 1)
+
+        it, iv = self.chest.items[0]
 
         gf = pg.transform.scale(game.get_game().graphics['items_' + inventory.ITEMS[it].img], (100, 100))
         gf = entity.entity_get_surface(2, 0, game.get_game().player.get_screen_scale(), gf)
@@ -214,6 +212,9 @@ class PathAltar(PathAltarBase):
 
         (['no_fountain', 'death_fountain', 'celestial_fountain', 'time_fountain',
           'substance_fountain', 'my_soul'], 'yellow_flower', 'omega', ('null', 1), 1000),
+
+        (['my_soul', 'soul_of_determination', 'ascendant_spirit_essence', 'the_final_ingot',
+          'origin_feather', 'the_final_soul'], 'finale__soul', 'open', ('null', 1), 200),
 
     ]
 
@@ -264,10 +265,20 @@ class PathAltar(PathAltarBase):
         if cid == 'disciple':
             if game.get_game().stage == 3:
                 game.get_game().entities.append(entity.Entities.Disciple(self.obj.pos.to_value()))
+        if cid == 'open':
+            if 'opp' not in dir(game.get_game()):
+                game.get_game().opp = 0.0
+            if game.get_game().opp < 1:
+                game.get_game().opp = min(1, game.get_game().opp + 1 / 7)
+                game.get_game().displayer.shake_amp += 50 + game.get_game().opp * 150
 
 
     def t_draw(self):
         super().t_draw()
+        it, nm = self.chest.items[0]
+        if nm > 1:
+            game.get_game().player.inventory.add_item(inventory.ITEMS[it], nm - 1)
+            self.chest.items[0] = (it, 1)
         ci, cn = self.ceremony_now
         if cn >= 0:
             game.get_game().player.open_chest = None
@@ -276,7 +287,11 @@ class PathAltar(PathAltarBase):
                 it, mn, cid, tt, dt = self.cur
                 self.chest.items[0] = tt
                 for b in self.bases:
-                    b.chest.items[0] = ('null', 1)
+                    ni, nt = b.chest.items[0]
+                    if nt > 1:
+                        b.chest.items[0] = (ni, nt - 1)
+                    else:
+                        b.chest.items[0] = ('null', 1)
 
             self.ceremony_now = (ci, cn - 1)
 

@@ -395,6 +395,7 @@ class Game:
         self.wm_max = 0
         self.gcnt = 0
         self.decors = []
+        self.opp = 0.0
         self.msf = pg.Surface((800, 800), pg.SRCALPHA)
         if not 'diff' in dir(self):
             self.diff = constants.DIFFICULTY
@@ -470,6 +471,13 @@ class Game:
         for ar in range(0, 3000, 500):
             self.furniture.append(entity.Entities.PathLight((-1200, 1e9 + 16000 + ar), 'l'))
             self.furniture.append(entity.Entities.PathLight((1200, 1e9 + 16000 + ar), 'r'))
+
+        for ar in range(21000, 25000, 500):
+            self.furniture.append(entity.Entities.PathLight((-550, 1e9 + ar), 'l'))
+            self.furniture.append(entity.Entities.PathLight((-500, 1e9 + ar), 'r'))
+            self.furniture.append(entity.Entities.PathLight((500, 1e9 + ar), 'l'))
+            self.furniture.append(entity.Entities.PathLight((550, 1e9 + ar), 'r'))
+
         self.furniture += fs
         fn = entity.Entities.PathAltar(ct)
         fn.bases = fs
@@ -679,8 +687,10 @@ class Game:
                 self.last_biome = (self.get_biome(), 0)
         slg, _ = self.last_biome
         if self.get_dimension() == 'path':
+            if 'opp' not in dir(self):
+                self.opp = 0.0
 
-            self.player.obj.pos[1] = min(max(1e9 + 8000, self.player.obj.pos[1]), 1e9 + 50000)
+            self.player.obj.pos[1] = min(max(1e9 + 8000, self.player.obj.pos[1]), 1e9 + 19000 + 6000 * (self.opp >= 1))
             tl = (-500, 1e9 + 8000)
             rr = pg.Rect(resources.displayed_position(tl), (int(1000 / self.player.get_screen_scale()), int(8000 / self.player.get_screen_scale())))
             pg.draw.rect(self.displayer.canvas, (255, 181, 112), rr)
@@ -698,6 +708,27 @@ class Game:
             rr = pg.Rect(tl, (3000, 3000))
             if rr.top < self.player.obj.pos[1] < rr.bottom:
                 self.player.obj.pos[0] = min(rr.right, max(rr.left, self.player.obj.pos[0]))
+
+            tl = (-250, 1e9 + 19000)
+            rr = pg.Rect(resources.displayed_position(tl), (int(500 / self.player.get_screen_scale()), int(6000 / self.player.get_screen_scale())))
+            pg.draw.rect(self.displayer.canvas, (255, 181, 112), rr)
+            pg.draw.rect(self.displayer.canvas, (242, 166, 94), rr,
+                         int(15 / self.player.get_screen_scale() + 1))
+            rr = pg.Rect(tl, (500, 6000))
+            if rr.top < self.player.obj.pos[1] < rr.bottom:
+                self.player.obj.pos[0] = min(rr.right, max(rr.left, self.player.obj.pos[0]))
+
+            opp = self.opp
+
+            dl = entity.entity_get_surface(3, 0, self.player.get_screen_scale() /2 ,
+                                           self.graphics['background_path_door_l'])
+            dl_r = dl.get_rect(midbottom=resources.displayed_position((-opp * 150, 1e9 + 20000)))
+            self.displayer.canvas.blit(dl, dl_r)
+
+            dl = entity.entity_get_surface(3, 0, self.player.get_screen_scale() / 2,
+                                           self.graphics['background_path_door_r'])
+            dl_r = dl.get_rect(midbottom=resources.displayed_position((opp * 150, 1e9 + 20000)))
+            self.displayer.canvas.blit(dl, dl_r)
         else:
             for i in range(-bg_size, self.displayer.SCREEN_WIDTH + bg_size * chunk_size, bg_size * chunk_size):
                 for j in range(-bg_size, self.displayer.SCREEN_HEIGHT + bg_size * chunk_size, bg_size * chunk_size):
