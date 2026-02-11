@@ -20,7 +20,7 @@ DEBUG = True
 OS = "OSX"
 TONE = True
 ENTITY_NUMBER = 18
-WEB_CHECK = True
+WEB_CHECK = False
 WEB_DEPLOY = False
 
 if not WEB_DEPLOY:

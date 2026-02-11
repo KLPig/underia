@@ -432,18 +432,23 @@ class QuarkGhostAI(MonsterAI):
         super().__init__(pos)
         self.state = 0
         self.d_rot = 0
+        self.rt = 0
 
     def on_update(self):
         player = self.cur_target
         if player is not None:
             px, py = player.pos[0] - self.pos[0], player.pos[1] - self.pos[1]
-            self.d_rot = vector.coordinate_rotation(px, py) - self.velocity.get_net_rotation()
-            if self.d_rot > 180:
-                self.d_rot -= 360
-            elif self.d_rot < -180:
-                self.d_rot += 360
-            self.apply_force(vector.Vector(self.velocity.get_net_rotation(), max(0, 150000 - self.d_rot * 300)))
-            self.apply_force(vector.Vector(self.velocity.get_net_rotation() + 90, self.d_rot / abs(self.d_rot) * (self.d_rot + 40) * 300 + 12000 * math.sin(game.get_game().player.tick / 5)))
+            if self.state == 0:
+                self.rt = vector.coordinate_rotation(px, py)
+                self.d_rot = vector.coordinate_rotation(px, py) - self.velocity.get_net_rotation()
+                if self.d_rot > 180:
+                    self.d_rot -= 360
+                elif self.d_rot < -180:
+                    self.d_rot += 360
+                self.apply_force(vector.Vector(self.velocity.get_net_rotation(), max(0, 150000 - self.d_rot * 300)))
+                self.apply_force(vector.Vector(self.velocity.get_net_rotation() + 90, self.d_rot * 300))
+            elif self.state == 1:
+                self.apply_force(vector.Vector2D(self.rt, 600000))
             self.IS_OBJECT = True
 
 class NagaAI(MonsterAI):
@@ -6729,6 +6734,7 @@ class Entities:
             super().on_update()
             if self.phase == 0 and self.hp_sys.hp < self.hp_sys.max_hp * .6:
                 self.phase = 1
+                game.get_game().displayer.shake_amp += 150
                 self.obj.SPEED *= 1.5
                 game.get_game().displayer.shake_amp += 150
                 for b in self.body[1:]:

@@ -466,6 +466,11 @@ class Game:
         fs = []
         for ar in range(0, 360, 60):
             fs.append(entity.Entities.PathAltarBase(physics.Vector2D(ar, 800) + ct))
+
+        for ar in range(21000 + 250, 25000, 500):
+            fs.append(entity.Entities.PathAltarBase((-800, 1e9 + ar)))
+            fs.append(entity.Entities.PathAltarBase((800, 1e9 + ar)))
+
         for ar in range(30, 360, 60):
             self.furniture.append(entity.Entities.PathLight(physics.Vector2D(ar, 500) + ct, 'l' if ar > 180 else 'r'))
         for ar in range(0, 3000, 500):
@@ -473,10 +478,10 @@ class Game:
             self.furniture.append(entity.Entities.PathLight((1200, 1e9 + 16000 + ar), 'r'))
 
         for ar in range(21000, 25000, 500):
-            self.furniture.append(entity.Entities.PathLight((-550, 1e9 + ar), 'l'))
-            self.furniture.append(entity.Entities.PathLight((-500, 1e9 + ar), 'r'))
-            self.furniture.append(entity.Entities.PathLight((500, 1e9 + ar), 'l'))
-            self.furniture.append(entity.Entities.PathLight((550, 1e9 + ar), 'r'))
+            self.furniture.append(entity.Entities.PathLight((-550, 1e9 + ar), 'r'))
+            self.furniture.append(entity.Entities.PathLight((-500, 1e9 + ar), 'l'))
+            self.furniture.append(entity.Entities.PathLight((500, 1e9 + ar), 'r'))
+            self.furniture.append(entity.Entities.PathLight((550, 1e9 + ar), 'l'))
 
         self.furniture += fs
         fn = entity.Entities.PathAltar(ct)
@@ -919,6 +924,8 @@ class Game:
             if drop_item.hp_sys.hp <= 0:
                 self.drop_items.remove(drop_item)
                 del drop_item
+        if len(self.projectiles) > 50:
+            self.projectils = self.projectiles[-50:]
         for proj in self.projectiles:
             proj.update()
             if proj.dead:
@@ -940,6 +947,8 @@ class Game:
         self.displayer.night_darkness()
         if len(self.damage_texts) and len(self.damage_texts[0]) < 4:
             self.damage_texts.clear()
+        if len(self.damage_texts) > 50:
+            self.damage_texts = self.damage_texts[-50:]
         self.damage_texts = [(dmg, tick + 1, pos, b) for dmg, tick, pos, b in self.damage_texts if tick < 80]
         for dmg, tick, pos, b in self.damage_texts:
             ll = b

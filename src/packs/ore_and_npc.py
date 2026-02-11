@@ -269,8 +269,10 @@ class PathAltar(PathAltarBase):
             if 'opp' not in dir(game.get_game()):
                 game.get_game().opp = 0.0
             if game.get_game().opp < 1:
-                game.get_game().opp = min(1, game.get_game().opp + 1 / 7)
+                game.get_game().opp = min(1, game.get_game().opp + .143)
                 game.get_game().displayer.shake_amp += 50 + game.get_game().opp * 150
+            if game.get_game().opp >= 1:
+                game.get_game().dialog.dialog("THE SEALED DOOR IS NOW OPEN...")
 
 
     def t_draw(self):
